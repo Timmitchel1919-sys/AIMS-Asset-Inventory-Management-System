@@ -1,0 +1,4 @@
+import{readFileSync}from'node:fs';import{describe,expect,it}from'vitest';
+const css=readFileSync(new URL('./tokens.css',import.meta.url),'utf8');
+const themes=['kcs-forest-gold','kcs-azure-intelligence'];
+describe('theme tokens',()=>{it.each(themes)('defines %s',theme=>expect(css).toContain(`[data-theme="${theme}"]`));it.each(['kcs-soft-sage','kcs-skyglass','kcs-coral-graphite'])('does not expose removed %s',theme=>expect(css).not.toContain(`[data-theme="${theme}"]`));it.each(['--color-background','--color-surface','--color-primary','--color-accent','--color-text-primary','--color-border','--color-focus-ring','--color-success','--color-warning','--color-danger','--color-info','--color-sidebar-background','--color-input-background'])('defines semantic token %s',token=>expect(css).toContain(token))});

@@ -1,0 +1,190 @@
+:root {
+  --download-button-surface: rgba(255, 255, 255, 0.96);
+  --download-button-border: rgba(214, 174, 50, 0.48);
+  --download-button-text: #173021;
+  --download-button-track: rgba(47, 143, 87, 0.16);
+  --download-button-accent: #2F8F57;
+  --download-button-accent-hover: #3C9D63;
+  --download-button-icon-text: #D6AE32;
+  --download-button-focus: rgba(214, 174, 50, 0.42);
+  --download-button-error: #C95852;
+  --download-button-success: #2F8F57;
+}
+
+html[data-theme='kcs-forest-gold'] {
+  --download-button-surface: rgba(255, 255, 255, 0.96);
+  --download-button-border: rgba(214, 174, 50, 0.48);
+  --download-button-text: #173021;
+  --download-button-track: rgba(47, 143, 87, 0.16);
+  --download-button-accent: #2F8F57;
+  --download-button-accent-hover: #3C9D63;
+  --download-button-icon-text: #D6AE32;
+  --download-button-focus: rgba(214, 174, 50, 0.42);
+  --download-button-error: #C95852;
+  --download-button-success: #2F8F57;
+}
+
+html[data-theme='kcs-azure-intelligence'] {
+  --download-button-surface: rgba(255, 255, 255, 0.96);
+  --download-button-border: rgba(27, 115, 255, 0.30);
+  --download-button-text: #17213A;
+  --download-button-track: rgba(27, 115, 255, 0.15);
+  --download-button-accent: #1B73FF;
+  --download-button-accent-hover: #1268F4;
+  --download-button-icon-text: #FFFFFF;
+  --download-button-focus: rgba(27, 115, 255, 0.38);
+  --download-button-error: #EC6B4C;
+  --download-button-success: #1B73FF;
+}
+
+.animated-download-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 172px;
+  height: 50px;
+  padding: 0;
+  color: var(--download-button-text);
+  background: var(--download-button-surface);
+  border: 1px solid var(--download-button-border);
+  border-radius: 999px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.animated-download-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.animated-download-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.animated-download-button:focus-visible {
+  outline: 3px solid var(--download-button-focus);
+  outline-offset: 3px;
+}
+
+.animated-download-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.animated-download-button__content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 42px;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 4px 5px 4px 18px;
+}
+
+.animated-download-button__label {
+  min-width: 0;
+  font-size: 0.9rem;
+  font-weight: 650;
+  text-align: left;
+  white-space: nowrap;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.animated-download-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  color: var(--download-button-icon-text);
+  background: var(--download-button-accent);
+  border-radius: 999px;
+  flex-shrink: 0;
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.animated-download-button__icon--completed {
+  background: var(--download-button-success);
+}
+
+.animated-download-button__icon--error {
+  background: var(--download-button-error);
+}
+
+.animated-download-button__icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
+/* Download arrows and progress surfaces follow every selected semantic theme. */
+html[data-theme] .animated-download-button,html[data-theme] .sidebar-download{--download-button-surface:var(--color-surface-elevated);--download-button-border:var(--color-border-strong);--download-button-text:var(--color-text-primary);--download-button-track:var(--color-primary-soft);--download-button-accent:var(--color-primary);--download-button-accent-hover:var(--color-primary-hover);--download-button-icon-text:var(--color-on-primary);--download-button-focus:var(--color-focus-ring);--download-button-success:var(--color-success);--download-button-error:var(--color-danger)}
+
+.animated-download-button__progress {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding-right: 12px;
+}
+
+.animated-download-button__track {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 5px;
+  overflow: hidden;
+  background: var(--download-button-track);
+  border-radius: 999px;
+}
+
+.animated-download-button__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: var(--download-button-accent);
+  border-radius: inherit;
+  transition: width 180ms linear;
+}
+
+.animated-download-button__icon--downloading {
+  position: relative;
+}
+
+.animated-download-button__icon--downloading::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border: 2px solid transparent;
+  border-top-color: var(--download-button-accent);
+  border-radius: 999px;
+  animation: kcs-download-spin 900ms linear infinite;
+}
+
+@keyframes kcs-download-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated-download-button,
+  .animated-download-button__label,
+  .animated-download-button__fill,
+  .animated-download-button__icon,
+  .animated-download-button__icon::after {
+    transition: none;
+    animation: none;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

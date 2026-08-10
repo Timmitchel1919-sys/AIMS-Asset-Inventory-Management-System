@@ -1,0 +1,79 @@
+:root{
+  --aims-emerald-forest:#0D2B1E;
+  --aims-emerald-primary:#146C43;
+  --aims-emerald-bright:#2ECC71;
+  --aims-emerald-mint:#D9F3E3;
+  --aims-emerald-slate:#64748B;
+  --aims-emerald-gray:#F2F5F7;
+  --aims-emerald-white:#FFFFFF;
+  --aims-emerald-near-black:#0B1510;
+  --aims-emerald-glass-bg:rgba(255,255,255,.80);
+  --aims-emerald-glass-bg-strong:rgba(255,255,255,.90);
+  --aims-emerald-glass-border:rgba(20,108,67,.16);
+  --aims-emerald-glass-shadow:0 14px 38px rgba(13,43,30,.10);
+  --aims-emerald-glass-blur:16px;
+}
+
+html[data-aims-theme="aimsEmeraldGlass"]{
+  --color-background:var(--aims-emerald-gray);
+  --color-background-secondary:var(--aims-emerald-mint);
+  --color-surface:var(--aims-emerald-glass-bg);
+  --color-surface-secondary:rgba(217,243,227,.62);
+  --color-surface-elevated:var(--aims-emerald-glass-bg-strong);
+  --color-surface-hover:rgba(46,204,113,.06);
+  --color-primary:var(--aims-emerald-primary);
+  --color-primary-hover:#0F5A37;
+  --color-primary-active:var(--aims-emerald-forest);
+  --color-primary-soft:var(--aims-emerald-mint);
+  --color-on-primary:var(--aims-emerald-white);
+  --color-secondary:var(--aims-emerald-forest);
+  --color-secondary-hover:var(--aims-emerald-near-black);
+  --color-secondary-soft:var(--aims-emerald-mint);
+  --color-on-secondary:var(--aims-emerald-white);
+  --color-accent:var(--aims-emerald-bright);
+  --color-accent-hover:#26B864;
+  --color-accent-soft:var(--aims-emerald-mint);
+  --color-text-primary:var(--aims-emerald-forest);
+  --color-text-secondary:var(--aims-emerald-slate);
+  --color-text-muted:var(--aims-emerald-slate);
+  --color-border:rgba(20,108,67,.14);
+  --color-border-subtle:rgba(20,108,67,.10);
+  --color-border-strong:rgba(20,108,67,.22);
+  --color-focus-ring:var(--aims-emerald-bright);
+  --color-sidebar-background:linear-gradient(180deg,#0D2B1E 0%,#123D2B 100%);
+  --color-sidebar-text:#FFFFFF;
+  --color-sidebar-muted:#D9F3E3;
+  --color-sidebar-active-background:linear-gradient(135deg,#146C43 0%,#1FAE63 55%,#2ECC71 100%);
+  --color-sidebar-active-text:#FFFFFF;
+  --color-sidebar-hover:rgba(46,204,113,.14);
+  --color-input-background:rgba(255,255,255,.90);
+  --color-input-border:rgba(20,108,67,.18);
+  --color-table-header:rgba(217,243,227,.58);
+  --shadow-sm:0 3px 12px rgba(13,43,30,.06);
+  --shadow-md:var(--aims-emerald-glass-shadow);
+  --shadow-lg:0 18px 48px rgba(13,43,30,.18);
+}
+
+html[data-aims-theme="aimsEmeraldGlass"] body,
+html[data-aims-theme="aimsEmeraldGlass"] .app{
+  background:radial-gradient(circle at 86% 10%,rgba(20,108,67,.09),transparent 30%),radial-gradient(circle at 18% 88%,rgba(46,204,113,.07),transparent 34%),linear-gradient(135deg,#FFFFFF 0%,#F2F5F7 45%,#D9F3E3 100%);
+  color:var(--aims-emerald-forest);
+}
+html[data-aims-theme="aimsEmeraldGlass"] .app-sidebar{background:var(--color-sidebar-background)}
+html[data-aims-theme="aimsEmeraldGlass"] .app-sidebar nav a.active,
+html[data-aims-theme="aimsEmeraldGlass"] .app-sidebar nav a[aria-current="page"]{border-color:rgba(255,255,255,.24);background:var(--color-sidebar-active-background);color:#fff;box-shadow:0 8px 22px rgba(20,108,67,.34)}
+html[data-aims-theme="aimsEmeraldGlass"] .app-sidebar nav a:hover{background:var(--color-sidebar-hover);color:#fff}
+html[data-aims-theme="aimsEmeraldGlass"] .topbar{border-bottom:1px solid rgba(20,108,67,.16);background:rgba(255,255,255,.84);color:var(--aims-emerald-forest);backdrop-filter:blur(18px) saturate(135%);-webkit-backdrop-filter:blur(18px) saturate(135%)}
+html[data-aims-theme="aimsEmeraldGlass"] :is(.card,.dialog,.drawer,.data-card,.assistant-panel,.profile-menu){border-color:var(--aims-emerald-glass-border);background:var(--aims-emerald-glass-bg);box-shadow:var(--aims-emerald-glass-shadow);backdrop-filter:blur(var(--aims-emerald-glass-blur)) saturate(130%);-webkit-backdrop-filter:blur(var(--aims-emerald-glass-blur)) saturate(130%)}
+html[data-aims-theme="aimsEmeraldGlass"] :is(.btn-primary,.kcs-premium-action,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]){position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.38);background:linear-gradient(135deg,#0F5A37 0%,#146C43 48%,#2ECC71 100%);color:#fff;box-shadow:0 10px 24px rgba(20,108,67,.30),inset 0 1px 0 rgba(255,255,255,.44),inset 0 -1px 0 rgba(13,43,30,.22)}
+html[data-aims-theme="aimsEmeraldGlass"] :is(.btn-primary,.kcs-premium-action,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"])::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.42) 0%,rgba(255,255,255,.15) 44%,rgba(255,255,255,0) 58%)}
+html[data-aims-theme="aimsEmeraldGlass"] tbody tr:hover td{background:rgba(46,204,113,.06)}
+html[data-aims-theme="aimsEmeraldGlass"] tr[aria-selected="true"] td{background:rgba(20,108,67,.10)}
+html[data-aims-theme="aimsEmeraldGlass"] :focus-visible{outline-color:var(--aims-emerald-bright)}
+html[data-aims-theme="aimsEmeraldGlass"] .app-sidebar__logo-button svg{width:100%;height:100%;display:block}
+
+.theme-aimsAzureGlass i{background:#D5EFFE}.theme-aimsAzureGlass i span:first-child{background:#071F3D}.theme-aimsAzureGlass i span:nth-child(2){background:#2C7EF4}.theme-aimsAzureGlass i span:nth-child(3){background:#00AEEF}
+.theme-aimsEmeraldGlass i{background:#D9F3E3}.theme-aimsEmeraldGlass i span:first-child{background:#0D2B1E}.theme-aimsEmeraldGlass i span:nth-child(2){background:linear-gradient(135deg,#146C43,#2ECC71)}.theme-aimsEmeraldGlass i span:nth-child(3){background:#FFFFFF}
+
+@media(max-width:780px){html[data-aims-theme="aimsEmeraldGlass"] :is(.card,.dialog,.drawer,.data-card,.assistant-panel,.profile-menu){background:rgba(255,255,255,.92);backdrop-filter:blur(10px) saturate(118%);-webkit-backdrop-filter:blur(10px) saturate(118%)}}
+@media(prefers-reduced-transparency:reduce){html[data-aims-theme="aimsEmeraldGlass"] :is(.topbar,.card,.dialog,.drawer,.data-card,.assistant-panel,.profile-menu){background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}}

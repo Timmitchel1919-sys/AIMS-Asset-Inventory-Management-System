@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function permission(value) { return signedIn() && value in request.auth.token.permissions; }
+    function adminAccess() { return permission('admin.access'); }
+    function legalAdmin() { return permission('legal.manage'); }
+    function legalApprover() { return permission('legal.approve') && permission('legal.publish'); }
+    match /legalDocuments/{type} {
+      allow read: if resource.data.status == 'published' || permission('legal.read');
+      allow create, update: if legalAdmin() && request.resource.data.status in ['draft','pending_approval'] || legalApprover();
+      allow delete: if false;
+      match /versions/{version} {
+        allow read: if resource.data.status in ['published','archived'] || permission('legal.audit');
+        allow create: if legalApprover();
+        allow update, delete: if false;
+      }
+    }
+    match /legalConfiguration/{document} { allow read: if true; allow write: if legalApprover(); }
+    match /policyAcknowledgements/{id} {
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid && id == request.auth.uid + '_' + request.resource.data.documentType + '_' + request.resource.data.documentVersion;
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid || permission('legal.audit'));
+      allow update, delete: if false;
+    }
+    match /users/{id} {
+      allow read: if permission('admin.users.manage');
+      allow create: if permission('admin.users.manage');
+      allow update: if permission('admin.users.manage') && request.auth.uid != id;
+      allow delete: if false;
+    }
+    match /roles/{id} { allow read, write: if permission('admin.roles.manage'); }
+    match /permissions/{id} { allow read: if adminAccess(); allow write: if false; }
+    match /systemConfiguration/{id} { allow read, write: if permission('admin.system.configure'); }
+    match /disposals/{id} {
+      allow read: if permission('disposals.view');
+      allow create: if permission('disposals.request');
+      allow update: if permission('disposals.approve');
+      allow delete: if false;
+    }
+    match /locationTypes/{id} {
+      allow read: if signedIn();
+      allow create, update, delete: if permission('locationTypes.manage');
+    }
+    match /codeGroups/{id} {
+      allow read: if signedIn();
+      allow create, update, delete: if permission('locationTypes.manage');
+    }
+    match /auditLogs/{id} {
+      allow read: if permission('legal.audit') || permission('admin.audit.read');
+      allow create: if adminAccess() || legalAdmin();
+      allow update, delete: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

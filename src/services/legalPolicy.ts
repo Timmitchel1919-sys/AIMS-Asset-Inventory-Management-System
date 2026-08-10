@@ -1,0 +1,6 @@
+import type {LegalDocumentStatus,LegalDocumentType,PolicyAcknowledgement} from '../types/legal.types';
+export const legalStatusTransitions:Record<LegalDocumentStatus,LegalDocumentStatus[]>={draft:['pending_approval'],pending_approval:['approved','draft'],approved:['published'],published:['archived'],archived:[]};
+export function canTransitionLegalStatus(from:LegalDocumentStatus,to:LegalDocumentStatus){return legalStatusTransitions[from].includes(to)}
+export function validatePolicyVersion(version:string){return /^\d+\.\d+$/.test(version)}
+export function acknowledgementId(userId:string,type:LegalDocumentType,version:string){return `${userId}_${type}_${version}`}
+export function recordAcknowledgement(storage:Storage,userId:string,type:LegalDocumentType,version:string,method:PolicyAcknowledgement['acknowledgementMethod']):PolicyAcknowledgement{if(!userId.trim())throw new Error('An authenticated user is required.');const acknowledgement:PolicyAcknowledgement={id:acknowledgementId(userId,type,version),userId,documentType:type,documentVersion:version,acknowledgedAt:new Date().toISOString(),acknowledgementMethod:method,userAgent:typeof navigator==='undefined'?undefined:navigator.userAgent};storage.setItem(`kcs-policy-ack:${acknowledgement.id}`,JSON.stringify(acknowledgement));return acknowledgement}

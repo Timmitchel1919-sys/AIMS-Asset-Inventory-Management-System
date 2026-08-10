@@ -1,0 +1,2 @@
+import{expect,test}from'@playwright/test';
+test('mobile landing install button provides shared install guidance',async({page})=>{await page.addInitScript(()=>localStorage.setItem('kcs-auth','out'));await page.goto('/');const button=page.getByRole('button',{name:'Install App'}).last();await button.click();await expect(page.getByRole('dialog',{name:'Install AIMS'})).toContainText('Open your browser menu');expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)});

@@ -1,0 +1,106 @@
+html[data-theme]{--legal-accent:var(--color-primary);--legal-accent-strong:var(--color-primary-hover);--legal-secondary-accent:var(--color-accent);--legal-link:var(--color-primary);--legal-focus:var(--color-focus-ring);--legal-border:var(--color-border);--legal-soft:var(--color-primary-soft)}
+html[data-theme="kcs-forest-gold"]{--legal-accent:#2f8f57;--legal-accent-strong:#0c5a36;--legal-secondary-accent:#d6ae32;--legal-link:#1f7a48;--legal-focus:rgba(214,174,50,.36);--legal-border:rgba(47,143,87,.18);--legal-soft:rgba(47,143,87,.05)}
+html[data-theme="kcs-azure-intelligence"]{--legal-accent:#1b73ff;--legal-accent-strong:#0b4fc3;--legal-secondary-accent:#35c7c9;--legal-link:#1268f4;--legal-focus:rgba(27,115,255,.28);--legal-border:rgba(27,115,255,.18);--legal-soft:rgba(27,115,255,.05)}
+.legal-page{min-height:100vh;border-top:4px solid var(--legal-accent);background:#fff;color:#17212b}.legal-page__container{width:min(calc(100% - 32px),960px);margin:auto;padding:36px 0 72px}.legal-page__header{padding-bottom:28px;margin-bottom:26px;border-bottom:1px solid var(--legal-border)}.legal-page__back{display:inline-flex;margin-bottom:26px;font-weight:700}.legal-page__logo{display:block;width:58px;height:58px;object-fit:contain}.legal-page__eyebrow{margin:14px 0 0;color:var(--legal-accent);font-size:.78rem;font-weight:750;letter-spacing:.08em;text-transform:uppercase}.legal-page h1{margin:8px 0 12px;font-size:clamp(2rem,5vw,3rem);line-height:1.1}.legal-page__meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:#667085;font-size:.86rem}.legal-page__contents{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 20px;margin:0 0 38px;padding:18px;border:1px solid var(--legal-border);border-radius:12px;background:var(--legal-soft)}.legal-page__contents a{display:flex;gap:7px;text-decoration:none}.legal-page__contents span,.legal-section h2 span{color:var(--legal-secondary-accent)}.legal-section{scroll-margin-top:24px;margin-bottom:34px;padding-bottom:24px;border-bottom:1px solid var(--legal-border)}.legal-section h2{display:flex;gap:8px;margin:0 0 12px;color:var(--legal-accent-strong);font-size:1.18rem;line-height:1.35}.legal-section p,.legal-section li{color:#344054;line-height:1.75}.legal-section ul{padding-left:22px}.legal-page a{color:var(--legal-link);text-decoration-thickness:1px;text-underline-offset:3px}.legal-page a:focus-visible{outline:3px solid var(--legal-focus);outline-offset:3px;border-radius:4px}.legal-table-wrap{max-width:100%;overflow-x:auto;margin:20px 0}.legal-table-wrap table{min-width:620px}.legal-table-wrap caption{text-align:left;font-weight:750;margin-bottom:10px}.legal-table-wrap th,.legal-table-wrap td{padding:10px 12px;border:1px solid var(--legal-border);white-space:normal;text-align:left}.legal-table-wrap thead{background:var(--legal-soft);color:var(--legal-accent-strong)}.legal-callout{padding:14px;border-left:4px solid var(--legal-secondary-accent);background:var(--legal-soft)}.legal-page__contact{padding:24px;border-radius:12px;background:var(--legal-soft)}.legal-page__contact h2{margin-top:0}.legal-page__contact address{display:grid;gap:6px;font-style:normal}.legal-page__contact>p{line-height:1.6}.legal-page__contact>div{display:flex;gap:18px;margin-top:18px;font-weight:700}
+@media(max-width:640px){.legal-page__container{width:min(calc(100% - 36px),960px);padding-top:24px}.legal-page__contents{grid-template-columns:1fr}.legal-page__meta{display:grid}.legal-section{margin-bottom:26px}.legal-page__contact>div{flex-direction:column;gap:8px}}
+@media print{.legal-page__back,.legal-page__actions{display:none}.legal-page{border:0;color:#000;background:#fff}.legal-page__container{width:100%;max-width:none;padding:0}.legal-page__contents{display:none}.legal-section{break-inside:auto}.legal-section h2{break-after:avoid}.legal-page a{color:#000;text-decoration:none}.legal-page__contact{border:1px solid #aaa;background:#fff}}
+.legal-page__actions{display:flex;justify-content:space-between;gap:10px;margin-bottom:24px}.legal-page__actions button{min-height:44px;display:inline-flex;align-items:center;gap:7px;padding:0 12px;border:1px solid var(--legal-border);border-radius:8px;background:#fff;color:var(--legal-link);font-weight:700}.legal-page__actions svg{width:17px}.legal-page__contents>strong{grid-column:1/-1}.support-contact{display:flex;gap:18px;align-items:center;padding:22px;border:1px solid var(--legal-border);border-radius:12px;background:var(--legal-soft)}.support-contact>svg{width:42px;height:42px;color:var(--legal-accent)}.support-contact h2{margin:0 0 8px}.support-contact a{display:block;margin-top:4px}.support-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0 34px}.support-actions a{min-height:48px;display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--legal-border);border-radius:9px;font-weight:700}.support-actions svg{width:18px}@media(max-width:640px){.support-actions{grid-template-columns:1fr}.support-contact{align-items:flex-start}.legal-page__actions{position:sticky;top:0;z-index:2;padding:6px 0;background:#fff}.legal-table-wrap table{min-width:0;width:100%;font-size:.82rem}.legal-table-wrap th,.legal-table-wrap td{padding:8px;overflow-wrap:anywhere}}
+@media print{.legal-page__actions{display:none!important}}
+
+@media screen{
+.legal-page{background:var(--color-background);color:var(--color-text-primary)}
+.legal-section p,.legal-section li,.legal-page__meta{color:var(--color-text-secondary)}
+.legal-page__actions button{border-color:var(--color-border);background:var(--color-surface-elevated);color:var(--legal-link)}
+.legal-page__contact,.legal-page__contents,.support-contact{background:var(--legal-soft)}
+@media(max-width:640px){.legal-page__actions{background:var(--color-background)}}
+}
+
+/* Glass presentation for the published policy and incident content.
+   It deliberately reuses each theme's existing semantic colors. */
+@media screen{
+.legal-page__content{display:grid;gap:0;border-radius:20px;box-shadow:0 18px 42px color-mix(in srgb,var(--color-text-primary) 9%,transparent)}
+.legal-page__content>.legal-section,
+.support-page>.legal-page__container>.legal-section{
+ position:relative;
+ isolation:isolate;
+ margin:0;
+ padding:clamp(22px,3vw,32px);
+ overflow:hidden;
+ border:1px solid color-mix(in srgb,var(--legal-border) 76%,transparent);
+ border-radius:20px;
+ background:var(--color-surface-elevated);
+ box-shadow:inset 0 1px 0 color-mix(in srgb,var(--color-surface-elevated) 88%,transparent);
+ -webkit-backdrop-filter:blur(18px) saturate(135%);
+ backdrop-filter:blur(18px) saturate(135%);
+}
+.legal-page__content>.legal-section::before,
+.support-page>.legal-page__container>.legal-section::before{display:none}
+.legal-page__content>.legal-section:not(:first-child){border-top-left-radius:0;border-top-right-radius:0}
+.legal-page__content>.legal-section:not(:last-child){border-bottom-right-radius:0;border-bottom-left-radius:0}
+.legal-page__content>.legal-section+ .legal-section{margin-top:-1px}
+.support-page>.legal-page__container>.legal-section{box-shadow:0 18px 42px color-mix(in srgb,var(--color-text-primary) 9%,transparent)}
+.legal-page__content>.legal-section h2,
+.support-page>.legal-page__container>.legal-section h2{margin-bottom:16px}
+.legal-page__content>.legal-section:last-child{margin-bottom:0}
+}
+
+@media(max-width:640px){
+ .legal-page__content{gap:0;border-radius:16px;box-shadow:0 12px 28px color-mix(in srgb,var(--color-text-primary) 8%,transparent)}
+ .legal-page__content>.legal-section,
+ .support-page>.legal-page__container>.legal-section{padding:20px 18px;border-radius:16px;box-shadow:none}
+ .support-page>.legal-page__container>.legal-section{box-shadow:0 12px 28px color-mix(in srgb,var(--color-text-primary) 8%,transparent)}
+}
+
+@media(prefers-reduced-transparency:reduce){
+ .legal-page__content>.legal-section,
+ .support-page>.legal-page__container>.legal-section{background:var(--color-surface-elevated);-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+
+@media print{
+ .legal-page__content{display:block}
+ .legal-page__content>.legal-section,.support-page>.legal-page__container>.legal-section{margin-bottom:24px;padding:0;border:0;border-bottom:1px solid #aaa;border-radius:0;background:#fff;box-shadow:none;backdrop-filter:none}
+ .legal-page__content>.legal-section::before,.support-page>.legal-page__container>.legal-section::before{display:none}
+}
+
+/* Restore separated, rounded policy cards while retaining theme card colors. */
+@media screen{
+ .legal-page__content{gap:18px;border-radius:0;box-shadow:none}
+ .legal-page__content>.legal-section{margin-top:0!important;border-radius:20px!important;box-shadow:0 18px 42px color-mix(in srgb,var(--color-text-primary) 9%,transparent),inset 0 1px 0 color-mix(in srgb,var(--color-surface-elevated) 88%,transparent)}
+}
+@media(max-width:640px){
+ .legal-page__content{gap:14px;border-radius:0;box-shadow:none}
+ .legal-page__content>.legal-section{border-radius:16px!important;box-shadow:0 12px 28px color-mix(in srgb,var(--color-text-primary) 8%,transparent)}
+}
+
+/* Final edge treatment: the gaps expose the page background and every card clips cleanly. */
+@media screen{
+ .legal-page__content{gap:18px;background:var(--color-background);overflow:visible}
+ .legal-page__content>.legal-section,
+ .support-page>.legal-page__container>.legal-section{
+  margin:0!important;
+  border-radius:20px!important;
+  background:var(--color-surface-elevated);
+  background-clip:padding-box;
+  overflow:hidden;
+  clip-path:inset(0 round 20px);
+ }
+ .legal-page__content>.legal-section::before,
+ .legal-page__content>.legal-section::after,
+ .support-page>.legal-page__container>.legal-section::before,
+ .support-page>.legal-page__container>.legal-section::after{display:none!important;content:none!important}
+}
+@media(max-width:640px){
+ .legal-page__content{gap:14px}
+ .legal-page__content>.legal-section,
+ .support-page>.legal-page__container>.legal-section{border-radius:16px!important;clip-path:inset(0 round 16px)}
+}
+
+/* Separate the final policy/incident card from its official footer. */
+@media screen{
+ .legal-page__container>main+.legal-page__contact,
+ .support-page>.legal-page__container>.legal-section+.legal-page__contact{margin-top:18px}
+}
+@media(max-width:640px){
+ .legal-page__container>main+.legal-page__contact,
+ .support-page>.legal-page__container>.legal-section+.legal-page__contact{margin-top:14px}
+}

@@ -1,0 +1,22 @@
+.alphabet-filter-field{grid-column:1/-1;display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:0;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius-sm)}
+.alphabet-filter-field legend{padding:0 5px;font-size:10px;font-weight:750}.alphabet-filter-field button{min-width:28px;height:28px;padding:0 5px;border:1px solid var(--color-border);border-radius:6px;background:var(--color-surface-elevated);color:var(--color-text-secondary)}
+.alphabet-filter-field button:hover,.alphabet-filter-field button.active{border-color:var(--color-primary);background:var(--color-primary);color:var(--color-on-primary)}
+.asset-status{--status-bg:var(--color-surface-hover);--status-text:var(--color-text-secondary);--status-border:var(--color-border);--status-solid:var(--color-text-secondary);display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border:1px solid var(--status-border);border-radius:999px;background:var(--status-bg);color:var(--status-text);font-size:11px;font-weight:750;white-space:nowrap}
+.asset-status svg{width:14px;height:14px}.asset-status small{padding-left:5px;border-left:1px solid currentColor;font-size:10px}.asset-status.compact{padding:3px 7px;font-size:10px}.asset-status.solid{background:var(--status-solid);border-color:var(--status-solid);color:#fff}
+.asset-status.table,.asset-status.mobile{width:100%;max-width:100%;justify-content:flex-start;white-space:normal;border-radius:10px;line-height:1.25}
+.asset-status.table svg,.asset-status.mobile svg{flex:0 0 14px;align-self:flex-start}
+.asset-status--stacked.table svg,.asset-status--stacked.mobile svg{align-self:center}
+.asset-status.table>span,.asset-status.mobile>span{min-width:0;overflow-wrap:anywhere;word-break:normal}
+.asset-status--stacked>span>span{display:block;white-space:nowrap;overflow-wrap:normal;word-break:keep-all}
+td:has(>.asset-status.table){width:128px;min-width:128px;max-width:128px;white-space:normal}
+@media(max-width:780px){.mobile-records .asset-status{display:flex}.mobile-records article>div:has(.asset-status){grid-column:1/-1}}
+.asset-status-available{--status-bg:var(--asset-status-available-bg);--status-text:var(--asset-status-available-text);--status-border:var(--asset-status-available-border);--status-solid:var(--asset-status-available-solid)}
+.asset-status-assigned{--status-bg:var(--asset-status-assigned-bg);--status-text:var(--asset-status-assigned-text);--status-border:var(--asset-status-assigned-border);--status-solid:var(--asset-status-assigned-solid)}
+.asset-status-borrowed{--status-bg:var(--asset-status-borrowed-bg);--status-text:var(--asset-status-borrowed-text);--status-border:var(--asset-status-borrowed-border);--status-solid:var(--asset-status-borrowed-solid)}
+.asset-status-reserved{--status-bg:var(--asset-status-reserved-bg);--status-text:var(--asset-status-reserved-text);--status-border:var(--asset-status-reserved-border);--status-solid:var(--asset-status-reserved-solid)}
+.asset-status-under-maintenance{--status-bg:var(--asset-status-under-maintenance-bg);--status-text:var(--asset-status-under-maintenance-text);--status-border:var(--asset-status-under-maintenance-border);--status-solid:var(--asset-status-under-maintenance-solid)}
+.asset-status-under-repair{--status-bg:var(--asset-status-under-repair-bg);--status-text:var(--asset-status-under-repair-text);--status-border:var(--asset-status-under-repair-border);--status-solid:var(--asset-status-under-repair-solid)}
+.asset-status-damaged{--status-bg:var(--asset-status-damaged-bg);--status-text:var(--asset-status-damaged-text);--status-border:var(--asset-status-damaged-border);--status-solid:var(--asset-status-damaged-solid)}
+.asset-status-archived{--status-bg:var(--asset-status-archived-bg);--status-text:var(--asset-status-archived-text);--status-border:var(--asset-status-archived-border);--status-solid:var(--asset-status-archived-solid)}
+@media print{.asset-status{background:#fff!important;color:#000!important;border:2px solid #000!important}.asset-status svg{stroke:#000}}
+.sidebar nav a[href="/assistant"].active{background:var(--color-primary);color:#fff}

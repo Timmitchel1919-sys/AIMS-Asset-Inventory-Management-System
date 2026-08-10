@@ -1,0 +1,135 @@
+﻿:root {
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem;
+  --radius-sm: .5rem; --radius-md: .75rem; --radius-lg: 1rem; --radius-xl: 1.25rem;
+  --shadow-sm: 0 1px 2px rgba(16,46,32,.05); --shadow-md: 0 8px 24px rgba(1,91,43,.07); --shadow-lg: 0 18px 48px rgba(1,55,30,.12);
+  --duration-fast: 140ms; --duration-normal: 220ms;
+  --asset-status-available-bg:#DCFCE7; --asset-status-available-text:#166534; --asset-status-available-border:#22C55E; --asset-status-available-solid:#16A34A;
+  --asset-status-assigned-bg:#EDE9FE; --asset-status-assigned-text:#5B21B6; --asset-status-assigned-border:#8B5CF6; --asset-status-assigned-solid:#7C3AED;
+  --asset-status-borrowed-bg:#FEF9C3; --asset-status-borrowed-text:#854D0E; --asset-status-borrowed-border:#EAB308; --asset-status-borrowed-solid:#CA8A04;
+  --asset-status-reserved-bg:#DBEAFE; --asset-status-reserved-text:#1E40AF; --asset-status-reserved-border:#3B82F6; --asset-status-reserved-solid:#2563EB;
+  --asset-status-under-maintenance-bg:#FFEDD5; --asset-status-under-maintenance-text:#9A3412; --asset-status-under-maintenance-border:#F97316; --asset-status-under-maintenance-solid:#EA580C;
+  --asset-status-under-repair-bg:#FCE7F3; --asset-status-under-repair-text:#9D174D; --asset-status-under-repair-border:#EC4899; --asset-status-under-repair-solid:#DB2777;
+  --asset-status-damaged-bg:#FEE2E2; --asset-status-damaged-text:#991B1B; --asset-status-damaged-border:#EF4444; --asset-status-damaged-solid:#DC2626;
+  --asset-status-archived-bg:#F1F5F9; --asset-status-archived-text:#334155; --asset-status-archived-border:#94A3B8; --asset-status-archived-solid:#64748B;
+}
+
+:root,[data-theme="kcs-forest-gold"] {
+  --color-background: #fcfcf5;
+  --color-background-secondary: #f5f4e3;
+  --color-surface: #f8f8ef;
+  --color-surface-secondary: #f5f4e3;
+  --color-surface-elevated: #ffffff;
+  --color-surface-hover: #eef2e9;
+
+  --color-primary: #126b3c;
+  --color-primary-hover: #0c5831;
+  --color-primary-active: #074626;
+  --color-primary-soft: #d8e9dc;
+  --color-on-primary: #ffffff;
+
+  --color-secondary: #134f31;
+  --color-secondary-hover: #0b3d25;
+  --color-secondary-soft: #dbe5dc;
+  --color-on-secondary: #ffffff;
+
+  --color-accent: #f6be23;
+  --color-accent-hover: #e3ab12;
+  --color-accent-soft: #fff1c4;
+
+  --color-text-primary: #102e20;
+  --color-text-secondary: #4e5e54;
+  --color-text-muted: #78857d;
+  --color-text-disabled: #9da69f;
+  --color-text-inverse: #ffffff;
+
+  --color-border: #cbd2c9;
+  --color-border-subtle: #e3e7df;
+  --color-border-strong: #b4bfb4;
+  --color-focus-ring: #f6be23;
+
+  --color-success: #08753a;
+  --color-success-soft: #d8e9dc;
+  --color-warning: #ca8a04;
+  --color-warning-soft: #fff1c4;
+  --color-danger: #d94832;
+  --color-danger-soft: #fde8e3;
+  --color-info: #2388d8;
+  --color-info-soft: #e5f2fc;
+
+  --color-sidebar-background: linear-gradient(180deg,#124e32 0%,#0c432a 52%,#07351f 100%);
+  --color-sidebar-text: #ffffff;
+  --color-sidebar-muted: #c3d7ca;
+  --color-sidebar-active-background: linear-gradient(180deg,#ffd23f,#f6be23);
+  --color-sidebar-active-text: #103522;
+  --color-sidebar-hover: rgba(255,255,255,.1);
+
+  --color-input-background: #ffffff;
+  --color-input-border: #cbd2c9;
+  --color-table-header: #f1f3e9;
+  --color-overlay: rgba(9,28,18,.55);
+}
+
+[data-theme="kcs-azure-intelligence"] {
+  --color-background: #edf9fe;
+  --color-background-secondary: #e3e5ed;
+  --color-surface: #ffffff;
+  --color-surface-secondary: #f3f8ff;
+  --color-surface-elevated: #ffffff;
+  --color-surface-hover: #eaf4ff;
+
+  --color-primary: #3b91ed;
+  --color-primary-hover: #2782e5;
+  --color-primary-active: #1d70d1;
+  --color-primary-soft: #e2f0fd;
+  --color-on-primary: #ffffff;
+
+  --color-secondary: #34344f;
+  --color-secondary-hover: #25253c;
+  --color-secondary-soft: #e8e8f1;
+  --color-on-secondary: #ffffff;
+
+  --color-accent: #55a7f3;
+  --color-accent-hover: #3b91ed;
+  --color-accent-soft: #e2f0fd;
+
+  --color-text-primary: #34344f;
+  --color-text-secondary: #707387;
+  --color-text-muted: #85889b;
+  --color-text-disabled: #b0b1ba;
+  --color-text-inverse: #ffffff;
+
+  --color-border: #d3dfef;
+  --color-border-subtle: #e7edf6;
+  --color-border-strong: #b3d5f8;
+  --color-focus-ring: #3b91ed;
+
+  --color-success: #209d54;
+  --color-success-soft: #dcf3e2;
+  --color-warning: #a97800;
+  --color-warning-soft: #fff1bf;
+  --color-danger: #d63d31;
+  --color-danger-soft: #ffe3de;
+  --color-info: #3b91ed;
+  --color-info-soft: #e2f0fd;
+
+  --color-sidebar-background: linear-gradient(180deg,#3b91ed,#1d70d1);
+  --color-sidebar-text: #ffffff;
+  --color-sidebar-muted: #e6f1ff;
+  --color-sidebar-active-background: #ffffff;
+  --color-sidebar-active-text: #1d70d1;
+  --color-sidebar-hover: rgba(255,255,255,.12);
+
+  --color-input-background: #ffffff;
+  --color-input-border: #b3d5f8;
+  --color-table-header: #edf5ff;
+  --color-overlay: rgba(22,34,80,.5);
+}
+
+@media (prefers-reduced-motion:reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}

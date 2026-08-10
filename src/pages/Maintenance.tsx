@@ -1,0 +1,33 @@
+import {CalendarDays,CheckCircle2,Plus} from 'lucide-react';
+import {useMemo,useState,type FormEvent} from 'react';
+import {Badge,Button,Field,SelectField,TextAreaField} from '../components/ui';
+import {DataTable,type DataColumn} from '../components/DataTable';
+import {ConfirmDialog,Dialog,MutationFeedback,OfflineGate,PageHeader} from '../components/WorkflowUi';
+import {useApp} from '../context/AppContext';
+import type {Maintenance} from '../domain/types';
+import {useMockSnapshot,useRepository} from '../data/mockRepository';
+
+export default function MaintenancePage(){
+  const {language}=useApp(),nl=language==='nl',snapshot=useMockSnapshot(),repository=useRepository();
+  const [selected,setSelected]=useState<Maintenance|null>(null),[create,setCreate]=useState(false),[calendar,setCalendar]=useState(false),[confirm,setConfirm]=useState(false);
+  const [feedback,setFeedback]=useState<{status:'idle'|'loading'|'success'|'error';message:string}>({status:'idle',message:''});
+  const rows=useMemo(()=>snapshot.maintenance.map(item=>item.status!=='Completed'&&new Date(item.nextDate)<new Date()?{...item,status:'Overdue' as const}:item),[snapshot.maintenance]);
+  const columns:DataColumn<Maintenance>[]=[
+    {id:'asset',label:nl?'Middel':'Asset',render:item=><strong>{item.asset}</strong>,text:item=>item.asset},
+    {id:'code',label:'KCS code',render:item=>item.assetCode,text:item=>item.assetCode},
+    {id:'type',label:nl?'Onderhoudstype':'Maintenance type',render:item=>item.type,text:item=>item.type},
+    {id:'frequency',label:nl?'Herhaling':'Recurrence',render:item=>item.frequency,text:item=>item.frequency},
+    {id:'next',label:nl?'Volgende datum':'Next date',render:item=>item.nextDate,text:item=>item.nextDate,sortable:true},
+    {id:'assignee',label:nl?'Toegewezen aan':'Assigned to',render:item=>item.assignee,text:item=>item.assignee},
+    {id:'status',label:'Status',render:item=><Badge tone={item.status==='Overdue'?'danger':item.status==='Completed'?'success':'info'}>{item.status}</Badge>,text:item=>item.status}
+  ];
+  async function schedule(event:FormEvent<HTMLFormElement>){event.preventDefault();const values=Object.fromEntries(new FormData(event.currentTarget).entries());const result=await repository.execute({action:'maintenance.create',entityId:String(values.assetId),values});setFeedback({status:result.ok?'success':'error',message:result.message});if(result.ok)setCreate(false)}
+  async function complete(){if(!selected)return;const notes=(document.querySelector('[name="maintenanceNotes"]') as HTMLTextAreaElement)?.value;const result=await repository.execute({action:'maintenance.complete',entityId:selected.id,values:{notes}});setFeedback({status:result.ok?'success':'error',message:result.message});if(result.ok){setSelected(null);setConfirm(false)}}
+  return <OfflineGate><div className="page"><PageHeader title={nl?'Preventief onderhoud':'Preventive maintenance'} description={nl?'Planning, checklists, herhaling, uitvoering en achterstallige taken.':'Schedules, checklists, recurrence, execution and overdue tasks.'} actions={<><Button variant="secondary" onClick={()=>setCalendar(value=>!value)}><CalendarDays/>{nl?'Kalender':'Calendar'}</Button><Button onClick={()=>setCreate(true)}><Plus/>{nl?'Planning toevoegen':'Add schedule'}</Button></>}/>
+    {calendar&&<section className="card"><h2>{nl?'Onderhoudskalender':'Maintenance calendar'}</h2><div className="calendar-strip">{rows.sort((a,b)=>a.nextDate.localeCompare(b.nextDate)).map(item=><button key={item.id} onClick={()=>setSelected(item)}><small>{item.nextDate}</small><b>{item.assetCode}</b><span>{item.type}</span></button>)}</div></section>}
+    <MutationFeedback {...feedback}/><section className="card data-card"><DataTable id="maintenance" rows={rows} columns={columns} rowKey={item=>item.id} searchPlaceholder={nl?'Zoek onderhoud…':'Search maintenance…'} emptyTitle={nl?'Geen onderhoud gepland':'No maintenance scheduled'} emptyDescription={nl?'Maak een terugkerende onderhoudsplanning.':'Create a recurring maintenance schedule.'} onRowClick={setSelected}/></section>
+    <Dialog open={create} title={nl?'Onderhoud plannen':'Schedule maintenance'} onClose={()=>setCreate(false)}><form className="workflow-form" onSubmit={schedule}><SelectField name="assetId" label={nl?'Middel':'Asset'} required>{snapshot.assets.filter(asset=>!['Archived','Disposed'].includes(asset.status)).map(asset=><option key={asset.id} value={asset.id}>{asset.code} — {asset.name}</option>)}</SelectField><Field name="type" label={nl?'Onderhoudstype':'Maintenance type'} required/><SelectField name="frequency" label={nl?'Herhaling':'Recurrence'}><option>Weekly</option><option>Monthly</option><option>Quarterly</option><option>Every six months</option><option>Annual</option><option>Custom interval</option></SelectField><Field name="customDays" type="number" min="1" label={nl?'Aangepaste dagen':'Custom days'}/><Field name="nextDate" type="date" label={nl?'Eerste datum':'First date'} required/><Field name="assignee" label={nl?'Toegewezen medewerker':'Assigned employee'} required/><TextAreaField name="checklist" className="wide" label={nl?'Checklist (komma-gescheiden)':'Checklist (comma-separated)'} required/><TextAreaField name="notes" className="wide" label={nl?'Notities':'Notes'}/><MutationFeedback {...feedback}/><Button type="submit">{nl?'Planning opslaan':'Save schedule'}</Button></form></Dialog>
+    <Dialog open={!!selected} title={selected?.type||''} description={selected?`${selected.assetCode} — ${selected.asset}`:''} onClose={()=>setSelected(null)}>{selected&&<><ul className="checklist">{(selected.checklist||['Visual inspection','Functional test','Clean equipment']).map(item=><li key={item}><label><input type="checkbox" defaultChecked={selected.completedItems?.includes(item)}/>{item}</label></li>)}</ul><TextAreaField name="maintenanceNotes" label={nl?'Uitvoeringsnotities':'Completion notes'} defaultValue={selected.notes}/><label className="field"><span>{nl?'Bijlagen':'Attachments'}</span><input type="file" multiple/></label>{selected.status!=='Completed'&&<Button onClick={()=>setConfirm(true)}><CheckCircle2/>{nl?'Onderhoud voltooien':'Complete maintenance'}</Button>}<MutationFeedback {...feedback}/></>}</Dialog>
+    <ConfirmDialog open={confirm} title={nl?'Onderhoud voltooien':'Complete maintenance'} description={nl?'Alle checklistitems worden voltooid en de volgende datum wordt berekend.':'All checklist items will be completed and the next date calculated.'} confirmLabel={nl?'Voltooien':'Complete'} onClose={()=>setConfirm(false)} onConfirm={complete}/>
+  </div></OfflineGate>;
+}

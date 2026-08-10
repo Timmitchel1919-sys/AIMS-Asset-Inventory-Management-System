@@ -1,0 +1,2365 @@
+﻿/* =========================================================
+   AIMS ASSET & INVENTORY MANAGEMENT SYSTEM — CENTRAL THEME DEFINITIONS
+   Themes:
+   1. Azure Intelligence
+   2. Forest Gold
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   SHARED STRUCTURAL TOKENS
+   --------------------------------------------------------- */
+
+:root {
+  --radius-card: 18px;
+  --radius-button: 12px;
+  --radius-input: 12px;
+
+  --glass-blur: 18px;
+  --glass-saturation: 118%;
+
+  --transition-fast: 160ms ease;
+  --transition-normal: 220ms ease;
+
+  --sidebar-expanded-width: 248px;
+  --sidebar-collapsed-width: 78px;
+}
+
+/* =========================================================
+   THEME 1 — KCS AZURE INTELLIGENCE
+   ========================================================= */
+
+html[data-theme="kcs-azure-intelligence"] {
+  color-scheme: light;
+  --kcs-premium-surface-start: #2A7CFF;
+  --kcs-premium-surface-mid: #1766E8;
+  --kcs-premium-surface-end: #0B4FC3;
+  --kcs-premium-border: rgba(173, 210, 255, 0.45);
+  --kcs-premium-action-border: rgba(173, 210, 255, 0.45);
+  --kcs-premium-action-hover-border: rgba(210, 232, 255, 0.62);
+  --kcs-premium-icon: #FFFFFF;
+  --kcs-premium-text: #FFFFFF;
+  --kcs-premium-highlight: rgba(255, 255, 255, 0.22);
+  --kcs-premium-depth: rgba(0, 0, 0, 0.12);
+  --kcs-premium-hover-border: rgba(210, 232, 255, 0.62);
+}
+html[data-theme="kcs-azure-intelligence"]
+.app-sidebar--collapsed
+.navigation-item.is-active,
+html[data-theme="kcs-azure-intelligence"]
+.app-sidebar--collapsed
+.navigation-item[aria-current="page"] {
+  color: #FFFFFF;
+
+  background: linear-gradient(
+    135deg,
+    #2782FF 0%,
+    #1268F4 55%,
+    #0753D4 100%
+  );
+
+  border-color: rgba(123, 182, 255, 0.48);
+  box-shadow: none;
+}
+
+html[data-theme="kcs-azure-intelligence"]
+.app-sidebar--collapsed
+.navigation-item.is-active
+.navigation-item__icon,
+html[data-theme="kcs-azure-intelligence"]
+.app-sidebar--collapsed
+.navigation-item[aria-current="page"]
+.navigation-item__icon {
+  color: #FFFFFF;
+}  
+
+html[data-theme="kcs-azure-intelligence"] {
+  /* =========================
+     BASE COLORS
+     ========================= */
+  --color-background: #EEF4FB;
+  --color-background-secondary: #E7EFF9;
+
+  --color-surface: rgba(255, 252, 246, 0.90);
+  --color-surface-secondary: rgba(252, 249, 241, 0.94);
+  --color-surface-elevated: rgba(255, 253, 248, 0.97);
+  --color-surface-hover: rgba(255, 252, 244, 0.99);
+
+  --color-primary: #1B73FF;
+  --color-primary-hover: #1367F0;
+  --color-primary-active: #0F58D9;
+  --color-primary-soft: #DCEAFF;
+  --color-on-primary: #FFFFFF;
+
+  --color-secondary: #0B2F7A;
+  --color-secondary-hover: #082760;
+  --color-secondary-soft: #DDE7FB;
+  --color-on-secondary: #FFFFFF;
+
+  --color-accent: #59A8FF;
+  --color-accent-hover: #3F97FA;
+  --color-accent-soft: #E4F0FF;
+
+  --color-text-primary: #173B82;
+  --color-text-secondary: #5E79A6;
+  --color-text-muted: #8A9BB8;
+  --color-text-disabled: #B2BED1;
+  --color-text-inverse: #FFFFFF;
+
+  --color-border: rgba(153, 184, 229, 0.70);
+  --color-border-subtle: rgba(116, 156, 221, 0.32);
+  --color-border-strong: rgba(27, 115, 255, 0.35);
+  --color-focus-ring: rgba(27, 115, 255, 0.20);
+
+  /* =========================
+     SIDEBAR
+     ========================= */
+  --color-sidebar-background: #061D52;
+
+--gradient-sidebar: linear-gradient(
+  180deg,
+  #06163E 0%,
+  #08245F 45%,
+  #061D52 72%,
+  #041535 100%
+  );
+}
+
+.app-sidebar__inner {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+
+  padding: 24px 14px 18px;
+  box-sizing: border-box;
+}
+
+.app-sidebar--collapsed {
+  width: var(--sidebar-collapsed-width);
+  min-width: var(--sidebar-collapsed-width);
+}
+.app-sidebar--collapsed .navigation-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 50px;
+  min-height: 50px;
+
+  margin-inline: auto;
+  padding: 0;
+}
+/* Footer in collapsed sidebar */
+.app-sidebar--collapsed .sidebar-user-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px;
+}
+
+.app-sidebar--collapsed .sidebar-user-card__details {
+  display: none;
+}
+
+.app-sidebar--collapsed .sidebar-user-card__avatar {
+  flex-shrink: 0;
+}
+.sidebar-logout-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+
+  color: var(--color-sidebar-muted);
+  background: transparent;
+
+  border: 1px solid transparent;
+  border-radius: 12px;
+
+  cursor: pointer;
+}
+
+.sidebar-logout-button svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.app-sidebar--collapsed .sidebar-logout-button {
+  justify-content: center;
+
+  width: 50px;
+  margin-inline: auto;
+  padding: 0;
+}
+
+.app-sidebar--collapsed .sidebar-logout-button span {
+  display: none;
+}
+
+.app-sidebar--collapsed .navigation-item__label,
+.app-sidebar--collapsed .navigation-item__badge {
+  display: none;
+}
+
+.app-sidebar--collapsed .navigation-item__icon {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+}
+/* Active collapsed navigation item — applies to every theme */
+.app-sidebar--collapsed
+.navigation-item.is-active,
+.app-sidebar--collapsed
+.navigation-item[aria-current="page"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 50px;
+  min-width: 50px;
+  height: 50px;
+  min-height: 50px;
+
+  margin-inline: auto;
+  padding: 0;
+
+  border-radius: 14px;
+}
+/* Active collapsed navigation item — all themes */
+.app-sidebar--collapsed
+.navigation-item.is-active,
+.app-sidebar--collapsed
+.navigation-item[aria-current="page"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 50px;
+  min-width: 50px;
+  height: 50px;
+  min-height: 50px;
+
+  margin-inline: auto;
+  padding: 0;
+
+  color: var(--color-sidebar-active-text);
+  background: var(--color-sidebar-active-background);
+
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: 14px;
+
+  box-shadow: none;
+} 
+.app-sidebar--collapsed
+.navigation-item.is-active
+.navigation-item__icon,
+.app-sidebar--collapsed
+.navigation-item[aria-current="page"]
+.navigation-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+  margin: 0;
+
+  color: inherit;
+  background: transparent;
+}
+
+.app-sidebar__logo-button {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 48px;
+  height: 48px;
+  padding: 0;
+
+  flex-shrink: 0;
+
+  color: inherit;
+  background: transparent;
+
+  border: 1px solid transparent;
+  border-radius: 14px;
+
+  cursor: pointer;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.app-sidebar__logo-button:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+.app-sidebar__logo-button:active {
+  transform: scale(0.97);
+}
+
+.app-sidebar__logo-button:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.app-sidebar__logo {
+  display: block;
+
+  width: 42px;
+  height: 42px;
+
+  object-fit: contain;
+}
+
+.app-sidebar__brand-text {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+
+  transition:
+    opacity 150ms ease,
+    visibility 150ms ease,
+    transform 180ms ease;
+}
+
+.app-sidebar--collapsed .app-sidebar__brand-text {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-8px);
+
+  width: 0;
+  overflow: hidden;
+}
+
+.app-sidebar--collapsed .app-sidebar__brand {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.app-sidebar--collapsed .app-sidebar__logo-button {
+  margin-inline: auto;
+}
+
+.app-sidebar--collapsed .navigation-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 50px;
+  min-height: 50px;
+
+  margin-inline: auto;
+  padding: 0;
+
+  grid-template-columns: none;
+}
+
+.app-sidebar--collapsed .navigation-item__label,
+.app-sidebar--collapsed .navigation-item__badge {
+  display: none;
+}
+.app-sidebar--collapsed .navigation-item__icon {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+} 
+
+.app-sidebar--collapsed .navigation-item__icon {
+  width: 36px;
+  height: 36px;
+
+  margin: 0;
+}
+
+.app-sidebar__navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  margin-top: 28px;
+}
+.app-sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  min-height: 60px;
+  padding: 0 10px;
+}
+
+.app-sidebar__logo {
+  display: block;
+
+  width: 46px;
+  height: 46px;
+
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.app-sidebar__brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  min-width: 0;
+}
+
+.app-sidebar__brand-text strong {
+  color: var(--color-sidebar-text);
+
+  font-size: 1.25rem;
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+.app-sidebar__brand-text span {
+  color: var(--color-sidebar-muted);
+
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.app-sidebar__inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.app-sidebar__footer {
+  margin-top: auto;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-user-card {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+
+  color: var(--color-sidebar-text);
+  background: rgba(255, 255, 255, 0.055);
+
+  border: 1px solid rgba(214, 174, 50, 0.24);
+  border-radius: 14px;
+}
+.app-sidebar--collapsed .sidebar-user-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px;
+}
+
+.app-sidebar--collapsed
+.sidebar-user-card__details {
+  display: none;
+}
+
+.app-sidebar--collapsed
+.sidebar-user-card__avatar {
+  flex-shrink: 0;
+}
+
+.sidebar-user-card__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 38px;
+  height: 38px;
+
+  color: #D6AE32;
+  background: rgba(214, 174, 50, 0.12);
+
+  border-radius: 999px;
+
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.sidebar-user-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  min-width: 0;
+}
+
+.sidebar-user-card__details strong,
+.sidebar-user-card__details span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-user-card__details strong {
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.sidebar-user-card__details span {
+  color: var(--color-sidebar-muted);
+
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.navigation-item {
+  position: relative;
+
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+
+  min-height: 50px;
+  width: 100%;
+
+  padding: 6px 14px 6px 10px;
+  box-sizing: border-box;
+
+  color: var(--color-sidebar-muted);
+  text-decoration: none;
+
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+
+  box-shadow: none;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.navigation-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+
+  color: currentColor;
+
+  border-radius: 10px;
+
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.navigation-item__icon svg {
+  display: block;
+  flex-shrink: 0;
+
+  width: 20px;
+  height: 20px;
+
+  color: inherit;
+  stroke: currentColor;
+}
+.app-sidebar--collapsed
+
+.navigation-item.is-active
+
+.navigation-item__icon svg,
+
+.app-sidebar--collapsed
+
+.navigation-item[aria-current="page"]
+
+.navigation-item__icon svg {
+
+  display: block;
+
+
+
+  width: 20px;
+
+  height: 20px;
+
+
+
+  color: inherit;
+
+  stroke: currentColor;
+
+.navigation-item__label {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.2;
+
+  text-align: left;
+}
+
+.navigation-item__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+
+  color: var(--color-text-primary);
+  background: var(--color-accent);
+
+  border-radius: 999px;
+
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.navigation-item:hover {
+  color: var(--color-sidebar-text);
+  background: var(--color-sidebar-hover);
+  box-shadow: none;
+}
+
+.navigation-item:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.navigation-item.is-active,
+.navigation-item[aria-current="page"] {
+  color: var(--color-sidebar-active-text);
+  background: var(--color-sidebar-active-background);
+  border-color: transparent;
+  box-shadow: none;
+}
+  /* =========================
+     INPUTS
+     ========================= */
+  --color-input-background: rgba(245, 249, 255, 0.9);
+  --color-input-border: rgba(173, 197, 231, 0.75);
+  --color-input-text: #173B82;
+  --color-input-placeholder: #8A9BB8;
+
+  /* =========================
+     STATE COLORS
+     ========================= */
+  --color-success: #1DBB72;
+  --color-success-soft: #DFF8EC;
+  --color-warning: #F4A622;
+  --color-warning-soft: #FFF1D9;
+  --color-danger: #EC6B4C;
+  --color-danger-soft: #FFE7E0;
+  --color-info: #1B73FF;
+  --color-info-soft: #E7F0FF;
+
+  /* =========================
+     CHART / UI ACCENTS
+     ========================= */
+  --color-chart-1: #1B73FF;
+  --color-chart-2: #4A93FF;
+  --color-chart-3: #5AD2C4;
+  --color-chart-4: #9B6BFF;
+  --color-chart-5: #F4A622;
+  --color-chart-6: #7CC4FF;
+  --color-chart-7: #80E1D5;
+  --color-chart-8: #C4B2FF;
+
+  /* =========================
+     GRADIENTS
+     ========================= */
+  --gradient-primary: linear-gradient(
+    135deg,
+    #4A93FF 0%,
+    #1B73FF 55%,
+    #0F58D9 100%
+  );
+
+  --gradient-background:
+    radial-gradient(
+      circle at 20% 10%,
+      rgba(255, 255, 255, 0.70),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 80% 0%,
+      rgba(202, 224, 255, 0.45),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #F8FBFF 0%,
+      #EEF4FB 50%,
+      #E7EFF9 100%
+    );
+
+  --gradient-sidebar: linear-gradient(
+    180deg,
+    #092862 0%,
+    #0B2F7A 50%,
+    #0A2766 100%
+  );
+
+  /* =========================
+     SHADOWS
+     ========================= */
+  --shadow-card: 0 8px 24px rgba(35, 80, 160, 0.10);
+  --shadow-dropdown: 0 16px 36px rgba(25, 68, 145, 0.12);
+  --shadow-modal: 0 24px 60px rgba(18, 55, 120, 0.16);
+  --shadow-sidebar: 10px 0 34px rgba(2, 15, 48, 0.24);
+  /* =========================
+     LOGIN PAGE
+     ========================= */
+  --auth-left-background: linear-gradient(
+    145deg,
+    #092862 0%,
+    #0B2F7A 58%,
+    #0F3B95 100%
+  );
+
+  --auth-right-background:
+    radial-gradient(
+      circle at 70% 20%,
+      rgba(99, 160, 255, 0.18),
+      transparent 28%
+    ),
+    linear-gradient(
+      145deg,
+      #09172F 0%,
+      #0D234B 55%,
+      #12316A 100%
+    );
+
+  --auth-card-background: rgba(255, 255, 255, 0.78);
+  --auth-card-border: rgba(255, 255, 255, 0.42);
+  --auth-pattern-color: rgba(84, 132, 219, 0.16);
+}
+
+
+/* =========================================================
+   THEME 2 — KCS FOREST GOLD
+   ========================================================= */
+
+html[data-theme="kcs-forest-gold"] {
+  color-scheme: light;
+  --kcs-premium-surface-start: #167347;
+  --kcs-premium-surface-mid: #0C5A36;
+  --kcs-premium-surface-end: #084528;
+  --kcs-premium-border: #D6AE32;
+  --kcs-premium-action-border: transparent;
+  --kcs-premium-action-hover-border: transparent;
+  --kcs-premium-icon: #D6AE32;
+  --kcs-premium-text: #FFFFFF;
+  --kcs-premium-highlight: rgba(255, 255, 255, 0.22);
+  --kcs-premium-depth: rgba(0, 0, 0, 0.12);
+  --kcs-premium-hover-border: #E6C65A;
+  html[data-theme="kcs-forest-gold"] .activity-icon,
+html[data-theme="kcs-forest-gold"] .list-icon,
+html[data-theme="kcs-forest-gold"] .reminder-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+
+  background: linear-gradient(
+    145deg,
+    #0B5A33 0%,
+    #063B24 55%,
+    #042B1A 100%
+  );
+
+  border: 1px solid rgba(214, 174, 50, 0.28);
+}
+html[data-theme="kcs-forest-gold"]
+.app-sidebar--collapsed
+.navigation-item.is-active,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar--collapsed
+.navigation-item[aria-current="page"] {
+  color: #FFFFFF;
+
+  background: linear-gradient(
+    135deg,
+    #4FA66A 0%,
+    #3C8E58 100%
+  );
+
+  border-color: #D6AE32;
+  box-shadow: none;
+}
+
+html[data-theme="kcs-forest-gold"]
+.app-sidebar--collapsed
+.navigation-item.is-active
+.navigation-item__icon,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar--collapsed
+.navigation-item[aria-current="page"]
+.navigation-item__icon {
+  color: #D6AE32;
+}
+
+html[data-theme="kcs-forest-gold"] .activity-icon svg,
+html[data-theme="kcs-forest-gold"] .list-icon svg,
+html[data-theme="kcs-forest-gold"] .reminder-icon svg {
+  color: #D6AE32;
+  stroke: #D6AE32;
+}
+
+  /* =========================
+     BASE BACKGROUNDS
+     ========================= */
+  --color-background: #F8F4E8;
+--color-background-secondary: #F3EEDC;
+
+  --color-surface: rgba(255, 255, 250, 0.88);
+  --color-surface-secondary: rgba(248, 250, 244, 0.92);
+  --color-surface-elevated: rgba(255, 255, 252, 0.96);
+  --color-surface-hover: rgba(250, 253, 247, 0.98);
+
+  /* =========================
+     PRIMARY GREEN
+     ========================= */
+  --color-primary: #2F8F57;
+  --color-primary-hover: #267A49;
+  --color-primary-active: #1B633B;
+  --color-primary-soft: #DDF2E4;
+  --color-on-primary: #FFFFFF;
+
+  /* =========================
+     DEEP FOREST SECONDARY
+     ========================= */
+  --color-secondary: #063B24;
+  --color-secondary-hover: #052F1D;
+  --color-secondary-active: #032518;
+  --color-secondary-soft: #DCE9E1;
+  --color-on-secondary: #FFFFFF;
+
+  /* =========================
+     GOLD ACCENT
+     ========================= */
+  --color-accent: #D6AE32;
+  --color-accent-hover: #C39A25;
+  --color-accent-active: #A9811D;
+  --color-accent-soft: #F8EDC3;
+
+  /* =========================
+     TEXT
+     ========================= */
+  --color-text-primary: #143021;
+  --color-text-secondary: #506359;
+  --color-text-muted: #7B8A82;
+  --color-text-disabled: #A7B0AA;
+  --color-text-inverse: #FFFFFF;
+
+  /* =========================
+     BORDERS
+     ========================= */
+  --color-border: rgba(139, 169, 147, 0.62);
+  --color-border-subtle: rgba(45, 111, 69, 0.22);
+  --color-border-strong: rgba(214, 174, 50, 0.58);
+  --color-focus-ring: rgba(76, 175, 105, 0.30);
+
+  /* =========================
+     SIDEBAR
+     ========================= */
+  --color-sidebar-background: #05351F;
+  --color-sidebar-text: #FFFFFF;
+  --color-sidebar-muted: rgba(235, 244, 238, 0.78);
+
+  --color-sidebar-active-background: #4EAD6B;
+  --color-sidebar-active-text: #FFFFFF;
+  --color-sidebar-hover: rgba(91, 190, 121, 0.12);
+.app-sidebar__inner {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+
+  padding: 24px 14px 18px;
+  box-sizing: border-box;
+}
+
+.app-sidebar__navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  margin-top: 28px;
+}
+
+.navigation-item {
+  position: relative;
+
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+
+  min-height: 50px;
+  width: 100%;
+
+  padding: 6px 14px 6px 10px;
+  box-sizing: border-box;
+
+  color: var(--color-sidebar-muted);
+  text-decoration: none;
+
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+
+  box-shadow: none;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.navigation-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+
+  color: currentColor;
+
+  border-radius: 10px;
+
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.navigation-item__icon svg {
+  display: block;
+  flex-shrink: 0;
+
+  width: 20px;
+  height: 20px;
+
+  color: inherit;
+  stroke: currentColor;
+}
+
+.navigation-item__label {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.2;
+
+  text-align: left;
+}
+
+.navigation-item__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+
+  color: var(--color-text-primary);
+  background: var(--color-accent);
+
+  border-radius: 999px;
+
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.navigation-item:hover {
+  color: var(--color-sidebar-text);
+  background: var(--color-sidebar-hover);
+  box-shadow: none;
+}
+
+.navigation-item:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.navigation-item.is-active,
+.navigation-item[aria-current="page"] {
+  color: var(--color-sidebar-active-text);
+  background: var(--color-sidebar-active-background);
+  border-color: transparent;
+  box-shadow: none;
+}
+  /* =========================
+     INPUTS
+     ========================= */
+  --color-input-background: rgba(255, 255, 252, 0.94);
+  --color-input-border: rgba(151, 179, 158, 0.72);
+  --color-input-text: #143021;
+  --color-input-placeholder: #7B8A82;
+
+  /* =========================
+     STATUS COLORS
+     ========================= */
+  --color-success: #2F8F57;
+  --color-success-soft: #DFF2E5;
+
+  --color-warning: #D6AE32;
+  --color-warning-soft: #FFF2C9;
+
+  --color-danger: #C95852;
+  --color-danger-soft: #F7DFDC;
+
+  --color-info: #397DE8;
+  --color-info-soft: #DEEBFA;
+
+  /* =========================
+     CHART COLORS
+     ========================= */
+  --color-chart-1: #063B24;
+  --color-chart-2: #0B5A33;
+  --color-chart-3: #2F8F57;
+  --color-chart-4: #58AA72;
+  --color-chart-5: #8BC59A;
+  --color-chart-6: #D6AE32;
+  --color-chart-7: #E7C85C;
+  --color-chart-8: #D27A3E;
+
+  /* =========================
+     GRADIENTS
+     ========================= */
+  --gradient-primary: linear-gradient(
+    135deg,
+    #72C78B 0%,
+    #4EAD6B 48%,
+    #2F8F57 100%
+  );
+
+  --gradient-accent: linear-gradient(
+    135deg,
+    #E6C95E 0%,
+    #D6AE32 56%,
+    #B78D21 100%
+  );
+
+  --gradient-background:
+  radial-gradient(
+    circle at 84% 12%,
+    rgba(214, 174, 50, 0.12),
+    transparent 34%
+  ),
+  radial-gradient(
+    circle at 18% 8%,
+    rgba(108, 187, 129, 0.09),
+    transparent 34%
+  ),
+  linear-gradient(
+    135deg,
+    #FCFAF4 0%,
+    #F8F4E8 50%,
+    #F3EEDC 100%
+  );
+
+  --gradient-sidebar: linear-gradient(
+    180deg,
+    #073D25 0%,
+    #05351F 48%,
+    #042B1A 74%,
+    #031F13 100%
+  );
+
+  /* =========================
+     SHADOWS
+     ========================= */
+  --shadow-card:
+    0 10px 28px rgba(14, 70, 38, 0.09);
+
+  --shadow-dropdown:
+    0 16px 38px rgba(8, 54, 29, 0.14);
+
+  --shadow-modal:
+    0 26px 68px rgba(4, 35, 18, 0.20);
+
+  /* =========================
+     LOGIN PAGE
+     ========================= */
+  --auth-left-background: linear-gradient(
+    145deg,
+    #052D1B 0%,
+    #063B24 54%,
+    #0B5A33 100%
+  );
+
+  --auth-right-background:
+    radial-gradient(
+      circle at 68% 24%,
+      rgba(76, 175, 105, 0.16),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 42% 74%,
+      rgba(214, 174, 50, 0.10),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      #03180F 0%,
+      #052A19 54%,
+      #073820 100%
+    );
+
+  --auth-card-background: rgba(253, 255, 250, 0.90);
+  --auth-card-border: rgba(214, 174, 50, 0.30);
+  --auth-pattern-color: rgba(92, 180, 118, 0.13);
+}
+
+
+/* =========================================================
+   APPLICATION-WIDE THEME STYLING
+   ========================================================= */
+
+ /* Forest Gold summary / KPI icon style */
+html[data-theme="kcs-forest-gold"] .summary-icon,
+html[data-theme="kcs-forest-gold"] .stat-icon,
+html[data-theme="kcs-forest-gold"] .metric-icon,
+html[data-theme="kcs-forest-gold"] .card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+
+  background: linear-gradient(
+    145deg,
+    #0B5A33 0%,
+    #063B24 55%,
+    #042B1A 100%
+  );
+
+  border: 1px solid rgba(214, 174, 50, 0.34);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 4px 12px rgba(5, 44, 23, 0.10);
+}
+html[data-theme="kcs-forest-gold"] .summary-icon svg,
+html[data-theme="kcs-forest-gold"] .stat-icon svg,
+html[data-theme="kcs-forest-gold"] .metric-icon svg,
+html[data-theme="kcs-forest-gold"] .card-icon svg,
+html[data-theme="kcs-forest-gold"] .summary-icon i,
+html[data-theme="kcs-forest-gold"] .stat-icon i,
+html[data-theme="kcs-forest-gold"] .metric-icon i,
+html[data-theme="kcs-forest-gold"] .card-icon i {
+  color: #D6AE32;
+  stroke: #D6AE32;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+
+  color: var(--color-text-primary);
+  background: #FFFFFF;
+
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
+}
+html,
+body,
+#root {
+  min-height: 100%;
+  background: #FFFFFF;
+}
+.app-layout { display: flex; width: 100%; min-height: 100vh; background: #FFFFFF; } .app-main { min-width: 0; flex: 1; background: #FFFFFF; }
+
+
+
+html[data-theme="kcs-forest-gold"] .app-shell,
+html[data-theme="kcs-forest-gold"] .dashboard-page,
+html[data-theme="kcs-forest-gold"] .main-content,
+html[data-theme="kcs-forest-gold"] .page-content {
+  background: transparent;
+}
+.app-shell,
+.main-content,
+.page-content,
+.dashboard-page,
+.dashboard-content,
+.app-main,
+main {
+  background: #FFFFFF;
+}
+html[data-theme="kcs-azure-intelligence"] body,
+html[data-theme="kcs-azure-intelligence"] #root,
+html[data-theme="kcs-azure-intelligence"] .app-shell,
+html[data-theme="kcs-azure-intelligence"] .main-content,
+html[data-theme="kcs-azure-intelligence"] .page-content,
+html[data-theme="kcs-azure-intelligence"] .dashboard-page,
+html[data-theme="kcs-azure-intelligence"] main {
+  background: #FFFFFF;
+}
+
+html[data-theme="kcs-forest-gold"] body,
+html[data-theme="kcs-forest-gold"] #root,
+html[data-theme="kcs-forest-gold"] .app-shell,
+html[data-theme="kcs-forest-gold"] .main-content,
+html[data-theme="kcs-forest-gold"] .page-content,
+html[data-theme="kcs-forest-gold"] .dashboard-page,
+html[data-theme="kcs-forest-gold"] main {
+  background: #FFFFFF;
+}
+
+
+/* Shared cards */
+
+ .glass-card {
+  position: relative;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(247, 251, 255, 0.88) 100%
+    );
+
+  border:
+    1px solid var(--color-border-subtle);
+
+  border-radius: var(--radius-card);
+
+  backdrop-filter:
+    blur(10px)
+    saturate(125%);
+
+  -webkit-backdrop-filter:
+    blur(10px)
+    saturate(125%);
+
+  box-shadow:
+    0 8px 22px rgba(18, 63, 139, 0.075),
+    0 2px 6px rgba(18, 63, 139, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+
+.glass-card:hover {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.99) 0%,
+      rgba(247, 251, 255, 0.95) 100%
+    );
+
+  border-color:
+    rgba(27, 115, 255, 0.28);
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 14px 30px rgba(18, 63, 139, 0.10),
+    0 4px 10px rgba(18, 63, 139, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.glass-card::before {
+  content: "";
+  position: absolute;
+
+  top: 0;
+  left: 18px;
+  right: 18px;
+
+  height: 1px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.92),
+    transparent
+  );
+
+  pointer-events: none;
+}
+
+html[data-theme="kcs-forest-gold"] .glass-card::before {
+  content: "";
+  position: absolute;
+
+  top: 0;
+  left: 20px;
+  right: 20px;
+
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(214, 174, 50, 0.42),
+      transparent
+    );
+
+  pointer-events: none;
+}
+
+.glass-card--elevated {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.99) 0%,
+      rgba(245, 250, 255, 0.94) 100%
+    );
+
+  border:
+    1px solid rgba(148, 181, 229, 0.48);
+
+  border-radius:
+    calc(var(--radius-card) + 2px);
+
+  backdrop-filter:
+    blur(12px)
+    saturate(130%);
+
+  -webkit-backdrop-filter:
+    blur(12px)
+    saturate(130%);
+
+  box-shadow:
+    0 18px 42px rgba(14, 55, 126, 0.11),
+    0 5px 14px rgba(14, 55, 126, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+/* Sidebar */
+
+.app-sidebar {
+ position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  color: var(--color-sidebar-text);
+  background: var(--gradient-sidebar);
+
+  border-right:
+    1px solid rgba(214, 174, 50, 0.16);
+
+  box-shadow:
+    10px 0 34px rgba(3, 31, 19, 0.25),
+    inset -1px 0 0 rgba(255, 255, 255, 0.035);
+}
+.app-sidebar__inner {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+
+  padding: 24px 14px 18px;
+  box-sizing: border-box;
+}
+
+.app-sidebar__navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  margin-top: 28px;
+}
+
+.navigation-item {
+  position: relative;
+
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+
+  min-height: 50px;
+  width: 100%;
+
+  padding: 6px 14px 6px 10px;
+  box-sizing: border-box;
+
+  color: var(--color-sidebar-muted);
+  text-decoration: none;
+
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+
+  box-shadow: none;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.navigation-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+
+  color: currentColor;
+
+  border-radius: 10px;
+
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.navigation-item__icon svg {
+  display: block;
+  flex-shrink: 0;
+
+  width: 20px;
+  height: 20px;
+
+  color: inherit;
+  stroke: currentColor;
+}
+
+.navigation-item__label {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.2;
+
+  text-align: left;
+}
+
+.navigation-item__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+
+  color: var(--color-text-primary);
+  background: var(--color-accent);
+
+  border-radius: 999px;
+
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.navigation-item:hover {
+  color: var(--color-sidebar-text);
+  background: var(--color-sidebar-hover);
+  box-shadow: none;
+}
+
+.navigation-item:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.navigation-item.is-active,
+.navigation-item[aria-current="page"] {
+  color: var(--color-sidebar-active-text);
+  background: var(--color-sidebar-active-background);
+  border-color: transparent;
+  box-shadow: none;
+}
+/* Azure Intelligence sidebar wave lighting */
+
+html[data-theme="kcs-forest-gold"] .app-sidebar::before {
+  content: "";
+  position: absolute;
+  z-index: -2;
+
+  width: 540px;
+  height: 540px;
+
+  left: -270px;
+  bottom: -210px;
+
+  border-radius:
+    46% 54% 50% 50% /
+    43% 47% 53% 57%;
+
+  border:
+    1px solid rgba(104, 193, 130, 0.18);
+
+  box-shadow:
+    0 0 0 36px rgba(104, 193, 130, 0.045),
+    0 0 0 76px rgba(104, 193, 130, 0.032),
+    0 0 0 122px rgba(104, 193, 130, 0.020);
+
+  transform: rotate(-13deg);
+
+  pointer-events: none;
+}
+
+html[data-theme="kcs-forest-gold"] .app-sidebar::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+
+  width: 440px;
+  height: 270px;
+
+  right: -255px;
+  top: 145px;
+
+  border-radius: 50%;
+
+  border-top:
+    1px solid rgba(112, 205, 139, 0.17);
+
+  border-bottom:
+    1px solid rgba(214, 174, 50, 0.08);
+
+  box-shadow:
+    0 -20px 48px rgba(69, 156, 95, 0.06);
+
+  transform: rotate(-19deg);
+
+  pointer-events: none;
+}
+
+html[data-theme="kcs-azure-intelligence"] .app-sidebar::before {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  width: 540px;
+  height: 540px;
+  left: -270px;
+  bottom: -210px;
+  border-radius: 46% 54% 50% 50% / 43% 47% 53% 57%;
+  border: 1px solid rgba(89, 168, 255, 0.20);
+  box-shadow:
+    0 0 0 36px rgba(89, 168, 255, 0.050),
+    0 0 0 76px rgba(89, 168, 255, 0.035),
+    0 0 0 122px rgba(89, 168, 255, 0.022);
+  transform: rotate(-13deg);
+  pointer-events: none;
+}
+
+html[data-theme="kcs-azure-intelligence"] .app-sidebar::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 440px;
+  height: 270px;
+  right: -255px;
+  top: 145px;
+  border-radius: 50%;
+  border-top: 1px solid rgba(123, 182, 255, 0.20);
+  border-bottom: 1px solid rgba(53, 199, 201, 0.09);
+  box-shadow: 0 -20px 48px rgba(27, 115, 255, 0.075);
+  transform: rotate(-19deg);
+  pointer-events: none;
+}
+.app-sidebar a,
+.app-sidebar button {
+  color: var(--color-sidebar-text);
+}
+
+.app-sidebar .navigation-item {
+  border-radius: 12px;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item:hover {
+  color: #FFFFFF;
+  background: rgba(79, 166, 106, 0.10);
+  border: 1.5px solid rgba(214, 174, 50, 0.18);
+  box-shadow: none;
+}
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item:hover {
+  color: #FFFFFF;
+  background: rgba(79, 166, 106, 0.10);
+  border: 1.5px solid rgba(214, 174, 50, 0.18);
+  box-shadow: none;
+}
+
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"],
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active {
+  color: #FFFFFF;
+  background: linear-gradient(
+    135deg,
+    rgba(84, 159, 104, 0.82) 0%,
+    rgba(54, 126, 76, 0.88) 100%
+  );
+  border: 1.5px solid #D6AE32;
+  border-radius: 14px;
+  box-shadow: none;
+}
+/* Forest Gold active navigation item */
+
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active
+.navigation-item__icon,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"]
+.navigation-item__icon {
+  color: #D6AE32;
+  background: rgba(3, 43, 25, 0.18);
+}
+
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active
+.navigation-item__icon svg,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"]
+.navigation-item__icon svg {
+  color: #D6AE32;
+  stroke: #D6AE32;
+}
+
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active
+.navigation-item__icon svg,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"]
+.navigation-item__icon svg {
+  color: #D6AE32;
+  stroke: #D6AE32;
+}
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"] svg,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active svg,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"] i,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active i,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"] .nav-icon,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active .nav-icon {
+  color: #D6AE32;
+  stroke: #D6AE32;
+}
+/* Forest Gold hover navigation item */
+
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item:hover,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item:active,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"] {
+  box-shadow: none;
+}
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item:not(.is-active):hover {
+  color: #FFFFFF;
+
+  background: rgba(90, 181, 115, 0.11);
+
+  border-color: rgba(214, 174, 50, 0.22);
+
+  box-shadow: none;
+}
+
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item:not(.is-active):hover
+.navigation-item__icon {
+  color: #11381c;
+}
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"] svg,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active svg,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"] i,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active i,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"] .nav-icon,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active .nav-icon {
+  color: #D6AE32;
+  stroke: #D6AE32;
+}
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"] svg,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active svg {
+  color: #D6AE32;
+  stroke: #D6AE32;
+}
+html[data-theme="kcs-forest-gold"] .app-sidebar .navigation-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  min-height: 52px;
+  padding: 0 16px;
+
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item[aria-current="page"] .sidebar-icon,
+html[data-theme="kcs-forest-gold"]
+.app-sidebar
+.navigation-item.is-active .sidebar-icon {
+  color: #D6AE32;
+}
+
+/* Buttons */
+
+.button-primary,
+.btn-primary {
+  color: var(--color-on-primary);
+  background: var(--gradient-primary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-button);
+  box-shadow: 0 8px 20px color-mix(
+    in srgb,
+    var(--color-primary) 24%,
+    transparent
+  );
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    filter var(--transition-fast);
+}
+html[data-theme="kcs-forest-gold"] .button-primary,
+html[data-theme="kcs-forest-gold"] .btn-primary {
+  color: #FFFFFF;
+
+  background: linear-gradient(
+    135deg,
+    #71CD8D 0%,
+    #4EAD6B 52%,
+    #2F8F57 100%
+  );
+
+  border: 1px solid rgba(214, 174, 50, 0.92);
+
+  box-shadow:
+    0 8px 20px rgba(36, 137, 73, 0.24),
+    0 0 0 1px rgba(214, 174, 50, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+
+.button-primary:hover,
+.btn-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow: 0 12px 26px color-mix(
+    in srgb,
+    var(--color-primary) 30%,
+    transparent
+  );
+}
+html[data-theme="kcs-forest-gold"] .button-primary:hover,
+html[data-theme="kcs-forest-gold"] .btn-primary:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #7BD896 0%,
+      #59B977 52%,
+      #35975A 100%
+    );
+
+  border-color:
+    rgba(230, 196, 82, 1);
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 12px 27px rgba(36, 137, 73, 0.29),
+    0 0 0 1px rgba(214, 174, 50, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.button-primary:active,
+.btn-primary:active {
+  transform: translateY(0);
+  background: var(--color-primary-active);
+}
+html[data-theme="kcs-forest-gold"] .button-primary:active,
+html[data-theme="kcs-forest-gold"] .btn-primary:active {
+  background:
+    linear-gradient(
+      135deg,
+      #57B874 0%,
+      #3B9A5D 55%,
+      #267A49 100%
+    );
+
+  transform: translateY(0);
+}
+
+/* Inputs */
+
+.glass-input,
+input,
+select,
+textarea {
+  color: var(--color-input-text);
+  background: var(--color-input-background);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-input);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.glass-input::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-input-placeholder);
+}
+
+.glass-input:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+/* Status badges */
+
+.status-success {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.status-warning {
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+}
+
+.status-danger,
+.status-error {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.status-info {
+  color: var(--color-info);
+  background: var(--color-info-soft);
+}
+
+/* =========================================================
+   LOGIN PAGE THEME SUPPORT
+   ========================================================= */
+
+.auth-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(360px, 46%) 1fr;
+}
+
+.auth-brand-panel {
+  color: var(--color-text-inverse);
+  background: var(--auth-left-background);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-form-panel {
+  background: var(--auth-right-background);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-form-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.10;
+  background-image:
+    linear-gradient(
+      var(--auth-pattern-color) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      var(--auth-pattern-color) 1px,
+      transparent 1px
+    );
+  background-size: 48px 48px;
+  mask-image: radial-gradient(
+    circle at center,
+    transparent 0%,
+    rgba(0, 0, 0, 0.42) 40%,
+    #000000 100%
+  );
+}
+
+html[data-theme="kcs-forest-gold"] .auth-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 252, 0.96) 0%,
+      rgba(243, 249, 241, 0.91) 100%
+    );
+
+  border:
+    1px solid rgba(214, 174, 50, 0.34);
+
+  backdrop-filter:
+    blur(13px)
+    saturate(132%);
+
+  -webkit-backdrop-filter:
+    blur(13px)
+    saturate(132%);
+
+  box-shadow:
+    0 24px 58px rgba(3, 35, 18, 0.25),
+    0 8px 22px rgba(8, 70, 35, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98);
+}
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: min(430px, calc(100vw - 32px));
+  padding: 36px 38px 32px;
+  color: var(--color-text-primary);
+  background:
+  linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(243, 248, 255, 0.90) 100%
+  );
+
+backdrop-filter:
+  blur(12px)
+  saturate(130%);
+
+-webkit-backdrop-filter:
+  blur(12px)
+  saturate(130%);
+  box-shadow:
+    0 20px 50px rgba(10, 35, 85, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    border:
+  1px solid rgba(180, 204, 240, 0.50);
+
+box-shadow:
+  0 24px 58px rgba(4, 22, 64, 0.24),
+  0 7px 20px rgba(19, 69, 150, 0.10),
+  inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.auth-card h1,
+.auth-card h2 {
+  color: var(--color-text-primary);
+}
+
+.auth-card p {
+  color: var(--color-text-secondary);
+}
+
+.auth-card a {
+  color: var(--color-primary);
+}
+
+.auth-card a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* Tables */
+
+.theme-table {
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.theme-table thead {
+  background: var(--color-surface-secondary);
+}
+
+.theme-table th,
+.theme-table td {
+  border-color: var(--color-border-subtle);
+}
+
+/* Responsive login layout */
+
+@media (max-width: 767px) {
+  .auth-layout {
+    display: block;
+    min-height: 100vh;
+    background: var(--auth-right-background);
+  }
+
+  .auth-brand-panel {
+    min-height: auto;
+    padding: 24px 20px 10px;
+    background: transparent;
+  }
+
+  .auth-form-panel {
+    min-height: auto;
+    padding: 18px 16px 32px;
+    background: transparent;
+  }
+
+  .auth-card {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 28px 22px;
+    border-radius: 20px;
+  }
+}
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html[data-theme="kcs-forest-gold"] .button-primary,
+html[data-theme="kcs-forest-gold"] .btn-primary {
+  color: #FFFFFF;
+
+  background:
+    linear-gradient(
+      135deg,
+      #71CD8D 0%,
+      #4EAD6B 52%,
+      #2F8F57 100%
+    );
+
+  border:
+    1px solid rgba(214, 174, 50, 0.92);
+
+  box-shadow:
+    0 8px 20px rgba(36, 137, 73, 0.24),
+    0 0 0 1px rgba(214, 174, 50, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+  .glass-card:hover,
+  .button-primary:hover,
+  .btn-primary:hover {
+    transform: none;
+  }
+}
+
+html[data-theme="kcs-forest-gold"] .glass-card:hover {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 253, 0.99) 0%,
+      rgba(248, 252, 246, 0.95) 100%
+    );
+
+  border-color:
+    rgba(65, 151, 89, 0.34);
+
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 15px 34px rgba(8, 69, 34, 0.11),
+    0 5px 12px rgba(8, 69, 34, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+html[data-theme="kcs-forest-gold"] .glass-card {
+  position: relative;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 252, 0.96) 0%,
+      rgba(246, 250, 244, 0.89) 100%
+    );
+
+  border:
+    1px solid rgba(118, 158, 128, 0.28);
+
+  backdrop-filter:
+    blur(11px)
+    saturate(128%);
+
+  -webkit-backdrop-filter:
+    blur(11px)
+    saturate(128%);
+
+  box-shadow:
+    0 10px 26px rgba(8, 69, 34, 0.085),
+    0 3px 8px rgba(8, 69, 34, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98);
+
+  border-radius: var(--radius-card);
+}
+
+/* Print and PDF-friendly output */
+
+@media print {
+  html,
+  body,
+  #root {
+    color: #161616 !important;
+    background: #FFFFFF !important;
+  }
+
+  .glass-card,
+  .glass-card--elevated,
+  .theme-table {
+    color: #161616 !important;
+    background: #FFFFFF !important;
+    border-color: #DADADA !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .app-sidebar,
+  .no-print {
+    display: none !important;
+  }
+}
+html[data-theme="kcs-forest-gold"] .glass-card--elevated {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 253, 0.99) 0%,
+      rgba(244, 249, 242, 0.95) 100%
+    );
+
+  border:
+    1px solid rgba(105, 154, 118, 0.34);
+
+  backdrop-filter:
+    blur(13px)
+    saturate(132%);
+
+  -webkit-backdrop-filter:
+    blur(13px)
+    saturate(132%);
+
+  box-shadow:
+    0 20px 46px rgba(6, 57, 29, 0.12),
+    0 6px 16px rgba(6, 57, 29, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+.sr-only {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  padding: 0;
+  margin: -1px;
+
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+
+  border: 0;
+}
+
+/* =========================================================
+   SHARED PREMIUM CONTROLS — FOREST GOLD + AZURE INTELLIGENCE
+   ========================================================= */
+html[data-theme="kcs-forest-gold"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]),
+html[data-theme="kcs-azure-intelligence"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]) {
+  position: relative;
+  isolation: isolate;
+  min-height: 46px;
+  border: 1px solid var(--kcs-premium-action-border);
+  border-radius: 14px;
+  background: linear-gradient(180deg,var(--kcs-premium-surface-start) 0%,var(--kcs-premium-surface-mid) 52%,var(--kcs-premium-surface-end) 100%);
+  color: var(--kcs-premium-text);
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 var(--kcs-premium-highlight),inset 0 -1px 0 var(--kcs-premium-depth);
+  transition: border-color 160ms ease,filter 160ms ease,transform 160ms ease;
+  overflow: hidden;
+}
+html[data-theme="kcs-forest-gold"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"])::before,
+html[data-theme="kcs-azure-intelligence"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"])::before {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:1px 1px auto;
+  height:45%;
+  border-radius:13px 13px 10px 10px;
+  background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.05) 55%,transparent);
+  pointer-events:none;
+}
+html[data-theme="kcs-forest-gold"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]) svg,
+html[data-theme="kcs-azure-intelligence"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]) svg {color:var(--kcs-premium-icon)}
+html[data-theme="kcs-forest-gold"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]):hover:not(:disabled),
+html[data-theme="kcs-azure-intelligence"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]):hover:not(:disabled) {filter:brightness(1.06);border-color:var(--kcs-premium-action-hover-border)}
+html[data-theme="kcs-forest-gold"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]):active:not(:disabled),
+html[data-theme="kcs-azure-intelligence"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]):active:not(:disabled) {filter:brightness(.96)}
+html[data-theme="kcs-forest-gold"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]):focus-visible,
+html[data-theme="kcs-azure-intelligence"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]):focus-visible {outline:3px solid color-mix(in srgb,var(--kcs-premium-border),transparent 48%);outline-offset:2px}
+html[data-theme="kcs-forest-gold"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]):disabled,
+html[data-theme="kcs-azure-intelligence"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"]):disabled {filter:saturate(.45);opacity:.58}
+
+/* Premium sidebar states use the same structure at expanded and collapsed widths. */
+html[data-theme="kcs-forest-gold"] .app-sidebar nav a:is(.active,[aria-current="page"]),
+html[data-theme="kcs-azure-intelligence"] .app-sidebar nav a:is(.active,[aria-current="page"]) {
+  border:1px solid var(--kcs-premium-border);
+  border-radius:14px;
+  background:linear-gradient(180deg,var(--kcs-premium-surface-start),var(--kcs-premium-surface-mid) 52%,var(--kcs-premium-surface-end));
+  color:var(--kcs-premium-text);
+  box-shadow:inset 0 1px 0 var(--kcs-premium-highlight),inset 0 -1px 0 var(--kcs-premium-depth);
+}
+html[data-theme="kcs-forest-gold"] .app-sidebar nav a:is(.active,[aria-current="page"]) svg,
+html[data-theme="kcs-azure-intelligence"] .app-sidebar nav a:is(.active,[aria-current="page"]) svg {color:var(--kcs-premium-icon)}
+html[data-theme="kcs-forest-gold"] .app-sidebar nav a:hover,
+html[data-theme="kcs-azure-intelligence"] .app-sidebar nav a:hover {border-color:var(--kcs-premium-border);background:linear-gradient(180deg,var(--kcs-premium-surface-start),var(--kcs-premium-surface-mid) 60%,var(--kcs-premium-surface-end));color:var(--kcs-premium-text);box-shadow:inset 0 1px 0 var(--kcs-premium-highlight)}
+html[data-theme="kcs-forest-gold"] .app-sidebar nav a:is(.active,[aria-current="page"]),
+html[data-theme="kcs-forest-gold"] .app-sidebar nav a:hover {border-color:transparent}
+
+/* KPI cards stay clean; only their icon chips carry the premium finish. */
+html[data-theme="kcs-forest-gold"] .metric-icon,
+html[data-theme="kcs-azure-intelligence"] .metric-icon {
+  width:36px;height:36px;border:1px solid var(--kcs-premium-border);border-radius:12px;
+  background:linear-gradient(180deg,var(--kcs-premium-surface-start),var(--kcs-premium-surface-mid) 52%,var(--kcs-premium-surface-end));
+  color:var(--kcs-premium-icon);box-shadow:inset 0 1px 0 var(--kcs-premium-highlight),inset 0 -1px 0 var(--kcs-premium-depth);
+}
+
+/* Administrator avatar and compact assistant send controls. */
+html[data-theme="kcs-forest-gold"] .top-user .avatar,
+html[data-theme="kcs-azure-intelligence"] .top-user .avatar {
+  position:relative;inset:auto;width:36px;height:36px;padding:0;border:1px solid var(--kcs-premium-border);border-radius:50%;
+  background:linear-gradient(180deg,var(--kcs-premium-surface-start),var(--kcs-premium-surface-mid) 52%,var(--kcs-premium-surface-end));
+  color:var(--kcs-premium-text);box-shadow:inset 0 1px 0 var(--kcs-premium-highlight),inset 0 -1px 0 var(--kcs-premium-depth);
+}
+html[data-theme="kcs-forest-gold"] .top-user .avatar {border-color:transparent}
+html[data-theme="kcs-forest-gold"] :is(.assistant-card form .btn,.assistant-panel form button[type="submit"]),
+html[data-theme="kcs-azure-intelligence"] :is(.assistant-card form .btn,.assistant-panel form button[type="submit"]) {width:46px;min-width:46px;height:46px;padding:0;border-radius:14px}
+
+/* Forest Gold keeps its gold icon accents without gold button-edge outlines. */
+html[data-theme="kcs-forest-gold"] {
+  --sidebar-download-border: transparent;
+  --download-button-border: transparent;
+  --auth-submit-border: transparent;
+  --auth-submit-shadow: 0 8px 20px rgba(36,137,73,.24);
+  --auth-submit-hover-shadow: 0 12px 27px rgba(36,137,73,.29);
+}

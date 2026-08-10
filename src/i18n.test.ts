@@ -1,0 +1,2 @@
+import{describe,expect,it}from'vitest';import{assetCopy}from'./assetCopy';import{missingTranslationKeys,translate}from'./i18n';
+describe('translations',()=>{it('has Dutch values for every declared English key',()=>expect(missingTranslationKeys()).toEqual([]));it('has English and Dutch parity for every Wave 2 asset key',()=>expect(Object.keys(assetCopy.nl)).toEqual(Object.keys(assetCopy.en)));it('falls back to English and then key',()=>{expect(translate('nl','common.save')).toBe('Opslaan');expect(translate('nl','unknown.key')).toBe('unknown.key')})});
