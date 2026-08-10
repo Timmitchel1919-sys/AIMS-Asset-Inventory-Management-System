@@ -75,6 +75,9 @@ pnpm-debug.log*
 # Visual Studio local metadata
 .vs/
 
+# Local AI assistant configuration
+.claude/
+
 # ------------------------------
 # Operating system files
 # ------------------------------
