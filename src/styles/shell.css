@@ -239,7 +239,22 @@ html[data-theme="kcs-azure-intelligence"]{--global-search-surface:#fff;--global-
   html[data-theme="kcs-azure-intelligence"] .app-sidebar__brand-text{margin-left:-8px}
 }
 
-.profile-menu .account-signout{justify-content:flex-start;text-align:left}
+.profile-menu .account-signout{
+  justify-content:flex-start;
+  align-self:flex-start;
+  text-align:left;
+  color:#d71920;
+  background:transparent;
+  border:0;
+  border-radius:8px;
+  font-weight:800;
+}
+.profile-menu .account-signout:hover,
+.profile-menu .account-signout:focus-visible{
+  color:#b90f17;
+  background:transparent;
+}
+.profile-menu .account-signout svg{color:currentColor}
 
 /* Collapsed desktop logo follows the same centered 48px rail as module icons. */
 @media(min-width:781px){
