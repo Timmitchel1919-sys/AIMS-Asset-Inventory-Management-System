@@ -771,15 +771,15 @@ html[data-theme="kcs-azure-intelligence"] {
 
 html[data-theme="kcs-forest-gold"] {
   color-scheme: light;
-  --kcs-premium-surface-start: #167347;
-  --kcs-premium-surface-mid: #0C5A36;
-  --kcs-premium-surface-end: #084528;
+  --kcs-premium-surface-start: #174D2A;
+  --kcs-premium-surface-mid: #0C3B20;
+  --kcs-premium-surface-end: #042A15;
   --kcs-premium-border: #D6AE32;
-  --kcs-premium-action-border: rgba(139, 224, 164, 0.46);
+  --kcs-premium-action-border: rgba(23, 136, 57, 0.46);
   --kcs-premium-action-hover-border: rgba(190, 242, 205, 0.68);
   --kcs-premium-icon: #D6AE32;
   --kcs-premium-text: #FFFFFF;
-  --kcs-premium-highlight: rgba(255, 255, 255, 0.22);
+  --kcs-premium-highlight: rgba(255, 255, 255, 0.12);
   --kcs-premium-depth: rgba(0, 0, 0, 0.12);
   --kcs-premium-hover-border: #E6C65A;
   html[data-theme="kcs-forest-gold"] .activity-icon,
@@ -812,8 +812,8 @@ html[data-theme="kcs-forest-gold"]
 
   background: linear-gradient(
     135deg,
-    #4FA66A 0%,
-    #3C8E58 100%
+    #174D2A 0%,
+    #0A371D 100%
   );
 
   border-color: #D6AE32;
@@ -852,9 +852,9 @@ html[data-theme="kcs-forest-gold"] .reminder-icon svg {
   /* =========================
      PRIMARY GREEN
      ========================= */
-  --color-primary: #2F8F57;
-  --color-primary-hover: #267A49;
-  --color-primary-active: #1B633B;
+  --color-primary: #0C3B20;
+  --color-primary-hover: #082F18;
+  --color-primary-active: #042511;
   --color-primary-soft: #DDF2E4;
   --color-on-primary: #FFFFFF;
 
@@ -895,13 +895,13 @@ html[data-theme="kcs-forest-gold"] .reminder-icon svg {
   /* =========================
      SIDEBAR
      ========================= */
-  --color-sidebar-background: #05351F;
+  --color-sidebar-background: #042711;
   --color-sidebar-text: #FFFFFF;
   --color-sidebar-muted: rgba(235, 244, 238, 0.78);
 
-  --color-sidebar-active-background: #4EAD6B;
+  --color-sidebar-active-background: #123F23;
   --color-sidebar-active-text: #FFFFFF;
-  --color-sidebar-hover: rgba(91, 190, 121, 0.12);
+  --color-sidebar-hover: rgba(71, 143, 98, 0.18);
 .app-sidebar__inner {
   position: relative;
   z-index: 1;
@@ -1072,9 +1072,9 @@ html[data-theme="kcs-forest-gold"] .reminder-icon svg {
      ========================= */
   --gradient-primary: linear-gradient(
     135deg,
-    #72C78B 0%,
-    #4EAD6B 48%,
-    #2F8F57 100%
+    #174D2A 0%,
+    #0C3B20 48%,
+    #042A15 100%
   );
 
   --gradient-accent: linear-gradient(
@@ -1104,10 +1104,10 @@ html[data-theme="kcs-forest-gold"] .reminder-icon svg {
 
   --gradient-sidebar: linear-gradient(
     180deg,
-    #073D25 0%,
-    #05351F 48%,
-    #042B1A 74%,
-    #031F13 100%
+    #062B16 0%,
+    #042711 48%,
+    #03230F 74%,
+    #021E0C 100%
   );
 
   /* =========================
@@ -1842,9 +1842,9 @@ html[data-theme="kcs-forest-gold"] .btn-primary {
 
   background: linear-gradient(
     135deg,
-    #71CD8D 0%,
-    #4EAD6B 52%,
-    #2F8F57 100%
+    #174D2A 0%,
+    #0C3B20 52%,
+    #042A15 100%
   );
 
   border: 1px solid rgba(214, 174, 50, 0.92);
@@ -1852,7 +1852,7 @@ html[data-theme="kcs-forest-gold"] .btn-primary {
   box-shadow:
     0 8px 20px rgba(36, 137, 73, 0.24),
     0 0 0 1px rgba(214, 174, 50, 0.10),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 
@@ -1898,9 +1898,9 @@ html[data-theme="kcs-forest-gold"] .btn-primary:active {
   background:
     linear-gradient(
       135deg,
-      #57B874 0%,
-      #3B9A5D 55%,
-      #267A49 100%
+      #0C3B20 0%,
+      #082F18 55%,
+      #042511 100%
     );
 
   transform: translateY(0);
@@ -2147,9 +2147,9 @@ html[data-theme="kcs-forest-gold"] .btn-primary {
   background:
     linear-gradient(
       135deg,
-      #71CD8D 0%,
-      #4EAD6B 52%,
-      #2F8F57 100%
+      #174D2A 0%,
+      #0C3B20 52%,
+      #042A15 100%
     );
 
   border:
@@ -2158,7 +2158,7 @@ html[data-theme="kcs-forest-gold"] .btn-primary {
   box-shadow:
     0 8px 20px rgba(36, 137, 73, 0.24),
     0 0 0 1px rgba(214, 174, 50, 0.10),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
   .glass-card:hover,
   .button-primary:hover,
