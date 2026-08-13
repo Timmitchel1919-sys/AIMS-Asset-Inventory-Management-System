@@ -5,17 +5,22 @@ import {RouteErrorBoundary,RouteLoader} from './components/RouteBoundary';
 import {can} from './auth/permissions';
 import {routeManifest,type AppRoute} from './routes/manifest';
 import {useApp} from './context/AppContext';
+import {DEMO_AUTH_MODE} from './auth/aimsEmailPolicy';
 
 function RenderRoute({route}:{route:AppRoute}){
-  const {user}=useApp();
+  const {user,authLoading,emailVerified}=useApp();
   const location=useLocation();
   const Page=route.component;
+  if(authLoading)return <RouteLoader/>;
   if(route.public){
-    if(route.id==='login'&&user)return <Navigate to="/dashboard" replace/>;
+    if(['login','signup'].includes(route.id)&&user)return <Navigate to={emailVerified?'/dashboard':'/verify-email'} replace/>;
+    if(route.id==='verify-email'&&!user)return <Navigate to="/login" replace/>;
+    if(route.id==='verify-email'&&emailVerified)return <Navigate to="/dashboard" replace/>;
     return <RouteErrorBoundary><Suspense fallback={<RouteLoader/>}><Page/></Suspense></RouteErrorBoundary>;
   }
   if(!user)return <Navigate to="/login" state={{from:location}} replace/>;
-  if(!can(user.role,route.permission))return <Navigate to="/403" replace/>;
+  if(!emailVerified&&!(DEMO_AUTH_MODE&&user.isDemoUser))return <Navigate to="/verify-email" replace/>;
+  if(!DEMO_AUTH_MODE&&!can(user.role,route.permission))return <Navigate to="/403" replace/>;
   return <AppShell><RouteErrorBoundary><Suspense fallback={<RouteLoader/>}><Page/></Suspense></RouteErrorBoundary></AppShell>;
 }
 

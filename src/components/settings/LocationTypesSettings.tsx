@@ -101,11 +101,11 @@ export function LocationTypesSettings() {
       status: "idle",
       message: "",
     });
-  if (user?.role !== "administrator")
+  if (!user)
     return (
       <div className="state">
-        <h3>Administrator access required</h3>
-        <p>Only administrators can manage location types.</p>
+        <h3>IT member access required</h3>
+        <p>Sign in with your KCS IT account to manage location types.</p>
       </div>
     );
   const types = [...snapshot.locationTypes].sort(

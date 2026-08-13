@@ -29,11 +29,22 @@ describe('app download and admin access integration',()=>{
     expect(route?.permission).toBe('admin.access');
   });
 
-  it('denies unmatched Firestore access and protects admin collections',()=>{
+  it('keeps temporary demo Firestore access authenticated and never public',()=>{
     const rules=readFileSync('firestore.rules','utf8');
-    expect(rules).toContain("match /users/{id}");
-    expect(rules).toContain("permission('admin.users.manage')");
-    expect(rules).toContain("match /roles/{id}");
-    expect(rules).toContain("match /{document=**} { allow read, write: if false; }");
+    expect(rules).toContain('allow read, write: if request.auth != null');
+    expect(rules).not.toContain('allow read, write: if true');
+    const productionRules=readFileSync('firestore.production.rules','utf8');
+    expect(productionRules).toContain("match /users/{id}");
+    expect(productionRules).toContain("match /{document=**} { allow read, write: if false; }");
+  });
+
+  it('uses Firebase anonymous authentication for one-click demo access',()=>{
+    const authSource=readFileSync('src/auth/firebaseAuth.ts','utf8');
+    const loginSource=readFileSync('src/pages/Auth.tsx','utf8');
+    expect(authSource).toContain('signInAnonymously');
+    expect(authSource).toContain('doc(db, "users", user.uid)');
+    expect(authSource).toContain('authProvider: "anonymous"');
+    expect(loginSource).toContain('required={mode !== "login" || !DEMO_AUTH_MODE}');
+    expect(loginSource).not.toContain('Demo mode: click Sign in to enter AIMS.');
   });
 });

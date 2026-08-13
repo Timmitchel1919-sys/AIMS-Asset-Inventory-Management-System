@@ -30,9 +30,9 @@ const themes: [ThemeId, string, string][] = [
     "The official blue enterprise workspace",
   ],
   [
-    "aimsEmeraldGlass",
-    "AIMS Emerald Glass",
-    "A professional green enterprise theme for resource stewardship, accountability and operational control.",
+    "aimsEmeraldGloss",
+    "Emerald Gloss",
+    "An enterprise-grade emerald theme with a polished, glossy finish for clarity and confident action.",
   ],
 ];
 const tabs = [
@@ -50,7 +50,7 @@ const tabs = [
   ["legal", Scale],
 ] as const;
 type Tab = (typeof tabs)[number][0];
-export const settingsPath = (tab: Tab) => `/admin/settings/${tab === "masterData" ? "location-code-groups" : tab}`;
+export const settingsPath = (tab: Tab) => `/settings/${tab === "masterData" ? "location-code-groups" : tab}`;
 export const tabFromPath = (pathname: string): Tab => {
   const segment = pathname.split("/").filter(Boolean).at(-1);
   if (segment === "location-code-groups" || segment === "master-data" || segment === "location-types") return "masterData";
@@ -70,7 +70,7 @@ export default function Settings() {
   }>({ status: "idle", message: "" });
   const labels: Record<Tab, [string, string]> = {
     masterData: [
-      nl ? "Locaties & codegroepen" : "Location & Code Groups",
+      nl ? "Locaties & codes" : "Location & Codes",
       nl
         ? "Beheer locaties en codegroepen."
         : "Manage locations and code groups.",
@@ -139,12 +139,12 @@ export default function Settings() {
         description={
           nl
             ? "Beheer identiteit, beleid, taal en voorkeuren."
-            : "Manage identity, policy, language, and preferences."
+            : "Manage AIMS operational and system configuration."
         }
       />
       <div className="settings-layout">
         <nav className="settings-nav" aria-label="Settings sections">
-          {tabs.map(([id, Icon]) => (
+          {tabs.filter(([id])=>!['language','appearance'].includes(id)).map(([id, Icon]) => (
             <button
               type="button"
               key={id}
@@ -172,10 +172,7 @@ export default function Settings() {
                   key={id}
                   onClick={async () => {
                     app.setTheme(id);
-                    await repository.execute({
-                      action: "settings.appearance",
-                      values: { theme: id },
-                    });
+                    await app.updatePreferences({ theme: id });
                   }}
                   className={`theme-choice theme-${id} ${app.theme === id ? "selected" : ""}`}
                 >
@@ -224,9 +221,11 @@ export default function Settings() {
                   name="language"
                   label="Language"
                   value={app.language}
-                  onChange={(event) =>
-                    app.setLanguage(event.target.value as "en" | "nl")
-                  }
+                  onChange={async (event) => {
+                    const next = event.target.value as "en" | "nl";
+                    app.setLanguage(next);
+                    await app.updatePreferences({ language: next });
+                  }}
                 >
                   <option value="en">English</option>
                   <option value="nl">Nederlands</option>

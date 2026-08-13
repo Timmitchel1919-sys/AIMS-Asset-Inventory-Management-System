@@ -1,20 +1,21 @@
 <!doctype html>
-<html lang="en" data-theme="kcs-forest-gold">
+<html lang="en" data-theme="kcs-azure-intelligence">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta id="kcs-theme-color" name="theme-color" content="#015B2B" />
+    <meta id="kcs-theme-color" name="theme-color" content="#000000" />
     <meta name="description" content="A school inventory and asset-management platform for St. Kangoeroe Community School." />
     <meta name="application-name" content="AIMS Asset &amp; Inventory Management System" />
     <meta property="og:title" content="AIMS Asset &amp; Inventory Management System" />
     <meta property="og:description" content="A school inventory and asset-management platform for St. Kangoeroe Community School." />
     <meta property="og:type" content="website" />
-    <link id="kcs-favicon" rel="icon" type="image/png" href="/aims-logo-blue.png" />
-    <link id="kcs-apple-icon" rel="apple-touch-icon" href="/aims-logo-blue.png" />
-    <link id="kcs-manifest" rel="manifest" href="/manifest-forest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/aims-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/aims-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/aims-180.png" />
+    <link id="kcs-manifest" rel="manifest" href="/manifest-azure.webmanifest" />
     <title>AIMS Asset &amp; Inventory Management System</title>
     <script>
-      (function(){try{var t=localStorage.getItem('kcs-theme');var blue=t==='kcs-azure-intelligence';var valid=t==='kcs-forest-gold'||blue;var selected=valid?t:'kcs-forest-gold';var logo=blue?'/aims-logo-blue.png':'/aims-logo-green.png';document.documentElement.dataset.theme=selected;document.getElementById('kcs-theme-color').content=blue?'#1769C2':'#015B2B';document.getElementById('kcs-favicon').href=logo;document.getElementById('kcs-apple-icon').href=logo;document.getElementById('kcs-manifest').href=blue?'/manifest-azure.webmanifest':'/manifest-forest.webmanifest'}catch(e){}})();
+      (function(){try{var t=localStorage.getItem('authenticatedThemePreference')||localStorage.getItem('kcs-theme');var green=t==='aimsEmeraldGloss'||t==='emerald-gloss'||t==='aimsEmeraldGlass'||t==='kcs-forest-gold';document.documentElement.dataset.theme=green?'emerald-gloss':'kcs-azure-intelligence';document.getElementById('kcs-manifest').href=green?'/manifest-emerald-gloss.webmanifest':'/manifest-azure.webmanifest'}catch(e){}})();
     </script>
   </head>
   <body>

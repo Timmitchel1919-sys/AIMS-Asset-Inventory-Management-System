@@ -158,7 +158,7 @@ export function assetFormSchema(messages: ValidationMessages, isEdit = false) {
     });
 }
 export const canCorrectOfficialCode = (role: Role | undefined) =>
-  role === "administrator";
+  role === "administrator" || role === "ict-staff";
 export const isAssignmentEligible = (asset: Pick<Asset, "status">) =>
   asset.status === "Available" || asset.status === "Reserved";
 export function validateAssetMovement(

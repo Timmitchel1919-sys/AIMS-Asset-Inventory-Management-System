@@ -38,7 +38,7 @@ test.describe('theme-responsive AIMS authentication',()=>{
     await page.getByRole('button',{name:'Show or hide password'}).click();
     await expect(password).toHaveAttribute('type','text');
 
-    await email.fill('naomi@kcs.edu');
+    await email.fill('naomi@kangoeroeschool.com');
     const signIn=page.getByRole('button',{name:'Sign in'}),submit=page.locator('.auth-submit');
     await signIn.click();
     await expect(submit).toHaveAttribute('aria-busy','true');

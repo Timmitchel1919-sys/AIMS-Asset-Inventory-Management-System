@@ -1,6 +1,6 @@
-import {useState,type ComponentType} from 'react';
+import {type ComponentType} from 'react';
 import {Link} from 'react-router-dom';
-import {ArrowRight,BarChart3,Boxes,CheckCircle2,ClipboardCheck,FileBarChart,Languages,LockKeyhole,Menu,Monitor,PackageOpen,Repeat2,ScanLine,ShieldCheck,Smartphone,Tablet,Users,Warehouse,Wrench,X} from 'lucide-react';
+import {ArrowRight,BarChart3,Boxes,CheckCircle2,ClipboardCheck,FileBarChart,Languages,LockKeyhole,Monitor,PackageOpen,Repeat2,ScanLine,ShieldCheck,Smartphone,Tablet,Users,Warehouse,Wrench} from 'lucide-react';
 import {PwaInstallButton} from '../components/PwaStatus';
 import {DownloadAppLink} from '../components/download/DownloadAppLink';
 import {AimsDeviceShowcase} from '../components/public/AimsDevicePreviews';
@@ -15,14 +15,13 @@ const deviceIcons=[Monitor,BarChart3,Tablet,Smartphone,ScanLine];
 function Icon({as:IconComponent}:{as:ComponentType<{className?:string}>}){return <span className="aims-icon"><IconComponent/></span>}
 
 export default function PublicLandingPage(){
- const app=useApp(),language=app.language,c=aimsLandingCopy[language],[menuOpen,setMenuOpen]=useState(false),action=app.user?'/dashboard':'/login';
+ const app=useApp(),language=app.language,c=aimsLandingCopy[language],action=app.user?'/dashboard':'/login';
  const nav=[[c.nav.home,'#home'],[c.nav.features,'#features'],[c.nav.workflow,'#workflow'],[c.nav.security,'#security'],[c.nav.support,'/support']] as const;
  return <div className="aims-public-page" data-theme="aimsAzureGlass">
   <a className="aims-skip-link" href="#main-content">{c.skip}</a>
   <header className="aims-public-header">
    <Link className="aims-brand" to="/" aria-label={`AIMS — ${c.brand}`}><img className="aims-mark" src="/aims-logo-blue.png" alt=""/><span><b>AIMS</b><small>{c.brand}</small></span></Link>
-   <button className="aims-menu-button" type="button" aria-expanded={menuOpen} aria-controls="public-navigation" aria-label={menuOpen?c.close:c.menu} onClick={()=>setMenuOpen(value=>!value)}>{menuOpen?<X/>:<Menu/>}</button>
-   <nav id="public-navigation" className={menuOpen?'is-open':''} aria-label="Public navigation"><span className="aims-primary-navigation">{nav.map(([label,target])=>target.startsWith('#')?<a key={label} href={target} onClick={()=>setMenuOpen(false)}>{label}</a>:<Link key={label} to={target} onClick={()=>setMenuOpen(false)}>{label}</Link>)}</span><span className="aims-header-actions"><label className="aims-language"><Languages/><span className="sr-only">{c.language}</span><select aria-label={c.language} value={language} onChange={event=>app.setLanguage(event.target.value as 'en'|'nl')}><option value="en">EN</option><option value="nl">NL</option></select></label><DownloadAppLink className="aims-glossy-button">{language==='nl'?'App downloaden':'Download App'}</DownloadAppLink><Link className="aims-glossy-button" to={action}>{app.user?c.open:c.signIn}<ArrowRight/></Link></span></nav>
+   <nav id="public-navigation" aria-label="Public navigation"><span className="aims-primary-navigation">{nav.map(([label,target])=>target.startsWith('#')?<a key={label} href={target}>{label}</a>:<Link key={label} to={target}>{label}</Link>)}</span><span className="aims-header-actions"><label className="aims-language"><Languages/><span className="sr-only">{c.language}</span><select aria-label={c.language} value={language} onChange={event=>app.setLanguage(event.target.value as 'en'|'nl')}><option value="en">EN</option><option value="nl">NL</option></select></label><DownloadAppLink className="aims-glossy-button">{language==='nl'?'App downloaden':'Download App'}</DownloadAppLink><Link className="aims-glossy-button" to={action}>{app.user?c.open:c.signIn}<ArrowRight/></Link></span></nav>
   </header>
   <main id="main-content">
    <section className="aims-hero" id="home"><div className="aims-container aims-hero-grid"><div className="aims-hero-copy"><p className="aims-eyebrow">{c.heroEyebrow}</p><h1>{c.heroTitle}</h1><p className="aims-lead">{c.heroText}</p><div className="aims-actions"><a className="aims-secondary-button" href="#features">{c.explore}</a></div></div><div className="aims-hero-visual" aria-hidden="true"><div className="aims-hero-orbit"><ShieldCheck/><img src="/aims-logo-blue.png" alt=""/></div></div></div></section>

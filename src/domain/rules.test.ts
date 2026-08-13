@@ -16,5 +16,5 @@ describe('domain rules',()=>{
   it('enforces disposal sequence',()=>{expect(canTransitionDisposal('Inspected','Approved')).toBe(true);expect(canTransitionDisposal('Approved','Method Selected')).toBe(true);expect(canTransitionDisposal('Requested','Completed')).toBe(false)});
   it('falls back to AIMS Azure Glass for invalid themes',()=>expect(normalizeTheme('unknown')).toBe('aimsAzureGlass'));
   it('falls back when the removed KCS Azure Flow key is encountered',()=>expect(normalizeTheme('kcsAzureFlow')).toBe('aimsAzureGlass'));
-  it('migrates supported legacy themes',()=>{expect(normalizeTheme('kcs-forest-gold')).toBe('aimsEmeraldGlass');expect(normalizeTheme('kcs-azure-intelligence')).toBe('aimsAzureGlass')});
+  it('migrates legacy themes',()=>{expect(normalizeTheme('kcs-forest-gold')).toBe('aimsEmeraldGloss');expect(normalizeTheme('aimsEmeraldGlass')).toBe('aimsEmeraldGloss');expect(normalizeTheme('kcs-azure-intelligence')).toBe('aimsAzureGlass')});
 });

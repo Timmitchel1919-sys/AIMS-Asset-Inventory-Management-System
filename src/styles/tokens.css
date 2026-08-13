@@ -62,6 +62,7 @@
   --color-sidebar-muted: #c3d7ca;
   --color-sidebar-active-background: linear-gradient(180deg,#ffd23f,#f6be23);
   --color-sidebar-active-text: #103522;
+  --color-sidebar-active-pointer: #FFFFFF;
   --color-sidebar-hover: rgba(255,255,255,.1);
 
   --color-input-background: #ffffff;
@@ -118,12 +119,72 @@
   --color-sidebar-muted: #e6f1ff;
   --color-sidebar-active-background: #ffffff;
   --color-sidebar-active-text: #1d70d1;
+  --color-sidebar-active-pointer: #FFFFFF;
   --color-sidebar-hover: rgba(255,255,255,.12);
 
   --color-input-background: #ffffff;
   --color-input-border: #b3d5f8;
   --color-table-header: #edf5ff;
   --color-overlay: rgba(22,34,80,.5);
+}
+
+[data-theme="emerald-gloss"] {
+  --color-background: #F7FAF8;
+  --color-background-secondary: #EEF9F3;
+  --color-surface: #FFFFFF;
+  --color-surface-secondary: #F1F7F4;
+  --color-surface-elevated: #FFFFFF;
+  --color-surface-hover: #EAF6EF;
+
+  --color-primary: #27AE60;
+  --color-primary-hover: #219653;
+  --color-primary-active: #1B7F46;
+  --color-primary-soft: #DDF5E8;
+  --color-on-primary: #ffffff;
+
+  --color-secondary: #145A32;
+  --color-secondary-hover: #0F4526;
+  --color-secondary-soft: #EEF9F3;
+  --color-on-secondary: #ffffff;
+
+  --color-accent: #5CD48B;
+  --color-accent-hover: #27AE60;
+  --color-accent-soft: #DDF5E8;
+
+  --color-text-primary: #17221C;
+  --color-text-secondary: #536B5D;
+  --color-text-muted: #7A8F82;
+  --color-text-disabled: #A9BBAF;
+  --color-text-inverse: #ffffff;
+
+  --color-border: #D7E6DC;
+  --color-border-subtle: #E7F0EA;
+  --color-border-strong: #B9D5C3;
+  --color-focus-ring: #27AE60;
+
+  --color-success: #27AE60;
+  --color-success-soft: #DDF5E8;
+  --color-warning: #C48A06;
+  --color-warning-soft: #FFF3D6;
+  --color-danger: #D3392E;
+  --color-danger-soft: #FDE4E2;
+  --color-info: #1D7DB8;
+  --color-info-soft: #E1F1FA;
+
+  --color-sidebar-background: linear-gradient(180deg,#123C28 0%,#145A32 50%,#0F3222 100%);
+  --color-sidebar-text: #EAF7EF;
+  --color-sidebar-muted: #A9C8B5;
+  --color-sidebar-active-background: linear-gradient(180deg,#5CD48B 0%,#27AE60 45%,#219653 100%);
+  --color-sidebar-active-text: #ffffff;
+  --color-sidebar-active-pointer: #FFFFFF;
+  --color-sidebar-hover: rgba(255,255,255,.06);
+
+  --color-input-background: #ffffff;
+  --color-input-border: #B9D5C3;
+  --color-input-text: #17221C;
+  --color-input-placeholder: #7A8F82;
+  --color-table-header: #F1F7F4;
+  --color-overlay: rgba(15,42,27,.55);
 }
 
 @media (prefers-reduced-motion:reduce) {

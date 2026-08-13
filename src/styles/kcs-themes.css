@@ -775,8 +775,8 @@ html[data-theme="kcs-forest-gold"] {
   --kcs-premium-surface-mid: #0C5A36;
   --kcs-premium-surface-end: #084528;
   --kcs-premium-border: #D6AE32;
-  --kcs-premium-action-border: transparent;
-  --kcs-premium-action-hover-border: transparent;
+  --kcs-premium-action-border: rgba(139, 224, 164, 0.46);
+  --kcs-premium-action-hover-border: rgba(190, 242, 205, 0.68);
   --kcs-premium-icon: #D6AE32;
   --kcs-premium-text: #FFFFFF;
   --kcs-premium-highlight: rgba(255, 255, 255, 0.22);
@@ -2334,7 +2334,13 @@ html[data-theme="kcs-azure-intelligence"] .app-sidebar nav a:is(.active,[aria-cu
 html[data-theme="kcs-forest-gold"] .app-sidebar nav a:hover,
 html[data-theme="kcs-azure-intelligence"] .app-sidebar nav a:hover {border-color:var(--kcs-premium-border);background:linear-gradient(180deg,var(--kcs-premium-surface-start),var(--kcs-premium-surface-mid) 60%,var(--kcs-premium-surface-end));color:var(--kcs-premium-text);box-shadow:inset 0 1px 0 var(--kcs-premium-highlight)}
 html[data-theme="kcs-forest-gold"] .app-sidebar nav a:is(.active,[aria-current="page"]),
-html[data-theme="kcs-forest-gold"] .app-sidebar nav a:hover {border-color:transparent}
+html[data-theme="kcs-forest-gold"] .app-sidebar nav a:hover {border-color:var(--kcs-premium-action-border)}
+html[data-theme="kcs-forest-gold"] .app-sidebar nav a:is(.active,[aria-current="page"]) .navigation-item__icon,
+html[data-theme="kcs-forest-gold"] .app-sidebar nav a:hover .navigation-item__icon {background:transparent}
+
+/* Inventory overview figures use each theme's dark brand color. */
+html[data-theme="kcs-forest-gold"] .metrics-card .metric strong {color:#0B3D25}
+html[data-theme="kcs-azure-intelligence"] .metrics-card .metric strong {color:#0B2F7A}
 
 /* KPI cards stay clean; only their icon chips carry the premium finish. */
 html[data-theme="kcs-forest-gold"] .metric-icon,

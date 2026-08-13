@@ -1,4 +1,4 @@
-import {useEffect,useMemo,useState} from 'react';
+import {useMemo} from 'react';
 import {can,type Permission} from '../auth/permissions';
 import {useApp} from '../context/AppContext';
 import {useMockSnapshot} from '../data/mockRepository';
@@ -19,4 +19,4 @@ export function buildGlobalSearchIndex(snapshot:MockSnapshot,role:Role){
  snapshot.repairs.forEach(x=>add({id:x.id,type:'repair',title:x.asset,subtitle:[x.issue,x.technician,x.status].join(' · '),code:x.reference||x.assetCode,route:`/repairs/${x.id}`,searchableText:text(x.reference,x.assetCode,x.asset,x.assetName,x.serialNumber,x.category,x.issue,x.problemTitle,x.technician,x.status,x.diagnosis,x.rootCause)}));return results;
 }
 export function filterGlobalSearchResults(index:GlobalSearchResult[],query:string){const words=normalizeSearchValue(query).split(' ').filter(Boolean);if(words.join('').length<2)return[];const counts=new Map<GlobalSearchResultType,number>();return index.filter(result=>{if(!words.every(word=>result.searchableText.includes(word)))return false;const count=counts.get(result.type)||0;if(count>=5)return false;counts.set(result.type,count+1);return true}).slice(0,20)}
-export function useGlobalSearch(query:string){const snapshot=useMockSnapshot(),{user}=useApp(),[debouncedQuery,setDebouncedQuery]=useState('');useEffect(()=>{const timer=window.setTimeout(()=>setDebouncedQuery(query),300);return()=>window.clearTimeout(timer)},[query]);const index=useMemo(()=>user?buildGlobalSearchIndex(snapshot,user.role):[],[snapshot,user]);const results=useMemo(()=>filterGlobalSearchResults(index,debouncedQuery),[index,debouncedQuery]);const eligible=normalizeSearchValue(query).replace(/\s/g,'').length>=2;return{results,isLoading:eligible&&debouncedQuery!==query,error:null as Error|null}}
+export function useGlobalSearch(query:string){const snapshot=useMockSnapshot(),{user}=useApp();const index=useMemo(()=>user?buildGlobalSearchIndex(snapshot,user.role):[],[snapshot,user]);const results=useMemo(()=>filterGlobalSearchResults(index,query),[index,query]);return{results,isLoading:false,error:null as Error|null}}

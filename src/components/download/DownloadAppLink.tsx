@@ -1,10 +1,9 @@
 import {Download} from 'lucide-react';
-import {Link,type LinkProps} from 'react-router-dom';
-import {appDownloadConfig} from '../../config/appDownload.config';
+import type {ButtonHTMLAttributes,ReactNode} from 'react';
 import {usePwaInstall} from '../PwaStatus';
 
-export function DownloadAppLink({className='',children='Download App',showIcon=true,...props}:Omit<LinkProps,'to'>&{children?:React.ReactNode;showIcon?:boolean}){
-  const {isStandalone}=usePwaInstall();
+export function DownloadAppLink({className='',children='Download App',showIcon=true,...props}:ButtonHTMLAttributes<HTMLButtonElement>&{children?:ReactNode;showIcon?:boolean}){
+  const {isStandalone,install}=usePwaInstall();
   if(isStandalone)return null;
-  return <Link {...props} className={className} to={appDownloadConfig.publicDownloadPath}>{showIcon&&<Download aria-hidden="true"/>}{children}</Link>;
+  return <button {...props} type="button" className={className} onClick={async event=>{props.onClick?.(event);if(!event.defaultPrevented)await install()}}>{showIcon&&<Download aria-hidden="true"/>}{children}</button>;
 }
