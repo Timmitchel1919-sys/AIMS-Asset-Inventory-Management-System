@@ -10,7 +10,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.svg','aims-logo.png','manifest-forest.webmanifest','manifest-azure.webmanifest'],
+      includeAssets: ['icons/*.png','manifest-azure.webmanifest','manifest-emerald-gloss.webmanifest'],
       manifest: false
     })
   ]

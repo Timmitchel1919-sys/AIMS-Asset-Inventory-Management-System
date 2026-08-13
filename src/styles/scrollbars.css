@@ -1,0 +1,39 @@
+/* Platform-wide, theme-aware overlay-style scrollbars. The track stays transparent
+   and each thumb is revealed only while its own container is actively scrolling. */
+* {
+  scrollbar-width: thin !important;
+  scrollbar-color: transparent transparent !important;
+}
+
+*.is-scrolling,
+.app-sidebar > nav.is-scrolling {
+  scrollbar-color: color-mix(in srgb, var(--color-primary) 58%, transparent) transparent !important;
+}
+
+*::-webkit-scrollbar {
+  display: block !important;
+  width: 5px !important;
+  height: 5px !important;
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: transparent !important;
+}
+
+*.is-scrolling::-webkit-scrollbar-thumb,
+.app-sidebar > nav.is-scrolling::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-primary) 58%, transparent) !important;
+}
+
+@media (max-width: 780px) {
+  *::-webkit-scrollbar {
+    width: 3px !important;
+    height: 3px !important;
+  }
+}

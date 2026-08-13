@@ -1,10 +1,16 @@
-import {AlertTriangle,CheckCircle2,X} from 'lucide-react';
+import {AlertTriangle,ArrowLeft,CheckCircle2,X} from 'lucide-react';
 import {useEffect,useId,useRef,type FormEvent,type ReactNode} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {Button,State} from './ui';
 import {useApp} from '../context/AppContext';
 
 export function PageHeader({title,description,actions}:{title:string;description:string;actions?:ReactNode}){
   return <header className="page-title"><div><h1>{title}</h1><p>{description}</p></div>{actions&&<div className="actions">{actions}</div>}</header>;
+}
+
+export function AccountBackButton(){
+  const navigate=useNavigate(),{language}=useApp();
+  return <button type="button" className="back account-back" onClick={()=>navigate(-1)}><ArrowLeft/>{language==='nl'?'Terug':'Back'}</button>;
 }
 
 export function Dialog({open,title,description,children,onClose,footer}:{open:boolean;title:string;description?:string;children:ReactNode;onClose:()=>void;footer?:ReactNode}){

@@ -40,7 +40,7 @@ export const rolePermissions: Record<Role, Permission[]> = {
   administrator: all,
   'ict-manager': all.filter(p => !['users.manage','roles.manage','locationTypes.manage'].includes(p)&&!p.startsWith('admin.')),
   'warehouse-manager': all.filter(p=>!['users.manage','roles.manage','settings.manage'].includes(p)&&!p.startsWith('admin.')),
-  'ict-staff': ['dashboard.view','assets.view','assets.create','assets.edit','assignments.manage','borrow.manage','repairs.manage','maintenance.manage','movements.manage','audits.view','audits.perform','notifications.view','assistant.use','disposals.view','disposals.request'],
+  'ict-staff': all,
   'warehouse-staff': ['dashboard.view','assets.view','inventory.view','inventory.manage','inventory.create','inventory.edit','inventory.receive','inventory.issue','inventory.transfer','inventory.return','inventory.reserve','inventory.export','inventory.movements.view','assignments.manage','borrow.manage','movements.manage','audits.view','audits.perform','notifications.view','disposals.view','disposals.request'],
   management: ['dashboard.view','assets.view','inventory.view','audits.view','reports.view','notifications.view','disposals.view','disposals.approve'],
   auditor: ['dashboard.view','assets.view','inventory.view','audits.view','reports.view','activity.view','disposals.view']

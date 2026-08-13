@@ -15,16 +15,20 @@
 @media(max-width:1100px){.aims-primary-navigation{gap:10px}.aims-primary-navigation>a{font-size:.78rem}}
 @media(max-width:860px){.aims-public-header>nav{position:absolute}.aims-primary-navigation{position:static;display:flex;align-items:center;flex-direction:column;gap:2px;transform:none;text-align:center}.aims-primary-navigation>a{width:100%;padding:9px}.aims-header-actions{align-items:stretch;flex-direction:column;margin:8px 0 0}.aims-header-actions .aims-language{align-self:center}.aims-header-actions .aims-glossy-button{width:100%}}
 
-/* Mobile landing header: vertical brand lockup and centered primary navigation. */
+/* Mobile landing header: compact brand lockup with direct download and sign-in actions. */
 @media(max-width:560px){
-  .aims-public-header{align-items:center;min-height:198px;padding:8px 12px}
-  .aims-brand{width:200px;align-items:center;flex-direction:column;gap:14px;text-align:center}
-  .aims-public-header .aims-mark{width:144px;height:144px}
+  .aims-public-header{align-items:center;gap:7px;min-height:78px;padding:7px 8px}
+  .aims-brand{width:62px;align-items:center;flex:none;flex-direction:column;gap:0;text-align:center}
+  .aims-public-header .aims-mark{width:52px;height:52px}
   .aims-brand>span:last-child{align-items:center;margin-left:0}
-  .aims-brand b{font-size:1.25rem}
-  .aims-brand small{max-width:190px;margin-top:3px;text-align:center}
-  .aims-menu-button{align-self:center}
-  .aims-public-header nav{align-items:center;text-align:center}
-  .aims-public-header nav>a:not(.aims-glossy-button){width:100%;display:flex;justify-content:center;font-size:.94rem}
+  .aims-brand b{font-size:.8rem;line-height:1}
+  .aims-brand small,.aims-menu-button,.aims-primary-navigation{display:none!important}
+  .aims-public-header>nav{position:static!important;display:flex!important;min-width:0;flex:1;align-items:center;justify-content:flex-end;padding:0;border:0;background:transparent;box-shadow:none}
+  .aims-header-actions{width:100%;display:flex;align-items:center;justify-content:flex-end;flex-direction:row;gap:6px;margin:0}
+  .aims-header-actions .aims-language{padding:2px 5px;gap:2px}
+  .aims-header-actions .aims-language svg{width:14px}
+  .aims-header-actions .aims-language select{min-height:38px;padding-right:0;font-size:.72rem}
+  .aims-header-actions .aims-glossy-button{width:auto;min-width:0;min-height:42px;padding:8px 11px;border-radius:11px;font-size:.72rem;white-space:nowrap}
+  .aims-header-actions .aims-glossy-button svg{width:15px;height:15px}
   .aims-footer .aims-footer-download-link svg{display:none}
 }

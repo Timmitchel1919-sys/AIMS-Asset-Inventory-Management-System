@@ -12,4 +12,17 @@ describe('theme-responsive authentication surface',()=>{
   it('includes interaction, responsive and reduced-motion states',()=>{
     for(const selector of [':focus-within','.invalid',':disabled','@media (max-width:767px)','@media (prefers-reduced-motion:reduce)'])expect(css).toContain(selector);
   });
+
+  it('keeps signup on the frozen login background with card-local hidden scrolling',()=>{
+    expect(css).toContain('.auth-page.auth-signup');
+    expect(css).toContain('position:fixed;inset:0;height:100dvh');
+    expect(css).toContain('.auth-signup .login-card::-webkit-scrollbar{display:none');
+    expect(css).toContain('.auth-signup .auth-brand-content{width:min(650px,100%);height:auto;min-height:0;justify-content:center');
+  });
+
+  it('uses one authoritative background rule for login and signup',()=>{
+    expect(css).toContain('.auth-page:is(.auth-login,.auth-signup)');
+    expect(css).toContain('radial-gradient(circle at 52% 48%,#fff 0,#f4fbff 32%,#d5effe 72%,#c7e8fb 100%)!important');
+    expect(css).toContain('.auth-page:is(.auth-login,.auth-signup) .auth-panel::after{display:none!important}');
+  });
 });

@@ -4,6 +4,17 @@ async function signedOut(page:Page){await page.addInitScript(()=>localStorage.se
 async function openFirstRecord(page:Page){await page.locator('tbody tr').first().click()}
 
 test.describe('KCS desktop frontend acceptance',()=>{
+  test('logout returns to landing and sign in returns to the platform',async({page})=>{
+    await page.goto('/dashboard');
+    await page.getByRole('button',{name:/open account menu/i}).click();
+    await page.getByRole('menuitem',{name:/sign out/i}).click();
+    await expect(page).toHaveURL(/\/$/);
+    await page.getByRole('link',{name:/sign in/i}).click();
+    await expect(page).toHaveURL(/\/login$/);
+    await page.getByRole('button',{name:/sign in/i}).click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+  });
+
   test('all public routes load and mock authentication protects direct routes',async({page})=>{
     await signedOut(page);
     for(const path of ['/login','/register','/forgot-password','/reset-password']){await page.goto(path);await expect(page.getByRole('main')).toBeVisible();await expect(page.getByRole('heading').first()).toBeVisible()}

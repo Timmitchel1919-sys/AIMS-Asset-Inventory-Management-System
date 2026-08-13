@@ -1,4 +1,4 @@
-import {Activity,AlertTriangle,Recycle,Settings,ShieldCheck,UserCheck,UserX,Users} from 'lucide-react';
+import {Activity,AlertTriangle,Recycle,ShieldCheck,UserCheck,UserX,Users} from 'lucide-react';
 import {Link} from 'react-router-dom';
 import {PageHeader} from '../components/WorkflowUi';
 import {useApp} from '../context/AppContext';
@@ -8,7 +8,6 @@ const modules=[
   {title:'Users',description:'Accounts, access status, roles, and recent sign-ins.',to:'/admin/users',icon:Users},
   {title:'Roles & Permissions',description:'Role capabilities and approval boundaries.',to:'/admin/roles-permissions',icon:ShieldCheck},
   {title:'Activity Log',description:'Read-only administrative and system history.',to:'/admin/activity-log',icon:Activity},
-  {title:'Settings',description:'Organization, security, data, themes, and integrations.',to:'/admin/settings',icon:Settings},
 ];
 
 export default function AdminConsole(){

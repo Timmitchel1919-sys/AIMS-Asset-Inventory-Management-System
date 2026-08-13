@@ -1,7 +1,7 @@
 import type {ThemeId} from '../domain/types';
 import {normalizeTheme} from '../domain/rules';
 
-export const AIMS_THEME_IDS=['aimsAzureGlass','aimsEmeraldGlass'] as const;
+export const AIMS_THEME_IDS=['aimsAzureGlass','aimsEmeraldGloss'] as const;
 export const PUBLIC_AIMS_THEME:ThemeId='aimsAzureGlass';
 export const DEFAULT_AIMS_THEME:ThemeId='aimsAzureGlass';
 export const AUTHENTICATED_THEME_STORAGE_KEY='authenticatedThemePreference';
@@ -9,7 +9,7 @@ export const LEGACY_THEME_STORAGE_KEY='kcs-theme';
 export const DEFAULT_KCS_THEME=DEFAULT_AIMS_THEME;
 export type KcsThemeId=ThemeId;
 
-const cssTheme:Record<ThemeId,string>={aimsAzureGlass:'kcs-azure-intelligence',aimsEmeraldGlass:'kcs-forest-gold'};
+const cssTheme:Record<ThemeId,string>={aimsAzureGlass:'kcs-azure-intelligence',aimsEmeraldGloss:'emerald-gloss'};
 export const isValidKcsTheme=(value:unknown):value is ThemeId=>typeof value==='string'&&AIMS_THEME_IDS.includes(value as ThemeId);
 
 export function getStoredKcsTheme():ThemeId{
@@ -23,12 +23,10 @@ export function persistAuthenticatedTheme(theme:ThemeId):void{
  const selected=isValidKcsTheme(theme)?theme:DEFAULT_AIMS_THEME;
  try{localStorage.setItem(AUTHENTICATED_THEME_STORAGE_KEY,selected);localStorage.setItem(LEGACY_THEME_STORAGE_KEY,selected)}catch{/* Keep in-memory preference. */}
 }
+const manifestByTheme:Record<ThemeId,string>={aimsAzureGlass:'/manifest-azure.webmanifest',aimsEmeraldGloss:'/manifest-emerald-gloss.webmanifest'};
 export function applyPwaThemeBranding(theme:ThemeId=PUBLIC_AIMS_THEME):void{
- const logo=theme==='aimsEmeraldGlass'?'/aims-logo-green.png':'/aims-logo-blue.png';
- const themeColor=document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');if(themeColor)themeColor.content='#155EEF';
- const favicon=document.querySelector<HTMLLinkElement>('link[rel="icon"]');if(favicon)favicon.href=logo;
- const appleIcon=document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');if(appleIcon)appleIcon.href=logo;
- const manifest=document.querySelector<HTMLLinkElement>('link[rel="manifest"]');if(manifest)manifest.href='/manifest-azure.webmanifest';
+ const themeColor=document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');if(themeColor)themeColor.content='#000000';
+ const manifest=document.querySelector<HTMLLinkElement>('link[rel="manifest"]');if(manifest)manifest.href=manifestByTheme[theme]??manifestByTheme.aimsAzureGlass;
 }
 export function applyKcsTheme(theme:ThemeId,persist=true):void{
  const selected=isValidKcsTheme(theme)?theme:DEFAULT_AIMS_THEME;

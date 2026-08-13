@@ -1,4 +1,4 @@
-export type ThemeId = "aimsAzureGlass" | "aimsEmeraldGlass";
+export type ThemeId = "aimsAzureGlass" | "aimsEmeraldGloss";
 export type Role =
   | "administrator"
   | "ict-manager"
@@ -31,9 +31,16 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  accountType?: "school-user" | "demo-user";
+  authProvider?: "password" | "google" | "anonymous";
+  isDemoUser?: boolean;
   role: Role;
   department: string;
+  jobTitle?: string;
+  accountCreatedAt?: string;
   initials: string;
+  status?: "Active" | "Disabled";
+  profilePhoto?: string;
 }
 export interface Asset {
   id: string;

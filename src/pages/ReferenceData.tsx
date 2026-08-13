@@ -626,10 +626,10 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       });
       return;
     }
-    if (kind === "location" && isTopLevel && user?.role !== "administrator") {
+    if (kind === "location" && isTopLevel && !["administrator", "ict-staff"].includes(user?.role || "")) {
       setFeedback({
         status: "error",
-        message: "Only administrators may create a Main location.",
+        message: "Only authenticated IT members may create a Main location.",
       });
       return;
     }
@@ -744,6 +744,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                     ))}
                   </select>
                   <select
+                    className="location-type-filter"
                     aria-label="Location type"
                     value={typeFilter}
                     onChange={(event) => setTypeFilter(event.target.value)}
@@ -872,7 +873,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                       {type.name}
                     </option>
                   ))}
-                {user?.role === "administrator" && (
+                {user && (
                   <option value="__add__">+ Add new location type</option>
                 )}
               </SelectField>
@@ -939,7 +940,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                         {parent.name} ({parent.type})
                       </option>
                     ))}
-                  {user?.role === "administrator" && (
+                  {user && (
                     <option value="__add_parent__">
                       + Add containing location
                     </option>

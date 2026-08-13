@@ -1,7 +1,7 @@
 {
   "projects": {
-    "default": "kcs-inventory-demo",
-    "firebase hosting:channel:list": "kcs-inventory-demo"
+    "default": "aims-system-22e5d",
+    "firebase hosting:channel:list": "aims-system-22e5d"
   },
   "targets": {},
   "etags": {}

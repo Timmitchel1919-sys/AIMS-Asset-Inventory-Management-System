@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function hasKangoeroeDomain() { return signedIn() && request.auth.token.email is string && request.auth.token.email.matches('^[^@]+@[Kk][Aa][Nn][Gg][Oo][Ee][Rr][Oo][Ee][Ss][Cc][Hh][Oo][Oo][Ll][.]com$'); }
+    function verified() { return hasKangoeroeDomain() && request.auth.token.email_verified == true; }
+    function permission(value) { return verified() && request.auth.token.permissions is list && value in request.auth.token.permissions; }
+    function adminAccess() { return permission('admin.access'); }
+    function legalAdmin() { return permission('legal.manage'); }
+    function legalApprover() { return permission('legal.approve') && permission('legal.publish'); }
+    match /legalDocuments/{type} {
+      allow read: if resource.data.status == 'published' || permission('legal.read');
+      allow create, update: if legalAdmin() && request.resource.data.status in ['draft','pending_approval'] || legalApprover();
+      allow delete: if false;
+      match /versions/{version} { allow read: if resource.data.status in ['published','archived'] || permission('legal.audit'); allow create: if legalApprover(); allow update, delete: if false; }
+    }
+    match /legalConfiguration/{document} { allow read: if true; allow write: if legalApprover(); }
+    match /policyAcknowledgements/{id} {
+      allow create: if verified() && request.resource.data.userId == request.auth.uid && id == request.auth.uid + '_' + request.resource.data.documentType + '_' + request.resource.data.documentVersion;
+      allow read: if verified() && (resource.data.userId == request.auth.uid || permission('legal.audit'));
+      allow update, delete: if false;
+    }
+    match /users/{id} {
+      allow read: if verified();
+      allow create: if verified() && request.auth.uid == id
+        && request.resource.data.keys().hasOnly(['uid','displayName','email','emailNormalized','photoURL','department','jobTitle','accountType','organizationDomain','authProvider','emailVerified','status','createdAt','updatedAt','firstLoginAt','lastLoginAt','preferences'])
+        && request.resource.data.keys().hasAll(['uid','displayName','email','emailNormalized','accountType','organizationDomain','authProvider','emailVerified','status','createdAt','updatedAt','firstLoginAt','lastLoginAt'])
+        && request.resource.data.uid == request.auth.uid && request.resource.data.email == request.resource.data.emailNormalized
+        && request.auth.token.email == request.resource.data.emailNormalized && request.resource.data.accountType == 'school-user'
+        && request.resource.data.organizationDomain == 'kangoeroeschool.com' && request.resource.data.authProvider in ['password','google']
+        && request.resource.data.emailVerified == true && request.resource.data.status == 'active'
+        && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
+        && request.resource.data.firstLoginAt == request.time && request.resource.data.lastLoginAt == request.time;
+      allow update: if verified() && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','preferences','authProvider','emailVerified','updatedAt','lastLoginAt'])
+        && request.resource.data.uid == resource.data.uid && request.resource.data.email == resource.data.email
+        && request.resource.data.emailNormalized == resource.data.emailNormalized && request.resource.data.accountType == resource.data.accountType
+        && request.resource.data.organizationDomain == resource.data.organizationDomain && request.resource.data.status == resource.data.status
+        && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.firstLoginAt == resource.data.firstLoginAt
+        && request.resource.data.authProvider in ['password','google'] && request.resource.data.emailVerified == true
+        && request.resource.data.updatedAt == request.time
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['lastLoginAt']) || request.resource.data.lastLoginAt == request.time);
+      allow delete: if false;
+    }
+    match /roles/{id} { allow read, write: if permission('admin.roles.manage'); }
+    match /permissions/{id} { allow read: if adminAccess(); allow write: if false; }
+    match /systemConfiguration/{id} { allow read, write: if permission('admin.system.configure'); }
+    match /disposals/{id} { allow read: if permission('disposals.view'); allow create: if permission('disposals.request'); allow update: if permission('disposals.approve'); allow delete: if false; }
+    match /locationTypes/{id} { allow read: if verified(); allow create, update, delete: if permission('locationTypes.manage'); }
+    match /codeGroups/{id} { allow read: if verified(); allow create, update, delete: if permission('locationTypes.manage'); }
+    match /auditLogs/{id} { allow read: if permission('legal.audit') || permission('admin.audit.read'); allow create: if adminAccess() || legalAdmin(); allow update, delete: if false; }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
