@@ -95,6 +95,12 @@ const sidebarRouteAliases: Record<string, string[]> = {
   admin: ["/users", "/roles", "/permissions", "/activity"],
   "admin-settings": ["/settings"],
 };
+const sidebarModuleOrder = [
+  "dashboard", "assets", "inventory", "categories", "locations",
+  "departments", "users", "assignments", "borrows", "service-forms",
+  "repairs", "maintenance", "movements", "audits", "reports",
+  "disposals", "settings", "assistant",
+] as const;
 const routeBase = (path: string) =>
   path.replace(/\/\*$/, "").replace(/\/$/, "") || "/";
 const pathBelongsTo = (pathname: string, base: string) =>
@@ -211,29 +217,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     };
   }, [location.pathname, app.sidebarCollapsed, app.mobileOpen]);
   if (!app.user) return null;
-  const routes = navRoutes.filter((route) =>
-    can(app.user?.role, route.permission),
-  );
-  const primaryBase = routes.filter(
-    (route) =>
-      ![
-        "notifications",
-        "disposals",
-        "assistant",
-        "admin-settings",
-        "admin",
-      ].includes(route.id),
-  );
-  const disposalRoute = routes.find((route) => route.id === "disposals");
-  const assistantRoute = routes.find((route) => route.id === "assistant");
-  const settingsRoute = routes.find((route) => route.id === "admin-settings");
-  const administrationRoute = routes.find((route) => route.id === "admin");
-  const reportsIndex = primaryBase.findIndex((route) => route.id === "reports");
-  const primaryRoutes = [...primaryBase];
-  if (disposalRoute) primaryRoutes.splice(reportsIndex + 1, 0, disposalRoute);
-  if (assistantRoute) primaryRoutes.push(assistantRoute);
-  if (settingsRoute) primaryRoutes.push(settingsRoute);
-  if (administrationRoute) primaryRoutes.push(administrationRoute);
+  // Keep the complete module catalog visible in the sidebar. Route guards still
+  // enforce role permissions after a module is selected.
+  const routes = navRoutes;
+  const primaryRoutes = sidebarModuleOrder.flatMap((id) => {
+    const route = routes.find((candidate) => candidate.id === id);
+    return route ? [route] : [];
+  });
   const assistantEnabled = routes.some((route) => route.id === "assistant");
   const bottomNavLabelKeys: Record<string, string> = {
     dashboard: "nav.dashboard",
