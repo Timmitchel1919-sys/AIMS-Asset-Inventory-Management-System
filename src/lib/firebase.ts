@@ -1,5 +1,5 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { connectAuthEmulator, getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const environmentConfig = {
@@ -34,6 +34,19 @@ const app = firebaseConfigured
   : null;
 export const firebaseAuth = app ? getAuth(app) : null;
 export const firestore = app ? getFirestore(app) : null;
+
+const useFirebaseEmulators =
+  import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true";
+
+if (
+  firebaseAuth &&
+  useFirebaseEmulators &&
+  firebaseAuth.emulatorConfig === null
+) {
+  connectAuthEmulator(firebaseAuth, "http://127.0.0.1:9099", {
+    disableWarnings: true,
+  });
+}
 
 export function requireFirebase() {
   if (!firebaseAuth || !firestore)

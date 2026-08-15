@@ -15,6 +15,7 @@
     "typecheck": "tsc -p tsconfig.app.json --noEmit --pretty false",
     "lint": "eslint .",
     "test": "vitest run --configLoader runner",
+    "test:auth-emulator": "node scripts/run-auth-emulator-smoke.mjs",
     "test:watch": "vitest --configLoader runner",
     "test:e2e": "playwright test",
     "preview": "vite preview"
