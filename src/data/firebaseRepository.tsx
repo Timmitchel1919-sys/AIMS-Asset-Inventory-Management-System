@@ -6,13 +6,13 @@ import {
   onSnapshot,
   runTransaction,
   serverTimestamp,
-  writeBatch,
   type DocumentData,
   type Firestore,
 } from "firebase/firestore";
 import { firebaseAuth, requireFirebase } from "../lib/firebase";
 import type { MockSnapshot, WorkflowCommand, WorkflowResult } from "./contracts";
-import { MockInventoryRepository, RepositoryContext } from "./mockRepository";
+import { WorkflowRepositoryEngine } from "./mockRepository";
+import { RepositoryProvider } from "./repositoryContext";
 
 const collections = {
   assets: "assets",
@@ -77,6 +77,7 @@ export function firestoreErrorMessage(error: unknown) {
 function clean(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(clean);
   if (value && typeof value === "object") {
+    if (Object.getPrototypeOf(value) !== Object.prototype) return value;
     return Object.fromEntries(
       Object.entries(value)
         .filter(([, item]) => item !== undefined)
@@ -101,7 +102,7 @@ function deserialize(value: unknown): unknown {
 const changed = (before: unknown, after: unknown) =>
   JSON.stringify(before) !== JSON.stringify(after);
 
-export class FirebaseInventoryRepository extends MockInventoryRepository {
+export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
   private initialized = false;
   private notificationUnsubscribe?: () => void;
 
@@ -152,111 +153,43 @@ export class FirebaseInventoryRepository extends MockInventoryRepository {
     this.notificationUnsubscribe?.();
   }
 
-  private async allocateAssetCode(command: WorkflowCommand) {
+  private prepareAssetCode(command: WorkflowCommand) {
     const prefix = String(command.values?.codePrefix || "KCSMD").toUpperCase();
     const group = this.state.codeGroups.find(
       (item) => item.prefix.toUpperCase() === prefix && item.isActive,
     );
     if (!group) throw new Error(`No active code group exists for ${prefix}.`);
-    const allocated = await runTransaction(this.db, async (transaction) => {
-      const groupRef = doc(this.db, "codeGroups", group.id);
-      const current = await transaction.get(groupRef);
-      if (!current.exists()) throw new Error("The code group no longer exists.");
-      const data = current.data();
-      const minimum = Number(data.minimumNumber);
-      const maximum = Number(data.maximumNumber);
-      const requested = Number(command.values?.codeNumber || 0);
-      const number = requested || Math.max(minimum, Number(data.nextAvailableNumber));
-      if (number < minimum || number > maximum || number > 5000)
-        throw new Error("The asset-code range has been exhausted.");
-      const code = `${prefix}-${number < 100 ? String(number).padStart(2, "0") : number}`;
-      const reservation = doc(this.db, "assetCodes", code);
-      if ((await transaction.get(reservation)).exists())
-        throw new Error("That asset code is already in use.");
-      transaction.set(reservation, {
-        code,
-        codeGroupId: group.id,
-        reservedBy: firebaseAuth?.currentUser?.uid,
-        createdAt: serverTimestamp(),
-      });
-      transaction.update(groupRef, {
-        nextAvailableNumber: Math.max(Number(data.nextAvailableNumber), number + 1),
-        updatedAt: serverTimestamp(),
-        updatedBy: firebaseAuth?.currentUser?.uid,
-      });
-      return number;
-    });
-    command.values = { ...command.values, codePrefix: prefix, codeNumber: allocated };
-    group.nextAvailableNumber = Math.max(group.nextAvailableNumber, allocated + 1);
-  }
-
-  private async persistAtomicStock(before: MockSnapshot, after: MockSnapshot) {
-    const oldItems = new Map(before.inventory.map((item) => [item.id, item]));
-    const modified = after.inventory.filter((item) => {
-      const old = oldItems.get(item.id);
-      return old && (old.onHand !== item.onHand || old.reserved !== item.reserved);
-    });
-    if (!modified.length) return new Set<string>();
-    await runTransaction(this.db, async (transaction) => {
-      for (const item of modified) {
-        const old = oldItems.get(item.id)!;
-        const target = doc(this.db, "inventoryItems", item.id);
-        const current = await transaction.get(target);
-        if (!current.exists()) throw new Error("The inventory item no longer exists.");
-        const data = current.data();
-        const onHand = Number(data.onHand) + (item.onHand - old.onHand);
-        const reserved = Number(data.reserved) + (item.reserved - old.reserved);
-        if (onHand < 0 || reserved < 0 || reserved > onHand)
-          throw new Error("There is not enough available stock for this operation.");
-        transaction.update(target, {
-          onHand,
-          reserved,
-          updatedAt: serverTimestamp(),
-          updatedBy: firebaseAuth?.currentUser?.uid,
-        });
-      }
-      for (const movement of after.inventoryMovements) {
-        if (!before.inventoryMovements.some((item) => item.id === movement.id))
-          transaction.set(
-            doc(this.db, "inventoryTransactions", movement.id),
-            clean({ ...movement, createdAt: serverTimestamp(), createdBy: firebaseAuth?.currentUser?.uid }) as DocumentData,
-          );
-      }
-      for (const reservation of after.reservations) {
-        const old = before.reservations.find((item) => item.id === reservation.id);
-        if (changed(old, reservation))
-          transaction.set(
-            doc(this.db, "inventoryReservations", reservation.id),
-            clean({ ...reservation, updatedAt: serverTimestamp(), updatedBy: firebaseAuth?.currentUser?.uid }) as DocumentData,
-            { merge: true },
-          );
-      }
-    });
-    return new Set(modified.map((item) => item.id));
+    const requested = Number(command.values?.codeNumber || 0);
+    const number = requested || Math.max(group.minimumNumber, group.nextAvailableNumber);
+    if (number < group.minimumNumber || number > group.maximumNumber || number > 5000)
+      throw new Error("The asset-code range has been exhausted.");
+    command.values = { ...command.values, codePrefix: prefix, codeNumber: number };
+    return { group, number };
   }
 
   private async persist(
     before: MockSnapshot,
     after: MockSnapshot,
-    atomicInventoryIds = new Set<string>(),
+    assetCode?: { groupId: string; code: string },
   ) {
-    const batch = writeBatch(this.db);
     const actor = firebaseAuth?.currentUser;
+    const writes: Array<{
+      collection: string;
+      id: string;
+      old?: unknown;
+      data: DocumentData;
+    }> = [];
     const oldReferences = new Map(before.references.map((item) => [item.id, item]));
     for (const item of after.references) {
       const old = oldReferences.get(item.id);
       if (!changed(old, item)) continue;
       const name = item.kind === "category" ? "categories" : item.kind === "department" ? "departments" : "locations";
-      batch.set(
-        doc(this.db, name, item.id),
-        clean({ ...item, id: undefined, ...(old ? {} : { createdAt: serverTimestamp(), createdBy: actor?.uid }), updatedAt: serverTimestamp(), updatedBy: actor?.uid }) as DocumentData,
-        { merge: true },
-      );
+      writes.push({ collection: name, id: item.id, old, data: clean({ ...item, id: undefined, ...(old ? {} : { createdAt: serverTimestamp(), createdBy: actor?.uid }), updatedAt: serverTimestamp(), updatedBy: actor?.uid }) as DocumentData });
     }
     for (const [id, item] of oldReferences) {
       if (after.references.some((candidate) => candidate.id === id)) continue;
       const name = item.kind === "category" ? "categories" : item.kind === "department" ? "departments" : "locations";
-      batch.set(doc(this.db, name, id), { isArchived: true, archivedAt: serverTimestamp(), archivedBy: actor?.uid }, { merge: true });
+      writes.push({ collection: name, id, old: item, data: { isArchived: true, archivedAt: serverTimestamp(), archivedBy: actor?.uid } });
     }
     for (const key of collectionKeys) {
       const oldItems = new Map(
@@ -266,45 +199,61 @@ export class FirebaseInventoryRepository extends MockInventoryRepository {
       for (const item of newItems) {
         const old = oldItems.get(item.id);
         if (!changed(old, item)) continue;
-        if (key === "inventory" && atomicInventoryIds.has(item.id)) continue;
-        if (
-          atomicInventoryIds.size &&
-          (key === "inventoryMovements" || key === "reservations")
-        )
-          continue;
-        const target = doc(this.db, collections[key], item.id);
-        batch.set(
-          target,
-          clean({
+        writes.push({
+          collection: collections[key],
+          id: item.id,
+          old,
+          data: clean({
             ...item,
             id: undefined,
             ...(old ? {} : { createdAt: serverTimestamp(), createdBy: actor?.uid }),
             updatedAt: serverTimestamp(),
             updatedBy: actor?.uid,
           }) as DocumentData,
-          { merge: true },
-        );
+        });
       }
       for (const [id, old] of oldItems) {
         if (!newItems.some((item) => item.id === id)) {
-          batch.set(doc(this.db, collections[key], id), {
-            ...(clean(old) as Record<string, unknown>),
-            isArchived: true,
-            archivedAt: serverTimestamp(),
-            archivedBy: actor?.uid,
-            updatedAt: serverTimestamp(),
-            updatedBy: actor?.uid,
-          });
+          writes.push({ collection: collections[key], id, old, data: { isArchived: true, archivedAt: serverTimestamp(), archivedBy: actor?.uid, updatedAt: serverTimestamp(), updatedBy: actor?.uid } });
         }
       }
     }
     if (changed(before.systemSettings, after.systemSettings))
-      batch.set(
-        doc(this.db, "systemSettings", "organization"),
-        { ...after.systemSettings, updatedAt: serverTimestamp(), updatedBy: actor?.uid },
-        { merge: true },
-      );
-    await batch.commit();
+      writes.push({ collection: "systemSettings", id: "organization", old: before.systemSettings, data: { ...after.systemSettings, updatedAt: serverTimestamp(), updatedBy: actor?.uid } });
+
+    await runTransaction(this.db, async (transaction) => {
+      const existing = new Map<string, DocumentData>();
+      for (const write of writes) {
+        if (!write.old) continue;
+        const target = doc(this.db, write.collection, write.id);
+        const snapshot = await transaction.get(target);
+        if (!snapshot.exists()) throw new Error("A record changed or was removed. Refresh and try again.");
+        existing.set(`${write.collection}/${write.id}`, snapshot.data());
+      }
+      const codeRef = assetCode ? doc(this.db, "assetCodes", assetCode.code) : null;
+      const codeSnapshot = codeRef ? await transaction.get(codeRef) : null;
+      if (codeSnapshot?.exists()) throw new Error("That asset code is already in use.");
+
+      for (const write of writes) {
+        if (write.collection === "inventoryItems" && write.old) {
+          const current = existing.get(`${write.collection}/${write.id}`)!;
+          const old = write.old as { onHand?: unknown; reserved?: unknown };
+          if (Number(current.onHand) !== Number(old.onHand) || Number(current.reserved) !== Number(old.reserved))
+            throw new Error("Inventory changed while you were working. Refresh and try again.");
+        }
+        if (write.collection === "codeGroups" && write.old) {
+          const current = existing.get(`${write.collection}/${write.id}`)!;
+          const old = write.old as { nextAvailableNumber?: unknown };
+          if (Number(current.nextAvailableNumber) !== Number(old.nextAvailableNumber))
+            throw new Error("The asset-code sequence changed. Refresh and try again.");
+        }
+      }
+
+      if (codeRef && assetCode)
+        transaction.set(codeRef, { code: assetCode.code, codeGroupId: assetCode.groupId, reservedBy: actor?.uid, createdAt: serverTimestamp() });
+      for (const write of writes)
+        transaction.set(doc(this.db, write.collection, write.id), write.data, { merge: true });
+    });
   }
 
   override async execute(command: WorkflowCommand): Promise<WorkflowResult> {
@@ -312,14 +261,17 @@ export class FirebaseInventoryRepository extends MockInventoryRepository {
       return { ok: false, message: "AIMS data is still loading. Please wait." };
     const before = structuredClone(this.snapshot());
     try {
-      if (command.action === "asset.create") await this.allocateAssetCode(command);
+      const allocation = command.action === "asset.create" ? this.prepareAssetCode(command) : undefined;
       const result = await super.execute(command);
       if (!result.ok) return result;
-      const atomicInventoryIds = await this.persistAtomicStock(
-        before,
-        this.snapshot(),
-      );
-      await this.persist(before, this.snapshot(), atomicInventoryIds);
+      let codeReservation: { groupId: string; code: string } | undefined;
+      if (allocation) {
+        allocation.group.nextAvailableNumber = Math.max(allocation.group.nextAvailableNumber, allocation.number + 1);
+        const asset = this.state.assets.find((item) => item.id === result.entityId);
+        if (!asset) throw new Error("The created asset could not be prepared for persistence.");
+        codeReservation = { groupId: allocation.group.id, code: asset.code };
+      }
+      await this.persist(before, this.snapshot(), codeReservation);
       return result;
     } catch (error) {
       this.replaceState(before);
@@ -363,9 +315,5 @@ export function FirebaseRepositoryProvider({ children }: { children: ReactNode }
     return <div className="route-loader" role="status">Loading AIMS data…</div>;
   if (state === "error")
     return <main className="auth-page"><section className="auth-card"><h1>AIMS data unavailable</h1><p>{error}</p><button className="btn" onClick={() => location.reload()}>Retry</button></section></main>;
-  return (
-    <RepositoryContext.Provider value={repository}>
-      {children}
-    </RepositoryContext.Provider>
-  );
+  return <RepositoryProvider repository={repository}>{children}</RepositoryProvider>;
 }

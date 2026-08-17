@@ -3,7 +3,7 @@ import {useState,type FormEvent} from 'react';
 import {Button,Field,SelectField,TextAreaField} from '../components/ui';
 import {MutationFeedback,OfflineGate,PageHeader} from '../components/WorkflowUi';
 import {useApp} from '../context/AppContext';
-import {useRepository} from '../data/mockRepository';
+import {useRepository} from '../data/repositoryContext';
 
 const forms=['Laptop registration','Printer service','Module / desktop','Smartboard'];
 export default function ServiceFormsPage(){

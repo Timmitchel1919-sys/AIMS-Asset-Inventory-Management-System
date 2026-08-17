@@ -1,7 +1,7 @@
 import {useMemo} from 'react';
 import {can,type Permission} from '../auth/permissions';
 import {useApp} from '../context/AppContext';
-import {useMockSnapshot} from '../data/mockRepository';
+import {useMockSnapshot} from '../data/repositoryContext';
 import type {MockSnapshot} from '../data/contracts';
 import type {Role} from '../domain/types';
 import type {GlobalSearchResult,GlobalSearchResultType} from '../types/search';

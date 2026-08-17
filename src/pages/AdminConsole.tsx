@@ -2,7 +2,7 @@ import {Activity,AlertTriangle,Recycle,ShieldCheck,UserCheck,UserX,Users} from '
 import {Link} from 'react-router-dom';
 import {PageHeader} from '../components/WorkflowUi';
 import {useApp} from '../context/AppContext';
-import {useMockSnapshot} from '../data/mockRepository';
+import {useMockSnapshot} from '../data/repositoryContext';
 
 const modules=[
   {title:'Users',description:'Accounts, access status, roles, and recent sign-ins.',to:'/admin/users',icon:Users},

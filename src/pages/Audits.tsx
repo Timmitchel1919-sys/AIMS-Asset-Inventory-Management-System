@@ -6,7 +6,7 @@ import {DataTable,type DataColumn} from '../components/DataTable';
 import {Dialog,MutationFeedback,OfflineGate,PageHeader} from '../components/WorkflowUi';
 import {useApp} from '../context/AppContext';
 import type {Audit} from '../domain/types';
-import {useMockSnapshot,useRepository} from '../data/mockRepository';
+import {useMockSnapshot,useRepository} from '../data/repositoryContext';
 
 const outcomes=['Verified','Missing','Damaged','Wrong location','Wrong assigned user','Needs repair','Needs maintenance','Data incorrect','Not accessible'];
 export default function AuditsPage(){

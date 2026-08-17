@@ -8,7 +8,7 @@ import {Button,Card,Loader,State} from '../components/ui';
 import {ConfirmDialog,MutationFeedback,OfflineGate} from '../components/WorkflowUi';
 import {AssetStatusBadge} from '../components/AssetStatusBadge';
 import {useApp} from '../context/AppContext';
-import {useMockSnapshot,useRepository} from '../data/mockRepository';
+import {useMockSnapshot,useRepository} from '../data/repositoryContext';
 import {labelPayload} from '../domain/assetManagement';
 import {useT} from '../i18n';
 

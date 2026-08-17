@@ -6,7 +6,7 @@ import {DataTable,type DataColumn} from '../components/DataTable';
 import {ConfirmDialog,Dialog,MutationFeedback,OfflineGate,PageHeader} from '../components/WorkflowUi';
 import {useApp} from '../context/AppContext';
 import type {BorrowRecord} from '../domain/types';
-import {useMockSnapshot,useRepository} from '../data/mockRepository';
+import {useMockSnapshot,useRepository} from '../data/repositoryContext';
 
 const tone=(status:BorrowRecord['status'])=>status==='Returned'?'success':status==='Overdue'||status==='Rejected'?'danger':status==='Pending Approval'?'warning':'info';
 

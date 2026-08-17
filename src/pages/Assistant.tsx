@@ -4,7 +4,7 @@ import {Link,useLocation,useParams} from 'react-router-dom';
 import {Button,Card} from '../components/ui';
 import {rolePermissions} from '../auth/permissions';
 import {useApp} from '../context/AppContext';
-import {useMockSnapshot} from '../data/mockRepository';
+import {useMockSnapshot} from '../data/repositoryContext';
 import {DeterministicMockAiProvider,type AiAssistantResponse} from '../domain/wave8';
 
 const provider=new DeterministicMockAiProvider();

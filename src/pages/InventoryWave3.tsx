@@ -7,7 +7,7 @@ import {ConfirmDialog,MutationFeedback,OfflineGate,PageHeader} from '../componen
 import {useApp} from '../context/AppContext';
 import {availableStock,reorderRecommendation,stockStatus} from '../domain/rules';
 import type {InventoryItem,StockReservation,WorkflowAction} from '../data/contracts';
-import {useMockSnapshot,useRepository} from '../data/mockRepository';
+import {useMockSnapshot,useRepository} from '../data/repositoryContext';
 
 const operationMeta={
   receive:{action:'stock.receive',title:['Receive stock','Voorraad ontvangen'],icon:PackagePlus},

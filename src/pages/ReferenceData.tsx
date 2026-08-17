@@ -18,7 +18,7 @@ import {
 } from "../components/WorkflowUi";
 import { useApp } from "../context/AppContext";
 import type { ReferenceKind, ReferenceRecord } from "../data/contracts";
-import { useMockSnapshot, useRepository } from "../data/mockRepository";
+import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { LocationTypeForm } from "../components/settings/LocationTypesSettings";
 
 function ParentLocationForm({

@@ -4,7 +4,8 @@ export const SELF_REGISTRATION_ENABLED =
   String(
     import.meta.env.VITE_SELF_REGISTRATION_ENABLED ?? "true",
   ).toLowerCase() === "true";
-export const DEMO_AUTH_MODE = import.meta.env.VITE_DEMO_AUTH_MODE === "true";
+export const DEMO_AUTH_MODE =
+  import.meta.env.DEV && import.meta.env.VITE_DEMO_AUTH_MODE === "true";
 if (import.meta.env.DEV) console.info("AIMS demo auth mode:", DEMO_AUTH_MODE);
 
 export function normalizeEmail(email: string) {

@@ -138,7 +138,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   const [emailVerified, setEmailVerified] = useState(presentationMode);
   const [accessDenied, setAccessDenied] = useState(false);
-  const [authLoading, setAuthLoading] = useState(!presentationMode);
+  const [authLoading, setAuthLoading] = useState(
+    !presentationMode && Boolean(firebaseAuth),
+  );
   const [theme, setThemeState] = useState<ThemeId>(() => getStoredKcsTheme());
   const [publicPath, setPublicPath] = useState(() =>
     isPublicThemePath(
@@ -241,10 +243,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [],
   );
   useEffect(() => {
-    if (presentationMode || !firebaseAuth) {
-      setAuthLoading(false);
-      return;
-    }
+    if (presentationMode || !firebaseAuth) return;
     return onAuthStateChanged(firebaseAuth, async (current) => {
       try {
         await mapFirebaseUser(current);

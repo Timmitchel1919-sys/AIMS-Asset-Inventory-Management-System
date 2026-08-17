@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   test: {
-    exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**']
+    exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**', '.claude/**', 'firestore.emulator.test.ts', 'storage.emulator.test.ts']
   },
   plugins: [
     react(),

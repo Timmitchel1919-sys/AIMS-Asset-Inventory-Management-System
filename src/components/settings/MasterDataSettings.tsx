@@ -4,7 +4,7 @@ import {Badge,Button,Field} from '../ui';
 import {ConfirmDialog,Dialog,MutationFeedback} from '../WorkflowUi';
 import {useApp} from '../../context/AppContext';
 import type {CodeGroup} from '../../data/contracts';
-import {useMockSnapshot,useRepository} from '../../data/mockRepository';
+import {useMockSnapshot,useRepository} from '../../data/repositoryContext';
 import {LocationTypesSettings} from './LocationTypesSettings';
 
 type Feedback={status:'idle'|'loading'|'success'|'error';message:string};

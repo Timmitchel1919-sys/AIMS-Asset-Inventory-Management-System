@@ -5,7 +5,7 @@ import {DataTable,type DataColumn} from '../components/DataTable';
 import {ConfirmDialog,Dialog,MutationFeedback,OfflineGate,PageHeader} from '../components/WorkflowUi';
 import {useApp} from '../context/AppContext';
 import type {InventoryItem,WorkflowAction} from '../data/contracts';
-import {useMockSnapshot,useRepository} from '../data/mockRepository';
+import {useMockSnapshot,useRepository} from '../data/repositoryContext';
 
 type Operation='create'|'edit'|'receive'|'issue'|'transfer'|'reserve'|'return'|'correct';
 const operations:Record<Operation,{action:WorkflowAction;icon:typeof Plus;highRisk?:boolean}>={

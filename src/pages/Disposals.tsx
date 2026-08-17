@@ -7,7 +7,7 @@ import {ConfirmDialog,Dialog,MutationFeedback,OfflineGate,PageHeader} from '../c
 import {can} from '../auth/permissions';
 import {useApp} from '../context/AppContext';
 import type {Disposal} from '../data/contracts';
-import {useMockSnapshot,useRepository} from '../data/mockRepository';
+import {useMockSnapshot,useRepository} from '../data/repositoryContext';
 
 const methods=['Sale','Donation','Trade-in','Recycling','Destruction','Return to supplier','Parts recovery','Other authorized method'];
 const tone=(status:Disposal['status'])=>status==='Completed'||status==='Permanently Archived'?'success':status==='Rejected'?'danger':status==='Approved'||status==='Method Selected'?'info':'warning';

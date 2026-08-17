@@ -18,7 +18,7 @@ import {
 } from "../components/WorkflowUi";
 import { useApp } from "../context/AppContext";
 import type { Movement } from "../domain/types";
-import { useMockSnapshot, useRepository } from "../data/mockRepository";
+import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 
 const movementTypes = [
   "Incoming",

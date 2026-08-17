@@ -16,6 +16,7 @@
     "lint": "eslint .",
     "test": "vitest run --configLoader runner",
     "test:auth-emulator": "node scripts/run-auth-emulator-smoke.mjs",
+    "test:firestore-rules": "node scripts/run-firestore-rules.mjs",
     "test:watch": "vitest --configLoader runner",
     "test:e2e": "playwright test",
     "preview": "vite preview"
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
+    "@firebase/rules-unit-testing": "^5.0.1",
     "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",

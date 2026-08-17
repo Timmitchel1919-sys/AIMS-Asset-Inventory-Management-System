@@ -1,16 +1,8 @@
-import {
-  collection,
-  onSnapshot,
-  query,
-  orderBy,
-  type Timestamp,
-} from "firebase/firestore";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Badge, Card } from "../components/ui";
 import { DataTable, type DataColumn } from "../components/DataTable";
 import { PageHeader } from "../components/WorkflowUi";
-import { firestore } from "../lib/firebase";
-import { useMockSnapshot } from "../data/mockRepository";
+import { useMockSnapshot } from "../data/repositoryContext";
 
 type DirectoryUser = {
   uid: string;
@@ -23,8 +15,8 @@ type DirectoryUser = {
   authProvider: "password" | "google" | "anonymous";
   emailVerified: boolean;
   status: "active";
-  createdAt?: Timestamp;
-  lastLoginAt?: Timestamp;
+  createdAt?: string;
+  lastLoginAt?: string;
 };
 const providerLabel = (value: DirectoryUser["authProvider"]) =>
   value === "anonymous"
@@ -32,8 +24,8 @@ const providerLabel = (value: DirectoryUser["authProvider"]) =>
     : value === "google"
       ? "Google"
       : "Email & Password";
-const dateLabel = (value?: Timestamp) =>
-  value?.toDate ? value.toDate().toLocaleString() : "—";
+const dateLabel = (value?: string) =>
+  value ? new Date(value).toLocaleString() : "—";
 const initials = (name: string) =>
   name
     .split(/\s+/)
@@ -44,43 +36,25 @@ const initials = (name: string) =>
     .toUpperCase() || "U";
 
 export default function UserDirectory() {
-  const mock = useMockSnapshot(),
-    [remoteUsers, setRemoteUsers] = useState<DirectoryUser[]>([]),
-    [loading, setLoading] = useState(!!firestore),
-    [error, setError] = useState("");
-  useEffect(() => {
-    if (!firestore) return;
-    return onSnapshot(
-      query(collection(firestore, "users"), orderBy("displayName")),
-      (snapshot) => {
-        setRemoteUsers(
-          snapshot.docs.map((item) => item.data() as DirectoryUser),
-        );
-        setLoading(false);
-      },
-      () => {
-        setError("The user directory could not be loaded.");
-        setLoading(false);
-      },
-    );
-  }, []);
+  const snapshot = useMockSnapshot(),
+    loading = false,
+    error = "";
   const users = useMemo<DirectoryUser[]>(
     () =>
-      firestore
-        ? remoteUsers
-        : mock.users.map((item) => ({
-            uid: item.id,
-            displayName: item.name,
-            email: item.email,
-            photoURL: null,
-            department: item.department,
-            jobTitle: null,
-            accountType: "school-user",
-            authProvider: "password",
-            emailVerified: true,
-            status: "active",
-          })),
-    [remoteUsers, mock.users],
+      snapshot.users.map((item) => ({
+        uid: item.id,
+        displayName: item.name,
+        email: item.email,
+        photoURL: item.photo,
+        department: item.department,
+        jobTitle: null,
+        accountType: "school-user",
+        authProvider: "password",
+        emailVerified: true,
+        status: "active",
+        lastLoginAt: item.lastLogin,
+      })),
+    [snapshot.users],
   );
   const columns: DataColumn<DirectoryUser>[] = [
     {
@@ -151,7 +125,7 @@ export default function UserDirectory() {
     {
       id: "status",
       label: "Status",
-      render: (item) => <Badge tone="success">Active</Badge>,
+      render: () => <Badge tone="success">Active</Badge>,
       text: (item) => item.status,
     },
     {

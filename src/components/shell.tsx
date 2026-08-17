@@ -48,7 +48,7 @@ import { can } from "../auth/permissions";
 import { matchRoute, navRoutes, type RouteIcon } from "../routes/manifest";
 import { useT } from "../i18n";
 import { PwaStatus } from "./PwaStatus";
-import { useMockSnapshot, useRepository } from "../data/mockRepository";
+import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { GlobalSearch } from "./search/GlobalSearch";
 import { AimsLogo } from "./branding/AimsLogo";
 
@@ -179,7 +179,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       document.removeEventListener("keydown", key);
     };
   }, [mobileSearchOpen]);
-  useEffect(() => setMobileSearchOpen(false), [location.pathname]);
+  useEffect(() => {
+    const task = window.setTimeout(() => setMobileSearchOpen(false), 0);
+    return () => window.clearTimeout(task);
+  }, [location.pathname]);
   const [assistantMessages, setAssistantMessages] = useState<
     { who: "bot" | "you"; text: string }[]
   >([

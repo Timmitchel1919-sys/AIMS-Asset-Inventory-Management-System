@@ -4,7 +4,7 @@ import { Badge, Button, Field, TextAreaField } from "../ui";
 import { ConfirmDialog, Dialog, MutationFeedback } from "../WorkflowUi";
 import { useApp } from "../../context/AppContext";
 import type { LocationType } from "../../data/contracts";
-import { useMockSnapshot, useRepository } from "../../data/mockRepository";
+import { useMockSnapshot, useRepository } from "../../data/repositoryContext";
 
 type Feedback = {
   status: "idle" | "loading" | "success" | "error";

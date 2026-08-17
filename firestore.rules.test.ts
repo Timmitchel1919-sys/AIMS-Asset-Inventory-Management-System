@@ -10,8 +10,8 @@ describe('Firestore AIMS authorization rules',()=>{
   });
   it('restricts user creation to the authenticated uid and protected metadata',()=>{
     expect(rules).toContain('isVerified() && request.auth.uid == uid');
-    expect(rules).toContain("request.resource.data.accountType == 'school-user'");
-    expect(rules).toContain("request.resource.data.organizationDomain == 'kangoeroeschool.com'");
+    expect(rules).toContain("data.accountType == 'school-user'");
+    expect(rules).toContain("data.organizationDomain == 'kangoeroeschool.com'");
     expect(rules).toContain("affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','preferences','authProvider','emailVerified','updatedAt','lastLoginAt'])");
   });
   it('keeps audit history immutable and defaults to deny',()=>{

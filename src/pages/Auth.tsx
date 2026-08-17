@@ -35,8 +35,7 @@ export default function Auth({
 }) {
   const app = useApp(),
     navigate = useNavigate(),
-    location = useLocation(),
-    nl = app.language === "nl";
+    location = useLocation();
   const [done, setDone] = useState(false),
     [showPassword, setShowPassword] = useState(false),
     [error, setError] = useState(""),

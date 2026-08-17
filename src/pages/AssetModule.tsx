@@ -6,7 +6,7 @@ import {useAssetT,type AssetCopyKey} from '../assetCopy';
 import {Button,Card,Field,Loader,SelectField,State,TextAreaField} from '../components/ui';
 import {ConfirmDialog,MutationFeedback,OfflineGate,PageHeader} from '../components/WorkflowUi';
 import {useApp} from '../context/AppContext';
-import {useMockSnapshot,useRepository} from '../data/mockRepository';
+import {useMockSnapshot,useRepository} from '../data/repositoryContext';
 import {isAssignmentEligible,labelPayload,parseAssetImport,validateAssetMovement,type ImportRow} from '../domain/assetManagement';
 import {normalizeAssetCode} from '../domain/assetCode';
 import type {Asset} from '../domain/types';

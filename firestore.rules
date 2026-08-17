@@ -1,72 +1,327 @@
 rules_version = '2';
+
+// AIMS production prototype for the Standard edition `(default)` database.
+// Client-created operational records carry immutable identity/business fields
+// plus server timestamp audit metadata. Unknown collections default to deny.
 service cloud.firestore {
   match /databases/{database}/documents {
     function isSignedIn() { return request.auth != null; }
     function hasSchoolDomain() {
-      return isSignedIn() && request.auth.token.email is string
+      return isSignedIn()
+        && request.auth.token.email is string
         && request.auth.token.email.matches('^[^@]+@[Kk][Aa][Nn][Gg][Oo][Ee][Rr][Oo][Ee][Ss][Cc][Hh][Oo][Oo][Ll][.]com$');
     }
     function isVerified() {
       return hasSchoolDomain() && request.auth.token.email_verified == true;
     }
-    function validWrite() {
-      return isVerified() && request.resource.data.size() <= 250;
-    }
     function hasPermission(value) {
-      return isVerified() && request.auth.token.permissions is list
+      return isVerified()
+        && request.auth.token.permissions is list
+        && request.auth.token.permissions.size() <= 100
         && value in request.auth.token.permissions;
     }
     function isOwnUser(uid) { return isVerified() && request.auth.uid == uid; }
+    function shortString(data, field, maximum) {
+      return !(field in data)
+        || (data[field] is string && data[field].size() <= maximum);
+    }
+    function nullableShortString(data, field, maximum) {
+      return !(field in data)
+        || data[field] == null
+        || (data[field] is string && data[field].size() <= maximum);
+    }
+    function boundedList(data, field, maximum) {
+      return !(field in data) || (data[field] is list && data[field].size() <= maximum);
+    }
+    function auditMetadataValid(data) {
+      return data.updatedAt is timestamp
+        && data.updatedBy is string
+        && data.updatedBy.size() > 0
+        && data.updatedBy.size() <= 128
+        && (!("createdAt" in data) || data.createdAt is timestamp)
+        && (!("createdBy" in data) || (data.createdBy is string && data.createdBy.size() <= 128));
+    }
+    function immutableAuditFields() {
+      return request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy;
+    }
+    function noPrivilegeFields(data) {
+      return !data.keys().hasAny(['role', 'roles', 'permissions', 'isAdmin', 'admin']);
+    }
+
+    function validUser(data) {
+      return data.keys().hasOnly([
+          'uid','displayName','email','emailNormalized','photoURL','department',
+          'jobTitle','accountType','organizationDomain','authProvider',
+          'emailVerified','status','createdAt','updatedAt','firstLoginAt',
+          'lastLoginAt','preferences'
+        ])
+        && data.keys().hasAll([
+          'uid','displayName','email','emailNormalized','accountType',
+          'organizationDomain','authProvider','emailVerified','status',
+          'createdAt','updatedAt','firstLoginAt','lastLoginAt','preferences'
+        ])
+        && data.uid is string && data.uid == request.auth.uid
+        && data.displayName is string && data.displayName.size() > 0 && data.displayName.size() <= 100
+        && data.email is string && data.email == request.auth.token.email
+        && data.emailNormalized == data.email
+        && nullableShortString(data, 'photoURL', 2048)
+        && nullableShortString(data, 'department', 100)
+        && nullableShortString(data, 'jobTitle', 100)
+        && data.accountType == 'school-user'
+        && data.organizationDomain == 'kangoeroeschool.com'
+        && data.authProvider in ['password', 'google']
+        && data.emailVerified == true
+        && data.status == 'active'
+        && data.createdAt is timestamp && data.updatedAt is timestamp
+        && data.firstLoginAt is timestamp && data.lastLoginAt is timestamp
+        && data.preferences is map && data.preferences.size() <= 20;
+    }
+
+    function validAsset(data) {
+      return data.keys().hasOnly([
+          'code','codePrefix','codeNumber','previousCodes','name','description',
+          'category','subcategory','type','brand','model','serialNumber','barcode',
+          'location','currentLocationId','homeLocationId','mainLocationId',
+          'lastMovementAt','department','assignedTo','responsibleEmployee',
+          'supplier','manufacturer','status','condition','purchaseDate',
+          'purchasePrice','warrantyStart','warrantyExpiry','dateAdded','createdBy',
+          'lastUpdated','lastModifiedBy','maintenanceRequired','usefulLifeEnd',
+          'technicalSpecifications','attachments','photos','notes','qr',
+          'createdAt','updatedAt','updatedBy','isArchived','archivedAt','archivedBy'
+        ])
+        && data.keys().hasAll(['code','codePrefix','codeNumber','name','category','type','brand','model','serialNumber','location','department','status','condition','purchaseDate','warrantyExpiry','lastUpdated','qr','createdAt','createdBy','updatedAt','updatedBy'])
+        && data.code is string && data.code.size() > 0 && data.code.size() <= 40
+        && data.codePrefix is string && data.codePrefix.size() > 0 && data.codePrefix.size() <= 16
+        && data.codeNumber is int && data.codeNumber >= 1 && data.codeNumber <= 5000
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && data.serialNumber is string && data.serialNumber.size() > 0 && data.serialNumber.size() <= 200
+        && shortString(data, 'description', 4000)
+        && shortString(data, 'notes', 4000)
+        && boundedList(data, 'previousCodes', 50)
+        && boundedList(data, 'attachments', 50)
+        && boundedList(data, 'photos', 50)
+        && data.qr is bool
+        && auditMetadataValid(data)
+        && noPrivilegeFields(data);
+    }
+
+    function validInventory(data) {
+      return data.keys().hasOnly([
+          'code','barcode','name','description','itemType','category','subcategory',
+          'brand','model','manufacturer','supplier','supplierItemCode','unit',
+          'onHand','reserved','minimum','reorderLevel','reorderQuantity','maximum',
+          'warehouse','storageRoom','shelf','rack','location','department',
+          'lastPurchaseDate','unitCost','currency','batchNumber','expirationDate',
+          'photograph','attachments','notes','createdBy','createdAt','modifiedBy',
+          'lastUpdated','archived','archiveReason','workflowStatus','updatedAt',
+          'updatedBy','isArchived','archivedAt','archivedBy'
+        ])
+        && data.keys().hasAll(['code','name','itemType','category','unit','onHand','reserved','minimum','reorderLevel','reorderQuantity','warehouse','location','createdBy','createdAt','modifiedBy','lastUpdated','archived','updatedAt','updatedBy'])
+        && data.code is string && data.code.size() > 0 && data.code.size() <= 80
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && data.itemType is string && data.itemType.size() <= 100
+        && data.category is string && data.category.size() <= 100
+        && data.unit is string && data.unit.size() <= 40
+        && data.onHand is number && data.onHand >= 0 && data.onHand <= 1000000000
+        && data.reserved is number && data.reserved >= 0 && data.reserved <= data.onHand
+        && data.minimum is number && data.minimum >= 0
+        && data.reorderLevel is number && data.reorderLevel >= 0
+        && data.reorderQuantity is number && data.reorderQuantity >= 0
+        && (!("maximum" in data) || (data.maximum is number && data.maximum >= data.onHand))
+        && data.archived is bool
+        && shortString(data, 'description', 4000)
+        && shortString(data, 'notes', 4000)
+        && boundedList(data, 'attachments', 50)
+        && auditMetadataValid(data)
+        && noPrivilegeFields(data);
+    }
+
+    function validCodeGroup(data) {
+      return data.keys().hasOnly(['name','prefix','minimumNumber','maximumNumber','nextAvailableNumber','isActive','sortOrder','createdAt','createdBy','updatedAt','updatedBy','isArchived','archivedAt','archivedBy'])
+        && data.keys().hasAll(['name','prefix','minimumNumber','maximumNumber','nextAvailableNumber','isActive','sortOrder','createdAt','updatedAt','updatedBy'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.prefix is string && data.prefix.matches('^[A-Z0-9]{1,16}$')
+        && data.minimumNumber is int && data.minimumNumber >= 1
+        && data.maximumNumber is int && data.maximumNumber >= data.minimumNumber && data.maximumNumber <= 5000
+        && data.nextAvailableNumber is int && data.nextAvailableNumber >= data.minimumNumber && data.nextAvailableNumber <= data.maximumNumber + 1
+        && data.isActive is bool && data.sortOrder is int
+        && auditMetadataValid(data);
+    }
+
+    function validActivity(data) {
+      return data.keys().hasOnly(['at','user','action','entityType','entityId','result','detail','createdAt','createdBy','updatedAt','updatedBy'])
+        && data.keys().hasAll(['at','user','action','entityType','entityId','result','detail','createdAt','createdBy','updatedAt','updatedBy'])
+        && data.at is string && data.at.size() <= 40
+        && data.user is string && data.user.size() <= 150
+        && data.action is string && data.action.size() <= 100
+        && data.entityType is string && data.entityType.size() <= 80
+        && data.entityId is string && data.entityId.size() <= 160
+        && data.result in ['Success', 'Failure']
+        && data.detail is string && data.detail.size() <= 2000
+        && data.createdAt is timestamp && data.updatedAt is timestamp
+        && data.createdBy == request.auth.uid && data.updatedBy == request.auth.uid;
+    }
+
+    function validDirectoryUser(data) {
+      return data.keys().hasOnly(['name','email','role','department','status','lastLogin','photo','createdAt','createdBy','updatedAt','updatedBy','isArchived','archivedAt','archivedBy'])
+        && data.keys().hasAll(['name','email','role','department','status','lastLogin','createdAt','createdBy','updatedAt','updatedBy'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 150
+        && data.email is string && data.email.size() <= 254
+        && data.role is string && data.role.size() <= 100
+        && data.department is string && data.department.size() <= 100
+        && data.status in ['Active', 'Inactive']
+        && data.lastLogin is string && data.lastLogin.size() <= 40
+        && nullableShortString(data, 'photo', 2048)
+        && auditMetadataValid(data);
+    }
+    function validRole(data) {
+      return data.keys().hasOnly(['name','description','permissions','system','createdAt','createdBy','updatedAt','updatedBy','isArchived','archivedAt','archivedBy'])
+        && data.keys().hasAll(['name','description','permissions','system','createdAt','createdBy','updatedAt','updatedBy'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 150
+        && data.description is string && data.description.size() <= 2000
+        && boundedList(data, 'permissions', 100)
+        && data.system is bool
+        && auditMetadataValid(data);
+    }
+    function validOperationalRecord(data) {
+      return data.size() <= 200
+        && auditMetadataValid(data)
+        && noPrivilegeFields(data)
+        && shortString(data, 'name', 200)
+        && shortString(data, 'title', 300)
+        && shortString(data, 'description', 4000)
+        && shortString(data, 'notes', 4000)
+        && boundedList(data, 'attachments', 50)
+        && boundedList(data, 'history', 500);
+    }
 
     match /users/{uid} {
       allow read: if isOwnUser(uid);
-      allow create: if isOwnUser(uid)
-        && request.resource.data.keys().hasOnly(['uid','displayName','email','emailNormalized','photoURL','department','jobTitle','accountType','organizationDomain','authProvider','emailVerified','status','createdAt','updatedAt','firstLoginAt','lastLoginAt','preferences'])
-        && request.resource.data.uid == request.auth.uid
-        && request.resource.data.email == request.auth.token.email
-        && request.resource.data.emailNormalized == request.auth.token.email
-        && request.resource.data.organizationDomain == 'kangoeroeschool.com'
-        && request.resource.data.accountType == 'school-user'
-        && request.resource.data.emailVerified == true
-        && request.resource.data.status == 'active';
-      allow update: if isOwnUser(uid)
+      allow create: if isOwnUser(uid) && validUser(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.firstLoginAt == request.time
+        && request.resource.data.lastLoginAt == request.time;
+      allow update: if isOwnUser(uid) && validUser(request.resource.data)
+        && immutableAuditFields()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','preferences','authProvider','emailVerified','updatedAt','lastLoginAt'])
-        && request.resource.data.uid == resource.data.uid
-        && request.resource.data.email == resource.data.email
-        && request.resource.data.organizationDomain == resource.data.organizationDomain
-        && request.resource.data.accountType == resource.data.accountType
-        && request.resource.data.status == resource.data.status;
+        && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }
-    match /activityLogs/{id} {
-      allow read, create: if validWrite();
-      allow update, delete: if false;
+
+    match /assets/{id} {
+      allow read: if isVerified();
+      allow create: if isVerified() && validAsset(request.resource.data);
+      allow update: if isVerified() && validAsset(request.resource.data) && immutableAuditFields()
+        && request.resource.data.code == resource.data.code
+        && request.resource.data.codePrefix == resource.data.codePrefix
+        && request.resource.data.codeNumber == resource.data.codeNumber;
+      allow delete: if false;
+    }
+    match /inventoryItems/{id} {
+      allow read: if isVerified();
+      allow create: if isVerified() && validInventory(request.resource.data);
+      allow update: if isVerified() && validInventory(request.resource.data) && immutableAuditFields()
+        && request.resource.data.code == resource.data.code;
+      allow delete: if false;
+    }
+    match /codeGroups/{id} {
+      allow read: if isVerified();
+      allow create: if hasPermission('admin.system.configure') && validCodeGroup(request.resource.data);
+      allow update: if validCodeGroup(request.resource.data) && immutableAuditFields() && (
+        hasPermission('admin.system.configure')
+        || (isVerified()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nextAvailableNumber','updatedAt','updatedBy'])
+          && request.resource.data.nextAvailableNumber > resource.data.nextAvailableNumber)
+      );
+      allow delete: if false;
     }
     match /assetCodes/{code} {
       allow read: if isVerified();
-      allow create: if validWrite() && request.resource.data.code == code;
+      allow create: if isVerified()
+        && request.resource.data.keys().hasOnly(['code','codeGroupId','reservedBy','createdAt'])
+        && request.resource.data.code == code
+        && code.size() <= 40
+        && request.resource.data.codeGroupId is string
+        && request.resource.data.codeGroupId.size() <= 128
+        && request.resource.data.reservedBy == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && exists(/databases/$(database)/documents/codeGroups/$(request.resource.data.codeGroupId));
       allow update, delete: if false;
     }
+    match /activityLogs/{id} {
+      allow read: if hasPermission('admin.audit.read');
+      allow create: if isVerified() && validActivity(request.resource.data);
+      allow update, delete: if false;
+    }
+
     match /directoryUsers/{id} {
       allow read: if isVerified();
-      allow create, update: if hasPermission('admin.users.manage') && request.resource.data.size() <= 100;
+      allow create: if hasPermission('admin.users.manage') && validDirectoryUser(request.resource.data);
+      allow update: if hasPermission('admin.users.manage') && validDirectoryUser(request.resource.data) && immutableAuditFields();
       allow delete: if false;
     }
     match /roles/{id} {
       allow read: if isVerified();
-      allow create, update: if hasPermission('admin.roles.manage') && request.resource.data.size() <= 100;
+      allow create: if hasPermission('admin.roles.manage') && validRole(request.resource.data);
+      allow update: if hasPermission('admin.roles.manage') && validRole(request.resource.data) && immutableAuditFields()
+        && request.resource.data.system == resource.data.system;
       allow delete: if false;
     }
     match /systemSettings/{id} {
       allow read: if isVerified();
-      allow create, update: if hasPermission('admin.system.configure') && request.resource.data.size() <= 100;
+      allow create, update: if hasPermission('admin.system.configure') && validOperationalRecord(request.resource.data);
       allow delete: if false;
     }
+
+    match /legalDocuments/{type} {
+      allow read: if resource.data.status == 'published' || hasPermission('legal.read');
+      allow create, update: if hasPermission('legal.manage') && validOperationalRecord(request.resource.data);
+      allow delete: if false;
+      match /versions/{version} {
+        allow read: if resource.data.status in ['published', 'archived'] || hasPermission('legal.audit');
+        allow create: if hasPermission('legal.publish') && validOperationalRecord(request.resource.data);
+        allow update, delete: if false;
+      }
+    }
+    match /legalConfiguration/{id} {
+      allow read: if true;
+      allow create, update: if hasPermission('legal.publish') && request.resource.data.size() <= 100;
+      allow delete: if false;
+    }
+    match /policyAcknowledgements/{id} {
+      allow read: if isVerified() && resource.data.userId == request.auth.uid;
+      allow create: if isVerified() && request.resource.data.userId == request.auth.uid
+        && request.resource.data.size() <= 20;
+      allow update, delete: if false;
+    }
+
     match /{collectionName}/{id} {
-      allow read: if isVerified() && collectionName in ['assets','inventoryItems','inventoryTransactions','inventoryReservations','categories','locations','locationTypes','codeGroups','departments','assignments','borrows','repairs','maintenanceSchedules','maintenanceRecords','assetMovements','audits','auditDiscrepancies','correctiveActions','disposals','notifications','reports','reportResults','scheduledReports','legalDocuments','legalConfiguration','policyAcknowledgements'];
-      allow create, update: if validWrite() && collectionName in ['assets','inventoryItems','inventoryTransactions','inventoryReservations','categories','locations','locationTypes','codeGroups','departments','assignments','borrows','repairs','maintenanceSchedules','maintenanceRecords','assetMovements','audits','auditDiscrepancies','correctiveActions','disposals','notifications','reports','reportResults','scheduledReports','policyAcknowledgements'];
+      allow read: if isVerified() && collectionName in [
+        'inventoryTransactions','inventoryReservations','categories','locations',
+        'locationTypes','departments','assignments','borrows','repairs',
+        'maintenanceSchedules','maintenanceRecords','assetMovements','audits',
+        'auditDiscrepancies','correctiveActions','disposals','notifications',
+        'reports','reportResults','scheduledReports'
+      ];
+      allow create: if isVerified() && collectionName in [
+        'inventoryTransactions','inventoryReservations','categories','locations',
+        'locationTypes','departments','assignments','borrows','repairs',
+        'maintenanceSchedules','maintenanceRecords','assetMovements','audits',
+        'auditDiscrepancies','correctiveActions','disposals','notifications',
+        'reports','reportResults','scheduledReports'
+      ] && validOperationalRecord(request.resource.data);
+      allow update: if isVerified() && collectionName in [
+        'inventoryReservations','categories','locations','locationTypes',
+        'departments','assignments','borrows','repairs','maintenanceSchedules',
+        'maintenanceRecords','assetMovements','audits','auditDiscrepancies',
+        'correctiveActions','disposals','notifications','reports','reportResults',
+        'scheduledReports'
+      ] && validOperationalRecord(request.resource.data) && immutableAuditFields();
       allow delete: if false;
     }
+
     match /{document=**} { allow read, write: if false; }
   }
 }

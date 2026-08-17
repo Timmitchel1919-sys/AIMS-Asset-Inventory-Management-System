@@ -5,7 +5,7 @@ import {DataTable,type DataColumn} from '../components/DataTable';
 import {ConfirmDialog,Dialog,MutationFeedback,OfflineGate,PageHeader} from '../components/WorkflowUi';
 import {useApp} from '../context/AppContext';
 import type {Maintenance} from '../domain/types';
-import {useMockSnapshot,useRepository} from '../data/mockRepository';
+import {useMockSnapshot,useRepository} from '../data/repositoryContext';
 
 export default function MaintenancePage(){
   const {language}=useApp(),nl=language==='nl',snapshot=useMockSnapshot(),repository=useRepository();

@@ -21,7 +21,7 @@ import { AppDeviceSettings } from "../components/settings/AppDeviceSettings";
 import { MasterDataSettings } from "../components/settings/MasterDataSettings";
 import { useApp } from "../context/AppContext";
 import type { ThemeId } from "../domain/types";
-import { useRepository } from "../data/mockRepository";
+import { useRepository } from "../data/repositoryContext";
 
 const themes: [ThemeId, string, string][] = [
   [
@@ -108,7 +108,13 @@ export default function Settings() {
       "Published policies, privacy contacts, and version information.",
     ],
   };
-  useEffect(() => setTabState(tabFromPath(location.pathname)), [location.pathname]);
+  useEffect(() => {
+    const task = window.setTimeout(
+      () => setTabState(tabFromPath(location.pathname)),
+      0,
+    );
+    return () => window.clearTimeout(task);
+  }, [location.pathname]);
   const setTab = (value: Tab) => {
     setTabState(value);
     setFeedback({ status: "idle", message: "" });

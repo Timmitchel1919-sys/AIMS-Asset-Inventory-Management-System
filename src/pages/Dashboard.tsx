@@ -21,7 +21,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { useMockSnapshot } from "../data/mockRepository";
+import { useMockSnapshot } from "../data/repositoryContext";
 import { Badge, Button, Card } from "../components/ui";
 import { useApp } from "../context/AppContext";
 export default function Dashboard() {

@@ -7,7 +7,7 @@ import {rolePermissions,type Permission} from '../auth/permissions';
 import {useApp} from '../context/AppContext';
 import type {ActivityRecord,RoleRecord,SystemUser} from '../data/contracts';
 import type {Notification} from '../domain/types';
-import {useMockSnapshot,useRepository} from '../data/mockRepository';
+import {useMockSnapshot,useRepository} from '../data/repositoryContext';
 
 export function NotificationsPage(){
   const {language}=useApp(),nl=language==='nl',snapshot=useMockSnapshot(),repository=useRepository();

@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
+import type { ReactNode } from "react";
 import type {
   Asset,
   AssetStatus,
@@ -71,6 +66,7 @@ import {
   validateLocationMove,
 } from "../domain/rules";
 import { mappedCondition } from "../domain/assetStatus";
+import { RepositoryProvider } from "./repositoryContext";
 
 const clone = <T,>(value: T): T => structuredClone(value);
 const enforceMappedCondition = <T extends Record<string, unknown>>(
@@ -612,7 +608,7 @@ const reportSeeds: ReportDefinition[] = [
   },
 ];
 
-export class MockInventoryRepository implements InventoryRepository {
+export class WorkflowRepositoryEngine implements InventoryRepository {
   private listeners = new Set<() => void>();
   protected state: MockSnapshot = this.seed();
   private seed(): MockSnapshot {
@@ -3629,19 +3625,9 @@ export class MockInventoryRepository implements InventoryRepository {
   }
 }
 
+export class MockInventoryRepository extends WorkflowRepositoryEngine {}
+
 const repository = new MockInventoryRepository();
-export const RepositoryContext = createContext<InventoryRepository>(repository);
 export function MockRepositoryProvider({ children }: { children: ReactNode }) {
-  return (
-    <RepositoryContext.Provider value={repository}>
-      {children}
-    </RepositoryContext.Provider>
-  );
-}
-export function useRepository() {
-  return useContext(RepositoryContext);
-}
-export function useMockSnapshot() {
-  const repo = useRepository();
-  return useSyncExternalStore(repo.subscribe, repo.snapshot, repo.snapshot);
+  return <RepositoryProvider repository={repository}>{children}</RepositoryProvider>;
 }
