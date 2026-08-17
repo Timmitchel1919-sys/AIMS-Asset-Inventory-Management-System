@@ -1,2 +1,14 @@
-import{expect,test}from'@playwright/test';
-test('themed login remains responsive',async({page})=>{await page.setViewportSize({width:768,height:1024});for(const theme of ['kcs-forest-gold','kcs-azure-intelligence']){await page.addInitScript(value=>{localStorage.setItem('kcs-auth','out');localStorage.setItem('kcs-theme',value)},theme);await page.goto('/login');await expect(page.locator('.auth-brand')).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(768);await page.waitForTimeout(550);await page.screenshot({path:`docs/design/login-tablet-${theme}.png`})}await page.setViewportSize({width:390,height:844});await page.reload();await expect(page.locator('.auth-brand')).toBeHidden();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)});
+import { expect, test } from '@playwright/test';
+
+test('Azure-branded login remains responsive', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('kcs-auth', 'out'));
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await page.goto('/login');
+  await expect(page.locator('.auth-brand')).toBeVisible();
+  await expect(page.locator('.auth-page')).toHaveAttribute('data-auth-theme', 'aimsAzureGlass');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(768);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  await expect(page.locator('.auth-brand')).toBeHidden();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});

@@ -5,9 +5,10 @@ test.describe('KCS mobile acceptance',()=>{
     await page.getByRole('button',{name:/open account menu/i}).click();
     await page.getByRole('menuitem',{name:/sign out/i}).click();
     await expect(page).toHaveURL(/\/$/);
-    await page.getByRole('button',{name:/open navigation/i}).click();
     await page.getByRole('link',{name:/sign in/i}).click();
     await expect(page).toHaveURL(/\/login$/);
+    await page.getByLabel(/email address/i).fill('verified.e2e@kangoeroeschool.com');
+    await page.getByLabel('Password',{exact:true}).fill('presentation-only');
     await page.getByRole('button',{name:/sign in/i}).click();
     await expect(page).toHaveURL(/\/dashboard$/);
   });
@@ -18,7 +19,7 @@ test.describe('KCS mobile acceptance',()=>{
   });
   test('required responsive widths and three themes do not overflow',async({page})=>{
     for(const [width,height] of [[360,800],[390,844],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]]){await page.setViewportSize({width,height});await page.goto('/dashboard');expect(await page.evaluate(()=>document.documentElement.scrollWidth),`${width}x${height}`).toBeLessThanOrEqual(width)}
-    await page.setViewportSize({width:390,height:844});await page.goto('/settings');await page.getByRole('button',{name:/Themes/i}).click();for(const name of ['KCS Forest Gold','KCS Azure Intelligence']){await page.getByRole('button',{name:new RegExp(name)}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)}
+    await page.setViewportSize({width:390,height:844});await page.goto('/settings/appearance');for(const name of ['AIMS Azure Glass','Emerald Gloss']){await page.getByRole('button',{name:new RegExp(name)}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)}
   });
   test('offline and install guidance are explicit about mock limitations',async({page})=>{
     await page.goto('/offline');await expect(page.getByText(/not durably synchronized/i)).toBeVisible();

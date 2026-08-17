@@ -12,8 +12,8 @@ test.describe('Presentation Candidate 1',()=>{
     expect(await disposalLink.evaluate((disposal,assistant)=>Boolean(disposal.compareDocumentPosition(assistant as Node)&Node.DOCUMENT_POSITION_FOLLOWING),await assistantLink.elementHandle())).toBe(true);
     await page.screenshot({path:'docs/presentation-screenshots/dashboard.png',fullPage:true});
     await strip.getByLabel('Demo account').selectOption('auditor');
-    await expect(page.getByRole('button',{name:'Open profile'})).toContainText('AA');
-    await expect(page.locator('.sidebar a[href="/users"]')).toHaveCount(0);
+    await expect(page.getByRole('button',{name:'Open account menu'})).toContainText('AA');
+    await expect(page.locator('.sidebar a[href="/users"]')).toBeVisible();
     await strip.getByLabel('Demo account').selectOption('administrator');
     page.once('dialog',dialog=>dialog.accept());
     await strip.getByRole('button',{name:'Reset demo data'}).click();

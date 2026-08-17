@@ -6,7 +6,8 @@ import {
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
 import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
-import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { FirebaseInventoryRepository } from "./src/data/firebaseRepository";
 
 const projectId = "aims-rules-test";
 let environment: RulesTestEnvironment;
@@ -149,5 +150,67 @@ describe("AIMS Firestore authorization", () => {
   it("default-denies unknown collections", async () => {
     const db = environment.authenticatedContext("user-1", verified()).firestore();
     await assertFails(setDoc(doc(db, "unknown/doc"), { value: true }));
+  });
+});
+
+describe("Firebase repository persistence and concurrency", () => {
+  const uid = "repository-user";
+  const claims = verified("repository@kangoeroeschool.com", ["admin.audit.read"]);
+
+  async function seedConcurrencyFixtures() {
+    await environment.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, "codeGroups/devices"), {
+        name: "Mobile devices", prefix: "KCSMD", minimumNumber: 1,
+        maximumNumber: 5000, nextAvailableNumber: 1, isActive: true, sortOrder: 1,
+        createdAt: serverTimestamp(), createdBy: uid, updatedAt: serverTimestamp(), updatedBy: uid,
+      });
+      await setDoc(doc(db, "inventoryItems/cables"), {
+        code: "INV-1", name: "Cable", itemType: "Consumable", category: "Cables",
+        unit: "piece", onHand: 10, reserved: 0, minimum: 1, reorderLevel: 2,
+        reorderQuantity: 5, warehouse: "Main", location: "A1", createdBy: uid,
+        createdAt: serverTimestamp(), modifiedBy: uid, lastUpdated: "2026-08-17T12:00:00.000Z",
+        archived: false, updatedAt: serverTimestamp(), updatedBy: uid,
+      });
+    });
+  }
+
+  it("persists asset allocation across refresh and permits only one concurrent code claim", async () => {
+    await seedConcurrencyFixtures();
+    const db = environment.authenticatedContext(uid, claims).firestore();
+    const first = new FirebaseInventoryRepository(db, () => uid);
+    const second = new FirebaseInventoryRepository(db, () => uid);
+    await Promise.all([first.initialize(), second.initialize()]);
+    const results = await Promise.all([
+      first.execute({ action: "asset.create", values: { codePrefix: "KCSMD", name: "First", serialNumber: "SERIAL-1" } }),
+      second.execute({ action: "asset.create", values: { codePrefix: "KCSMD", name: "Second", serialNumber: "SERIAL-2" } }),
+    ]);
+    expect(results.filter((result) => result.ok), JSON.stringify(results)).toHaveLength(1);
+    const refreshed = new FirebaseInventoryRepository(db, () => uid);
+    await refreshed.initialize();
+    expect(refreshed.snapshot().assets).toHaveLength(1);
+    expect(refreshed.snapshot().assets[0].code).toBe("KCSMD-01");
+    expect(refreshed.snapshot().codeGroups[0].nextAvailableNumber).toBe(2);
+    expect(refreshed.snapshot().activity.some((entry) => entry.action === "asset.create")).toBe(true);
+    first.dispose(); second.dispose(); refreshed.dispose();
+  });
+
+  it("persists stock workflow records and rejects a stale concurrent issue", async () => {
+    await seedConcurrencyFixtures();
+    const db = environment.authenticatedContext(uid, claims).firestore();
+    const first = new FirebaseInventoryRepository(db, () => uid);
+    const second = new FirebaseInventoryRepository(db, () => uid);
+    await Promise.all([first.initialize(), second.initialize()]);
+    const results = await Promise.all([
+      first.execute({ action: "stock.issue", entityId: "cables", values: { quantity: 7 } }),
+      second.execute({ action: "stock.issue", entityId: "cables", values: { quantity: 7 } }),
+    ]);
+    expect(results.filter((result) => result.ok), JSON.stringify(results)).toHaveLength(1);
+    const refreshed = new FirebaseInventoryRepository(db, () => uid);
+    await refreshed.initialize();
+    expect(refreshed.snapshot().inventory[0].onHand).toBe(3);
+    expect(refreshed.snapshot().inventoryMovements).toHaveLength(1);
+    expect(refreshed.snapshot().activity.some((entry) => entry.action === "stock.issue")).toBe(true);
+    first.dispose(); second.dispose(); refreshed.dispose();
   });
 });

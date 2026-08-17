@@ -2338,6 +2338,13 @@ html[data-theme="kcs-forest-gold"] .app-sidebar nav a:hover {border-color:var(--
 html[data-theme="kcs-forest-gold"] .app-sidebar nav a:is(.active,[aria-current="page"]) .navigation-item__icon,
 html[data-theme="kcs-forest-gold"] .app-sidebar nav a:hover .navigation-item__icon {background:transparent}
 
+html[data-theme="kcs-forest-gold"] .app-sidebar.app-sidebar--collapsed .navigation-item {
+  width: 50px;
+  padding: 0;
+  gap: 0;
+  justify-content: center;
+}
+
 /* Inventory overview figures use each theme's dark brand color. */
 html[data-theme="kcs-forest-gold"] .metrics-card .metric strong {color:#0B3D25}
 html[data-theme="kcs-azure-intelligence"] .metrics-card .metric strong {color:#0B2F7A}

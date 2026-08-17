@@ -116,7 +116,9 @@ export default function Auth({
     setSubmitting(true);
     setError("");
     try {
-      await googleLogin(true);
+      if (import.meta.env.VITE_APP_MODE === "presentation")
+        await app.login("ict-staff", true);
+      else await googleLogin(true);
       navigate("/dashboard", { replace: true });
     } catch (reason) {
       setError(authErrorMessage(reason));

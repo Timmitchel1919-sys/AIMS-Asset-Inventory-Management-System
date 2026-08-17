@@ -18,7 +18,8 @@
     "test:auth-emulator": "node scripts/run-auth-emulator-smoke.mjs",
     "test:firestore-rules": "node scripts/run-firestore-rules.mjs",
     "test:watch": "vitest --configLoader runner",
-    "test:e2e": "playwright test",
+    "test:e2e": "npm run build:presentation && playwright test",
+    "test:e2e:diagnostic": "npm run build:presentation && playwright test --workers=1 --reporter=list --trace=on",
     "preview": "vite preview"
   },
   "dependencies": {

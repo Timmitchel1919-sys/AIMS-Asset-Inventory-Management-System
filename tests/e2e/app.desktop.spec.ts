@@ -11,6 +11,8 @@ test.describe('KCS desktop frontend acceptance',()=>{
     await expect(page).toHaveURL(/\/$/);
     await page.getByRole('link',{name:/sign in/i}).click();
     await expect(page).toHaveURL(/\/login$/);
+    await page.getByLabel(/email address/i).fill('verified.e2e@kangoeroeschool.com');
+    await page.getByLabel('Password',{exact:true}).fill('presentation-only');
     await page.getByRole('button',{name:/sign in/i}).click();
     await expect(page).toHaveURL(/\/dashboard$/);
   });
@@ -18,7 +20,7 @@ test.describe('KCS desktop frontend acceptance',()=>{
   test('all public routes load and mock authentication protects direct routes',async({page})=>{
     await signedOut(page);
     for(const path of ['/login','/register','/forgot-password','/reset-password']){await page.goto(path);await expect(page.getByRole('main')).toBeVisible();await expect(page.getByRole('heading').first()).toBeVisible()}
-    await page.goto('/assets');await expect(page).toHaveURL(/\/login$/);await page.getByRole('button',{name:/sign in/i}).click();await expect(page).toHaveURL(/\/dashboard$/);
+    await page.goto('/assets');await expect(page).toHaveURL(/\/login$/);await page.getByLabel(/email address/i).fill('verified.e2e@kangoeroeschool.com');await page.getByLabel('Password',{exact:true}).fill('presentation-only');await page.getByRole('button',{name:/sign in/i}).click();await expect(page).toHaveURL(/\/assets$/);
   });
 
   test('all named routes load directly without framework or route errors',async({page})=>{
@@ -70,7 +72,7 @@ test.describe('KCS desktop frontend acceptance',()=>{
   });
 
   test('movement and audit records are created through domain pages',async({page})=>{
-    await page.goto('/movements/new');await page.getByLabel(/description/i).fill('Acceptance movement');await page.getByLabel(/source/i).fill('ICT Store');await page.getByLabel(/destination/i).fill('Classroom 12');await page.getByLabel(/reason/i).fill('Acceptance verification');await page.getByRole('button',{name:/save movement/i}).click();await expect(page.getByTestId('table-movements').getByRole('row').filter({hasText:'Acceptance movement'})).toBeVisible();
+    await page.goto('/movements/new');await page.getByLabel(/description/i).fill('Acceptance movement');await page.getByLabel(/source/i).selectOption({label:'ICT Store'});await page.getByLabel(/destination/i).selectOption({label:'Classroom 12'});await page.getByLabel(/reason/i).fill('Acceptance verification');await page.getByRole('button',{name:/save movement/i}).click();await expect(page.getByTestId('table-movements').getByRole('row').filter({hasText:'Acceptance movement'})).toBeVisible();
     await page.goto('/audits/new');await page.getByLabel(/^Name/i).fill('Acceptance audit');await page.getByLabel(/assigned auditors/i).fill('Alex Auditor');await page.getByLabel(/deadline/i).fill('2026-12-31');await page.getByRole('button',{name:/generate frozen list/i}).click();await expect(page).toHaveURL(/\/audits\//);await page.getByLabel(/scanned QR/i).fill('KCSMD-147');await page.getByRole('button',{name:/record result/i}).click();await expect(page.getByRole('status')).toContainText(/recorded/i);
   });
 
@@ -79,16 +81,18 @@ test.describe('KCS desktop frontend acceptance',()=>{
   });
 
   test('reports, users, roles and notifications expose working primary actions',async({page})=>{
+    await page.goto('/dashboard');await page.getByLabel('Demo account').selectOption('administrator');
     await page.goto('/reports');await openFirstRecord(page);await page.getByRole('button',{name:/generate/i}).click();await expect(page.getByRole('status')).toContainText(/generated/i);
-    await page.goto('/users');await page.getByRole('button',{name:/add user/i}).click();await page.getByLabel(/^Name/i).fill('Acceptance User');await page.getByLabel(/e-?mail/i).fill('acceptance@kcs.edu');await page.getByLabel(/department/i).fill('ICT');await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.getByText('Acceptance User').first()).toBeVisible();
-    await page.goto('/roles');await page.getByRole('button',{name:/create role/i}).click();await page.getByLabel(/role name/i).fill('Acceptance Role');await page.getByRole('button',{name:/save role/i}).click();await expect(page.getByText('Acceptance Role').first()).toBeVisible();
-    await page.goto('/notifications');await page.getByRole('button',{name:/mark all read/i}).click();await expect(page.getByText('Unread')).toHaveCount(0);
+    await page.goto('/admin/users');await page.getByRole('button',{name:/add user/i}).click();await page.getByLabel(/^Name/i).fill('Acceptance User');await page.getByLabel(/e-?mail/i).fill('acceptance@kangoeroeschool.com');await page.getByLabel(/department/i).fill('ICT');await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.getByText('Acceptance User').first()).toBeVisible();
+    await page.goto('/admin/roles-permissions');await page.getByRole('button',{name:/create role/i}).click();await page.getByLabel(/role name/i).fill('Acceptance Role');await page.getByRole('button',{name:/save role/i}).click();await expect(page.getByText('Acceptance Role').first()).toBeVisible();
+    await page.goto('/notifications');await page.getByRole('button',{name:/mark all read/i}).click();await expect(page.locator('.badge').filter({hasText:/^Unread$/})).toHaveCount(0);
   });
 
   test('all themes, Dutch switching and permission denial work',async({page})=>{
-    await page.goto('/settings');await page.getByRole('button',{name:/Themes/i}).click();for(const [name,id] of [['KCS Forest Gold','kcs-forest-gold'],['KCS Azure Intelligence','kcs-azure-intelligence']]){await page.getByRole('button',{name:new RegExp(name)}).click();await expect(page.locator('html')).toHaveAttribute('data-theme',id)}
-    await page.getByRole('button',{name:'Language'}).click();await page.getByLabel('Language').selectOption('nl');await expect(page.getByRole('link',{name:'ICT-middelen'})).toBeVisible();await page.reload();await expect(page.getByRole('link',{name:'ICT-middelen'})).toBeVisible();
-    await page.evaluate(()=>{localStorage.setItem('kcs-auth','in');localStorage.setItem('kcs-role','auditor');localStorage.setItem('kcs-language','en')});await page.reload();await page.goto('/users');await expect(page).toHaveURL(/\/403$/);
+    await page.goto('/dashboard');await page.getByLabel('Demo account').selectOption('administrator');
+    await page.goto('/settings/appearance');for(const [name,id] of [['AIMS Azure Glass','aimsAzureGlass'],['Emerald Gloss','aimsEmeraldGloss']]){await page.getByRole('button',{name:new RegExp(name)}).click();await expect(page.locator('html')).toHaveAttribute('data-aims-theme',id)}
+    await page.goto('/settings/language');await page.getByLabel('Language').selectOption('nl');await expect(page.getByRole('link',{name:'ICT-middelen'})).toBeVisible();await page.reload();await expect(page.getByRole('link',{name:'ICT-middelen'})).toBeVisible();
+    await page.evaluate(()=>{localStorage.setItem('kcs-auth','in');localStorage.setItem('kcs-role','auditor');localStorage.setItem('kcs-language','en')});await page.reload();await page.goto('/admin/users');await expect(page).toHaveURL(/\/403$/);
   });
 
   test('semantic accessibility, focus and console health pass representative routes',async({page})=>{

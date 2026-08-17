@@ -133,9 +133,12 @@ const isPublicThemePath = (pathname: string) =>
   );
 export function AppProvider({ children }: { children: ReactNode }) {
   const presentationMode = import.meta.env.VITE_APP_MODE === "presentation";
-  const [user, setUser] = useState<User | null>(() =>
-    presentationMode ? demoUsers["ict-staff"] : null,
-  );
+  const [user, setUser] = useState<User | null>(() => {
+    if (!presentationMode) return null;
+    if (localStorage.getItem("kcs-auth") === "out") return null;
+    const storedRole = localStorage.getItem("kcs-role") as Role | null;
+    return (storedRole && demoUsers[storedRole]) || demoUsers["ict-staff"];
+  });
   const [emailVerified, setEmailVerified] = useState(presentationMode);
   const [accessDenied, setAccessDenied] = useState(false);
   const [authLoading, setAuthLoading] = useState(
@@ -294,6 +297,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             identity.includes("@") ? "ict-staff" : identity
           ) as Role;
           setUser(demoUsers[role] || demoUsers["ict-staff"]);
+          localStorage.setItem("kcs-auth", "in");
+          localStorage.setItem("kcs-role", role);
           setEmailVerified(true);
           return;
         }
@@ -308,6 +313,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAccessDenied(false);
         if (presentationMode) {
           setUser(null);
+          localStorage.setItem("kcs-auth", "out");
           return;
         }
         await firebaseLogout();

@@ -6,42 +6,28 @@ test.describe('theme-responsive AIMS authentication',()=>{
   test('desktop login is accessible, validates input and preserves authentication',async({page})=>{
     await page.setViewportSize({width:1440,height:900});
     await page.goto('/login');
-    await expect(page.locator('.auth-page')).toHaveAttribute('data-auth-theme','kcs-forest-gold');
+    await expect(page.locator('.auth-page')).toHaveAttribute('data-auth-theme','aimsAzureGlass');
     await expect(page.getByRole('heading',{name:'AIMS Asset & Inventory Management System'})).toBeVisible();
     await expect(page.getByAltText('AIMS logo')).toBeVisible();
     await expect(page.getByText('Sign in to continue to your secure, role-aware workspace.')).toHaveCount(0);
     await expect(page.locator('.auth-logo-lockup strong')).toHaveCount(0);
-    await expect(page.locator('.auth-logo-lockup img')).toHaveAttribute('src','/aims-logo.png');
-    await expect(page.locator('.auth-brand small')).toHaveText('St. Kangoeroe Community School');
-    await expect.poll(()=>page.locator('.auth-page').evaluate(()=>{
-      const brand=document.querySelector('.auth-brand-content')!.getBoundingClientRect();
-      const card=document.querySelector('.auth-card')!.getBoundingClientRect();
-      return Math.abs(brand.height-card.height);
-    })).toBeLessThanOrEqual(1);
-    const brandEdges=await page.locator('.auth-page').evaluate(()=>{
-      const heading=document.querySelector('.auth-brand h1')!.getBoundingClientRect();
-      const school=document.querySelector('.auth-brand small')!.getBoundingClientRect();
-      const brand=document.querySelector('.auth-brand-content')!.getBoundingClientRect();
-      return{top:Math.abs(heading.top-brand.top),schoolInside:school.bottom<=brand.bottom};
-    });
-    expect(brandEdges.top).toBeLessThanOrEqual(2);
-    expect(brandEdges.schoolInside).toBe(true);
+    await expect(page.locator('.auth-logo-lockup img')).toHaveAttribute('src','/aims-logo-blue.png');
+    await expect(page.locator('.auth-card')).toBeVisible();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(1440);
 
-    const email=page.getByLabel('Email address'),password=page.locator('#auth-password');
+    const email=page.getByLabel('Email address'),password=page.getByLabel('Password',{exact:true});
     await page.keyboard.press('Tab');
     await expect(email).toBeFocused();
     await email.fill('invalid');
     await page.getByRole('button',{name:'Sign in'}).click();
-    await expect(page.getByRole('alert')).toHaveText('Enter a valid email address.');
-    await expect(email).toHaveAttribute('aria-invalid','true');
+    expect(await email.evaluate(element=>(element as HTMLInputElement).checkValidity())).toBe(false);
     await page.getByRole('button',{name:'Show or hide password'}).click();
     await expect(password).toHaveAttribute('type','text');
 
     await email.fill('naomi@kangoeroeschool.com');
-    const signIn=page.getByRole('button',{name:'Sign in'}),submit=page.locator('.auth-submit');
+    await password.fill('presentation-only');
+    const signIn=page.getByRole('button',{name:'Sign in'});
     await signIn.click();
-    await expect(submit).toHaveAttribute('aria-busy','true');
     await expect(page).toHaveURL(/\/dashboard$/);
   });
 

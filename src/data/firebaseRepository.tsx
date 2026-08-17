@@ -102,11 +102,32 @@ function deserialize(value: unknown): unknown {
 const changed = (before: unknown, after: unknown) =>
   JSON.stringify(before) !== JSON.stringify(after);
 
+function writeData(
+  item: { id?: string; createdAt?: unknown; createdBy?: unknown; updatedAt?: unknown; updatedBy?: unknown },
+  exists: boolean,
+  actorUid?: string,
+) {
+  const fields = Object.fromEntries(
+    Object.entries(item).filter(
+      ([key]) => !["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(key),
+    ),
+  );
+  return clean({
+    ...fields,
+    ...(exists ? {} : { createdAt: serverTimestamp(), createdBy: actorUid }),
+    updatedAt: serverTimestamp(),
+    updatedBy: actorUid,
+  }) as DocumentData;
+}
+
 export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
   private initialized = false;
   private notificationUnsubscribe?: () => void;
 
-  constructor(private readonly db: Firestore) {
+  constructor(
+    private readonly db: Firestore,
+    private readonly actorUid: () => string | undefined = () => firebaseAuth?.currentUser?.uid,
+  ) {
     super();
   }
 
@@ -172,7 +193,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     after: MockSnapshot,
     assetCode?: { groupId: string; code: string },
   ) {
-    const actor = firebaseAuth?.currentUser;
+    const actorUid = this.actorUid();
     const writes: Array<{
       collection: string;
       id: string;
@@ -184,12 +205,12 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       const old = oldReferences.get(item.id);
       if (!changed(old, item)) continue;
       const name = item.kind === "category" ? "categories" : item.kind === "department" ? "departments" : "locations";
-      writes.push({ collection: name, id: item.id, old, data: clean({ ...item, id: undefined, ...(old ? {} : { createdAt: serverTimestamp(), createdBy: actor?.uid }), updatedAt: serverTimestamp(), updatedBy: actor?.uid }) as DocumentData });
+      writes.push({ collection: name, id: item.id, old, data: writeData(item, Boolean(old), actorUid) });
     }
     for (const [id, item] of oldReferences) {
       if (after.references.some((candidate) => candidate.id === id)) continue;
       const name = item.kind === "category" ? "categories" : item.kind === "department" ? "departments" : "locations";
-      writes.push({ collection: name, id, old: item, data: { isArchived: true, archivedAt: serverTimestamp(), archivedBy: actor?.uid } });
+      writes.push({ collection: name, id, old: item, data: { isArchived: true, archivedAt: serverTimestamp(), archivedBy: actorUid } });
     }
     for (const key of collectionKeys) {
       const oldItems = new Map(
@@ -203,23 +224,17 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
           collection: collections[key],
           id: item.id,
           old,
-          data: clean({
-            ...item,
-            id: undefined,
-            ...(old ? {} : { createdAt: serverTimestamp(), createdBy: actor?.uid }),
-            updatedAt: serverTimestamp(),
-            updatedBy: actor?.uid,
-          }) as DocumentData,
+          data: writeData(item, Boolean(old), actorUid),
         });
       }
       for (const [id, old] of oldItems) {
         if (!newItems.some((item) => item.id === id)) {
-          writes.push({ collection: collections[key], id, old, data: { isArchived: true, archivedAt: serverTimestamp(), archivedBy: actor?.uid, updatedAt: serverTimestamp(), updatedBy: actor?.uid } });
+          writes.push({ collection: collections[key], id, old, data: { isArchived: true, archivedAt: serverTimestamp(), archivedBy: actorUid, updatedAt: serverTimestamp(), updatedBy: actorUid } });
         }
       }
     }
     if (changed(before.systemSettings, after.systemSettings))
-      writes.push({ collection: "systemSettings", id: "organization", old: before.systemSettings, data: { ...after.systemSettings, updatedAt: serverTimestamp(), updatedBy: actor?.uid } });
+      writes.push({ collection: "systemSettings", id: "organization", old: before.systemSettings, data: { ...after.systemSettings, updatedAt: serverTimestamp(), updatedBy: actorUid } });
 
     await runTransaction(this.db, async (transaction) => {
       const existing = new Map<string, DocumentData>();
@@ -250,7 +265,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       }
 
       if (codeRef && assetCode)
-        transaction.set(codeRef, { code: assetCode.code, codeGroupId: assetCode.groupId, reservedBy: actor?.uid, createdAt: serverTimestamp() });
+        transaction.set(codeRef, { code: assetCode.code, codeGroupId: assetCode.groupId, reservedBy: actorUid, createdAt: serverTimestamp() });
       for (const write of writes)
         transaction.set(doc(this.db, write.collection, write.id), write.data, { merge: true });
     });
