@@ -1,5 +1,22 @@
 # KCS Current Implementation Matrix
 
+## Firebase production integration addendum (2026-08-16)
+
+The earlier frontend-only readiness decision below is historical. The production runtime now uses Firebase Authentication and `FirebaseInventoryRepository`; `MockRepositoryProvider` is limited to explicit local demo/test and presentation modes. Exact school-domain plus verified-email checks gate repository mounting, and Firestore/Storage rules independently enforce the same policy.
+
+| Capability | Status | Current implementation |
+|---|---|---|
+| Authentication/domain access | Implemented | Email/password and Google post-auth checks; verification screen/token refresh; wrong domains rejected |
+| Production business repository | Implemented | Existing repository contract backed by Firestore; no production mock fallback |
+| Assets/code groups | Implemented | Persistent records; transactional code-group allocation and immutable code reservation |
+| Inventory/reservations/transactions | Implemented | Persistent records; authoritative stock/reservation transactions prevent negative/over-reserved stock |
+| Assignments/borrows/repairs/maintenance/movements/disposals | Implemented | Existing workflows persist linked records together through atomic commits |
+| Audits/reports/notifications | Partial | Implemented UI workflows persist; pre-existing placeholder routes remain partial; notifications have one bounded listener |
+| Profiles/preferences | Implemented | `users/{uid}` profile and appropriate preferences; privilege fields protected by rules |
+| Storage upload UI | Partial | Secure owner-path rules deployed; existing attachment/signature UI is not fully migrated to Storage uploads |
+| AI/backup/integrations | Mock/not implemented | Unchanged and not falsely activated by Firebase integration |
+| Security rules | Implemented | Single production `firestore.rules`, immutable logs/codes, protected self-profile, explicit collections, default deny |
+
 ## Wave 9 final-audit addendum
 
 The manifest baseline remains 172 total, 83 implemented, 89 partial and 0 missing. Wave 9 does not reclassify rendering-only aliases as implemented. Four themes are present while final certification requires five. Final decision: **NOT READY FOR FIREBASE**.
@@ -62,7 +79,7 @@ Wave 8 adds canonical user-detail/access/session, role/permission, activity-cate
 | E2E assertions | 19 passed, 0 failed before the 120-second command limit |
 | Browser runner | Incomplete current certification; the runner timed out while test 20+ remained |
 
-No Firebase dependency, configuration, authentication integration, Firestore work or deployment was added. Audits, reports and Wave 6 were not started.
+The statement previously here that Firebase was not connected is superseded by the production integration addendum above.
 # Permanent asset status/color system
 
 Source-complete: centralized typed mapping including Assigned, Archived, and Under Repair; fixed cross-theme tokens; reusable accessible badge; ICT Asset table/detail integration; form and repository synchronization/validation; assignment, repair, and archive workflow enforcement; EN/NL labels; normalization report/fallback; print styling; and unit coverage.
@@ -76,4 +93,4 @@ Source-complete: centralized typed mapping including Assigned, Archived, and Und
 | EN/NL public content | Implemented | Dedicated typed content module |
 | PWA install experience | Implemented | Browser prompt plus iOS guidance |
 | Public operational repository access | None | Landing page does not consume repository context |
-| Firebase | Not connected | Explicit phase boundary retained |
+| Firebase | Implemented | Authenticated production repository; public page does not query protected collections |

@@ -456,6 +456,7 @@ export async function refreshVerification() {
   const { auth } = requireFirebase();
   if (!auth.currentUser) return false;
   await reload(auth.currentUser);
+  await auth.currentUser.getIdToken(true);
   if (auth.currentUser.emailVerified)
     await ensureAimsUserProfile(auth.currentUser);
   return auth.currentUser.emailVerified;

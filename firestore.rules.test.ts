@@ -2,20 +2,21 @@ import {readFileSync} from 'node:fs';
 import {describe,expect,it} from 'vitest';
 
 const rules=readFileSync(new URL('./firestore.rules',import.meta.url),'utf8');
-const productionRules=readFileSync(new URL('./firestore.production.rules',import.meta.url),'utf8');
 describe('Firestore AIMS authorization rules',()=>{
-  it('keeps temporary demo data private to authenticated Firebase users',()=>{
-    expect(rules).toContain('allow read, write: if request.auth != null');
-    expect(rules).not.toContain('allow read, write: if true');
-  });
-  it('preserves exact verified school-domain production rules',()=>{
-    expect(productionRules).toContain("request.auth.token.email.matches('^[^@]+@[Kk][Aa][Nn][Gg][Oo][Ee][Rr][Oo][Ee][Ss][Cc][Hh][Oo][Oo][Ll][.]com$')");
-    expect(productionRules).toContain('hasKangoeroeDomain() && request.auth.token.email_verified == true');
+  it('uses one secure exact verified-domain production ruleset',()=>{
+    expect(rules).toContain("request.auth.token.email.matches('^[^@]+@[Kk][Aa][Nn][Gg][Oo][Ee][Rr][Oo][Ee][Ss][Cc][Hh][Oo][Oo][Ll][.]com$')");
+    expect(rules).toContain('request.auth.token.email_verified == true');
+    expect(rules).not.toContain('allow read, write: if request.auth != null');
   });
   it('restricts user creation to the authenticated uid and protected metadata',()=>{
-    expect(productionRules).toContain('verified() && request.auth.uid == id');
-    expect(productionRules).toContain("request.resource.data.accountType == 'school-user'");
-    expect(productionRules).toContain("request.resource.data.organizationDomain == 'kangoeroeschool.com'");
-    expect(productionRules).toContain("affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','preferences','authProvider','emailVerified','updatedAt','lastLoginAt'])");
+    expect(rules).toContain('isVerified() && request.auth.uid == uid');
+    expect(rules).toContain("request.resource.data.accountType == 'school-user'");
+    expect(rules).toContain("request.resource.data.organizationDomain == 'kangoeroeschool.com'");
+    expect(rules).toContain("affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','preferences','authProvider','emailVerified','updatedAt','lastLoginAt'])");
+  });
+  it('keeps audit history immutable and defaults to deny',()=>{
+    expect(rules).toContain('match /activityLogs/{id}');
+    expect(rules).toContain('allow update, delete: if false;');
+    expect(rules).toContain('match /{document=**} { allow read, write: if false; }');
   });
 });

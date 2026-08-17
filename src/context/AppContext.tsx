@@ -104,6 +104,7 @@ type Ctx = {
   user: User | null;
   authLoading: boolean;
   emailVerified: boolean;
+  accessDenied: boolean;
   preferences: UserPreferences;
   updatePreferences: (value: UserPreferences) => Promise<void>;
   login: (
@@ -136,6 +137,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     presentationMode ? demoUsers["ict-staff"] : null,
   );
   const [emailVerified, setEmailVerified] = useState(presentationMode);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [authLoading, setAuthLoading] = useState(!presentationMode);
   const [theme, setThemeState] = useState<ThemeId>(() => getStoredKcsTheme());
   const [publicPath, setPublicPath] = useState(() =>
@@ -176,11 +178,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       const demoUser = DEMO_AUTH_MODE && firebaseUser.isAnonymous;
       if (!canFirebaseUserAccess(firebaseUser)) {
+        setAccessDenied(true);
         await firebaseLogout();
         setUser(null);
         setEmailVerified(false);
         return;
       }
+      setAccessDenied(false);
       const canProvision =
         demoUser || !isVerificationRequired() || firebaseUser.emailVerified;
       const profile = demoUser
@@ -262,6 +266,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       user,
       authLoading,
       emailVerified,
+      accessDenied,
       preferences,
       updatePreferences: async (next) => {
         const merged = {
@@ -284,6 +289,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         remember = true,
         password = "",
       ) => {
+        setAccessDenied(false);
         if (presentationMode) {
           const role = (
             identity.includes("@") ? "ict-staff" : identity
@@ -300,6 +306,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         await firebaseLogin(identity, password, remember);
       },
       logout: async () => {
+        setAccessDenied(false);
         if (presentationMode) {
           setUser(null);
           return;
@@ -339,6 +346,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       user,
       authLoading,
       emailVerified,
+      accessDenied,
       preferences,
       presentationMode,
       mapFirebaseUser,

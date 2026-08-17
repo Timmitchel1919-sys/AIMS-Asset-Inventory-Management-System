@@ -614,7 +614,7 @@ const reportSeeds: ReportDefinition[] = [
 
 export class MockInventoryRepository implements InventoryRepository {
   private listeners = new Set<() => void>();
-  private state: MockSnapshot = this.seed();
+  protected state: MockSnapshot = this.seed();
   private seed(): MockSnapshot {
     return {
       assets: clone(seedAssets).map((asset) => {
@@ -758,7 +758,11 @@ export class MockInventoryRepository implements InventoryRepository {
       ]),
     );
   }
-  private emit() {
+  protected replaceState(state: MockSnapshot) {
+    this.state = state;
+    this.emit();
+  }
+  protected emit() {
     this.state = { ...this.state };
     this.listeners.forEach((listener) => listener());
   }
@@ -3626,7 +3630,7 @@ export class MockInventoryRepository implements InventoryRepository {
 }
 
 const repository = new MockInventoryRepository();
-const RepositoryContext = createContext<InventoryRepository>(repository);
+export const RepositoryContext = createContext<InventoryRepository>(repository);
 export function MockRepositoryProvider({ children }: { children: ReactNode }) {
   return (
     <RepositoryContext.Provider value={repository}>

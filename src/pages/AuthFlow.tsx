@@ -107,6 +107,26 @@ export function VerifyEmailPage() {
   );
 }
 
+export function AccessDeniedPage() {
+  const app = useApp();
+  const navigate = useNavigate();
+  return (
+    <div className="auth-page">
+      <main className="auth-panel">
+        <Card className="auth-card">
+          <ShieldCheck />
+          <h1>Access Restricted</h1>
+          <p>AIMS is available only to authorized Kangoeroe School users.</p>
+          <p>Please sign in with your @kangoeroeschool.com account.</p>
+          <Button onClick={async () => { await app.logout(); navigate("/login", { replace: true }); }}>
+            Return to Sign In
+          </Button>
+        </Card>
+      </main>
+    </div>
+  );
+}
+
 export function SecurityPage() {
   const app = useApp(),
     nl = app.language === "nl",

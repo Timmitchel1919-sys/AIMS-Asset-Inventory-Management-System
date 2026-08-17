@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function authorized() {
+      return request.auth != null && request.auth.token.email is string
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.matches('^[^@]+@[Kk][Aa][Nn][Gg][Oo][Ee][Rr][Oo][Ee][Ss][Cc][Hh][Oo][Oo][Ll][.]com$');
+    }
+    match /aims/{uid}/{allPaths=**} {
+      allow read: if authorized();
+      allow write: if authorized() && request.auth.uid == uid
+        && request.resource.size < 10 * 1024 * 1024;
+    }
+    match /{allPaths=**} { allow read, write: if false; }
+  }
+}

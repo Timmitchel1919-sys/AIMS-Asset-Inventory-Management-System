@@ -1,6 +1,6 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 
 const environmentConfig = {
   VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -46,6 +46,14 @@ if (
   connectAuthEmulator(firebaseAuth, "http://127.0.0.1:9099", {
     disableWarnings: true,
   });
+}
+if (firestore && useFirebaseEmulators) {
+  try {
+    connectFirestoreEmulator(firestore, "127.0.0.1", 8080);
+  } catch (error) {
+    if (import.meta.env.DEV)
+      console.debug("Firestore emulator was already connected.", error);
+  }
 }
 
 export function requireFirebase() {

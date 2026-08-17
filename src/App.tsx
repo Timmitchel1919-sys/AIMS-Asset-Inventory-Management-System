@@ -8,10 +8,11 @@ import {useApp} from './context/AppContext';
 import {DEMO_AUTH_MODE} from './auth/aimsEmailPolicy';
 
 function RenderRoute({route}:{route:AppRoute}){
-  const {user,authLoading,emailVerified}=useApp();
+  const {user,authLoading,emailVerified,accessDenied}=useApp();
   const location=useLocation();
   const Page=route.component;
   if(authLoading)return <RouteLoader/>;
+  if(accessDenied&&route.id!=='access-denied')return <Navigate to="/access-denied" replace/>;
   if(route.public){
     if(['login','signup'].includes(route.id)&&user)return <Navigate to={emailVerified?'/dashboard':'/verify-email'} replace/>;
     if(route.id==='verify-email'&&!user)return <Navigate to="/login" replace/>;

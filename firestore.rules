@@ -1,10 +1,72 @@
 rules_version = '2';
-
-// TEMPORARY DEMO RULES. Production rules are preserved in firestore.production.rules.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    function isSignedIn() { return request.auth != null; }
+    function hasSchoolDomain() {
+      return isSignedIn() && request.auth.token.email is string
+        && request.auth.token.email.matches('^[^@]+@[Kk][Aa][Nn][Gg][Oo][Ee][Rr][Oo][Ee][Ss][Cc][Hh][Oo][Oo][Ll][.]com$');
     }
+    function isVerified() {
+      return hasSchoolDomain() && request.auth.token.email_verified == true;
+    }
+    function validWrite() {
+      return isVerified() && request.resource.data.size() <= 250;
+    }
+    function hasPermission(value) {
+      return isVerified() && request.auth.token.permissions is list
+        && value in request.auth.token.permissions;
+    }
+    function isOwnUser(uid) { return isVerified() && request.auth.uid == uid; }
+
+    match /users/{uid} {
+      allow read: if isOwnUser(uid);
+      allow create: if isOwnUser(uid)
+        && request.resource.data.keys().hasOnly(['uid','displayName','email','emailNormalized','photoURL','department','jobTitle','accountType','organizationDomain','authProvider','emailVerified','status','createdAt','updatedAt','firstLoginAt','lastLoginAt','preferences'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.emailNormalized == request.auth.token.email
+        && request.resource.data.organizationDomain == 'kangoeroeschool.com'
+        && request.resource.data.accountType == 'school-user'
+        && request.resource.data.emailVerified == true
+        && request.resource.data.status == 'active';
+      allow update: if isOwnUser(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','preferences','authProvider','emailVerified','updatedAt','lastLoginAt'])
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.organizationDomain == resource.data.organizationDomain
+        && request.resource.data.accountType == resource.data.accountType
+        && request.resource.data.status == resource.data.status;
+      allow delete: if false;
+    }
+    match /activityLogs/{id} {
+      allow read, create: if validWrite();
+      allow update, delete: if false;
+    }
+    match /assetCodes/{code} {
+      allow read: if isVerified();
+      allow create: if validWrite() && request.resource.data.code == code;
+      allow update, delete: if false;
+    }
+    match /directoryUsers/{id} {
+      allow read: if isVerified();
+      allow create, update: if hasPermission('admin.users.manage') && request.resource.data.size() <= 100;
+      allow delete: if false;
+    }
+    match /roles/{id} {
+      allow read: if isVerified();
+      allow create, update: if hasPermission('admin.roles.manage') && request.resource.data.size() <= 100;
+      allow delete: if false;
+    }
+    match /systemSettings/{id} {
+      allow read: if isVerified();
+      allow create, update: if hasPermission('admin.system.configure') && request.resource.data.size() <= 100;
+      allow delete: if false;
+    }
+    match /{collectionName}/{id} {
+      allow read: if isVerified() && collectionName in ['assets','inventoryItems','inventoryTransactions','inventoryReservations','categories','locations','locationTypes','codeGroups','departments','assignments','borrows','repairs','maintenanceSchedules','maintenanceRecords','assetMovements','audits','auditDiscrepancies','correctiveActions','disposals','notifications','reports','reportResults','scheduledReports','legalDocuments','legalConfiguration','policyAcknowledgements'];
+      allow create, update: if validWrite() && collectionName in ['assets','inventoryItems','inventoryTransactions','inventoryReservations','categories','locations','locationTypes','codeGroups','departments','assignments','borrows','repairs','maintenanceSchedules','maintenanceRecords','assetMovements','audits','auditDiscrepancies','correctiveActions','disposals','notifications','reports','reportResults','scheduledReports','policyAcknowledgements'];
+      allow delete: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
   }
 }

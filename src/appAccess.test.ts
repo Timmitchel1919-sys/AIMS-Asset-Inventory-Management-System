@@ -29,13 +29,11 @@ describe('app download and admin access integration',()=>{
     expect(route?.permission).toBe('admin.access');
   });
 
-  it('keeps temporary demo Firestore access authenticated and never public',()=>{
+  it('deploys verified school-domain rules with default deny',()=>{
     const rules=readFileSync('firestore.rules','utf8');
-    expect(rules).toContain('allow read, write: if request.auth != null');
-    expect(rules).not.toContain('allow read, write: if true');
-    const productionRules=readFileSync('firestore.production.rules','utf8');
-    expect(productionRules).toContain("match /users/{id}");
-    expect(productionRules).toContain("match /{document=**} { allow read, write: if false; }");
+    expect(rules).toContain('request.auth.token.email_verified == true');
+    expect(rules).toContain("match /users/{uid}");
+    expect(rules).toContain("match /{document=**} { allow read, write: if false; }");
   });
 
   it('uses Firebase anonymous authentication for one-click demo access',()=>{
