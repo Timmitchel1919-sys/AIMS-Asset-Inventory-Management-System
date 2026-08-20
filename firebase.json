@@ -20,6 +20,16 @@
   "storage": {
     "rules": "storage.rules"
   },
+  "auth": {
+    "providers": {
+      "anonymous": false,
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "AIMS Asset Inventory System",
+        "supportEmail": "servicedesk@kangoeroeschool.com"
+      }
+    }
+  },
   "emulators": {
     "firestore": {
       "host": "127.0.0.1",

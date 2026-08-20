@@ -197,9 +197,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         : canProvision
           ? await ensureAimsUserProfile(firebaseUser)
           : await loadProfile(firebaseUser);
+      const tokenRole = demoUser
+        ? undefined
+        : (await firebaseUser.getIdTokenResult(true)).claims.role;
       const role = DEMO_AUTH_MODE
         ? "ict-staff"
-        : validRoles.has(profile.role as Role)
+        : validRoles.has(tokenRole as Role)
+          ? (tokenRole as Role)
+          : validRoles.has(profile.role as Role)
           ? (profile.role as Role)
           : "warehouse-staff";
       const created =

@@ -42,6 +42,11 @@ const collections = {
 type CollectionKey = keyof typeof collections;
 const collectionKeys = Object.keys(collections) as CollectionKey[];
 
+const isExpectedRestrictedCollection = (key: CollectionKey, error: unknown) =>
+  key === "activity" &&
+  String((error as { code?: unknown })?.code || "").replace("firestore/", "") ===
+    "permission-denied";
+
 export class FirebaseRepositoryError extends Error {
   constructor(
     message: string,
@@ -136,10 +141,15 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     const next = { ...base } as MockSnapshot;
     await Promise.all(
       collectionKeys.map(async (key) => {
-        const result = await getDocs(collection(this.db, collections[key]));
-        (next[key] as unknown) = result.docs.map((item) =>
-          deserialize({ id: item.id, ...item.data() }),
-        );
+        try {
+          const result = await getDocs(collection(this.db, collections[key]));
+          (next[key] as unknown) = result.docs.map((item) =>
+            deserialize({ id: item.id, ...item.data() }),
+          );
+        } catch (error) {
+          if (!isExpectedRestrictedCollection(key, error)) throw error;
+          (next[key] as unknown) = [];
+        }
       }),
     );
     const referenceCollections = await Promise.all(

@@ -45,6 +45,9 @@ service cloud.firestore {
       return request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.createdBy == resource.data.createdBy;
     }
+    function immutableUserCreatedAt() {
+      return request.resource.data.createdAt == resource.data.createdAt;
+    }
     function noPrivilegeFields(data) {
       return !data.keys().hasAny(['role', 'roles', 'permissions', 'isAdmin', 'admin']);
     }
@@ -204,7 +207,7 @@ service cloud.firestore {
         && request.resource.data.firstLoginAt == request.time
         && request.resource.data.lastLoginAt == request.time;
       allow update: if isOwnUser(uid) && validUser(request.resource.data)
-        && immutableAuditFields()
+        && immutableUserCreatedAt()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','preferences','authProvider','emailVerified','updatedAt','lastLoginAt'])
         && request.resource.data.updatedAt == request.time;
       allow delete: if false;

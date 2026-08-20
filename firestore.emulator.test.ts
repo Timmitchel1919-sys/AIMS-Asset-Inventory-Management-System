@@ -77,6 +77,13 @@ describe("AIMS Firestore authorization", () => {
       preferences: {},
     };
     await assertSucceeds(setDoc(doc(db, "users/user-1"), profile));
+    await assertSucceeds(
+      updateDoc(doc(db, "users/user-1"), {
+        displayName: "School User Updated",
+        updatedAt: serverTimestamp(),
+        lastLoginAt: serverTimestamp(),
+      }),
+    );
     await assertFails(updateDoc(doc(db, "users/user-1"), { role: "admin" }));
     await assertFails(getDoc(doc(db, "users/user-2")));
   });

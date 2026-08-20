@@ -1,7 +1,6 @@
 {
   "projects": {
-    "default": "aims-system-22e5d",
-    "firebase hosting:channel:list": "aims-system-22e5d"
+    "default": "aims-asset-inventory-system"
   },
   "targets": {},
   "etags": {}
