@@ -14,6 +14,7 @@ function RenderRoute({route}:{route:AppRoute}){
   if(authLoading)return <RouteLoader/>;
   if(accessDenied&&route.id!=='access-denied')return <Navigate to="/access-denied" replace/>;
   if(route.public){
+    if(route.id==='home'&&user&&emailVerified)return <Navigate to="/dashboard" replace/>;
     if(['login','signup'].includes(route.id)&&user)return <Navigate to={emailVerified?'/dashboard':'/verify-email'} replace/>;
     if(route.id==='verify-email'&&!user)return <Navigate to="/login" replace/>;
     if(route.id==='verify-email'&&emailVerified)return <Navigate to="/dashboard" replace/>;
