@@ -402,7 +402,7 @@ export function DataTable<T>({
       )}
       <footer className="pagination">
         <label>
-          {nl ? "Per pagina" : "Per page"}{" "}
+          {nl ? "Rijen per pagina" : "Rows per page"}
           <select
             value={pageSize}
             onChange={(event) => {

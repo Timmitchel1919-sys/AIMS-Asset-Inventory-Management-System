@@ -1,6 +1,9 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
+import { getAI, GoogleAIBackend } from "firebase/ai";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
 import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import { connectStorageEmulator, getStorage } from "firebase/storage";
+import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 
 const environmentConfig = {
   VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -34,6 +37,11 @@ const app = firebaseConfigured
   : null;
 export const firebaseAuth = app ? getAuth(app) : null;
 export const firestore = app ? getFirestore(app) : null;
+export const firebaseStorage = app ? getStorage(app) : null;
+export const firebaseFunctions = app ? getFunctions(app, "southamerica-east1") : null;
+export const firebaseAi = app
+  ? getAI(app, { backend: new GoogleAIBackend() })
+  : null;
 
 const useFirebaseEmulators =
   import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true";
@@ -55,11 +63,23 @@ if (firestore && useFirebaseEmulators) {
       console.debug("Firestore emulator was already connected.", error);
   }
 }
+if (firebaseStorage && useFirebaseEmulators) {
+  try {
+    connectStorageEmulator(firebaseStorage, "127.0.0.1", 9199);
+  } catch (error) {
+    if (import.meta.env.DEV)
+      console.debug("Storage emulator was already connected.", error);
+  }
+}
+if (firebaseFunctions && useFirebaseEmulators) {
+  try { connectFunctionsEmulator(firebaseFunctions, "127.0.0.1", 5001); }
+  catch (error) { if (import.meta.env.DEV) console.debug("Functions emulator was already connected.", error); }
+}
 
 export function requireFirebase() {
-  if (!firebaseAuth || !firestore)
+  if (!firebaseAuth || !firestore || !firebaseStorage)
     throw new Error(
       `Firebase is not configured. Missing: ${missingFirebaseEnvironmentVariables.join(", ") || "Firebase initialization"}.`,
     );
-  return { auth: firebaseAuth, db: firestore };
+  return { auth: firebaseAuth, db: firestore, storage: firebaseStorage };
 }

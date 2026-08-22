@@ -920,6 +920,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             previousLocation,
             destination,
             String(v.approvedBy || ""),
+            (v.attachments || []) as string[],
           );
           result = {
             ok: true,
@@ -1276,7 +1277,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               .filter(Boolean)
               .map((name) => ({ name, quantity: 1, conditionAtIssue: "Good" })),
             notes: String(v.notes || ""),
-            attachments: [],
+            attachments: (v.attachments || []) as string[],
             assigneeSignature: String(
               v.assigneeSignature || v.signature || "Mock assignee signature",
             ),
@@ -1401,6 +1402,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             .map((x) => x.trim())
             .filter(Boolean);
           assignment.returnNotes = String(v.notes || "");
+          assignment.returnSignature = String(v.returnSignature || "");
           assignment.lastUpdated = now();
           assignment.history.unshift({
             id: id("h", assignment.history.length),
@@ -1732,7 +1734,8 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             warrantyRepair: String(v.warrantyRepair) === "true",
             safetyRisk: String(v.safetyRisk) === "true",
             notes: String(v.notes || ""),
-            attachments: [],
+            attachments: (v.attachments || []) as string[],
+            beforePhotos: (v.beforePhotos || []) as string[],
             history: [
               {
                 id: "h-1",
@@ -1828,6 +1831,16 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           r.parts = String(v.parts || r.parts || "");
           r.testResult = String(v.testResult || r.testResult || "");
           r.outcome = String(v.outcome || r.outcome || "");
+          if (Array.isArray(v.attachments))
+            r.attachments = [
+              ...(r.attachments || []),
+              ...v.attachments,
+            ] as string[];
+          if (Array.isArray(v.afterPhotos))
+            r.afterPhotos = [
+              ...(r.afterPhotos || []),
+              ...v.afterPhotos,
+            ] as string[];
           r.history = [
             ...(r.history || []),
             {
@@ -2548,6 +2561,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             estimatedValue: Number(v.estimatedValue || 0),
             method: String(v.method || ""),
             inspectionNotes: String(v.notes || ""),
+            attachments: (v.attachments || []) as string[],
           };
           a.status = "Reserved";
           a.lastUpdated = today();
@@ -3555,6 +3569,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
     from = "Current location",
     to = "Destination",
     approvedBy = "",
+    attachments: string[] = [],
   ) {
     const movement: Movement = {
       id: id("mv", this.state.movements.length),
@@ -3569,6 +3584,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
       quantity,
       reason,
       approvedBy,
+      attachments,
     };
     this.state.movements = [movement, ...this.state.movements];
     return movement;
@@ -3629,5 +3645,7 @@ export class MockInventoryRepository extends WorkflowRepositoryEngine {}
 
 const repository = new MockInventoryRepository();
 export function MockRepositoryProvider({ children }: { children: ReactNode }) {
-  return <RepositoryProvider repository={repository}>{children}</RepositoryProvider>;
+  return (
+    <RepositoryProvider repository={repository}>{children}</RepositoryProvider>
+  );
 }

@@ -264,4 +264,10 @@ html[data-theme="kcs-azure-intelligence"]{--global-search-surface:#fff;--global-
   html[data-theme="kcs-azure-intelligence"] .app-sidebar--collapsed .app-sidebar__logo-button{width:48px;height:48px;margin:0 auto;display:grid;place-items:center;transform:none}
   html[data-theme="kcs-forest-gold"] .app-sidebar--collapsed .app-sidebar__logo-button img,
   html[data-theme="kcs-azure-intelligence"] .app-sidebar--collapsed .app-sidebar__logo-button img{width:100%;height:100%;object-fit:contain;transform:none}
+
+/* Keep the collapsed logo optically as prominent as the 50px navigation icons. */
+.app-sidebar--collapsed .app-sidebar__logo-button,
+html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button{width:50px;height:50px;overflow:visible}
+.app-sidebar--collapsed .app-sidebar__logo-button img,
+html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform:scale(1.28)}
 }

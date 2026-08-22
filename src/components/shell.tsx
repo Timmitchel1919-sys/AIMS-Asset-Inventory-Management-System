@@ -6,11 +6,9 @@ import {
   Bot,
   Boxes,
   Building2,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
-  ClipboardList,
   FolderTree,
   LayoutDashboard,
   LogOut,
@@ -34,6 +32,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import { OPEN_ACCOUNT_MENU_EVENT } from "../lib/accountMenu";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   useEffect,
@@ -73,7 +72,6 @@ const icons: Record<RouteIcon, LucideIcon> = {
   departments: Building2,
   assignments: Archive,
   borrow: RotateCcw,
-  forms: ClipboardList,
   repairs: Wrench,
   maintenance: ToolCase,
   movements: PackageOpen,
@@ -97,7 +95,7 @@ const sidebarRouteAliases: Record<string, string[]> = {
 };
 const sidebarModuleOrder = [
   "dashboard", "assets", "inventory", "categories", "locations",
-  "departments", "users", "assignments", "borrows", "service-forms",
+  "departments", "users", "assignments", "borrows",
   "repairs", "maintenance", "movements", "audits", "reports",
   "disposals", "settings", "assistant",
 ] as const;
@@ -144,6 +142,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     [voiceStatus, setVoiceStatus] = useState(""),
     [profileOpen, setProfileOpen] = useState(false),
     [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  useEffect(() => {
+    const openAccountMenu = () => setProfileOpen(true);
+    window.addEventListener(OPEN_ACCOUNT_MENU_EVENT, openAccountMenu);
+    return () => window.removeEventListener(OPEN_ACCOUNT_MENU_EVENT, openAccountMenu);
+  }, []);
   useEffect(() => {
     if (!profileOpen) return;
     const close = (event: MouseEvent) => {
@@ -505,7 +508,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               ) : (
                 <span className="avatar">{app.user.initials}</span>
               )}
-              <ChevronDown aria-hidden="true" />
             </button>
             {profileOpen && (
               <>

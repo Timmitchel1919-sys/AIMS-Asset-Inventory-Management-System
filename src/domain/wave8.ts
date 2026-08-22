@@ -4,8 +4,11 @@ import type {MockSnapshot} from '../data/contracts';
 export type AiIntent='low-stock'|'available-assets'|'overdue-borrows'|'repairs'|'maintenance'|'audit'|'access-denial'|'unsupported'|'mutation';
 export interface AiAssistantRequest{query:string;language:'en'|'nl';permissions:readonly Permission[];snapshot:MockSnapshot}
 export interface AiAssistantCitation{type:string;id:string;reference:string}
-export interface AiAssistantResponse{intent:AiIntent;answer:string;citations:AiAssistantCitation[];workflow?:string;mock:true;readOnly:true;blocked:boolean;limitations:string[]}
+export interface AiAssistantResponse{intent:AiIntent;answer:string;citations:AiAssistantCitation[];workflow?:string;mock:boolean;readOnly:true;blocked:boolean;limitations:string[]}
 export interface AiAssistantProvider{query(request:AiAssistantRequest):Promise<AiAssistantResponse>}
+export type AiAssistantCategoryKey='low-stock'|'available-assets'|'overdue-borrows'|'repairs'|'maintenance';
+export interface AiAssistantCategory{key:AiAssistantCategoryKey;permission:Permission;workflow:string;count:number;items:AiAssistantCitation[]}
+export const aiAssistantCategoryKeys:readonly AiAssistantCategoryKey[]=['low-stock','available-assets','overdue-borrows','repairs','maintenance'];
 
 const mutationWords=/\b(add|create|delete|remove|assign|approve|reject|dispose|change|update|edit|issue|return|correct|grant|revoke|suspend|reactivate)\b/i;
 const has=(permissions:readonly Permission[],permission:Permission)=>permissions.includes(permission);
@@ -20,6 +23,29 @@ export const classifyAiIntent=(query:string):AiIntent=>{
   if(text.includes('audit'))return'audit';
   if(text.includes('access')||text.includes('toegang'))return'access-denial';
   return'unsupported';
+};
+
+export const buildAiAssistantCategories=({permissions,snapshot}:Pick<AiAssistantRequest,'permissions'|'snapshot'>):AiAssistantCategory[]=>{
+  const categories:AiAssistantCategory[]=[];
+  if(has(permissions,'inventory.view')){
+    const rows=snapshot.inventory.filter(item=>item.onHand-item.reserved<item.minimum);
+    categories.push({key:'low-stock',permission:'inventory.view',workflow:'/inventory/low-stock',count:rows.length,items:rows.slice(0,8).map(x=>({type:'inventory',id:x.id,reference:x.code}))});
+  }
+  if(has(permissions,'assets.view')){
+    const rows=snapshot.assets.filter(asset=>asset.status==='Available');
+    categories.push({key:'available-assets',permission:'assets.view',workflow:'/assets',count:rows.length,items:rows.slice(0,8).map(x=>({type:'asset',id:x.id,reference:x.code}))});
+  }
+  if(has(permissions,'borrows.view')){
+    const rows=snapshot.borrows.filter(record=>record.status==='Overdue');
+    categories.push({key:'overdue-borrows',permission:'borrows.view',workflow:'/borrows/overdue',count:rows.length,items:rows.slice(0,8).map(x=>({type:'borrow',id:x.id,reference:x.reference||x.id}))});
+  }
+  if(has(permissions,'repairs.view')){
+    categories.push({key:'repairs',permission:'repairs.view',workflow:'/repairs',count:snapshot.repairs.length,items:snapshot.repairs.slice(0,8).map(x=>({type:'repair',id:x.id,reference:x.reference}))});
+  }
+  if(has(permissions,'maintenance.view')){
+    categories.push({key:'maintenance',permission:'maintenance.view',workflow:'/maintenance',count:snapshot.maintenance.length,items:snapshot.maintenance.slice(0,8).map(x=>({type:'maintenance',id:x.id,reference:x.reference||x.id}))});
+  }
+  return categories;
 };
 
 export class DeterministicMockAiProvider implements AiAssistantProvider{

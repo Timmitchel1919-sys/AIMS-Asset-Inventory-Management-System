@@ -17,8 +17,8 @@ afterAll(() => environment.cleanup());
 describe("AIMS Storage authorization", () => {
   it("allows a verified exact-domain user to write only under their uid", async () => {
     const storage = environment.authenticatedContext("user-1", verified()).storage();
-    await assertSucceeds(uploadBytes(ref(storage, "aims/user-1/asset.txt"), new Uint8Array([1])));
-    await assertFails(uploadBytes(ref(storage, "aims/user-2/asset.txt"), new Uint8Array([1])));
+    await assertSucceeds(uploadBytes(ref(storage, "aims/user-1/asset.txt"), new Uint8Array([1]), { contentType: "text/plain" }));
+    await assertFails(uploadBytes(ref(storage, "aims/user-2/asset.txt"), new Uint8Array([1]), { contentType: "text/plain" }));
   });
 
   it("denies unverified, wrong-domain, lookalike, and unauthenticated users", async () => {
@@ -29,19 +29,20 @@ describe("AIMS Storage authorization", () => {
       environment.authenticatedContext("unverified", { email: "person@kangoeroeschool.com", email_verified: false }),
     ];
     for (const context of attempts) {
-      await assertFails(uploadBytes(ref(context.storage(), "aims/unverified/file.txt"), new Uint8Array([1])));
+      await assertFails(uploadBytes(ref(context.storage(), "aims/unverified/file.txt"), new Uint8Array([1]), { contentType: "text/plain" }));
     }
   });
 
   it("enforces the ten-megabyte limit and default-denies other paths", async () => {
     const storage = environment.authenticatedContext("user-1", verified()).storage();
-    await assertFails(uploadBytes(ref(storage, "aims/user-1/large.bin"), new Uint8Array(10 * 1024 * 1024)));
-    await assertFails(uploadBytes(ref(storage, "other/user-1/file.txt"), new Uint8Array([1])));
+    await assertFails(uploadBytes(ref(storage, "aims/user-1/large.pdf"), new Uint8Array(10 * 1024 * 1024), { contentType: "application/pdf" }));
+    await assertFails(uploadBytes(ref(storage, "aims/user-1/script.svg"), new Uint8Array([1]), { contentType: "image/svg+xml" }));
+    await assertFails(uploadBytes(ref(storage, "other/user-1/file.txt"), new Uint8Array([1]), { contentType: "text/plain" }));
   });
 
   it("allows verified school users to read an existing AIMS object", async () => {
     const owner = environment.authenticatedContext("owner", verified()).storage();
-    await uploadBytes(ref(owner, "aims/owner/shared.txt"), new Uint8Array([1]));
+    await uploadBytes(ref(owner, "aims/owner/shared.txt"), new Uint8Array([1]), { contentType: "text/plain" });
     const reader = environment.authenticatedContext("reader", verified("reader@kangoeroeschool.com")).storage();
     await assertSucceeds(getMetadata(ref(reader, "aims/owner/shared.txt")));
   });

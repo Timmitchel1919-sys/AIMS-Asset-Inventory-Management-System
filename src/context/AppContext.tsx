@@ -32,6 +32,7 @@ import {
   canFirebaseUserAccess,
   isVerificationRequired,
 } from "../auth/aimsEmailPolicy";
+import { AIMS_BOOTSTRAP_ADMIN_UID } from "../auth/accessBootstrap";
 
 const demoUsers: Record<Role, User> = {
   administrator: {
@@ -115,6 +116,7 @@ type Ctx = {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   updateProfilePhoto: (photo: string) => void;
+  removeProfilePhoto: () => void;
   theme: ThemeId;
   effectiveTheme: ThemeId;
   setTheme: (t: ThemeId) => void;
@@ -200,7 +202,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const tokenRole = demoUser
         ? undefined
         : (await firebaseUser.getIdTokenResult(true)).claims.role;
-      const role = DEMO_AUTH_MODE
+       const role = firebaseUser.uid === AIMS_BOOTSTRAP_ADMIN_UID
+         ? "administrator"
+         : DEMO_AUTH_MODE
         ? "ict-staff"
         : validRoles.has(tokenRole as Role)
           ? (tokenRole as Role)
@@ -263,7 +267,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     });
   }, [presentationMode, mapFirebaseUser]);
-  const effectiveTheme = publicPath ? PUBLIC_AIMS_THEME : theme;
+  const effectiveTheme = publicPath && !user ? PUBLIC_AIMS_THEME : theme;
   useEffect(() => applyKcsTheme(effectiveTheme, false), [effectiveTheme]);
   useEffect(() => {
     localStorage.setItem("kcs-sidebar-collapsed", String(sidebarCollapsed));
@@ -332,6 +336,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (!current) return current;
           localStorage.setItem(`aims-profile-photo:${current.id}`, photo);
           return { ...current, profilePhoto: photo };
+        }),
+      removeProfilePhoto: () =>
+        setUser((current) => {
+          if (!current) return current;
+          localStorage.removeItem(`aims-profile-photo:${current.id}`);
+          return { ...current, profilePhoto: undefined };
         }),
       theme,
       effectiveTheme,

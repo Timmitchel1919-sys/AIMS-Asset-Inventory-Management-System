@@ -1,5 +1,5 @@
 param(
-    [string]$SourcePath = (Join-Path $PSScriptRoot '..\public\AIMS app icon.png'),
+    [string]$SourcePath = (Join-Path $PSScriptRoot '..\public\App icon.png'),
     [string]$OutputDirectory = (Join-Path $PSScriptRoot '..\public\icons')
 )
 

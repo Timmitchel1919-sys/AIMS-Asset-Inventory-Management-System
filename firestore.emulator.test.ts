@@ -51,8 +51,55 @@ describe("AIMS Firestore authorization", () => {
       setDoc(doc(context.firestore(), "assets/asset-1"), { name: "Laptop" }),
     );
     await assertSucceeds(
-      getDoc(doc(environment.authenticatedContext("school-user", verified()).firestore(), "assets/asset-1")),
+      getDoc(doc(environment.authenticatedContext("school-user", verified(undefined, ["assets.view"])).firestore(), "assets/asset-1")),
     );
+  });
+
+  it("denies operational access without permission claims", async () => {
+    await environment.withSecurityRulesDisabled((context) =>
+      setDoc(doc(context.firestore(), "assets/asset-1"), { name: "Laptop" }),
+    );
+    const db = environment.authenticatedContext("school-user", verified()).firestore();
+    await assertFails(getDoc(doc(db, "assets/asset-1")));
+    await assertFails(setDoc(doc(db, "assets/asset-2"), { name: "Injected" }));
+  });
+
+  it("applies an explicit denial after a permission grant", async () => {
+    await environment.withSecurityRulesDisabled((context) =>
+      setDoc(doc(context.firestore(), "assets/asset-1"), { name: "Laptop" }),
+    );
+    const claims = { ...verified(undefined, ["assets.view"]), denials: ["assets.view"] };
+    await assertFails(getDoc(doc(environment.authenticatedContext("denied", claims).firestore(), "assets/asset-1")));
+  });
+
+  it("uses a protected access assignment without trusting the user profile", async () => {
+    await environment.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, "assets/asset-1"), { name: "Laptop" });
+      await setDoc(doc(db, "accessAssignments/scoped-user"), {
+        uid: "scoped-user", role: "auditor", permissions: ["assets.view"], denials: [],
+        active: true, allRecords: true, departmentIds: [], locationIds: [],
+        createdAt: serverTimestamp(), createdBy: "bootstrap-admin",
+        updatedAt: serverTimestamp(), updatedBy: "bootstrap-admin",
+      });
+    });
+    const db = environment.authenticatedContext("scoped-user", verified()).firestore();
+    await assertSucceeds(getDoc(doc(db, "assets/asset-1")));
+    await assertSucceeds(getDoc(doc(db, "accessAssignments/scoped-user")));
+    await assertFails(updateDoc(doc(db, "accessAssignments/scoped-user"), { permissions: ["admin.users.manage"] }));
+  });
+
+  it("limits bootstrap administration to the confirmed UID and verified school domain", async () => {
+    const uid = "VogTjC6S1aXHO6ySBbdiQ7LNOYG3";
+    const valid = environment.authenticatedContext(uid, verified("aliendas@kangoeroeschool.com")).firestore();
+    const wrongDomain = environment.authenticatedContext(uid, verified("aliendas@gmail.com")).firestore();
+    const role = {
+      name: "Bootstrap test", description: "Trusted bootstrap administrator",
+      permissions: ["admin.roles.manage"], system: false,
+      createdAt: serverTimestamp(), createdBy: uid, updatedAt: serverTimestamp(), updatedBy: uid,
+    };
+    await assertSucceeds(setDoc(doc(valid, "roles/bootstrap-test"), role));
+    await assertFails(setDoc(doc(wrongDomain, "roles/bootstrap-denied"), role));
   });
 
   it("allows only a valid self profile and denies privilege injection or cross-user access", async () => {
@@ -88,8 +135,30 @@ describe("AIMS Firestore authorization", () => {
     await assertFails(getDoc(doc(db, "users/user-2")));
   });
 
+  it("separates the readable user directory from private account data", async () => {
+    const owner = environment.authenticatedContext("user-1", verified()).firestore();
+    const colleague = environment.authenticatedContext("user-2", verified("colleague@kangoeroeschool.com")).firestore();
+    const publicProfile = {
+      uid: "user-1",
+      displayName: "School User",
+      photoURL: null,
+      department: "ICT",
+      jobTitle: "Support",
+      accountType: "school-user",
+      authProvider: "password",
+      emailVerified: true,
+      status: "active",
+      updatedAt: serverTimestamp(),
+    };
+    await assertSucceeds(setDoc(doc(owner, "userDirectory/user-1"), publicProfile));
+    await assertSucceeds(getDoc(doc(colleague, "userDirectory/user-1")));
+    await assertFails(setDoc(doc(colleague, "userDirectory/user-1"), publicProfile));
+    await assertFails(setDoc(doc(owner, "userDirectory/user-1"), { ...publicProfile, email: "private@kangoeroeschool.com" }));
+    await assertFails(getDoc(doc(colleague, "users/user-1")));
+  });
+
   it("denies schema pollution and invalid inventory quantities", async () => {
-    const db = environment.authenticatedContext("user-1", verified()).firestore();
+    const db = environment.authenticatedContext("user-1", verified(undefined, ["inventory.create", "inventory.edit"])).firestore();
     const valid = {
       code: "INV-1",
       name: "Cable",
@@ -162,7 +231,12 @@ describe("AIMS Firestore authorization", () => {
 
 describe("Firebase repository persistence and concurrency", () => {
   const uid = "repository-user";
-  const claims = verified("repository@kangoeroeschool.com", ["admin.audit.read"]);
+  const claims = verified("repository@kangoeroeschool.com", [
+    "assets.view", "assets.create", "inventory.view", "inventory.issue",
+    "assignments.view", "borrows.view", "repairs.view", "maintenance.view",
+    "movements.view", "audits.view", "disposals.view", "notifications.view",
+    "reports.view", "admin.audit.read",
+  ]);
 
   async function seedConcurrencyFixtures() {
     await environment.withSecurityRulesDisabled(async (context) => {
@@ -185,15 +259,16 @@ describe("Firebase repository persistence and concurrency", () => {
   it("persists asset allocation across refresh and permits only one concurrent code claim", async () => {
     await seedConcurrencyFixtures();
     const db = environment.authenticatedContext(uid, claims).firestore();
-    const first = new FirebaseInventoryRepository(db, () => uid);
-    const second = new FirebaseInventoryRepository(db, () => uid);
+    const access = async () => ({ permissions: claims.permissions, denials: [], active: true });
+    const first = new FirebaseInventoryRepository(db, () => uid, access);
+    const second = new FirebaseInventoryRepository(db, () => uid, access);
     await Promise.all([first.initialize(), second.initialize()]);
     const results = await Promise.all([
       first.execute({ action: "asset.create", values: { codePrefix: "KCSMD", name: "First", serialNumber: "SERIAL-1" } }),
       second.execute({ action: "asset.create", values: { codePrefix: "KCSMD", name: "Second", serialNumber: "SERIAL-2" } }),
     ]);
     expect(results.filter((result) => result.ok), JSON.stringify(results)).toHaveLength(1);
-    const refreshed = new FirebaseInventoryRepository(db, () => uid);
+    const refreshed = new FirebaseInventoryRepository(db, () => uid, access);
     await refreshed.initialize();
     expect(refreshed.snapshot().assets).toHaveLength(1);
     expect(refreshed.snapshot().assets[0].code).toBe("KCSMD-01");
@@ -205,15 +280,16 @@ describe("Firebase repository persistence and concurrency", () => {
   it("persists stock workflow records and rejects a stale concurrent issue", async () => {
     await seedConcurrencyFixtures();
     const db = environment.authenticatedContext(uid, claims).firestore();
-    const first = new FirebaseInventoryRepository(db, () => uid);
-    const second = new FirebaseInventoryRepository(db, () => uid);
+    const access = async () => ({ permissions: claims.permissions, denials: [], active: true });
+    const first = new FirebaseInventoryRepository(db, () => uid, access);
+    const second = new FirebaseInventoryRepository(db, () => uid, access);
     await Promise.all([first.initialize(), second.initialize()]);
     const results = await Promise.all([
       first.execute({ action: "stock.issue", entityId: "cables", values: { quantity: 7 } }),
       second.execute({ action: "stock.issue", entityId: "cables", values: { quantity: 7 } }),
     ]);
     expect(results.filter((result) => result.ok), JSON.stringify(results)).toHaveLength(1);
-    const refreshed = new FirebaseInventoryRepository(db, () => uid);
+    const refreshed = new FirebaseInventoryRepository(db, () => uid, access);
     await refreshed.initialize();
     expect(refreshed.snapshot().inventory[0].onHand).toBe(3);
     expect(refreshed.snapshot().inventoryMovements).toHaveLength(1);

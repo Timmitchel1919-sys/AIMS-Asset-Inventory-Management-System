@@ -1,5 +1,5 @@
 import { ArrowLeft, Save, ShieldAlert } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
@@ -28,6 +28,7 @@ import type { AssetStatus, Condition } from "../domain/types";
 import { useT } from "../i18n";
 import { mappedCondition } from "../domain/assetStatus";
 import { AssetStatusBadge } from "../components/AssetStatusBadge";
+import { uploadAimsFiles } from "../services/firebaseStorageUploads";
 
 const categories = [
   "Laptops",
@@ -75,6 +76,8 @@ export default function AssetForm() {
     a = useAssetT(),
     t = useT(),
     existing = snapshot.assets.find((asset) => asset.id === id);
+  const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const schema = assetFormSchema(
     {
       required: a("required"),
@@ -172,6 +175,11 @@ export default function AssetForm() {
           return [key.trim(), rest.join(":").trim()];
         }),
     );
+    const uploadId = existing?.id || crypto.randomUUID();
+    const [uploadedAttachments, uploadedPhotos] = await Promise.all([
+      uploadAimsFiles(attachmentFiles, "assets", uploadId),
+      uploadAimsFiles(photoFiles, "assets", uploadId),
+    ]);
     const result = await repository.execute({
       action: existing ? "asset.edit" : "asset.create",
       entityId: existing?.id,
@@ -187,8 +195,8 @@ export default function AssetForm() {
             : selectedLocation?.mainLocationId || null,
         purchasePrice: Number(values.purchasePrice || 0),
         technicalSpecifications: specifications,
-        attachments: split(values.attachments),
-        photos: split(values.photos),
+        attachments: [...split(values.attachments), ...uploadedAttachments],
+        photos: [...split(values.photos), ...uploadedPhotos],
       },
     });
     if (!result.ok) {
@@ -414,12 +422,28 @@ export default function AssetForm() {
             </Card>
             <Card title={a("media")}>
               <div className="form-grid">
-                <Field
-                  label={a("attachments")}
-                  aria-describedby="attachment-help"
-                  {...register("attachments")}
-                />
-                <Field label={a("photos")} {...register("photos")} />
+                <label className="field">
+                  <span>{a("attachments")}</span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp,application/pdf,text/plain,.doc,.docx,.xls,.xlsx"
+                    onChange={(event) =>
+                      setAttachmentFiles(Array.from(event.target.files || []))
+                    }
+                  />
+                </label>
+                <label className="field">
+                  <span>{a("photos")}</span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={(event) =>
+                      setPhotoFiles(Array.from(event.target.files || []))
+                    }
+                  />
+                </label>
                 <small id="attachment-help" className="field-hint wide">
                   {a("attachmentsHelp")}
                 </small>

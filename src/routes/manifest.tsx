@@ -1,7 +1,7 @@
 import {lazy, type ComponentType, type LazyExoticComponent} from 'react';
 import type {Permission} from '../auth/permissions';
 
-export type RouteIcon = 'dashboard'|'assets'|'inventory'|'categories'|'locations'|'departments'|'assignments'|'borrow'|'forms'|'repairs'|'maintenance'|'movements'|'audits'|'reports'|'notifications'|'assistant'|'admin'|'users'|'roles'|'activity'|'disposals'|'settings'|'install';
+export type RouteIcon = 'dashboard'|'assets'|'inventory'|'categories'|'locations'|'departments'|'assignments'|'borrow'|'repairs'|'maintenance'|'movements'|'audits'|'reports'|'notifications'|'assistant'|'admin'|'users'|'roles'|'activity'|'disposals'|'settings'|'install';
 export type RouteStatus = 'implemented'|'partial'|'missing';
 export interface AppRoute {
   id: string;
@@ -68,7 +68,7 @@ export const routeManifest: AppRoute[] = [
   {id:'department-new',path:'/departments/new',component:page(async()=>({default:(await import('../pages/ReferenceData')).DepartmentsPage})),titleKey:'routes.departments',permission:'departments.manage',navigation:false,breadcrumb:['routes.departments'],mobile:true,lazy:true,status:'implemented'},
   {id:'department-edit',path:'/departments/:departmentId/edit',component:page(async()=>({default:(await import('../pages/ReferenceData')).DepartmentsPage})),titleKey:'routes.departments',permission:'departments.manage',navigation:false,breadcrumb:['routes.departments'],mobile:true,lazy:true,status:'implemented'},
   {id:'department-detail',path:'/departments/:departmentId',component:page(async()=>({default:(await import('../pages/ReferenceData')).DepartmentsPage})),titleKey:'routes.departments',permission:'departments.manage',navigation:false,breadcrumb:['routes.departments'],mobile:true,lazy:true,status:'implemented'},
-  {id:'users',path:'/users',component:page(()=>import('../pages/UserDirectory')),titleKey:'routes.users',navKey:'nav.users',navigation:true,breadcrumb:['routes.users'],mobile:true,lazy:true,status:'implemented',icon:'users'},
+  {id:'users',path:'/users',component:page(()=>import('../pages/UserDirectory')),titleKey:'routes.users',navKey:'nav.users',permission:'users.manage',navigation:true,breadcrumb:['routes.users'],mobile:true,lazy:true,status:'implemented',icon:'users'},
   {id:'assignments',path:'/assignments',component:page(()=>import('../pages/Assignments')),titleKey:'routes.assignments',navKey:'nav.assignments',permission:'assignments.manage',navigation:true,breadcrumb:['routes.assignments'],mobile:true,lazy:true,status:'implemented',icon:'assignments'},
   {id:'assignment-new',path:'/assignments/new',component:page(()=>import('../pages/Assignments')),titleKey:'routes.assignments',permission:'assignments.manage',navigation:false,breadcrumb:['routes.assignments'],mobile:true,lazy:true,status:'implemented'},
   {id:'assignment-edit',path:'/assignments/:assignmentId/edit',component:page(()=>import('../pages/Assignments')),titleKey:'routes.assignments',permission:'assignments.manage',navigation:false,breadcrumb:['routes.assignments'],mobile:true,lazy:true,status:'implemented'},
@@ -87,7 +87,6 @@ export const routeManifest: AppRoute[] = [
   {id:'borrow-legacy',path:'/borrow',component:page(()=>import('../pages/Borrow')),titleKey:'routes.borrow',permission:'borrow.manage',navigation:false,breadcrumb:['routes.borrow'],mobile:true,lazy:true,status:'implemented'},
   {id:'borrow-new-legacy',path:'/borrow/new',component:page(()=>import('../pages/Borrow')),titleKey:'routes.borrowNew',permission:'borrow.manage',navigation:false,breadcrumb:['routes.borrow','routes.borrowNew'],mobile:true,lazy:true,status:'implemented'},
   {id:'borrow-detail-legacy',path:'/borrow/:id',component:page(()=>import('../pages/Borrow')),titleKey:'routes.borrowDetail',permission:'borrow.manage',navigation:false,breadcrumb:['routes.borrow','routes.borrowDetail'],mobile:true,lazy:true,status:'implemented'},
-  {id:'service-forms',path:'/service-forms',component:page(()=>import('../pages/ServiceForms')),titleKey:'routes.serviceForms',navKey:'nav.forms',permission:'assets.edit',navigation:true,breadcrumb:['routes.serviceForms'],mobile:true,lazy:true,status:'partial',icon:'forms'},
   {id:'repairs',path:'/repairs',component:page(()=>import('../pages/Repairs')),titleKey:'routes.repairs',navKey:'nav.repairs',permission:'repairs.manage',navigation:true,breadcrumb:['routes.repairs'],mobile:true,lazy:true,status:'implemented',icon:'repairs'},
   {id:'repair-new',path:'/repairs/new',component:page(()=>import('../pages/Repairs')),titleKey:'routes.repairs',permission:'repairs.manage',navigation:false,breadcrumb:['routes.repairs'],mobile:true,lazy:true,status:'implemented'},
   ...(['edit','diagnosis','approval','parts','testing','complete','return','history'].map(action=>({id:`repair-${action}`,path:`/repairs/:repairId/${action}`,component:page(()=>import('../pages/Repairs')),titleKey:'routes.repairDetail',permission:'repairs.manage',navigation:false,breadcrumb:['routes.repairs','routes.repairDetail'],mobile:true,lazy:true,status:'implemented'})) as AppRoute[]),

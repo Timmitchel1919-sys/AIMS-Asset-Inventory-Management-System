@@ -10,8 +10,8 @@ import {
 
 const app = initializeApp({
   apiKey: "demo-key",
-  authDomain: "aims-system-22e5d.firebaseapp.com",
-  projectId: "aims-system-22e5d",
+  authDomain: "aims-auth-emulator-test.firebaseapp.com",
+  projectId: "aims-auth-emulator-test",
 });
 const auth = getAuth(app);
 connectAuthEmulator(auth, "http://127.0.0.1:9099", {

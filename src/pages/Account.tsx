@@ -5,9 +5,16 @@ import {
   MonitorCog,
   Palette,
   Save,
+  Trash2,
   UserRound,
 } from "lucide-react";
-import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { Button, Card, SelectField } from "../components/ui";
 import { AccountBackButton, PageHeader } from "../components/WorkflowUi";
 import { authErrorMessage, updateSelfProfile } from "../auth/firebaseAuth";
@@ -28,6 +35,11 @@ export function ProfilePage() {
     [message, setMessage] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => setMessage(""), 5000);
+    return () => clearTimeout(timer);
+  }, [message]);
   function selectPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file || !file.type.startsWith("image/") || file.size > 2_000_000) {
@@ -58,7 +70,6 @@ export function ProfilePage() {
     try {
       await updateSelfProfile(values);
       await app.refreshUser();
-      setEditing(false);
       setMessage(nl ? "Profiel bijgewerkt." : "Profile updated.");
     } catch (reason) {
       setError(authErrorMessage(reason));
@@ -86,17 +97,29 @@ export function ProfilePage() {
             accept="image/png,image/jpeg,image/webp"
             onChange={selectPhoto}
           />
-          <button
-            className="btn secondary"
-            type="button"
-            onClick={() => fileRef.current?.click()}
-          >
-            <Camera />
-            {nl ? "Foto kiezen" : "Choose photo"}
-          </button>
+          <div className="profile-photo-buttons">
+            <button
+              className="btn secondary"
+              type="button"
+              onClick={() => fileRef.current?.click()}
+            >
+              <Camera />
+              {nl ? "Foto kiezen" : "Choose photo"}
+            </button>
+            {user?.profilePhoto && (
+              <button
+                className="btn secondary"
+                type="button"
+                onClick={() => app.removeProfilePhoto()}
+              >
+                <Trash2 />
+                {nl ? "Foto verwijderen" : "Remove photo"}
+              </button>
+            )}
+          </div>
           <small>{nl ? "Op dit apparaat opgeslagen." : "Stored on this device."}</small>
         </div>
-        <form className="profile-details" onSubmit={save}>
+        <form className="profile-details" onSubmit={save} aria-busy={busy}>
           {editing && !isDemo ? (
             <>
               <label>
@@ -174,13 +197,21 @@ export function ProfilePage() {
                 <Button
                   type="button"
                   variant="secondary"
+                  disabled={busy}
                   onClick={() => setEditing(false)}
                 >
                   {nl ? "Annuleren" : "Cancel"}
                 </Button>
               </>
             ) : (
-              <Button type="button" onClick={() => setEditing(true)}>
+              <Button
+                type="button"
+                onClick={() => {
+                  setError("");
+                  setMessage("");
+                  setEditing(true);
+                }}
+              >
                 <UserRound />
                 {nl ? "Profiel bewerken" : "Edit profile"}
               </Button>

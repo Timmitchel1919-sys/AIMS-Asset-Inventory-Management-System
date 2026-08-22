@@ -177,6 +177,7 @@ export interface Assignment {
   assigneeSignature?: string;
   staffSignature?: string;
   signature?: string;
+  returnSignature?: string;
   returnedAt?: string;
   returnedBy?: string;
   receivedBy?: string;

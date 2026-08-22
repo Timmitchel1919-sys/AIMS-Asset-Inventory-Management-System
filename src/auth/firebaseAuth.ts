@@ -202,6 +202,30 @@ function clearPending(uid: string) {
     /* Storage may be unavailable. */
   }
 }
+async function syncPublicDirectoryProfile(
+  user: FirebaseUser,
+  profile: {
+    displayName: string;
+    department?: string | null;
+    jobTitle?: string | null;
+    accountType: "school-user" | "demo-user";
+    authProvider: "password" | "google" | "anonymous";
+  },
+) {
+  const { db } = requireFirebase();
+  await setDoc(doc(db, "userDirectory", user.uid), {
+    uid: user.uid,
+    displayName: profile.displayName,
+    photoURL: user.photoURL || null,
+    department: profile.department || null,
+    jobTitle: profile.jobTitle || null,
+    accountType: profile.accountType,
+    authProvider: profile.authProvider,
+    emailVerified: user.emailVerified,
+    status: "active",
+    updatedAt: serverTimestamp(),
+  });
+}
 export async function loadProfile(user: FirebaseUser): Promise<UserProfile> {
   const { db } = requireFirebase();
   const ref = doc(db, "users", user.uid);
@@ -264,6 +288,11 @@ async function provisionDemoUserProfile(
       updatedAt: serverTimestamp(),
       lastLoginAt: serverTimestamp(),
     });
+  await syncPublicDirectoryProfile(user, {
+    displayName: "Demo User",
+    accountType: "demo-user",
+    authProvider: "anonymous",
+  });
   return loadProfile(user);
 }
 export function ensureDemoUserProfile(
@@ -331,6 +360,13 @@ export async function ensureAimsUserProfile(
       updatedAt: serverTimestamp(),
       lastLoginAt: serverTimestamp(),
     });
+  await syncPublicDirectoryProfile(user, {
+    displayName,
+    department: pending?.department?.trim() || existing?.department || null,
+    jobTitle: pending?.jobTitle?.trim() || existing?.jobTitle || null,
+    accountType: DEMO_AUTH_MODE ? "demo-user" : AIMS_ACCOUNT_TYPE,
+    authProvider: provider,
+  });
   clearPending(user.uid);
   return loadProfile(user);
 }

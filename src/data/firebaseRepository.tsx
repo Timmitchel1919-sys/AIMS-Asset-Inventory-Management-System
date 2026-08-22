@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   onSnapshot,
   runTransaction,
@@ -10,6 +11,9 @@ import {
   type Firestore,
 } from "firebase/firestore";
 import { firebaseAuth, requireFirebase } from "../lib/firebase";
+import { rolePermissions, type Permission } from "../auth/permissions";
+import { AIMS_BOOTSTRAP_ADMIN_UID } from "../auth/accessBootstrap";
+import { isCommandAllowed, requiredPermission } from "../auth/workflowAuthorization";
 import type { MockSnapshot, WorkflowCommand, WorkflowResult } from "./contracts";
 import { WorkflowRepositoryEngine } from "./mockRepository";
 import { RepositoryProvider } from "./repositoryContext";
@@ -42,10 +46,15 @@ const collections = {
 type CollectionKey = keyof typeof collections;
 const collectionKeys = Object.keys(collections) as CollectionKey[];
 
-const isExpectedRestrictedCollection = (key: CollectionKey, error: unknown) =>
-  key === "activity" &&
+const isPermissionDenied = (error: unknown) =>
   String((error as { code?: unknown })?.code || "").replace("firestore/", "") ===
     "permission-denied";
+
+export interface ActorAccess {
+  permissions: string[];
+  denials: string[];
+  active: boolean;
+}
 
 export class FirebaseRepositoryError extends Error {
   constructor(
@@ -132,8 +141,39 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
   constructor(
     private readonly db: Firestore,
     private readonly actorUid: () => string | undefined = () => firebaseAuth?.currentUser?.uid,
+    private readonly actorAccess?: () => Promise<ActorAccess>,
   ) {
     super();
+  }
+
+  private async resolveActorAccess(): Promise<ActorAccess> {
+    if (this.actorAccess) return this.actorAccess();
+    const user = firebaseAuth?.currentUser;
+    if (!user) return { permissions: [], denials: [], active: false };
+    if (user.uid === AIMS_BOOTSTRAP_ADMIN_UID)
+      return { permissions: rolePermissions.administrator, denials: [], active: true };
+    const token = await user.getIdTokenResult();
+    const tokenPermissions = Array.isArray(token.claims.permissions)
+      ? token.claims.permissions.filter((value): value is string => typeof value === "string")
+      : [];
+    const tokenDenials = Array.isArray(token.claims.denials)
+      ? token.claims.denials.filter((value): value is string => typeof value === "string")
+      : [];
+    const role = String(token.claims.role || "") as keyof typeof rolePermissions;
+    const roleGrants = role in rolePermissions ? rolePermissions[role] : [];
+    const assignment = await getDoc(doc(this.db, "accessAssignments", user.uid));
+    const data = assignment.data();
+    const grants = Array.isArray(data?.permissions)
+      ? data.permissions.filter((value: unknown): value is string => typeof value === "string")
+      : [];
+    const denials = Array.isArray(data?.denials)
+      ? data.denials.filter((value: unknown): value is string => typeof value === "string")
+      : [];
+    return {
+      permissions: [...new Set<Permission | string>([...roleGrants, ...tokenPermissions, ...grants])],
+      denials: [...new Set([...tokenDenials, ...denials])],
+      active: data?.active !== false,
+    };
   }
 
   async initialize() {
@@ -147,7 +187,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
             deserialize({ id: item.id, ...item.data() }),
           );
         } catch (error) {
-          if (!isExpectedRestrictedCollection(key, error)) throw error;
+          if (!isPermissionDenied(error)) throw error;
           (next[key] as unknown) = [];
         }
       }),
@@ -286,6 +326,12 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       return { ok: false, message: "AIMS data is still loading. Please wait." };
     const before = structuredClone(this.snapshot());
     try {
+      const access = await this.resolveActorAccess();
+      if (!access.active || !isCommandAllowed(command, access.permissions, access.denials))
+        return {
+          ok: false,
+          message: `You do not have the required permission: ${requiredPermission(command)}.`,
+        };
       const allocation = command.action === "asset.create" ? this.prepareAssetCode(command) : undefined;
       const result = await super.execute(command);
       if (!result.ok) return result;

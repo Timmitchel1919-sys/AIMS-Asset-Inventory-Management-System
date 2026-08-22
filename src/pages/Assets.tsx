@@ -36,7 +36,7 @@ export default function Assets(){
   const [search,setSearch]=useState(''),[filters,setFilters]=useState<Record<string,string>>({}),[draftFilters,setDraftFilters]=useState<Record<string,string>>({}),[showFilters,setShowFilters]=useState(false);
   const [sort,setSort]=useState<ListSort>({field:'code',direction:'asc'}),[pageSize,setPageSize]=useState(5),[cursor,setCursor]=useState<string|undefined>();
   const [result,setResult]=useState<ListResult<Asset>>(emptyResult),[facets,setFacets]=useState<Record<string,string[]>>({});
-  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[reload,setReload]=useState(0),[selected,setSelected]=useState<string[]>([]);
+  const [loading,setLoading]=useState(true),[hasLoaded,setHasLoaded]=useState(false),[error,setError]=useState(''),[reload,setReload]=useState(0),[selected,setSelected]=useState<string[]>([]);
   const [preferences,setPreferences]=useState(()=>loadListPreferences(localStorage,preferenceKey,columnIds));
   const [viewDialog,setViewDialog]=useState(false),[viewName,setViewName]=useState('');
   const [bulkAction,setBulkAction]=useState(''),[bulkDialog,setBulkDialog]=useState(false),[bulkReason,setBulkReason]=useState(''),[bulkTarget,setBulkTarget]=useState('');
@@ -63,7 +63,7 @@ export default function Assets(){
       const next=await repository.queryAssets({search,filters:queryFilters,sort:[sort],pageSize,cursor});
       if(requestId===requestSequence.current)setResult(demoState==='empty'?emptyResult:next);
     }catch(value){if(requestId===requestSequence.current)setError(value instanceof Error?value.message:t('common.error'))}
-    finally{if(requestId===requestSequence.current)setLoading(false)}
+    finally{if(requestId===requestSequence.current){setLoading(false);setHasLoaded(true)}}
   },[cursor,demoState,errorRecovered,pageSize,queryFilters,reload,repository,search,sort,t]);
   useEffect(()=>{const timer=window.setTimeout(load,250);return()=>window.clearTimeout(timer)},[load]);
 
@@ -121,7 +121,7 @@ export default function Assets(){
   };
   const targetValues=bulkAction==='location'?facets.location||[]:bulkAction==='department'?facets.department||[]:bulkAction==='status'?facets.status||[]:bulkAction==='edit'?['New','Excellent','Good','Fair','Poor','Defective','Beyond Repair']:[];
 
-  return <OfflineGate><DataPageLayout header={<PageHeader title={t('assets.title')} description={t('assets.description')} actions={<><Button variant="secondary" onClick={()=>navigate('/assets?scan=1')}><ScanLine/>{t('assets.scan')}</Button>{can(user?.role,'assets.create')&&<Button onClick={()=>navigate('/assets/new')}><Plus/>{t('assets.add')}</Button>}</>}/>}>
+  return <OfflineGate><DataPageLayout header={<PageHeader title={t('assets.title')} description={t('assets.description')} actions={<><Button className="scan-header-action" variant="secondary" onClick={()=>navigate('/assets?scan=1')}><ScanLine/>{t('assets.scan')}</Button>{can(user?.role,'assets.create')&&<Button onClick={()=>navigate('/assets/new')}><Plus/>{t('assets.add')}</Button>}</>}/>}>
     {params.get('scan')&&<QrAssetScanner assets={snapshot.assets} onAsset={asset=>navigate(`/assets/${asset.id}`)} onClose={()=>navigate('/assets',{replace:true})}/>} 
     <section className="card data-card">
       <DataToolbar search={search} onSearch={value=>{setSearch(value);setCursor(undefined);setSelected([])}} searchLabel={t('assets.search')} filterCount={activeFilters.length} onToggleFilters={toggleFilters}
@@ -137,9 +137,9 @@ export default function Assets(){
       <ActiveFilterChips filters={activeFilters} onRemove={field=>updateFilter(field,'')}/>
       <MutationFeedback status={mutation.status} message={mutation.message}/>
       <BulkActionToolbar count={selected.length} actions={actions} value={bulkAction} onChange={setBulkAction} onRun={beginBulk} onClear={()=>setSelected([])} busy={mutation.status==='loading'}/>
-      <DataListStates loading={loading&&!result.items.length} error={error} empty={!loading&&!error&&!result.items.length} onRetry={()=>{setErrorRecovered(true);setReload(value=>value+1)}}/>
+      <DataListStates loading={loading&&(!hasLoaded||demoState==='loading')} error={error} empty={hasLoaded&&!error&&!result.items.length} onRetry={()=>{setErrorRecovered(true);setReload(value=>value+1)}}/>
       {!error&&!!result.items.length&&<ResponsiveDataList id="assets" rows={result.items} columns={columns} visible={visible} rowKey={asset=>asset.id} selected={selected} onSelection={setSelected} onRowClick={asset=>navigate(`/assets/${asset.id}`)} sort={sort} onSort={field=>{setSort(current=>({field,direction:current.field===field&&current.direction==='asc'?'desc':'asc'}));setCursor(undefined)}}/>}
-      {!error&&(!loading||!!result.items.length)&&<PaginationControls totalCount={result.totalCount} pageSize={pageSize} hasNext={result.hasNext} hasPrevious={result.hasPrevious} onPageSize={size=>{setPageSize(size);setCursor(undefined);setSelected([])}} onNext={()=>{setCursor(result.nextCursor);setSelected([])}} onPrevious={()=>{setCursor(result.previousCursor);setSelected([])}}/>}
+      {!error&&hasLoaded&&<PaginationControls totalCount={result.totalCount} pageSize={pageSize} hasNext={result.hasNext} hasPrevious={result.hasPrevious} onPageSize={size=>{setPageSize(size);setCursor(undefined);setSelected([])}} onNext={()=>{setCursor(result.nextCursor);setSelected([])}} onPrevious={()=>{setCursor(result.previousCursor);setSelected([])}}/>}
     </section>
     <Dialog open={viewDialog} title={t('assets.saveView')} onClose={()=>setViewDialog(false)} footer={<><Button variant="ghost" onClick={()=>setViewDialog(false)}>{t('common.cancel')}</Button><Button onClick={saveView} disabled={!viewName.trim()}>{t('common.save')}</Button></>}><Field label={t('assets.viewName')} value={viewName} onChange={event=>setViewName(event.target.value)} autoFocus/></Dialog>
     <Dialog open={bulkDialog} title={t('assets.bulk.confirm')} description={t('assets.bulk.confirmHelp')} onClose={()=>setBulkDialog(false)} footer={<><Button variant="ghost" onClick={()=>setBulkDialog(false)}>{t('common.cancel')}</Button><Button onClick={runBulk} disabled={!bulkReason.trim()||(['edit','location','department','status'].includes(bulkAction)&&!bulkTarget)}>{t('common.apply')}</Button></>}>

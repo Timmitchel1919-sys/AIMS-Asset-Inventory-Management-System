@@ -14,6 +14,11 @@ describe('Firestore AIMS authorization rules',()=>{
     expect(rules).toContain("data.organizationDomain == 'kangoeroeschool.com'");
     expect(rules).toContain("affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','preferences','authProvider','emailVerified','updatedAt','lastLoginAt'])");
   });
+  it('keeps private profiles owner-only and exposes only a validated email-free directory',()=>{
+    expect(rules).toContain('match /userDirectory/{uid}');
+    expect(rules).toContain("hasOnly(['uid','displayName','photoURL','department','jobTitle','accountType','authProvider','emailVerified','status','updatedAt'])");
+    expect(rules).toContain('allow read: if isOwnUser(uid);');
+  });
   it('keeps audit history immutable and defaults to deny',()=>{
     expect(rules).toContain('match /activityLogs/{id}');
     expect(rules).toContain('allow update, delete: if false;');

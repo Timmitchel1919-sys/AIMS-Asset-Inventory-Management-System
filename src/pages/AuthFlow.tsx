@@ -118,8 +118,8 @@ export function AccessDeniedPage() {
           <h1>Access Restricted</h1>
           <p>AIMS is available only to authorized Kangoeroe School users.</p>
           <p>Please sign in with your @kangoeroeschool.com account.</p>
-          <Button onClick={async () => { await app.logout(); navigate("/login", { replace: true }); }}>
-            Return to Sign In
+          <Button onClick={async () => { await app.logout(); navigate("/", { replace: true }); }}>
+            Sign Out and Return Home
           </Button>
         </Card>
       </main>
@@ -266,7 +266,7 @@ export function HelpPage() {
     `AIMS support request\nModule: ${location.pathname}\nTime: ${new Date().toISOString()}\nBrowser: ${navigator.userAgent}`,
   );
   return (
-    <div className="page">
+    <div className="page help-page">
       <AccountBackButton />
       <PageHeader
         title={nl ? "Help en ondersteuning" : "Help & Support"}
@@ -306,7 +306,7 @@ export function HelpPage() {
             {nl ? "Meld aanmeldproblemen, problemen met middelen, applicatiefouten, gegevensproblemen of machtigingsproblemen via de ICT-ondersteuningsmail." : "Report login problems, asset issues, application bugs, data issues, or permission issues through the ICT support email."}
           </p>
           <a
-            className="btn secondary"
+            className="btn secondary help-problem-link"
             href={`mailto:${KCS_ICT_SUPPORT_EMAIL}?subject=AIMS%20problem%20report&body=${diagnostics}`}
           >
             {nl ? "Probleemmelding voorbereiden" : "Prepare problem report"}

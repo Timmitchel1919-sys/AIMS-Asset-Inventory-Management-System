@@ -22,7 +22,7 @@ test.describe('Presentation Candidate 1',()=>{
     await page.waitForTimeout(500);
     await page.screenshot({path:'docs/presentation-screenshots/assets.png',fullPage:true});
     await page.goto('/assistant');
-    await expect(page.getByText('Mock AI provider · read only')).toBeVisible();
+    await expect(page.getByText('AI assistant · read only')).toBeVisible();
     await page.screenshot({path:'docs/presentation-screenshots/assistant.png',fullPage:true});
   });
 });
