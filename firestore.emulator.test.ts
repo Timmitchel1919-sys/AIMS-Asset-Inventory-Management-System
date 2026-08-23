@@ -5,14 +5,30 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
-import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import {
+  deleteDoc,
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { FirebaseInventoryRepository } from "./src/data/firebaseRepository";
+import { createFirestoreImportAdapter } from "./src/migration/firebaseImportWriter";
+import {
+  executeFinalImportPlan,
+  type FinalImportPlan,
+  type ImportWrite,
+} from "./src/migration/finalImportPlan";
 
 const projectId = "aims-rules-test";
 let environment: RulesTestEnvironment;
 
-const verified = (email = "verified@kangoeroeschool.com", permissions: string[] = []) => ({
+const verified = (
+  email = "verified@kangoeroeschool.com",
+  permissions: string[] = [],
+) => ({
   email,
   email_verified: true,
   permissions,
@@ -33,16 +49,170 @@ beforeEach(() => environment.clearFirestore());
 afterAll(() => environment.cleanup());
 
 describe("AIMS Firestore authorization", () => {
+  it("executes every import phase and makes the second run idempotent", async () => {
+    const uid = "import-admin";
+    const permissions = [
+      "locations.manage",
+      "categories.manage",
+      "admin.system.configure",
+      "admin.audit.read",
+      "assets.create",
+      "assets.view",
+    ];
+    const db = environment
+      .authenticatedContext(uid, verified(undefined, permissions))
+      .firestore();
+    const at = "2026-08-23T00:00:00.000Z";
+    const audit = {
+      createdAt: at,
+      createdBy: uid,
+      updatedAt: at,
+      updatedBy: uid,
+    };
+    const make = (
+      phase: ImportWrite["phase"],
+      collection: string,
+      documentId: string,
+      data: Record<string, unknown>,
+    ): ImportWrite => ({
+      phase,
+      collection,
+      documentId,
+      data,
+      mode: "upsert",
+      fingerprint: `${collection}-${documentId}`,
+    });
+    const writes: ImportWrite[] = [
+      make("parentLocations", "locations", "parent-kh", {
+        name: "KH",
+        kind: "location",
+        ...audit,
+      }),
+      make("subLocations", "locations", "lok-1", {
+        name: "LOK 1",
+        kind: "location",
+        parentName: "KH",
+        ...audit,
+      }),
+      make("categories", "categories", "digibord", {
+        name: "DIGIBORD",
+        kind: "category",
+        ...audit,
+      }),
+      make("codeGroups", "codeGroups", "kcsdb", {
+        name: "KCSDB",
+        prefix: "KCSDB",
+        minimumNumber: 1,
+        maximumNumber: 5000,
+        nextAvailableNumber: 16,
+        isActive: true,
+        sortOrder: 0,
+        ...audit,
+      }),
+      make("assets", "assets", "asset-kcsdb-15", {
+        code: "KCSDB-15",
+        codePrefix: "KCSDB",
+        codeNumber: 15,
+        name: "Digibord KCSDB15",
+        category: "DIGIBORD",
+        type: "Device",
+        brand: "",
+        model: "",
+        serialNumber: "",
+        location: "LOK 1",
+        department: "",
+        status: "Available",
+        condition: "Good",
+        purchaseDate: "",
+        warrantyExpiry: "",
+        lastUpdated: at,
+        qr: true,
+        ...audit,
+      }),
+      make("history", "assetHistoryEvents", "history-kcsdb-15", {
+        assetId: "asset-kcsdb-15",
+        assetCode: "KCSDB-15",
+        eventType: "Legacy import",
+        category: "Legacy",
+        title: "Legacy History-gebeurtenis",
+        description: "Onderhoud",
+        sourceModule: "combined_excel_import",
+        source: "legacy_import",
+        occurredAt: "2024-01-01T00:00:00.000Z",
+        importBatchId: "emulator-import",
+        isLegacyImport: true,
+        isManual: false,
+        status: "Final",
+        version: 1,
+        fingerprint: "history-kcsdb-15",
+        ...audit,
+      }),
+      make("audit", "migrationAudits", "emulator-import", {
+        importBatchId: "emulator-import",
+        fileFingerprint: "files",
+        parserSchemaVersion: 6,
+        actor: uid,
+        writeCount: 7,
+        ...audit,
+      }),
+    ];
+    const counts = {
+      parentLocations: 1,
+      subLocations: 1,
+      categories: 1,
+      codeGroups: 1,
+      assets: 1,
+      history: 1,
+      audit: 1,
+    };
+    const plan = {
+      version: 1,
+      importBatchId: "emulator-import",
+      fileFingerprint: "files",
+      parserSchemaVersion: 6,
+      createdAt: at,
+      actor: uid,
+      writes,
+      skips: [],
+      counts,
+      reviewManifest: {},
+    } as unknown as FinalImportPlan;
+    const adapter = createFirestoreImportAdapter(db, uid);
+    const first = await executeFinalImportPlan(plan, adapter, { batchSize: 3 });
+    expect(first).toMatchObject({
+      status: "COMPLETE",
+      completed: 7,
+      failed: 0,
+    });
+    const second = await executeFinalImportPlan(plan, adapter, {
+      batchSize: 3,
+    });
+    expect(second).toMatchObject({
+      status: "COMPLETE",
+      completed: 0,
+      skipped: 7,
+      failed: 0,
+    });
+  });
   it("denies unauthenticated, wrong-domain, unverified, and lookalike accounts", async () => {
     const path = "assets/asset-1";
-    await assertFails(getDoc(doc(environment.unauthenticatedContext().firestore(), path)));
+    await assertFails(
+      getDoc(doc(environment.unauthenticatedContext().firestore(), path)),
+    );
     for (const claims of [
       verified("person@gmail.com"),
       { email: "person@kangoeroeschool.com", email_verified: false },
       verified("person@sub.kangoeroeschool.com"),
       verified("person@kangoeroeschool.com.attacker.com"),
     ]) {
-      await assertFails(getDoc(doc(environment.authenticatedContext("blocked", claims).firestore(), path)));
+      await assertFails(
+        getDoc(
+          doc(
+            environment.authenticatedContext("blocked", claims).firestore(),
+            path,
+          ),
+        ),
+      );
     }
   });
 
@@ -51,7 +221,17 @@ describe("AIMS Firestore authorization", () => {
       setDoc(doc(context.firestore(), "assets/asset-1"), { name: "Laptop" }),
     );
     await assertSucceeds(
-      getDoc(doc(environment.authenticatedContext("school-user", verified(undefined, ["assets.view"])).firestore(), "assets/asset-1")),
+      getDoc(
+        doc(
+          environment
+            .authenticatedContext(
+              "school-user",
+              verified(undefined, ["assets.view"]),
+            )
+            .firestore(),
+          "assets/asset-1",
+        ),
+      ),
     );
   });
 
@@ -59,7 +239,9 @@ describe("AIMS Firestore authorization", () => {
     await environment.withSecurityRulesDisabled((context) =>
       setDoc(doc(context.firestore(), "assets/asset-1"), { name: "Laptop" }),
     );
-    const db = environment.authenticatedContext("school-user", verified()).firestore();
+    const db = environment
+      .authenticatedContext("school-user", verified())
+      .firestore();
     await assertFails(getDoc(doc(db, "assets/asset-1")));
     await assertFails(setDoc(doc(db, "assets/asset-2"), { name: "Injected" }));
   });
@@ -68,8 +250,18 @@ describe("AIMS Firestore authorization", () => {
     await environment.withSecurityRulesDisabled((context) =>
       setDoc(doc(context.firestore(), "assets/asset-1"), { name: "Laptop" }),
     );
-    const claims = { ...verified(undefined, ["assets.view"]), denials: ["assets.view"] };
-    await assertFails(getDoc(doc(environment.authenticatedContext("denied", claims).firestore(), "assets/asset-1")));
+    const claims = {
+      ...verified(undefined, ["assets.view"]),
+      denials: ["assets.view"],
+    };
+    await assertFails(
+      getDoc(
+        doc(
+          environment.authenticatedContext("denied", claims).firestore(),
+          "assets/asset-1",
+        ),
+      ),
+    );
   });
 
   it("uses a protected access assignment without trusting the user profile", async () => {
@@ -77,33 +269,58 @@ describe("AIMS Firestore authorization", () => {
       const db = context.firestore();
       await setDoc(doc(db, "assets/asset-1"), { name: "Laptop" });
       await setDoc(doc(db, "accessAssignments/scoped-user"), {
-        uid: "scoped-user", role: "auditor", permissions: ["assets.view"], denials: [],
-        active: true, allRecords: true, departmentIds: [], locationIds: [],
-        createdAt: serverTimestamp(), createdBy: "bootstrap-admin",
-        updatedAt: serverTimestamp(), updatedBy: "bootstrap-admin",
+        uid: "scoped-user",
+        role: "auditor",
+        permissions: ["assets.view"],
+        denials: [],
+        active: true,
+        allRecords: true,
+        departmentIds: [],
+        locationIds: [],
+        createdAt: serverTimestamp(),
+        createdBy: "bootstrap-admin",
+        updatedAt: serverTimestamp(),
+        updatedBy: "bootstrap-admin",
       });
     });
-    const db = environment.authenticatedContext("scoped-user", verified()).firestore();
+    const db = environment
+      .authenticatedContext("scoped-user", verified())
+      .firestore();
     await assertSucceeds(getDoc(doc(db, "assets/asset-1")));
     await assertSucceeds(getDoc(doc(db, "accessAssignments/scoped-user")));
-    await assertFails(updateDoc(doc(db, "accessAssignments/scoped-user"), { permissions: ["admin.users.manage"] }));
+    await assertFails(
+      updateDoc(doc(db, "accessAssignments/scoped-user"), {
+        permissions: ["admin.users.manage"],
+      }),
+    );
   });
 
   it("limits bootstrap administration to the confirmed UID and verified school domain", async () => {
     const uid = "VogTjC6S1aXHO6ySBbdiQ7LNOYG3";
-    const valid = environment.authenticatedContext(uid, verified("aliendas@kangoeroeschool.com")).firestore();
-    const wrongDomain = environment.authenticatedContext(uid, verified("aliendas@gmail.com")).firestore();
+    const valid = environment
+      .authenticatedContext(uid, verified("aliendas@kangoeroeschool.com"))
+      .firestore();
+    const wrongDomain = environment
+      .authenticatedContext(uid, verified("aliendas@gmail.com"))
+      .firestore();
     const role = {
-      name: "Bootstrap test", description: "Trusted bootstrap administrator",
-      permissions: ["admin.roles.manage"], system: false,
-      createdAt: serverTimestamp(), createdBy: uid, updatedAt: serverTimestamp(), updatedBy: uid,
+      name: "Bootstrap test",
+      description: "Trusted bootstrap administrator",
+      permissions: ["admin.roles.manage"],
+      system: false,
+      createdAt: serverTimestamp(),
+      createdBy: uid,
+      updatedAt: serverTimestamp(),
+      updatedBy: uid,
     };
     await assertSucceeds(setDoc(doc(valid, "roles/bootstrap-test"), role));
     await assertFails(setDoc(doc(wrongDomain, "roles/bootstrap-denied"), role));
   });
 
   it("allows only a valid self profile and denies privilege injection or cross-user access", async () => {
-    const db = environment.authenticatedContext("user-1", verified()).firestore();
+    const db = environment
+      .authenticatedContext("user-1", verified())
+      .firestore();
     const profile = {
       uid: "user-1",
       displayName: "School User",
@@ -136,8 +353,12 @@ describe("AIMS Firestore authorization", () => {
   });
 
   it("separates the readable user directory from private account data", async () => {
-    const owner = environment.authenticatedContext("user-1", verified()).firestore();
-    const colleague = environment.authenticatedContext("user-2", verified("colleague@kangoeroeschool.com")).firestore();
+    const owner = environment
+      .authenticatedContext("user-1", verified())
+      .firestore();
+    const colleague = environment
+      .authenticatedContext("user-2", verified("colleague@kangoeroeschool.com"))
+      .firestore();
     const publicProfile = {
       uid: "user-1",
       displayName: "School User",
@@ -150,15 +371,29 @@ describe("AIMS Firestore authorization", () => {
       status: "active",
       updatedAt: serverTimestamp(),
     };
-    await assertSucceeds(setDoc(doc(owner, "userDirectory/user-1"), publicProfile));
+    await assertSucceeds(
+      setDoc(doc(owner, "userDirectory/user-1"), publicProfile),
+    );
     await assertSucceeds(getDoc(doc(colleague, "userDirectory/user-1")));
-    await assertFails(setDoc(doc(colleague, "userDirectory/user-1"), publicProfile));
-    await assertFails(setDoc(doc(owner, "userDirectory/user-1"), { ...publicProfile, email: "private@kangoeroeschool.com" }));
+    await assertFails(
+      setDoc(doc(colleague, "userDirectory/user-1"), publicProfile),
+    );
+    await assertFails(
+      setDoc(doc(owner, "userDirectory/user-1"), {
+        ...publicProfile,
+        email: "private@kangoeroeschool.com",
+      }),
+    );
     await assertFails(getDoc(doc(colleague, "users/user-1")));
   });
 
   it("denies schema pollution and invalid inventory quantities", async () => {
-    const db = environment.authenticatedContext("user-1", verified(undefined, ["inventory.create", "inventory.edit"])).firestore();
+    const db = environment
+      .authenticatedContext(
+        "user-1",
+        verified(undefined, ["inventory.create", "inventory.edit"]),
+      )
+      .firestore();
     const valid = {
       code: "INV-1",
       name: "Cable",
@@ -181,34 +416,135 @@ describe("AIMS Firestore authorization", () => {
       updatedBy: "user-1",
     };
     await assertSucceeds(setDoc(doc(db, "inventoryItems/item-1"), valid));
-    await assertFails(updateDoc(doc(db, "inventoryItems/item-1"), { onHand: -1 }));
-    await assertFails(updateDoc(doc(db, "inventoryItems/item-1"), { injectedPrivilege: true }));
+    await assertFails(
+      updateDoc(doc(db, "inventoryItems/item-1"), { onHand: -1 }),
+    );
+    await assertFails(
+      updateDoc(doc(db, "inventoryItems/item-1"), { injectedPrivilege: true }),
+    );
   });
 
   it("keeps activity immutable", async () => {
-    const db = environment.authenticatedContext("user-1", verified()).firestore();
-    await assertSucceeds(setDoc(doc(db, "activityLogs/log-1"), {
-      at: "2026-08-17T12:00:00.000Z",
-      user: "School User",
-      action: "asset.create",
-      entityType: "asset",
-      entityId: "asset-1",
-      result: "Success",
-      detail: "Created",
+    const db = environment
+      .authenticatedContext("user-1", verified())
+      .firestore();
+    await assertSucceeds(
+      setDoc(doc(db, "activityLogs/log-1"), {
+        at: "2026-08-17T12:00:00.000Z",
+        user: "School User",
+        action: "asset.create",
+        entityType: "asset",
+        entityId: "asset-1",
+        result: "Success",
+        detail: "Created",
+        createdAt: serverTimestamp(),
+        createdBy: "user-1",
+        updatedAt: serverTimestamp(),
+        updatedBy: "user-1",
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(db, "activityLogs/log-1"), { detail: "Changed" }),
+    );
+  });
+
+  it("keeps system history immutable and limits manual edits to drafts", async () => {
+    const systemDb = environment
+      .authenticatedContext(
+        "system-user",
+        verified(undefined, ["assets.view", "assets.edit"]),
+      )
+      .firestore();
+    const manualDb = environment
+      .authenticatedContext(
+        "manual-user",
+        verified(undefined, [
+          "history.view",
+          "history.create_manual",
+          "history.edit_manual",
+          "history.delete_manual",
+        ]),
+      )
+      .firestore();
+    const base = {
+      assetId: "asset-1",
+      assetCode: "KCSMD-01",
+      category: "asset",
+      title: "Asset updated",
+      description: "Lifecycle event",
+      sourceModule: "asset",
+      occurredAt: "2026-08-22T09:00:00.000Z",
+      isLegacyImport: false,
+      status: "Final",
+      version: 1,
       createdAt: serverTimestamp(),
-      createdBy: "user-1",
       updatedAt: serverTimestamp(),
-      updatedBy: "user-1",
-    }));
-    await assertFails(updateDoc(doc(db, "activityLogs/log-1"), { detail: "Changed" }));
+    };
+    await assertSucceeds(
+      setDoc(doc(systemDb, "assetHistoryEvents/system-1"), {
+        ...base,
+        eventType: "asset_updated",
+        source: "system",
+        isManual: false,
+        createdBy: "system-user",
+        updatedBy: "system-user",
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(systemDb, "assetHistoryEvents/system-1"), {
+        description: "Rewritten",
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await assertFails(deleteDoc(doc(systemDb, "assetHistoryEvents/system-1")));
+
+    await assertSucceeds(
+      setDoc(doc(manualDb, "assetHistoryEvents/manual-1"), {
+        ...base,
+        eventType: "manual_note",
+        category: "manual",
+        source: "manual",
+        status: "Draft",
+        isManual: true,
+        createdBy: "manual-user",
+        updatedBy: "manual-user",
+      }),
+    );
+    await assertSucceeds(
+      updateDoc(doc(manualDb, "assetHistoryEvents/manual-1"), {
+        description: "Autosaved draft",
+        version: 2,
+        updatedAt: serverTimestamp(),
+        updatedBy: "manual-user",
+      }),
+    );
+    await assertSucceeds(
+      updateDoc(doc(manualDb, "assetHistoryEvents/manual-1"), {
+        status: "Final",
+        version: 3,
+        updatedAt: serverTimestamp(),
+        updatedBy: "manual-user",
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(manualDb, "assetHistoryEvents/manual-1"), {
+        description: "Silent rewrite",
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await assertFails(deleteDoc(doc(manualDb, "assetHistoryEvents/manual-1")));
   });
 
   it("requires trusted claims for administration collections", async () => {
-    const normal = environment.authenticatedContext("user-1", verified()).firestore();
-    const admin = environment.authenticatedContext(
-      "admin-1",
-      verified("admin@kangoeroeschool.com", ["admin.roles.manage"]),
-    ).firestore();
+    const normal = environment
+      .authenticatedContext("user-1", verified())
+      .firestore();
+    const admin = environment
+      .authenticatedContext(
+        "admin-1",
+        verified("admin@kangoeroeschool.com", ["admin.roles.manage"]),
+      )
+      .firestore();
     const role = {
       name: "Administrator",
       description: "Trusted administrators",
@@ -224,7 +560,9 @@ describe("AIMS Firestore authorization", () => {
   });
 
   it("default-denies unknown collections", async () => {
-    const db = environment.authenticatedContext("user-1", verified()).firestore();
+    const db = environment
+      .authenticatedContext("user-1", verified())
+      .firestore();
     await assertFails(setDoc(doc(db, "unknown/doc"), { value: true }));
   });
 });
@@ -232,26 +570,58 @@ describe("AIMS Firestore authorization", () => {
 describe("Firebase repository persistence and concurrency", () => {
   const uid = "repository-user";
   const claims = verified("repository@kangoeroeschool.com", [
-    "assets.view", "assets.create", "inventory.view", "inventory.issue",
-    "assignments.view", "borrows.view", "repairs.view", "maintenance.view",
-    "movements.view", "audits.view", "disposals.view", "notifications.view",
-    "reports.view", "admin.audit.read",
+    "assets.view",
+    "assets.create",
+    "inventory.view",
+    "inventory.issue",
+    "assignments.view",
+    "borrows.view",
+    "repairs.view",
+    "maintenance.view",
+    "movements.view",
+    "audits.view",
+    "disposals.view",
+    "notifications.view",
+    "reports.view",
+    "admin.audit.read",
   ]);
 
   async function seedConcurrencyFixtures() {
     await environment.withSecurityRulesDisabled(async (context) => {
       const db = context.firestore();
       await setDoc(doc(db, "codeGroups/devices"), {
-        name: "Mobile devices", prefix: "KCSMD", minimumNumber: 1,
-        maximumNumber: 5000, nextAvailableNumber: 1, isActive: true, sortOrder: 1,
-        createdAt: serverTimestamp(), createdBy: uid, updatedAt: serverTimestamp(), updatedBy: uid,
+        name: "Mobile devices",
+        prefix: "KCSMD",
+        minimumNumber: 1,
+        maximumNumber: 5000,
+        nextAvailableNumber: 1,
+        isActive: true,
+        sortOrder: 1,
+        createdAt: serverTimestamp(),
+        createdBy: uid,
+        updatedAt: serverTimestamp(),
+        updatedBy: uid,
       });
       await setDoc(doc(db, "inventoryItems/cables"), {
-        code: "INV-1", name: "Cable", itemType: "Consumable", category: "Cables",
-        unit: "piece", onHand: 10, reserved: 0, minimum: 1, reorderLevel: 2,
-        reorderQuantity: 5, warehouse: "Main", location: "A1", createdBy: uid,
-        createdAt: serverTimestamp(), modifiedBy: uid, lastUpdated: "2026-08-17T12:00:00.000Z",
-        archived: false, updatedAt: serverTimestamp(), updatedBy: uid,
+        code: "INV-1",
+        name: "Cable",
+        itemType: "Consumable",
+        category: "Cables",
+        unit: "piece",
+        onHand: 10,
+        reserved: 0,
+        minimum: 1,
+        reorderLevel: 2,
+        reorderQuantity: 5,
+        warehouse: "Main",
+        location: "A1",
+        createdBy: uid,
+        createdAt: serverTimestamp(),
+        modifiedBy: uid,
+        lastUpdated: "2026-08-17T12:00:00.000Z",
+        archived: false,
+        updatedAt: serverTimestamp(),
+        updatedBy: uid,
       });
     });
   }
@@ -259,41 +629,89 @@ describe("Firebase repository persistence and concurrency", () => {
   it("persists asset allocation across refresh and permits only one concurrent code claim", async () => {
     await seedConcurrencyFixtures();
     const db = environment.authenticatedContext(uid, claims).firestore();
-    const access = async () => ({ permissions: claims.permissions, denials: [], active: true });
+    const access = async () => ({
+      permissions: claims.permissions,
+      denials: [],
+      active: true,
+    });
     const first = new FirebaseInventoryRepository(db, () => uid, access);
     const second = new FirebaseInventoryRepository(db, () => uid, access);
     await Promise.all([first.initialize(), second.initialize()]);
     const results = await Promise.all([
-      first.execute({ action: "asset.create", values: { codePrefix: "KCSMD", name: "First", serialNumber: "SERIAL-1" } }),
-      second.execute({ action: "asset.create", values: { codePrefix: "KCSMD", name: "Second", serialNumber: "SERIAL-2" } }),
+      first.execute({
+        action: "asset.create",
+        values: {
+          codePrefix: "KCSMD",
+          name: "First",
+          serialNumber: "SERIAL-1",
+        },
+      }),
+      second.execute({
+        action: "asset.create",
+        values: {
+          codePrefix: "KCSMD",
+          name: "Second",
+          serialNumber: "SERIAL-2",
+        },
+      }),
     ]);
-    expect(results.filter((result) => result.ok), JSON.stringify(results)).toHaveLength(1);
+    expect(
+      results.filter((result) => result.ok),
+      JSON.stringify(results),
+    ).toHaveLength(1);
     const refreshed = new FirebaseInventoryRepository(db, () => uid, access);
     await refreshed.initialize();
     expect(refreshed.snapshot().assets).toHaveLength(1);
     expect(refreshed.snapshot().assets[0].code).toBe("KCSMD-01");
     expect(refreshed.snapshot().codeGroups[0].nextAvailableNumber).toBe(2);
-    expect(refreshed.snapshot().activity.some((entry) => entry.action === "asset.create")).toBe(true);
-    first.dispose(); second.dispose(); refreshed.dispose();
+    expect(
+      refreshed
+        .snapshot()
+        .activity.some((entry) => entry.action === "asset.create"),
+    ).toBe(true);
+    first.dispose();
+    second.dispose();
+    refreshed.dispose();
   });
 
   it("persists stock workflow records and rejects a stale concurrent issue", async () => {
     await seedConcurrencyFixtures();
     const db = environment.authenticatedContext(uid, claims).firestore();
-    const access = async () => ({ permissions: claims.permissions, denials: [], active: true });
+    const access = async () => ({
+      permissions: claims.permissions,
+      denials: [],
+      active: true,
+    });
     const first = new FirebaseInventoryRepository(db, () => uid, access);
     const second = new FirebaseInventoryRepository(db, () => uid, access);
     await Promise.all([first.initialize(), second.initialize()]);
     const results = await Promise.all([
-      first.execute({ action: "stock.issue", entityId: "cables", values: { quantity: 7 } }),
-      second.execute({ action: "stock.issue", entityId: "cables", values: { quantity: 7 } }),
+      first.execute({
+        action: "stock.issue",
+        entityId: "cables",
+        values: { quantity: 7 },
+      }),
+      second.execute({
+        action: "stock.issue",
+        entityId: "cables",
+        values: { quantity: 7 },
+      }),
     ]);
-    expect(results.filter((result) => result.ok), JSON.stringify(results)).toHaveLength(1);
+    expect(
+      results.filter((result) => result.ok),
+      JSON.stringify(results),
+    ).toHaveLength(1);
     const refreshed = new FirebaseInventoryRepository(db, () => uid, access);
     await refreshed.initialize();
     expect(refreshed.snapshot().inventory[0].onHand).toBe(3);
     expect(refreshed.snapshot().inventoryMovements).toHaveLength(1);
-    expect(refreshed.snapshot().activity.some((entry) => entry.action === "stock.issue")).toBe(true);
-    first.dispose(); second.dispose(); refreshed.dispose();
+    expect(
+      refreshed
+        .snapshot()
+        .activity.some((entry) => entry.action === "stock.issue"),
+    ).toBe(true);
+    first.dispose();
+    second.dispose();
+    refreshed.dispose();
   });
 });

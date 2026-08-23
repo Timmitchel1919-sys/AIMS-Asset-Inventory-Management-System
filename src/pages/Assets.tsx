@@ -1,4 +1,4 @@
-import {Plus,ScanLine} from 'lucide-react';
+import {FileUp,Plus,ScanLine} from 'lucide-react';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {useNavigate,useSearchParams} from 'react-router-dom';
 import {can} from '../auth/permissions';
@@ -121,7 +121,7 @@ export default function Assets(){
   };
   const targetValues=bulkAction==='location'?facets.location||[]:bulkAction==='department'?facets.department||[]:bulkAction==='status'?facets.status||[]:bulkAction==='edit'?['New','Excellent','Good','Fair','Poor','Defective','Beyond Repair']:[];
 
-  return <OfflineGate><DataPageLayout header={<PageHeader title={t('assets.title')} description={t('assets.description')} actions={<><Button className="scan-header-action" variant="secondary" onClick={()=>navigate('/assets?scan=1')}><ScanLine/>{t('assets.scan')}</Button>{can(user?.role,'assets.create')&&<Button onClick={()=>navigate('/assets/new')}><Plus/>{t('assets.add')}</Button>}</>}/>}>
+  return <OfflineGate><DataPageLayout header={<PageHeader title={t('assets.title')} description={t('assets.description')} actions={<><Button className="page-header-secondary-action" variant="secondary" onClick={()=>navigate('/assets?scan=1')}><ScanLine/>{t('assets.scan')}</Button>{can(user?.role,'assets.import')&&<Button className="page-header-secondary-action page-header-import-action" variant="secondary" onClick={()=>navigate('/assets/import')}><FileUp/>{t('assets.import')}</Button>}{can(user?.role,'assets.create')&&<Button onClick={()=>navigate('/assets/new')}><Plus/>{t('assets.add')}</Button>}</>}/>}>
     {params.get('scan')&&<QrAssetScanner assets={snapshot.assets} onAsset={asset=>navigate(`/assets/${asset.id}`)} onClose={()=>navigate('/assets',{replace:true})}/>} 
     <section className="card data-card">
       <DataToolbar search={search} onSearch={value=>{setSearch(value);setCursor(undefined);setSelected([])}} searchLabel={t('assets.search')} filterCount={activeFilters.length} onToggleFilters={toggleFilters}

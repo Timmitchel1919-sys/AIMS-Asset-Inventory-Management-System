@@ -126,7 +126,7 @@ service cloud.firestore {
           'supplier','manufacturer','status','condition','purchaseDate',
           'purchasePrice','warrantyStart','warrantyExpiry','dateAdded','createdBy',
           'lastUpdated','lastModifiedBy','maintenanceRequired','usefulLifeEnd',
-          'technicalSpecifications','attachments','photos','notes','qr',
+          'technicalSpecifications','remoteAccess','attachments','photos','notes','qr',
           'createdAt','updatedAt','updatedBy','isArchived','archivedAt','archivedBy'
         ])
         && data.keys().hasAll(['code','codePrefix','codeNumber','name','category','type','brand','model','serialNumber','location','department','status','condition','purchaseDate','warrantyExpiry','lastUpdated','qr','createdAt','createdBy','updatedAt','updatedBy'])
@@ -134,7 +134,7 @@ service cloud.firestore {
         && data.codePrefix is string && data.codePrefix.size() > 0 && data.codePrefix.size() <= 16
         && data.codeNumber is int && data.codeNumber >= 1 && data.codeNumber <= 5000
         && data.name is string && data.name.size() > 0 && data.name.size() <= 200
-        && data.serialNumber is string && data.serialNumber.size() > 0 && data.serialNumber.size() <= 200
+        && data.serialNumber is string && data.serialNumber.size() <= 200
         && shortString(data, 'description', 4000)
         && shortString(data, 'notes', 4000)
         && boundedList(data, 'previousCodes', 50)
@@ -213,6 +213,44 @@ service cloud.firestore {
         && data.lastLogin is string && data.lastLogin.size() <= 40
         && nullableShortString(data, 'photo', 2048)
         && auditMetadataValid(data);
+    }
+
+    function validAssetHistoryEvent(data) {
+      return data.keys().hasOnly([
+          'assetId','assetCode','eventType','category','title','description',
+          'previous','next','issue','solution','notes','sourceModule',
+          'sourceRecordId','source','occurredAt','performedBy','importBatchId',
+          'originalLegacyText','isLegacyImport','isManual','status','version',
+          'fingerprint','createdAt','createdBy','updatedAt','updatedBy',
+          'isArchived','archivedAt','archivedBy'
+        ])
+        && data.keys().hasAll([
+          'assetId','assetCode','eventType','category','title','description',
+          'sourceModule','source','occurredAt','isLegacyImport','isManual',
+          'status','version','createdAt','createdBy','updatedAt','updatedBy'
+        ])
+        && data.assetId is string && data.assetId.size() > 0 && data.assetId.size() <= 128
+        && data.assetCode is string && data.assetCode.size() > 0 && data.assetCode.size() <= 40
+        && data.eventType is string && data.eventType.size() > 0 && data.eventType.size() <= 100
+        && data.category is string && data.category.size() > 0 && data.category.size() <= 80
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 300
+        && data.description is string && data.description.size() <= 4000
+        && shortString(data, 'issue', 4000)
+        && shortString(data, 'solution', 4000)
+        && shortString(data, 'notes', 4000)
+        && data.sourceModule is string && data.sourceModule.size() <= 100
+        && nullableShortString(data, 'sourceRecordId', 160)
+        && data.source in ['system','manual','legacy_import','correction']
+        && data.occurredAt is string && data.occurredAt.size() <= 40
+        && nullableShortString(data, 'performedBy', 150)
+        && nullableShortString(data, 'importBatchId', 160)
+        && nullableShortString(data, 'originalLegacyText', 4000)
+        && data.isLegacyImport is bool && data.isManual is bool
+        && data.status in ['Draft','Final']
+        && data.version is int && data.version >= 1
+        && nullableShortString(data, 'fingerprint', 128)
+        && auditMetadataValid(data)
+        && noPrivilegeFields(data);
     }
     function validPublicDirectoryUser(data, uid) {
       return data.keys().hasOnly(['uid','displayName','photoURL','department','jobTitle','accountType','authProvider','emailVerified','status','updatedAt'])
@@ -386,6 +424,41 @@ service cloud.firestore {
     match /activityLogs/{id} {
       allow read: if hasAnyPermission(['admin.audit.read','activity.view']);
       allow create: if isVerified() && validActivity(request.resource.data);
+      allow update, delete: if false;
+    }
+    match /assetHistoryEvents/{id} {
+      allow read: if hasAnyPermission(['history.view','assets.view']);
+      allow create: if validAssetHistoryEvent(request.resource.data) && (
+        (request.resource.data.isManual == true && hasPermission('history.create_manual'))
+        || (request.resource.data.isManual == false && hasAnyPermission([
+          'assets.create','assets.edit','assets.archive','assignments.manage',
+          'assignments.create','assignments.return','borrow.manage','borrows.create',
+          'borrows.approve','borrows.return','repairs.manage','repairs.create',
+          'repairs.complete','maintenance.manage','maintenance.create',
+          'maintenance.complete','movements.manage','movements.create',
+          'audits.perform','disposals.request','disposals.approve'
+        ]))
+      );
+      allow update: if validAssetHistoryEvent(request.resource.data)
+        && resource.data.isManual == true && request.resource.data.isManual == true
+        && resource.data.status == 'Draft'
+        && hasPermission('history.edit_manual')
+        && immutableAuditFields()
+        && request.resource.data.assetId == resource.data.assetId
+        && request.resource.data.assetCode == resource.data.assetCode
+        && request.resource.data.source == resource.data.source;
+      allow delete: if resource.data.isManual == true
+        && resource.data.status == 'Draft'
+        && hasPermission('history.delete_manual');
+    }
+    match /migrationAudits/{id} {
+      allow read: if hasPermission('admin.audit.read');
+      allow create: if hasPermission('admin.system.configure')
+        && request.resource.data.importBatchId == id
+        && request.resource.data.fileFingerprint is string
+        && request.resource.data.parserSchemaVersion is int
+        && request.resource.data.actor is string
+        && request.resource.data.writeCount is int;
       allow update, delete: if false;
     }
 

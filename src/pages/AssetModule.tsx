@@ -5,10 +5,12 @@ import {
   FileSpreadsheet,
   MapPin,
   Printer,
+  Plus,
+  Search,
   Upload,
   UserRound,
 } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { useAssetT, type AssetCopyKey } from "../assetCopy";
@@ -29,6 +31,7 @@ import {
 } from "../components/WorkflowUi";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
+import { excelAssetImportToCsv } from "../migration/excelImport";
 import { SignaturePad } from "../components/SignaturePad";
 import { uploadAimsFiles } from "../services/firebaseStorageUploads";
 import {
@@ -40,7 +43,10 @@ import {
 } from "../domain/assetManagement";
 import { normalizeAssetCode } from "../domain/assetCode";
 import type { Asset } from "../domain/types";
+import type { AssetHistoryEvent } from "../data/contracts";
 import { useT } from "../i18n";
+import { can } from "../auth/permissions";
+import { readLocalDraft, useAutosaveDraft } from "../hooks/useAutosaveDraft";
 
 const importErrorKeys: Record<string, [AssetCopyKey, AssetCopyKey]> = {
   MISSING_REQUIRED: ["missingRequired", "missingRequiredFix"],
@@ -127,18 +133,142 @@ function AssetPage({
   );
 }
 
+type ManualHistoryDraft = {
+  eventType: string;
+  title: string;
+  description: string;
+  issue: string;
+  solution: string;
+  notes: string;
+  performedBy: string;
+  occurredAt: string;
+};
+
+function ManualHistoryNote({ asset, existing, onClose }: { asset: Asset; existing?: AssetHistoryEvent; onClose: () => void }) {
+  const repository = useRepository();
+  const app = useApp();
+  const key = `asset-history:${asset.id}`;
+  const recovered = readLocalDraft<ManualHistoryDraft>(key);
+  const [draft, setDraft] = useState<ManualHistoryDraft>(() => recovered?.value || ({
+    eventType: existing?.eventType || "manual_note",
+    title: existing?.title || "",
+    description: existing?.description || "",
+    issue: existing?.issue || "",
+    solution: existing?.solution || "",
+    notes: existing?.notes || "",
+    performedBy: existing?.performedBy || app.user?.name || "",
+    occurredAt: (existing?.occurredAt || new Date().toISOString()).slice(0, 16),
+  }));
+  const [message, setMessage] = useState(recovered ? "Unsaved work recovered." : "");
+  const eventId = useRef<string | undefined>(existing?.id);
+  const version = useRef(existing?.version || 0);
+  const autosave = useAutosaveDraft({
+    key,
+    value: draft,
+    delay: 1000,
+    validate: value => Boolean(value.title.trim() || value.description.trim()),
+    save: async value => {
+      const result = await repository.execute({
+        action: "history.manual.saveDraft",
+        entityId: eventId.current,
+        actor: app.user?.name,
+        values: { ...value, assetId: asset.id, expectedVersion: version.current },
+      });
+      if (!result.ok) throw new Error(result.message);
+      eventId.current = result.entityId || eventId.current;
+      const saved = repository.snapshot().assetHistoryEvents.find(item => item.id === result.entityId);
+      version.current = saved?.version || version.current + 1;
+    },
+  });
+  const update = (field: keyof ManualHistoryDraft, value: string) =>
+    setDraft(current => ({ ...current, [field]: value }));
+  async function finalize() {
+    await autosave.retry();
+    if (!eventId.current) {
+      setMessage("Enter a title or description before finalizing.");
+      return;
+    }
+    const result = await repository.execute({
+      action: "history.manual.finalize",
+      entityId: eventId.current,
+      actor: app.user?.name,
+    });
+    setMessage(result.message);
+    if (result.ok) {
+      autosave.clear();
+      onClose();
+    }
+  }
+  return <Card>
+    <div className="history-note-heading">
+      <div><h2>Add History Note</h2><p className="muted">Drafts save automatically; finalizing creates immutable lifecycle evidence.</p></div>
+      <span className={`autosave-status ${autosave.status}`} role="status">
+        {autosave.status === "saving" ? "Saving…" : autosave.status === "saved" ? `Saved${autosave.lastSavedAt ? ` ${new Date(autosave.lastSavedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}` : autosave.status === "error" ? "Could not save" : autosave.status === "invalid" ? "Waiting for valid content" : "Draft"}
+      </span>
+    </div>
+    {message && <p role="status">{message}</p>}
+    <div className="workflow-form">
+      <SelectField label="Type" value={draft.eventType} onChange={event => update("eventType", event.target.value)}>
+        {['manual_note','inspection_completed','software_updated','device_cleaned','service_completed'].map(value => <option key={value} value={value}>{value.replaceAll('_',' ')}</option>)}
+      </SelectField>
+      <Field label="Occurred at" type="datetime-local" value={draft.occurredAt} onChange={event => update("occurredAt", event.target.value)}/>
+      <Field className="wide" label="Title" value={draft.title} onChange={event => update("title", event.target.value)}/>
+      <TextAreaField className="wide" label="Description" value={draft.description} onChange={event => update("description", event.target.value)}/>
+      <TextAreaField label="Issue" value={draft.issue} onChange={event => update("issue", event.target.value)}/>
+      <TextAreaField label="Solution" value={draft.solution} onChange={event => update("solution", event.target.value)}/>
+      <TextAreaField className="wide" label="Notes" value={draft.notes} onChange={event => update("notes", event.target.value)}/>
+      <Field label="Performed by" value={draft.performedBy} onChange={event => update("performedBy", event.target.value)}/>
+      <div className="form-actions wide">
+        <Button type="button" onClick={finalize}>Finalize Note</Button>
+        {autosave.status === "error" && <Button type="button" variant="secondary" onClick={() => void autosave.retry()}>Retry</Button>}
+        <Button type="button" variant="ghost" onClick={onClose}>Close</Button>
+      </div>
+    </div>
+  </Card>;
+}
+
 export function AssetHistory() {
   const { asset, snapshot } = useCurrentAsset(),
-    a = useAssetT();
+    a = useAssetT(), app = useApp(), repository = useRepository();
+  const [loadedEvents, setLoadedEvents] = useState(snapshot.assetHistoryEvents);
   const [type, setType] = useState(""),
     [from, setFrom] = useState(""),
     [to, setTo] = useState(""),
     [user, setUser] = useState(""),
+    [source, setSource] = useState(""),
+    [query, setQuery] = useState(""),
+    [addingNote, setAddingNote] = useState(false),
     [expanded, setExpanded] = useState("");
+  useEffect(() => {
+    if (!asset) return;
+    let active = true;
+    repository.queryAssetHistory(asset.id).then(events => {
+      if (active) setLoadedEvents(events);
+    }).catch(() => {
+      if (active) setLoadedEvents([]);
+    });
+    return () => { active = false; };
+  }, [asset, repository, snapshot.assetHistoryEvents]);
   return (
     <AssetState asset={asset}>
       {(current) => {
+        const structured = loadedEvents
+          .filter(item => item.assetId === current.id && !item.isArchived)
+          .map(item => ({
+            id: item.id,
+            type: item.eventType,
+            source: item.sourceModule,
+            date: item.occurredAt,
+            user: item.performedBy || item.createdBy,
+            detail: `${item.title}${item.description ? ` · ${item.description}` : ""}`,
+            before: item.previous ? JSON.stringify(item.previous) : "—",
+            after: item.next ? JSON.stringify(item.next) : item.solution || item.status,
+            sourceRecordId: item.sourceRecordId,
+            legacy: item.isLegacyImport,
+          }));
+        const structuredSourceIds = new Set(structured.map(item => item.sourceRecordId).filter(Boolean));
         const records = [
+          ...structured,
           {
             id: `created-${current.id}`,
             type: "creation",
@@ -147,9 +277,10 @@ export function AssetHistory() {
             detail: `${current.code} · ${current.name}`,
             before: "—",
             after: current.status,
+            source: "asset",
           },
           ...snapshot.activity
-            .filter((item) => item.entityId === current.id)
+            .filter((item) => item.entityId === current.id && !structuredSourceIds.has(item.entityId))
             .map((item) => ({
               id: item.id,
               type: item.action,
@@ -158,9 +289,10 @@ export function AssetHistory() {
               detail: item.detail,
               before: "Recorded asset state",
               after: item.result,
+              source: "activity",
             })),
           ...snapshot.movements
-            .filter((item) => item.assetCode === current.code)
+            .filter((item) => item.assetCode === current.code && !structuredSourceIds.has(item.id))
             .map((item) => ({
               id: item.id,
               type: item.type,
@@ -169,9 +301,10 @@ export function AssetHistory() {
               detail: `${item.from} → ${item.to}${item.reason ? ` · ${item.reason}` : ""}`,
               before: item.from,
               after: item.to,
+              source: "movement",
             })),
           ...snapshot.assignments
-            .filter((item) => item.assetId === current.id)
+            .filter((item) => item.assetId === current.id && !structuredSourceIds.has(item.id))
             .map((item) => ({
               id: item.id,
               type: item.active ? "assignment" : "return",
@@ -182,9 +315,10 @@ export function AssetHistory() {
               after: item.active
                 ? "Active"
                 : item.conditionAtReturn || "Returned",
+              source: "assignment",
             })),
           ...snapshot.borrows
-            .filter((item) => item.assetCode === current.code)
+            .filter((item) => item.assetCode === current.code && !structuredSourceIds.has(item.id))
             .map((item) => ({
               id: item.id,
               type: "borrow",
@@ -193,9 +327,10 @@ export function AssetHistory() {
               detail: `${item.reference} · ${item.status}`,
               before: item.condition,
               after: item.returnCondition || item.status,
+              source: "borrow",
             })),
           ...snapshot.repairs
-            .filter((item) => item.assetCode === current.code)
+            .filter((item) => item.assetCode === current.code && !structuredSourceIds.has(item.id))
             .map((item) => ({
               id: item.id,
               type: "repair",
@@ -204,9 +339,10 @@ export function AssetHistory() {
               detail: `${item.reference} · ${item.issue}`,
               before: "Reported",
               after: item.status,
+              source: "repair",
             })),
           ...snapshot.maintenance
-            .filter((item) => item.assetCode === current.code)
+            .filter((item) => item.assetCode === current.code && !structuredSourceIds.has(item.id))
             .map((item) => ({
               id: item.id,
               type: "maintenance",
@@ -215,6 +351,7 @@ export function AssetHistory() {
               detail: item.type,
               before: "Scheduled",
               after: item.status,
+              source: "maintenance",
             })),
           ...snapshot.audits
             .filter((item) => item.frozenItemIds?.includes(current.id))
@@ -226,9 +363,10 @@ export function AssetHistory() {
               detail: `${item.reference} · ${item.name}`,
               before: item.scope,
               after: item.status,
+              source: "audit",
             })),
           ...snapshot.disposals
-            .filter((item) => item.assetId === current.id)
+            .filter((item) => item.assetId === current.id && !structuredSourceIds.has(item.id))
             .map((item) => ({
               id: item.id,
               type: "disposal",
@@ -237,6 +375,7 @@ export function AssetHistory() {
               detail: item.reason,
               before: current.condition,
               after: item.status,
+              source: "disposal",
             })),
         ].sort((left, right) => right.date.localeCompare(left.date));
         const filtered = records.filter(
@@ -244,22 +383,33 @@ export function AssetHistory() {
             (!type || item.type === type) &&
             (!from || item.date >= from) &&
             (!to || item.date <= `${to}T23:59`) &&
-            (!user || item.user === user),
+            (!user || item.user === user) &&
+            (!source || item.source === source) &&
+            (!query || `${item.type} ${item.detail} ${item.user} ${item.before} ${item.after}`.toLowerCase().includes(query.toLowerCase())),
         );
         return (
           <AssetPage
             asset={current}
             title={a("historyTitle")}
             description={`${current.code} · ${current.name}`}
-            actions={
+            actions={<>
+              {can(app.user?.role, "history.create_manual") && <Button onClick={() => setAddingNote(value => !value)}><Plus/>Add History Note</Button>}
               <Button variant="secondary" onClick={() => window.print()}>
                 <Printer />
                 {a("print")}
               </Button>
-            }
+            </>}
           >
+            {addingNote && (
+              <ManualHistoryNote
+                asset={current}
+                existing={loadedEvents.find(event => event.isManual && event.status === "Draft" && (event.createdBy === app.user?.id || event.performedBy === app.user?.name))}
+                onClose={() => setAddingNote(false)}
+              />
+            )}
             <Card>
               <div className="history-filters">
+                <label className="field"><span>Search</span><span className="history-search"><Search/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search history…"/></span></label>
                 <SelectField
                   label={a("eventType")}
                   value={type}
@@ -271,6 +421,10 @@ export function AssetHistory() {
                       <option key={value}>{value}</option>
                     ),
                   )}
+                </SelectField>
+                <SelectField label="Source module" value={source} onChange={event => setSource(event.target.value)}>
+                  <option value="">{a("all")}</option>
+                  {[...new Set(records.map(item => item.source))].map(value => <option key={value}>{value}</option>)}
                 </SelectField>
                 <Field
                   label={a("dateFrom")}
@@ -516,7 +670,7 @@ export function AssetMovement() {
   async function commit(current: Asset) {
     setFeedback({ status: "loading", message: a("loading") });
     try {
-      values.attachments = await uploadAimsFiles(
+      const attachments = await uploadAimsFiles(
         files,
         "movements",
         current.id,
@@ -525,7 +679,7 @@ export function AssetMovement() {
         action: "asset.move",
         entityId: current.id,
         actor: app.user?.name,
-        values,
+        values: { ...values, attachments },
       });
       setFeedback({
         status: result.ok ? "success" : "error",
@@ -798,7 +952,7 @@ export function AssetDisposal() {
 
 const sample =
   "code,name,serialnumber,category,location,department,brand,model\nKCSMD01,Imported laptop,IMP-001,Laptops,ICT Store,ICT,Dell,Latitude";
-export function AssetImport() {
+function LegacyAssetImport() {
   const a = useAssetT(),
     repository = useRepository(),
     snapshot = useMockSnapshot(),
@@ -916,9 +1070,18 @@ export function AssetImport() {
             <input
               type="file"
               accept=".csv,.xls,.xlsx"
-              onChange={(event) => {
+              onChange={async (event) => {
                 const file = event.target.files?.[0];
-                if (file) file.text().then(setText);
+                if (!file) return;
+                try {
+                  setFeedback({ status: "loading", message: a("loading") });
+                  setText(/\.xlsx?$/i.test(file.name) ? await excelAssetImportToCsv(file) : await file.text());
+                  setRows([]);
+                  setStage(2);
+                  setFeedback({ status: "success", message: `${file.name}: ${a("success")}` });
+                } catch (error) {
+                  setFeedback({ status: "error", message: error instanceof Error ? error.message : String(error) });
+                }
               }}
             />
           </label>
@@ -926,6 +1089,7 @@ export function AssetImport() {
             <Upload />
             {a("parseFile")}
           </Button>
+          <MutationFeedback {...feedback} />
         </Card>
         {rows.length > 0 && (
           <>

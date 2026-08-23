@@ -7,6 +7,11 @@ const exactPermissions: Partial<Record<WorkflowAction, Permission>> = {
   "asset.archive": "assets.archive",
   "asset.restore": "assets.archive",
   "asset.move": "movements.create",
+  "history.manual.saveDraft": "history.create_manual",
+  "history.manual.finalize": "history.edit_manual",
+  "history.manual.delete": "history.delete_manual",
+  "history.manual.correct": "history.edit_manual",
+  "history.legacy.import": "assets.create",
   "inventory.create": "inventory.create",
   "inventory.edit": "inventory.edit",
   "inventory.archive": "inventory.archive",
@@ -151,6 +156,8 @@ const exactPermissions: Partial<Record<WorkflowAction, Permission>> = {
 };
 
 export function requiredPermission(command: WorkflowCommand): Permission {
+  if (command.action === "history.manual.saveDraft" && command.entityId)
+    return "history.edit_manual";
   const permission = exactPermissions[command.action];
   if (!permission) throw new Error(`No permission mapping exists for ${command.action}.`);
   if (command.action.startsWith("reference.")) {

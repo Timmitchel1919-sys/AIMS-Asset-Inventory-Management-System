@@ -1,1 +1,8 @@
-{"indexes":[{"collectionGroup":"versions","queryScope":"COLLECTION","fields":[{"fieldPath":"type","order":"ASCENDING"},{"fieldPath":"publishedAt","order":"DESCENDING"}]},{"collectionGroup":"policyAcknowledgements","queryScope":"COLLECTION","fields":[{"fieldPath":"documentType","order":"ASCENDING"},{"fieldPath":"documentVersion","order":"ASCENDING"},{"fieldPath":"acknowledgedAt","order":"DESCENDING"}]}],"fieldOverrides":[]}
+{
+  "indexes": [
+    { "collectionGroup": "versions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "type", "order": "ASCENDING" }, { "fieldPath": "publishedAt", "order": "DESCENDING" }] },
+    { "collectionGroup": "policyAcknowledgements", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "documentType", "order": "ASCENDING" }, { "fieldPath": "documentVersion", "order": "ASCENDING" }, { "fieldPath": "acknowledgedAt", "order": "DESCENDING" }] },
+    { "collectionGroup": "assetHistoryEvents", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "assetId", "order": "ASCENDING" }, { "fieldPath": "occurredAt", "order": "DESCENDING" }] }
+  ],
+  "fieldOverrides": []
+}

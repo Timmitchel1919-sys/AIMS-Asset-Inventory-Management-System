@@ -80,6 +80,10 @@ export interface Asset {
   maintenanceRequired?: boolean;
   usefulLifeEnd?: string;
   technicalSpecifications?: Record<string, string>;
+  remoteAccess?: {
+    anydeskId?: string;
+    teamviewerId?: string;
+  };
   attachments?: string[];
   photos?: string[];
   notes?: string;

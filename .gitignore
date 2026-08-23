@@ -95,6 +95,12 @@ Desktop.ini
 *.swp
 *.swo
 
+# Private AIMS migration source data
+data-import/source/
+data-import/private/
+*.legacy.xlsx
+*.migration.xlsx
+
 # ------------------------------
 # Local cache
 # ------------------------------

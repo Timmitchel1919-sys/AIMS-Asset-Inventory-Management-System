@@ -4,11 +4,15 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
   onSnapshot,
+  orderBy,
+  query,
   runTransaction,
   serverTimestamp,
   type DocumentData,
   type Firestore,
+  where,
 } from "firebase/firestore";
 import { firebaseAuth, requireFirebase } from "../lib/firebase";
 import { rolePermissions, type Permission } from "../auth/permissions";
@@ -32,6 +36,7 @@ const collections = {
   disposals: "disposals",
   notifications: "notifications",
   activity: "activityLogs",
+  assetHistoryEvents: "assetHistoryEvents",
   locationTypes: "locationTypes",
   codeGroups: "codeGroups",
   users: "directoryUsers",
@@ -45,6 +50,7 @@ const collections = {
 
 type CollectionKey = keyof typeof collections;
 const collectionKeys = Object.keys(collections) as CollectionKey[];
+const eagerCollectionKeys = collectionKeys.filter(key => key !== "assetHistoryEvents");
 
 const isPermissionDenied = (error: unknown) =>
   String((error as { code?: unknown })?.code || "").replace("firestore/", "") ===
@@ -180,7 +186,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     const base = this.snapshot();
     const next = { ...base } as MockSnapshot;
     await Promise.all(
-      collectionKeys.map(async (key) => {
+      eagerCollectionKeys.map(async (key) => {
         try {
           const result = await getDocs(collection(this.db, collections[key]));
           (next[key] as unknown) = result.docs.map((item) =>
@@ -222,6 +228,26 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
 
   dispose() {
     this.notificationUnsubscribe?.();
+  }
+
+  override async queryAssetHistory(assetId: string, maximum = 250) {
+    try {
+      const result = await getDocs(query(
+        collection(this.db, collections.assetHistoryEvents),
+        where("assetId", "==", assetId),
+        orderBy("occurredAt", "desc"),
+        limit(Math.min(Math.max(maximum, 1), 500)),
+      ));
+      const events = result.docs.map(item => deserialize({ id: item.id, ...item.data() })) as MockSnapshot["assetHistoryEvents"];
+      this.state.assetHistoryEvents = [
+        ...this.state.assetHistoryEvents.filter(event => event.assetId !== assetId),
+        ...events,
+      ];
+      return events;
+    } catch (error) {
+      if (isPermissionDenied(error)) return [];
+      throw firestoreErrorMessage(error);
+    }
   }
 
   private prepareAssetCode(command: WorkflowCommand) {
@@ -332,6 +358,12 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
           ok: false,
           message: `You do not have the required permission: ${requiredPermission(command)}.`,
         };
+      if (command.action === "history.legacy.import") {
+        const eventId = String(command.values?.id || "");
+        if (!eventId) return { ok: false, message: "A stable legacy-history event ID is required." };
+        if ((await getDoc(doc(this.db, collections.assetHistoryEvents, eventId))).exists())
+          return { ok: true, message: "Legacy history event already imported; skipped.", entityId: eventId };
+      }
       const allocation = command.action === "asset.create" ? this.prepareAssetCode(command) : undefined;
       const result = await super.execute(command);
       if (!result.ok) return result;

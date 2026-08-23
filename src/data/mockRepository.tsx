@@ -22,6 +22,7 @@ import {
 } from "./mock";
 import type {
   ActivityRecord,
+  AssetHistoryEvent,
   Assignment,
   CodeGroup,
   Disposal,
@@ -636,6 +637,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
       disposals: clone(disposalSeeds),
       notifications: clone(seedNotifications),
       activity: [],
+      assetHistoryEvents: [],
       references: clone(migratedReferenceSeeds),
       locationTypes: clone(locationTypeSeeds),
       codeGroups: clone(codeGroupSeeds),
@@ -754,6 +756,12 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
       ]),
     );
   }
+  async queryAssetHistory(assetId: string, maximum = 250) {
+    return this.state.assetHistoryEvents
+      .filter(event => event.assetId === assetId && !event.isArchived)
+      .sort((left, right) => right.occurredAt.localeCompare(left.occurredAt))
+      .slice(0, maximum);
+  }
   protected replaceState(state: MockSnapshot) {
     this.state = state;
     this.emit();
@@ -775,6 +783,91 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
     };
     this.state.activity = [entry, ...this.state.activity];
   }
+  private nextHistoryId() {
+    let sequence = this.state.assetHistoryEvents.length;
+    let candidate = id("ahe", sequence);
+    while (this.state.assetHistoryEvents.some((event) => event.id === candidate))
+      candidate = id("ahe", ++sequence);
+    return candidate;
+  }
+  private historyAsset(command: WorkflowCommand, result: WorkflowResult) {
+    if (command.action.startsWith("asset."))
+      return this.state.assets.find((asset) => asset.id === (result.entityId || command.entityId));
+    const sourceId = result.entityId || command.entityId;
+    const linkedAssetId =
+      this.state.assignments.find((item) => item.id === sourceId)?.assetId ||
+      this.state.disposals.find((item) => item.id === sourceId)?.assetId ||
+      this.state.movements.find((item) => item.id === sourceId)?.assetId;
+    if (linkedAssetId) return this.state.assets.find((asset) => asset.id === linkedAssetId);
+    const assetCode =
+      this.state.borrows.find((item) => item.id === sourceId)?.assetCode ||
+      this.state.repairs.find((item) => item.id === sourceId)?.assetCode ||
+      this.state.maintenance.find((item) => item.id === sourceId)?.assetCode ||
+      this.state.movements.find((item) => item.id === sourceId)?.assetCode ||
+      String(command.values?.assetCode || command.values?.scannedCode || "");
+    return this.state.assets.find((asset) => asset.code === assetCode);
+  }
+  private recordAutomaticHistory(
+    command: WorkflowCommand,
+    result: WorkflowResult,
+    before: MockSnapshot,
+  ) {
+    if (!result.ok || command.action.startsWith("history.")) return;
+    const category = command.action.split(".")[0];
+    if (!new Set(["asset", "assignment", "borrow", "repair", "maintenance", "movement", "audit", "disposal"]).has(category)) return;
+    const asset = this.historyAsset(command, result);
+    if (!asset) return;
+    const previousAsset = before.assets.find((item) => item.id === asset.id);
+    const actor = command.actor || "Naomi Williams";
+    const event: AssetHistoryEvent = {
+      id: this.nextHistoryId(),
+      assetId: asset.id,
+      assetCode: asset.code,
+      eventType: command.action.replaceAll(".", "_"),
+      category,
+      title: command.action.split(".").map((part) => part[0].toUpperCase() + part.slice(1)).join(" "),
+      description: result.message,
+      previous: previousAsset ? {
+        status: previousAsset.status,
+        condition: previousAsset.condition,
+        location: previousAsset.location,
+        department: previousAsset.department,
+        assignedTo: previousAsset.assignedTo || null,
+      } : undefined,
+      next: {
+        status: asset.status,
+        condition: asset.condition,
+        location: asset.location,
+        department: asset.department,
+        assignedTo: asset.assignedTo || null,
+      },
+      issue: String(command.values?.issue || "") || undefined,
+      solution: String(command.values?.solution || command.values?.outcome || "") || undefined,
+      notes: String(command.values?.notes || "") || undefined,
+      sourceModule: category,
+      sourceRecordId: result.entityId || command.entityId,
+      source: "system",
+      createdAt: now(),
+      occurredAt: String(command.values?.occurredAt || command.values?.date || now()),
+      createdBy: actor,
+      performedBy: String(command.values?.performedBy || actor),
+      isLegacyImport: false,
+      isManual: false,
+      status: "Final",
+      version: 1,
+    };
+    this.state.assetHistoryEvents = [event, ...this.state.assetHistoryEvents];
+
+    if (previousAsset?.condition !== asset.condition)
+      this.state.assetHistoryEvents = [{
+        ...event,
+        id: this.nextHistoryId(),
+        eventType: "condition_changed",
+        category: "condition",
+        title: "Condition changed",
+        description: `${previousAsset?.condition || "Unknown"} → ${asset.condition}`,
+      }, ...this.state.assetHistoryEvents];
+  }
   private finish(command: WorkflowCommand, result: WorkflowResult) {
     this.log(command, result);
     this.emit();
@@ -782,6 +875,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
   }
   async execute(command: WorkflowCommand): Promise<WorkflowResult> {
     await new Promise((resolve) => setTimeout(resolve, 120));
+    const historyBefore = clone(this.state);
     const v = enforceMappedCondition(command.values || {});
     let result: WorkflowResult = { ok: true, message: "Operation completed." };
     try {
@@ -842,6 +936,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             maintenanceRequired: false,
             technicalSpecifications: (v.technicalSpecifications ||
               {}) as Record<string, string>,
+            remoteAccess: (v.remoteAccess || {}) as Asset["remoteAccess"],
             attachments: (v.attachments || []) as string[],
             photos: (v.photos || []) as string[],
             notes: String(v.notes || ""),
@@ -940,6 +1035,138 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             message: `${a.code} was ${command.action.endsWith("archive") ? "archived" : "restored"}.`,
             entityId: a.id,
           };
+          break;
+        }
+        case "history.legacy.import": {
+          const asset = this.asset(String(v.assetId || command.entityId || ""));
+          const fingerprint = String(v.fingerprint || "").trim();
+          if (!fingerprint) throw new Error("A stable legacy-history fingerprint is required.");
+          const existing = this.state.assetHistoryEvents.find(event => event.fingerprint === fingerprint);
+          if (existing) {
+            result = { ok: true, message: "Legacy history event already imported; skipped.", entityId: existing.id };
+            break;
+          }
+          const occurredAt = String(v.occurredAt || "");
+          if (!occurredAt || Number.isNaN(Date.parse(occurredAt))) throw new Error("A valid original history date is required.");
+          const event: AssetHistoryEvent = {
+            id: String(v.id || `legacy-event-${fingerprint}`),
+            assetId: asset.id,
+            assetCode: asset.code,
+            eventType: String(v.eventType || "legacy_import"),
+            category: String(v.category || "legacy"),
+            title: String(v.title || "Imported legacy record"),
+            description: String(v.description || ""),
+            issue: String(v.issue || "") || undefined,
+            solution: String(v.solution || "") || undefined,
+            notes: String(v.notes || "") || undefined,
+            sourceModule: "legacy_migration",
+            sourceRecordId: String(v.sourceRecordId || "") || undefined,
+            source: "legacy_import",
+            createdAt: now(),
+            occurredAt: new Date(occurredAt).toISOString(),
+            createdBy: command.actor || "legacy_migration",
+            performedBy: String(v.performedBy || "") || undefined,
+            importBatchId: String(v.importBatchId || "") || undefined,
+            originalLegacyText: String(v.originalLegacyText || "") || undefined,
+            isLegacyImport: true,
+            isManual: false,
+            status: "Final",
+            version: 1,
+            fingerprint,
+          };
+          this.state.assetHistoryEvents = [event, ...this.state.assetHistoryEvents];
+          result = { ok: true, message: "Legacy history event imported.", entityId: event.id };
+          break;
+        }
+        case "history.manual.saveDraft": {
+          const asset = this.asset(String(v.assetId || ""));
+          const existing = command.entityId
+            ? this.state.assetHistoryEvents.find((event) => event.id === command.entityId)
+            : undefined;
+          if (existing && (!existing.isManual || existing.status !== "Draft"))
+            throw new Error("Only manual draft notes may be updated.");
+          const expectedVersion = Number(v.expectedVersion || 0);
+          if (existing && expectedVersion && existing.version !== expectedVersion)
+            throw new Error("This draft changed in another session. Reload before saving.");
+          const title = String(v.title || "").trim();
+          const description = String(v.description || "").trim();
+          if (!title && !description) throw new Error("Enter a title or description.");
+          const timestamp = now();
+          const draft: AssetHistoryEvent = {
+            id: existing?.id || this.nextHistoryId(),
+            assetId: asset.id,
+            assetCode: asset.code,
+            eventType: String(v.eventType || "manual_note"),
+            category: String(v.category || "manual"),
+            title: title || "Manual history note",
+            description,
+            issue: String(v.issue || "") || undefined,
+            solution: String(v.solution || "") || undefined,
+            notes: String(v.notes || "") || undefined,
+            sourceModule: "asset_history",
+            sourceRecordId: existing?.id,
+            source: "manual",
+            createdAt: existing?.createdAt || timestamp,
+            occurredAt: String(v.occurredAt || timestamp),
+            createdBy: existing?.createdBy || command.actor || "Naomi Williams",
+            performedBy: String(v.performedBy || command.actor || "Naomi Williams"),
+            isLegacyImport: false,
+            isManual: true,
+            status: "Draft",
+            updatedAt: timestamp,
+            version: (existing?.version || 0) + 1,
+          };
+          this.state.assetHistoryEvents = existing
+            ? this.state.assetHistoryEvents.map((event) => event.id === existing.id ? draft : event)
+            : [draft, ...this.state.assetHistoryEvents];
+          result = { ok: true, message: "History draft saved.", entityId: draft.id };
+          break;
+        }
+        case "history.manual.finalize": {
+          const event = this.state.assetHistoryEvents.find((item) => item.id === command.entityId);
+          if (!event || !event.isManual || event.status !== "Draft")
+            throw new Error("Manual history draft not found.");
+          event.status = "Final";
+          event.updatedAt = now();
+          event.version += 1;
+          result = { ok: true, message: "History note finalized.", entityId: event.id };
+          break;
+        }
+        case "history.manual.delete": {
+          const event = this.state.assetHistoryEvents.find((item) => item.id === command.entityId);
+          if (!event || !event.isManual || event.status !== "Draft")
+            throw new Error("Only manual drafts may be deleted.");
+          event.isArchived = true;
+          event.archivedAt = now();
+          event.archivedBy = command.actor || "Naomi Williams";
+          event.updatedAt = now();
+          event.version += 1;
+          result = { ok: true, message: "History draft deleted.", entityId: event.id };
+          break;
+        }
+        case "history.manual.correct": {
+          const original = this.state.assetHistoryEvents.find((item) => item.id === command.entityId);
+          if (!original || original.status !== "Final") throw new Error("Final history event not found.");
+          const description = String(v.description || "").trim();
+          if (!description) throw new Error("A correction explanation is required.");
+          const correction: AssetHistoryEvent = {
+            ...original,
+            id: this.nextHistoryId(),
+            eventType: "correction",
+            category: "correction",
+            title: `Correction: ${original.title}`,
+            description,
+            source: "correction",
+            sourceRecordId: original.id,
+            createdAt: now(),
+            occurredAt: now(),
+            createdBy: command.actor || "Naomi Williams",
+            performedBy: command.actor || "Naomi Williams",
+            isManual: true,
+            version: 1,
+          };
+          this.state.assetHistoryEvents = [correction, ...this.state.assetHistoryEvents];
+          result = { ok: true, message: "Correction event added.", entityId: correction.id };
           break;
         }
         case "inventory.create": {
@@ -3449,6 +3676,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
         );
         if (disposal) this.asset(disposal.assetId).condition = "Good";
       }
+      this.recordAutomaticHistory(command, result, historyBefore);
     } catch (error) {
       result = {
         ok: false,

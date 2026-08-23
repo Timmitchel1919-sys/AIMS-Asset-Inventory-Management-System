@@ -29,6 +29,20 @@ describe('app download and admin access integration',()=>{
     expect(route?.permission).toBe('admin.access');
   });
 
+  it('routes asset imports directly to the protected combined workbook importer',()=>{
+    const route=routeManifest.find(candidate=>candidate.path==='/assets/import');
+    expect(route).toMatchObject({id:'asset-import',permission:'assets.import'});
+    expect(route?.public).not.toBe(true);
+    expect(route?.component).toBeDefined();
+  });
+
+  it('shows the combined import action only with assets.import permission',()=>{
+    const assetsSource=readFileSync('src/pages/Assets.tsx','utf8');
+    expect(assetsSource).toContain("can(user?.role,'assets.import')");
+    expect(assetsSource).toContain("navigate('/assets/import')");
+    expect(assetsSource).toContain("t('assets.import')");
+  });
+
   it('deploys verified school-domain rules with default deny',()=>{
     const rules=readFileSync('firestore.rules','utf8');
     expect(rules).toContain('request.auth.token.email_verified == true');

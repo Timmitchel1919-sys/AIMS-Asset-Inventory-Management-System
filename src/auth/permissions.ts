@@ -1,7 +1,8 @@
 import type {Role} from '../domain/types';
 
 export type Permission =
-  | 'dashboard.view' | 'assets.view' | 'assets.create' | 'assets.edit' | 'assets.archive'
+  | 'dashboard.view' | 'assets.view' | 'assets.create' | 'assets.import' | 'assets.edit' | 'assets.archive' | 'assets.viewTechnicalDetails'
+  | 'history.view' | 'history.create_manual' | 'history.edit_manual' | 'history.delete_manual'
   | 'inventory.view' | 'inventory.manage' | 'inventory.create'|'inventory.edit'|'inventory.receive'|'inventory.issue'|'inventory.transfer'|'inventory.return'|'inventory.reserve'|'inventory.reservations.approve'|'inventory.correct'|'inventory.financial.view'|'inventory.export'|'inventory.archive'|'inventory.restore'|'inventory.movements.view' | 'categories.manage' | 'locations.manage'|'departments.manage'
   | 'assignments.manage'|'assignments.view'|'assignments.create'|'assignments.edit'|'assignments.approve'|'assignments.return'|'assignments.reassign'|'assignments.export'|'assignments.print'|'assignments.history'
   | 'borrow.manage'|'borrows.view'|'borrows.create'|'borrows.edit'|'borrows.approve'|'borrows.reject'|'borrows.issue'|'borrows.partialReturn'|'borrows.return'|'borrows.overdue'|'borrows.export'|'borrows.print'|'borrows.history'
@@ -21,7 +22,7 @@ export type Permission =
   | 'admin.access'|'admin.users.manage'|'admin.roles.manage'|'admin.audit.read'|'admin.legal.manage'|'admin.system.configure';
 
 const all: Permission[] = [
-  'dashboard.view','assets.view','assets.create','assets.edit','assets.archive','inventory.view',
+  'dashboard.view','assets.view','assets.create','assets.import','assets.edit','assets.archive','assets.viewTechnicalDetails','history.view','history.create_manual','history.edit_manual','history.delete_manual','inventory.view',
   'inventory.manage','inventory.create','inventory.edit','inventory.receive','inventory.issue','inventory.transfer','inventory.return','inventory.reserve','inventory.reservations.approve','inventory.correct','inventory.financial.view','inventory.export','inventory.archive','inventory.restore','inventory.movements.view','categories.manage','locations.manage','departments.manage','assignments.manage','assignments.view','assignments.create','assignments.edit','assignments.approve','assignments.return','assignments.reassign','assignments.export','assignments.print','assignments.history','borrow.manage','borrows.view','borrows.create','borrows.edit','borrows.approve','borrows.reject','borrows.issue','borrows.partialReturn','borrows.return','borrows.overdue','borrows.export','borrows.print','borrows.history',
   'repairs.manage','repairs.view','repairs.create','repairs.edit','repairs.diagnose','repairs.approve','repairs.parts','repairs.perform','repairs.test','repairs.complete','repairs.unrepairable','repairs.return','repairs.export','repairs.print','repairs.history','repairs.costs',
   'maintenance.manage','maintenance.view','maintenance.create','maintenance.edit','maintenance.assign','maintenance.start','maintenance.complete','maintenance.skip','maintenance.reschedule','maintenance.cancel','maintenance.export','maintenance.print','maintenance.history',
@@ -39,11 +40,11 @@ const all: Permission[] = [
 export const rolePermissions: Record<Role, Permission[]> = {
   administrator: all,
   'ict-manager': all.filter(p => !['users.manage','roles.manage','locationTypes.manage'].includes(p)&&!p.startsWith('admin.')),
-  'warehouse-manager': all.filter(p=>!['users.manage','roles.manage','settings.manage'].includes(p)&&!p.startsWith('admin.')),
+  'warehouse-manager': all.filter(p=>!['users.manage','roles.manage','settings.manage','assets.import'].includes(p)&&!p.startsWith('admin.')),
   'ict-staff': all,
   'warehouse-staff': ['dashboard.view','assets.view','inventory.view','inventory.manage','inventory.create','inventory.edit','inventory.receive','inventory.issue','inventory.transfer','inventory.return','inventory.reserve','inventory.export','inventory.movements.view','assignments.manage','borrow.manage','movements.manage','audits.view','audits.perform','notifications.view','disposals.view','disposals.request'],
-  management: ['dashboard.view','assets.view','inventory.view','audits.view','reports.view','notifications.view','disposals.view','disposals.approve'],
-  auditor: ['dashboard.view','assets.view','inventory.view','audits.view','reports.view','activity.view','disposals.view']
+  management: ['dashboard.view','assets.view','history.view','inventory.view','audits.view','reports.view','notifications.view','disposals.view','disposals.approve'],
+  auditor: ['dashboard.view','assets.view','history.view','inventory.view','audits.view','reports.view','activity.view','disposals.view']
 };
 
 export const can = (role: Role | undefined, permission?: Permission) =>

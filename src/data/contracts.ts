@@ -368,6 +368,39 @@ export interface ActivityRecord {
   result: "Success" | "Failure";
   detail: string;
 }
+export type AssetHistoryEventStatus = "Draft" | "Final";
+export interface AssetHistoryEvent {
+  id: string;
+  assetId: string;
+  assetCode: string;
+  eventType: string;
+  category: string;
+  title: string;
+  description: string;
+  previous?: Record<string, unknown>;
+  next?: Record<string, unknown>;
+  issue?: string;
+  solution?: string;
+  notes?: string;
+  sourceModule: string;
+  sourceRecordId?: string;
+  source: "system" | "manual" | "legacy_import" | "correction";
+  createdAt: string;
+  occurredAt: string;
+  createdBy: string;
+  performedBy?: string;
+  importBatchId?: string;
+  originalLegacyText?: string;
+  isLegacyImport: boolean;
+  isManual: boolean;
+  status: AssetHistoryEventStatus;
+  updatedAt?: string;
+  version: number;
+  fingerprint?: string;
+  isArchived?: boolean;
+  archivedAt?: string;
+  archivedBy?: string;
+}
 export interface MockSnapshot {
   assets: Asset[];
   inventory: InventoryItem[];
@@ -382,6 +415,7 @@ export interface MockSnapshot {
   disposals: Disposal[];
   notifications: Notification[];
   activity: ActivityRecord[];
+  assetHistoryEvents: AssetHistoryEvent[];
   references: ReferenceRecord[];
   locationTypes: LocationType[];
   codeGroups: CodeGroup[];
@@ -402,6 +436,11 @@ export type WorkflowAction =
   | "asset.archive"
   | "asset.restore"
   | "asset.move"
+  | "history.manual.saveDraft"
+  | "history.manual.finalize"
+  | "history.manual.delete"
+  | "history.manual.correct"
+  | "history.legacy.import"
   | "inventory.create"
   | "inventory.edit"
   | "inventory.archive"
@@ -563,5 +602,6 @@ export interface InventoryRepository {
   assetFacets(): Promise<Record<string, string[]>>;
   queryInventory(query: ListQuery): Promise<ListResult<InventoryItem>>;
   inventoryFacets(): Promise<Record<string, string[]>>;
+  queryAssetHistory(assetId: string, maximum?: number): Promise<AssetHistoryEvent[]>;
   reset(): void;
 }
