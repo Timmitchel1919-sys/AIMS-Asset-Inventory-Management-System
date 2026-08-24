@@ -15,7 +15,7 @@ export const isValidKcsTheme=(value:unknown):value is ThemeId=>typeof value==='s
 export function getStoredKcsTheme():ThemeId{
  try{
   const current=localStorage.getItem(AUTHENTICATED_THEME_STORAGE_KEY);
-  if(isValidKcsTheme(current))return current;
+  if(isValidKcsTheme(current))return normalizeTheme(current);
   return normalizeTheme(localStorage.getItem(LEGACY_THEME_STORAGE_KEY));
  }catch{return DEFAULT_AIMS_THEME}
 }

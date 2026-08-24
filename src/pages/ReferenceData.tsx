@@ -1,4 +1,4 @@
-import { ArchiveRestore, Edit3, Plus } from "lucide-react";
+import { ArchiveRestore, Edit3, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -196,6 +196,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       location.pathname.endsWith("/new") || !!initialRecord,
     ),
     [confirm, setConfirm] = useState(false),
+    [deleteConfirm, setDeleteConfirm] = useState(false),
     [typeDialog, setTypeDialog] = useState(false),
     [parentDialog, setParentDialog] = useState(false),
     [mainLocationDialog, setMainLocationDialog] = useState(false),
@@ -703,6 +704,19 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     });
     if (result.ok) setDialog(false);
   }
+  async function moveToRecycleBin() {
+    if (!record) return;
+    const result = await repository.execute({
+      action: "reference.archive",
+      entityId: record.id,
+      values: { reason: nl ? "Verwijderd vanuit de module" : "Deleted from module" },
+    });
+    setFeedback({ status: result.ok ? "success" : "error", message: result.message });
+    if (result.ok) {
+      setDeleteConfirm(false);
+      setDialog(false);
+    }
+  }
   return (
     <OfflineGate>
       <div className="page">
@@ -1067,22 +1081,24 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                   {nl ? "Opslaan" : "Save"}
                 </Button>
                 {record && (
-                  <Button
-                    type="button"
-                    variant={
-                      record.status === "Active" ? "danger" : "secondary"
-                    }
-                    onClick={() => setConfirm(true)}
-                  >
-                    <ArchiveRestore />
-                    {record.status === "Active"
-                      ? nl
-                        ? "Archiveren"
-                        : "Archive"
-                      : nl
-                        ? "Herstellen"
-                        : "Restore"}
-                  </Button>
+                  <>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => setConfirm(true)}
+                    >
+                      <ArchiveRestore />
+                      {record.status === "Active"
+                        ? nl ? "Deactiveren" : "Deactivate"
+                        : nl ? "Herstellen" : "Restore"}
+                    </Button>
+                    {record.status === "Active" && (
+                      <Button type="button" variant="danger" onClick={() => setDeleteConfirm(true)}>
+                        <Trash2 />
+                        {nl ? "Verwijderen" : "Delete"}
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -1219,6 +1235,17 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
           danger={record?.status === "Active"}
           onClose={() => setConfirm(false)}
           onConfirm={changeArchive}
+        />
+        <ConfirmDialog
+          open={deleteConfirm}
+          title={nl ? "Naar prullenbak verplaatsen" : "Move to recycle bin"}
+          description={nl
+            ? `${record?.name || "Dit record"} verdwijnt uit deze module en kan vanuit de prullenbak worden hersteld. Actieve koppelingen blijven beschermd.`
+            : `${record?.name || "This record"} will disappear from this module and can be restored from the recycle bin. Active links remain protected.`}
+          confirmLabel={nl ? "Verplaatsen naar prullenbak" : "Move to recycle bin"}
+          danger
+          onClose={() => setDeleteConfirm(false)}
+          onConfirm={moveToRecycleBin}
         />
       </div>
     </OfflineGate>

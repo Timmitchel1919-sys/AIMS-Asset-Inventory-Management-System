@@ -4,8 +4,8 @@
   --emerald-gloss-primary-active: #1b7f46;
   --emerald-gloss-secondary: #5cd48b;
   --emerald-gloss-deep: #145a32;
-  --emerald-gloss-light: #ddf5e8;
-  --emerald-gloss-soft: #eef9f3;
+  --emerald-gloss-light: #bfe7d0;
+  --emerald-gloss-soft: #dcefe4;
   --emerald-gloss-ink: #17221c;
   --emerald-gloss-white: #ffffff;
   --emerald-gloss-gradient: linear-gradient(
@@ -64,8 +64,8 @@ html[data-aims-theme="aimsEmeraldGloss"] body,
 html[data-aims-theme="aimsEmeraldGloss"] .app {
   background: radial-gradient(
     circle at 20% 20%,
-    #eef9f3 0%,
-    #f7faf8 45%,
+    #dcefe4 0%,
+    #e9f3ed 45%,
     #ffffff 100%
   );
   color: var(--emerald-gloss-ink);

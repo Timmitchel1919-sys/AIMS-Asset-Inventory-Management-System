@@ -22,10 +22,9 @@ import { useApp } from "../context/AppContext";
 import type { ThemeId } from "../domain/types";
 
 const themes: [ThemeId, string][] = [
-  ["aimsAzureGlass", "Default Blue"],
+  ["aimsAzureGlass", "AIMS Azure Blue"],
   ["aimsMidnight", "AIMS Midnight"],
-  ["aimsEmeraldGloss", "Emerald"],
-  ["aimsLight", "Light"],
+  ["aimsEmeraldGloss", "AIMS Emerald Green"],
 ];
 export function ProfilePage() {
   const app = useApp(),

@@ -89,6 +89,6 @@ export const normalizeTheme=(value:string|null):ThemeId=>{
  if(value==='aims-midnight'||value==='midnight-blue')return'aimsMidnight';
  if(value==='kcs-forest-gold'||value==='aimsEmeraldGlass')return'aimsEmeraldGloss';
  if(value==='emerald-gloss')return'aimsEmeraldGloss';
- if(value==='aims-light')return'aimsLight';
+ if(value==='aims-light'||value==='aimsLight')return'aimsAzureGlass';
  return validThemes.includes(value as ThemeId)?value as ThemeId:'aimsAzureGlass';
 };

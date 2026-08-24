@@ -64,12 +64,23 @@ html[data-theme="aims-midnight"] {
   --chart-4: #f5b942;
   --chart-5: #536b82;
   --chart-grid: rgba(193,206,221,.12);
+  --asset-status-available-bg:#124a31; --asset-status-available-text:#9cf2bd; --asset-status-available-border:#22c55e; --asset-status-available-solid:#16a34a;
+  --asset-status-assigned-bg:#40266e; --asset-status-assigned-text:#d7c2ff; --asset-status-assigned-border:#9b72f5; --asset-status-assigned-solid:#7c3aed;
+  --asset-status-borrowed-bg:#5c4812; --asset-status-borrowed-text:#ffe785; --asset-status-borrowed-border:#eab308; --asset-status-borrowed-solid:#ca8a04;
+  --asset-status-reserved-bg:#173f78; --asset-status-reserved-text:#a8ceff; --asset-status-reserved-border:#3b82f6; --asset-status-reserved-solid:#2563eb;
+  --asset-status-under-maintenance-bg:#693517; --asset-status-under-maintenance-text:#ffc392; --asset-status-under-maintenance-border:#f97316; --asset-status-under-maintenance-solid:#ea580c;
+  --asset-status-under-repair-bg:#65254b; --asset-status-under-repair-text:#ffb5dc; --asset-status-under-repair-border:#ec4899; --asset-status-under-repair-solid:#db2777;
+  --asset-status-damaged-bg:#68242b; --asset-status-damaged-text:#ffb1b1; --asset-status-damaged-border:#ef4444; --asset-status-damaged-solid:#dc2626;
+  --asset-status-archived-bg:#354a60; --asset-status-archived-text:#e1e8f0; --asset-status-archived-border:#94a3b8; --asset-status-archived-solid:#64748b;
 }
 
 html[data-theme="aims-midnight"] body,
 html[data-theme="aims-midnight"] #root,
 html[data-theme="aims-midnight"] .app,
-html[data-theme="aims-midnight"] .main { background: #0b1a2e; color: #f4f8fc; }
+html[data-theme="aims-midnight"] .main,
+html[data-theme="aims-midnight"] .page,
+html[data-theme="aims-midnight"] .dashboard-grid,
+html[data-theme="aims-midnight"] .dashboard-bottom { background-color: #0b1a2e; color: #f4f8fc; }
 html[data-theme="aims-midnight"] .app-sidebar,
 html[data-theme="aims-midnight"] .app-sidebar__header,
 html[data-theme="aims-midnight"] .app-sidebar > .sidebar-foot,
@@ -102,6 +113,18 @@ html[data-theme="aims-midnight"] :is(.card,.panel,.modal,.dialog,[role="dialog"]
 html[data-theme="aims-midnight"] :is(input,select,textarea,.global-search__input-wrapper > input) {
   color: #f4f8fc; background-color: #173454; border-color: #345a82;
 }
+html[data-theme="aims-midnight"] :is(.data-toolbar,.table-filters,.filter-bar,.search) {
+  background-color: #173454;
+  border-color: #345a82;
+  color: #f4f8fc;
+}
+
+/* Status colors stay recognizable and accessible on the dark surface. */
+html[data-theme="aims-midnight"] .badge-success { background:#145c38; color:#8ff0b8; border-color:#27ae60; }
+html[data-theme="aims-midnight"] .badge-warning { background:#674b12; color:#ffd778; border-color:#f5b942; }
+html[data-theme="aims-midnight"] .badge-danger { background:#682d38; color:#ffadb5; border-color:#e35d6a; }
+html[data-theme="aims-midnight"] .badge-info { background:#173f78; color:#9ac6ff; border-color:#2c7ef4; }
+html[data-theme="aims-midnight"] .badge-neutral { background:#354a60; color:#e1e8f0; border-color:#7890a8; }
 html[data-theme="aims-midnight"] :is(input,textarea)::placeholder { color: #8fa5bc; opacity: 1; }
 html[data-theme="aims-midnight"] :is(input,select,textarea):focus-visible { border-color: #2c7ef4; box-shadow: 0 0 0 3px rgba(44,126,244,.16); outline: none; }
 html[data-theme="aims-midnight"] .btn.primary,

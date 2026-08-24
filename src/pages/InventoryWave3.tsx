@@ -249,7 +249,7 @@ export function InventoryList() {
           </section>
         </div>
         <nav
-          className="subnav"
+          className="subnav card inventory-action-card"
           aria-label={nl ? "Voorraadacties" : "Inventory actions"}
         >
           {Object.keys(operationMeta).map((key) => (

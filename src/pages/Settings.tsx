@@ -35,12 +35,12 @@ import {
 const themes: [ThemeId, string, string][] = [
   [
     "aimsAzureGlass",
-    "AIMS Azure Glass",
+    "AIMS Azure Blue",
     "The official blue enterprise workspace",
   ],
   [
     "aimsEmeraldGloss",
-    "Emerald Gloss",
+    "AIMS Emerald Green",
     "An enterprise-grade emerald theme with a polished, glossy finish for clarity and confident action.",
   ],
 ];
