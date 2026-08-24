@@ -17,4 +17,4 @@ html[data-theme="aims-light"] {
 }
 html[data-theme="aims-light"] body, html[data-theme="aims-light"] #root, html[data-theme="aims-light"] .app, html[data-theme="aims-light"] .main { background: #f4f7fb; color: #14263d; }
 html[data-theme="aims-light"] :is(.app-sidebar,.topbar,.bottom-nav) { background: #fff; border-color: #c4d2e1; }
-html[data-theme="aims-light"] .app-sidebar__active-notch { border-right-color: #f4f7fb; }
+html[data-theme="aims-light"] .app-sidebar__active-notch { background-color: #f4f7fb; }

@@ -105,7 +105,7 @@ html[data-theme="aims-midnight"] .app-sidebar nav .navigation-item:is(.active,[a
   color: #f4f8fc; background: rgba(44,126,244,.18); border-color: #2c7ef4;
 }
 html[data-theme="aims-midnight"] .app-sidebar nav .navigation-item:is(.active,[aria-current="page"]) .navigation-item__icon { color: #5aa2ff; }
-html[data-theme="aims-midnight"] .app-sidebar__active-notch { border-right-color: #0b1a2e; }
+html[data-theme="aims-midnight"] .app-sidebar__active-notch { background-color: #0b1a2e; }
 
 html[data-theme="aims-midnight"] :is(.card,.panel,.modal,.dialog,[role="dialog"],.dropdown-menu,.profile-menu,.profile-menu-panel,.menu,.popover) {
   background-color: #173454; border-color: #345a82; color: #f4f8fc; box-shadow: var(--shadow-md);

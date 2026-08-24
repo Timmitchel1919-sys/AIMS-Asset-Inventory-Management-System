@@ -137,12 +137,13 @@ html[data-theme="kcs-azure-intelligence"]{--global-search-surface:#fff;--global-
 .app-sidebar__active-notch{
   position:absolute;
   z-index:4;
-  right:0;
-  width:0;
-  height:0;
-  border-top:6px solid transparent;
-  border-bottom:6px solid transparent;
-  border-right:8px solid var(--color-sidebar-active-pointer,#fff);
+  right:-1px;
+  width:9px;
+  height:14px;
+  border:0;
+  background:var(--color-sidebar-active-pointer,#fff);
+  box-shadow:none;
+  clip-path:polygon(100% 0,100% 100%,0 50%);
   transform:translateY(-50%);
   pointer-events:none;
 }

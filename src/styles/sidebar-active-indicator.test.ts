@@ -5,10 +5,14 @@ const shell=readFileSync(new URL('./shell.css',import.meta.url),'utf8');
 const tokens=readFileSync(new URL('./tokens.css',import.meta.url),'utf8');
 
 describe('active sidebar indicator',()=>{
-  it('uses a separate inward notch on the sidebar edge',()=>{
+  it('uses a seamless solid inward notch overlapping the sidebar edge',()=>{
     expect(shell).toContain('.app-sidebar__active-notch');
-    expect(shell).toContain('right:0');
-    expect(shell).toContain('border-right:8px solid var(--color-sidebar-active-pointer,#fff)');
+    expect(shell).toContain('right:-1px');
+    expect(shell).toContain('border:0');
+    expect(shell).toContain('background:var(--color-sidebar-active-pointer,#fff)');
+    expect(shell).toContain('box-shadow:none');
+    expect(shell).toContain('clip-path:polygon(100% 0,100% 100%,0 50%)');
+    expect(shell).not.toContain('border-right:8px solid var(--color-sidebar-active-pointer,#fff)');
     expect(shell).not.toContain('.navigation-item:is(.active,[aria-current="page"])::after');
   });
   it('uses a solid white notch without an edge stripe',()=>{
