@@ -11,6 +11,7 @@ describe('active sidebar indicator',()=>{
     expect(shell).toContain('border:0');
     expect(shell).toContain('background:var(--color-sidebar-active-pointer,#fff)');
     expect(shell).toContain('box-shadow:none');
+    expect(shell).toContain('border-right:0;box-shadow:none');
     expect(shell).toContain('clip-path:polygon(100% 0,100% 100%,0 50%)');
     expect(shell).not.toContain('border-right:8px solid var(--color-sidebar-active-pointer,#fff)');
     expect(shell).not.toContain('.navigation-item:is(.active,[aria-current="page"])::after');
