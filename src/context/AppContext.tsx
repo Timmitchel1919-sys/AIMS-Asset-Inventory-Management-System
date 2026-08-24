@@ -270,6 +270,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const effectiveTheme = publicPath && !user ? PUBLIC_AIMS_THEME : theme;
   useEffect(() => applyKcsTheme(effectiveTheme, false), [effectiveTheme]);
   useEffect(() => {
+    document.documentElement.lang = language === "nl" ? "nl" : "en";
+  }, [language]);
+  useEffect(() => {
     localStorage.setItem("kcs-sidebar-collapsed", String(sidebarCollapsed));
   }, [sidebarCollapsed]);
   const value = useMemo<Ctx>(

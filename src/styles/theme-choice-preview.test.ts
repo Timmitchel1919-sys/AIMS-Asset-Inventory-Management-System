@@ -12,4 +12,10 @@ describe('theme choice previews',()=>{
     expect(css).toContain('.theme-aimsAzureGlass i span:nth-child(3)');
     expect(css).toContain('background: #ffffff');
   });
+  it('shows Midnight and Light previews',()=>{
+    expect(css).toContain('.theme-aimsMidnight i span:first-child');
+    expect(css).toContain('background: #102640');
+    expect(css).toContain('.theme-aimsLight i span:first-child');
+    expect(css).toContain('background: #f4f7fb');
+  });
 });

@@ -100,6 +100,12 @@ data-import/source/
 data-import/private/
 *.legacy.xlsx
 *.migration.xlsx
+*MASTER*INVENTORY*.xlsx
+*Master*Inventory*.xlsx
+*History*Log*.xlsx
+*Inventory*Laptop*.xlsx
+*INVENTORY*LAPTOP*.xlsx
+data-import/reports/*.csv
 
 # ------------------------------
 # Local cache
@@ -117,3 +123,4 @@ data-import/private/
 # Miscellaneous
 # ------------------------------
 *.bak
+.codex-npm-cache/

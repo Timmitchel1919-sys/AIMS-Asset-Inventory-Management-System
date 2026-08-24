@@ -83,10 +83,12 @@ export function nextMaintenanceDate(date:string,frequency:string){const value=ne
 export function deterministicAuditSample<T extends{id:string}>(records:T[],count:number,recentIds:string[]=[]){return records.filter(record=>!recentIds.includes(record.id)).sort((a,b)=>a.id.localeCompare(b.id)).slice(0,Math.max(0,count))}
 const disposalTransitions:Record<DisposalStatus,DisposalStatus[]>={Requested:['Inspected','Rejected'],Inspected:['Approved','Rejected'],Approved:['Method Selected'],Rejected:[],['Method Selected']:['Completed'],Completed:['Permanently Archived'],['Permanently Archived']:[]};
 export const canTransitionDisposal=(from:DisposalStatus,to:DisposalStatus)=>disposalTransitions[from].includes(to);
-export const validThemes:ThemeId[]=['aimsAzureGlass','aimsEmeraldGloss'];
+export const validThemes:ThemeId[]=['aimsAzureGlass','aimsMidnight','aimsEmeraldGloss','aimsLight'];
 export const normalizeTheme=(value:string|null):ThemeId=>{
  if(value==='kcs-azure-intelligence'||value==='kcsAzureGlass')return'aimsAzureGlass';
+ if(value==='aims-midnight'||value==='midnight-blue')return'aimsMidnight';
  if(value==='kcs-forest-gold'||value==='aimsEmeraldGlass')return'aimsEmeraldGloss';
  if(value==='emerald-gloss')return'aimsEmeraldGloss';
+ if(value==='aims-light')return'aimsLight';
  return validThemes.includes(value as ThemeId)?value as ThemeId:'aimsAzureGlass';
 };

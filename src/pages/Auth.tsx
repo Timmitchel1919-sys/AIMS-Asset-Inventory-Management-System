@@ -34,6 +34,7 @@ export default function Auth({
   mode?: "login" | "signup" | "forgot";
 }) {
   const app = useApp(),
+    nl = app.language === "nl",
     navigate = useNavigate(),
     location = useLocation();
   const [done, setDone] = useState(false),
@@ -89,7 +90,7 @@ export default function Auth({
       (mode !== "login" || !DEMO_AUTH_MODE) &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
     ) {
-      setErrors({ email: "Enter a valid email address." });
+      setErrors({ email: nl ? "Vul een geldig e-mailadres in." : "Enter a valid email address." });
       return;
     }
     setSubmitting(true);
@@ -128,10 +129,10 @@ export default function Auth({
   }
   const title =
     mode === "login"
-      ? "Welcome back"
+      ? nl ? "Welkom terug" : "Welcome back"
       : mode === "signup"
-        ? "Create your AIMS account"
-        : "Reset your password";
+        ? nl ? "Maak uw AIMS-account" : "Create your AIMS account"
+        : nl ? "Herstel uw wachtwoord" : "Reset your password";
   return (
     <div className={`auth-page auth-${mode}`} data-auth-theme={app.theme}>
       <section className="auth-brand">
@@ -142,8 +143,9 @@ export default function Auth({
               <span>Management System</span>
             </h1>
             <p>
-              Complete visibility, accountability, and lifecycle control for
-              school assets.
+              {nl
+                ? "Volledig inzicht, verantwoordelijkheid en levenscyclusbeheer voor schoolmiddelen."
+                : "Complete visibility, accountability, and lifecycle control for school assets."}
             </p>
           </div>
           <ul>
@@ -151,19 +153,19 @@ export default function Auth({
               <span>
                 <ShieldCheck />
               </span>
-              Secure account access
+              {nl ? "Veilige accounttoegang" : "Secure account access"}
             </li>
             <li>
               <span>
                 <ClipboardCheck />
               </span>
-              Traceable inventory workflows
+              {nl ? "Traceerbare inventarisprocessen" : "Traceable inventory workflows"}
             </li>
             <li>
               <span>
                 <ScanLine />
               </span>
-              Mobile-ready audits and scanning
+              {nl ? "Mobiele controles en scans" : "Mobile-ready audits and scanning"}
             </li>
             <li>
               <span>
@@ -176,18 +178,30 @@ export default function Auth({
       </section>
       <main className="auth-panel">
         <div className="auth-card login-card">
+          <label className="auth-language-select">
+            <span>{nl ? "Taal" : "Language"}</span>
+            <select
+              value={app.language}
+              onChange={(event) => app.setLanguage(event.target.value as "en" | "nl")}
+              aria-label={nl ? "Taal kiezen" : "Choose language"}
+            >
+              <option value="en">English</option>
+              <option value="nl">Nederlands</option>
+            </select>
+          </label>
           {done ? (
             <>
               <span className="auth-success">
                 <Mail />
               </span>
-              <h2>Check your email</h2>
+              <h2>{nl ? "Controleer uw e-mail" : "Check your email"}</h2>
               <p>
-                If an account exists for that address, password reset
-                instructions have been sent.
+                {nl
+                  ? "Als voor dit adres een account bestaat, zijn instructies voor wachtwoordherstel verzonden."
+                  : "If an account exists for that address, password reset instructions have been sent."}
               </p>
               <Button onClick={() => navigate("/login")}>
-                Return to sign in
+                {nl ? "Terug naar aanmelden" : "Return to sign in"}
               </Button>
             </>
           ) : (
@@ -201,12 +215,12 @@ export default function Auth({
               </div>
               {mode !== "login" && <h2>{title}</h2>}
               {mode === "signup" && (
-                <p>Register with your approved school email address.</p>
+                <p>{nl ? "Registreer met uw goedgekeurde school-e-mailadres." : "Register with your approved school email address."}</p>
               )}
               <form onSubmit={submit} noValidate>
                 {mode === "signup" && (
                   <label>
-                    <span>Full name</span>
+                    <span>{nl ? "Volledige naam" : "Full name"}</span>
                     <div className={errors.fullName ? "invalid" : ""}>
                       <UserRound />
                       <input
@@ -222,7 +236,7 @@ export default function Auth({
                   </label>
                 )}
                 <label>
-                  <span>Email address</span>
+                  <span>{nl ? "E-mailadres" : "Email address"}</span>
                   <div className={errors.email ? "invalid" : ""}>
                     <Mail />
                     <input
@@ -239,7 +253,7 @@ export default function Auth({
                 </label>
                 {mode !== "forgot" && (
                   <label>
-                    <span>Password</span>
+                    <span>{nl ? "Wachtwoord" : "Password"}</span>
                     <div className={errors.password ? "invalid" : ""}>
                       <LockKeyhole />
                       <input
@@ -254,7 +268,7 @@ export default function Auth({
                       <button
                         type="button"
                         className="icon-button"
-                        aria-label="Show or hide password"
+                        aria-label={nl ? "Wachtwoord tonen of verbergen" : "Show or hide password"}
                         disabled={submitting}
                         onClick={() => setShowPassword((value) => !value)}
                       >
@@ -269,7 +283,7 @@ export default function Auth({
                 {mode === "signup" && (
                   <>
                     <label>
-                      <span>Confirm password</span>
+                      <span>{nl ? "Wachtwoord bevestigen" : "Confirm password"}</span>
                       <div className={errors.confirmPassword ? "invalid" : ""}>
                         <LockKeyhole />
                         <input
@@ -287,7 +301,7 @@ export default function Auth({
                     </label>
                     <label>
                       <span>
-                        Department <small>(optional)</small>
+                        {nl ? "Afdeling" : "Department"} <small>({nl ? "optioneel" : "optional"})</small>
                       </span>
                       <div>
                         <input name="department" maxLength={100} />
@@ -295,7 +309,7 @@ export default function Auth({
                     </label>
                     <label>
                       <span>
-                        Job title <small>(optional)</small>
+                        {nl ? "Functietitel" : "Job title"} <small>({nl ? "optioneel" : "optional"})</small>
                       </span>
                       <div>
                         <input name="jobTitle" maxLength={100} />
@@ -307,9 +321,9 @@ export default function Auth({
                   <div className="login-options">
                     <label>
                       <input name="remember" type="checkbox" defaultChecked />
-                      <span>Remember me</span>
+                      <span>{nl ? "Onthoud mij" : "Remember me"}</span>
                     </label>
-                    <Link to="/forgot-password">Forgot password?</Link>
+                    <Link to="/forgot-password">{nl ? "Wachtwoord vergeten?" : "Forgot password?"}</Link>
                   </div>
                 )}
                 {error && (
@@ -324,14 +338,14 @@ export default function Auth({
                   aria-busy={submitting}
                 >
                   {submitting ? (
-                    "Please wait…"
+                    nl ? "Even geduld…" : "Please wait…"
                   ) : (
                     <>
                       {mode === "login"
-                        ? "Sign in"
+                        ? nl ? "Aanmelden" : "Sign in"
                         : mode === "signup"
-                          ? "Create account"
-                          : "Send reset link"}
+                          ? nl ? "Account maken" : "Create account"
+                          : nl ? "Herstellink verzenden" : "Send reset link"}
                       <ArrowRight />
                     </>
                   )}
@@ -340,7 +354,7 @@ export default function Auth({
               {mode === "login" && (
                 <>
                   <div className="auth-divider">
-                    <span>or</span>
+                    <span>{nl ? "of" : "or"}</span>
                   </div>
                   <button
                     type="button"
@@ -354,26 +368,26 @@ export default function Auth({
                       <path fill="#FBBC05" d="M6.39 13.92A6.02 6.02 0 0 1 6.08 12c0-.67.11-1.32.31-1.92V7.46H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.54l3.35-2.62Z"/>
                       <path fill="#EA4335" d="M12 5.95c1.47 0 2.79.5 3.83 1.5l2.87-2.88A9.63 9.63 0 0 0 12 2a10 10 0 0 0-8.96 5.46l3.35 2.62C7.18 7.71 9.39 5.95 12 5.95Z"/>
                     </svg>
-                    Continue with Google
+                    {nl ? "Doorgaan met Google" : "Continue with Google"}
                   </button>
                 </>
               )}
               <div className="auth-links">
                 {mode === "login" ? (
                   <span>
-                    No account yet? <Link to="/signup">Sign up</Link>
+                    {nl ? "Nog geen account?" : "No account yet?"} <Link to="/signup">{nl ? "Registreren" : "Sign up"}</Link>
                   </span>
                 ) : (
-                  <Link to="/login">Back to sign in</Link>
+                  <Link to="/login">{nl ? "Terug naar aanmelden" : "Back to sign in"}</Link>
                 )}
               </div>
               {mode === "login" && <IctSupportDialog language={app.language} />}
               {mode === "login" && (
                 <footer className="login-footer">
-                  <nav className="login-public-links" aria-label="Legal and support links">
-                    <Link to="/terms">Terms &amp; Conditions</Link>
-                    <Link to="/privacy">Privacy Notice</Link>
-                    <Link to="/support">ICT Support</Link>
+                  <nav className="login-public-links" aria-label={nl ? "Juridische en ondersteuningslinks" : "Legal and support links"}>
+                    <Link to="/terms">{nl ? "Algemene voorwaarden" : "Terms & Conditions"}</Link>
+                    <Link to="/privacy">{nl ? "Privacyverklaring" : "Privacy Notice"}</Link>
+                    <Link to="/support">{nl ? "ICT-ondersteuning" : "ICT Support"}</Link>
                   </nav>
                   <div className="login-footer__credits">
                     <p className="login-copyright">{legalConfig.copyright}</p>

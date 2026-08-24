@@ -1,4 +1,4 @@
-export type ThemeId = "aimsAzureGlass" | "aimsEmeraldGloss";
+export type ThemeId = "aimsAzureGlass" | "aimsMidnight" | "aimsEmeraldGloss" | "aimsLight";
 export type Role =
   | "administrator"
   | "ict-manager"
@@ -87,6 +87,15 @@ export interface Asset {
   attachments?: string[];
   photos?: string[];
   notes?: string;
+  sourceData?: Record<string, string>;
+  importMetadata?: {
+    source: string;
+    sourceType: "legacy_inventory";
+    importedAt: string;
+    importedBy: string;
+    sourceRecordCode: string;
+    migrationVersion: string;
+  };
   qr: boolean;
 }
 export interface Movement {

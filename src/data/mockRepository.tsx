@@ -662,34 +662,42 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
   };
   async queryAssets(query: ListQuery) {
     await new Promise((resolve) => setTimeout(resolve, 80));
-    return executeListQuery(this.state.assets, query, {
-      searchable: ["code", "name", "serialNumber", "brand", "model"],
-      value: (asset, field) => {
-        if (field === "alphabet") return asset.name.slice(0, 1).toUpperCase();
-        if (field === "itemType") return asset.type;
-        if (field === "purchaseYear") return asset.purchaseDate.slice(0, 4);
-        if (field === "missingQr") return !asset.qr;
-        if (field === "missingSerial") return !asset.serialNumber;
-        if (field === "endOfLife")
-          return Boolean(asset.usefulLifeEnd && asset.usefulLifeEnd <= today());
-        if (field === "warrantyStatus")
-          return asset.warrantyExpiry < today()
-            ? "Expired"
-            : asset.warrantyExpiry <=
-                new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10)
-              ? "Expiring"
-              : "Active";
-        return asset[field as keyof Asset];
+    return executeListQuery(
+      this.state.assets.filter((asset) => asset.status !== "Archived"),
+      query,
+      {
+        searchable: ["code", "name", "serialNumber", "brand", "model"],
+        value: (asset, field) => {
+          if (field === "alphabet") return asset.name.slice(0, 1).toUpperCase();
+          if (field === "itemType") return asset.type;
+          if (field === "purchaseYear") return asset.purchaseDate.slice(0, 4);
+          if (field === "missingQr") return !asset.qr;
+          if (field === "missingSerial") return !asset.serialNumber;
+          if (field === "endOfLife")
+            return Boolean(
+              asset.usefulLifeEnd && asset.usefulLifeEnd <= today(),
+            );
+          if (field === "warrantyStatus")
+            return asset.warrantyExpiry < today()
+              ? "Expired"
+              : asset.warrantyExpiry <=
+                  new Date(Date.now() + 90 * 86400000)
+                    .toISOString()
+                    .slice(0, 10)
+                ? "Expiring"
+                : "Active";
+          return asset[field as keyof Asset];
+        },
+        compare: (a, b, sort) => {
+          if (sort.field === "code") return compareAssetCodes(a, b, "full");
+          if (sort.field === "codePrefix")
+            return compareAssetCodes(a, b, "prefix");
+          if (sort.field === "codeNumber")
+            return compareAssetCodes(a, b, "sequence");
+          return undefined;
+        },
       },
-      compare: (a, b, sort) => {
-        if (sort.field === "code") return compareAssetCodes(a, b, "full");
-        if (sort.field === "codePrefix")
-          return compareAssetCodes(a, b, "prefix");
-        if (sort.field === "codeNumber")
-          return compareAssetCodes(a, b, "sequence");
-        return undefined;
-      },
-    });
+    );
   }
   async assetFacets() {
     const fields: (keyof Asset)[] = [
@@ -758,7 +766,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
   }
   async queryAssetHistory(assetId: string, maximum = 250) {
     return this.state.assetHistoryEvents
-      .filter(event => event.assetId === assetId && !event.isArchived)
+      .filter((event) => event.assetId === assetId && !event.isArchived)
       .sort((left, right) => right.occurredAt.localeCompare(left.occurredAt))
       .slice(0, maximum);
   }
@@ -786,19 +794,24 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
   private nextHistoryId() {
     let sequence = this.state.assetHistoryEvents.length;
     let candidate = id("ahe", sequence);
-    while (this.state.assetHistoryEvents.some((event) => event.id === candidate))
+    while (
+      this.state.assetHistoryEvents.some((event) => event.id === candidate)
+    )
       candidate = id("ahe", ++sequence);
     return candidate;
   }
   private historyAsset(command: WorkflowCommand, result: WorkflowResult) {
     if (command.action.startsWith("asset."))
-      return this.state.assets.find((asset) => asset.id === (result.entityId || command.entityId));
+      return this.state.assets.find(
+        (asset) => asset.id === (result.entityId || command.entityId),
+      );
     const sourceId = result.entityId || command.entityId;
     const linkedAssetId =
       this.state.assignments.find((item) => item.id === sourceId)?.assetId ||
       this.state.disposals.find((item) => item.id === sourceId)?.assetId ||
       this.state.movements.find((item) => item.id === sourceId)?.assetId;
-    if (linkedAssetId) return this.state.assets.find((asset) => asset.id === linkedAssetId);
+    if (linkedAssetId)
+      return this.state.assets.find((asset) => asset.id === linkedAssetId);
     const assetCode =
       this.state.borrows.find((item) => item.id === sourceId)?.assetCode ||
       this.state.repairs.find((item) => item.id === sourceId)?.assetCode ||
@@ -814,7 +827,19 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
   ) {
     if (!result.ok || command.action.startsWith("history.")) return;
     const category = command.action.split(".")[0];
-    if (!new Set(["asset", "assignment", "borrow", "repair", "maintenance", "movement", "audit", "disposal"]).has(category)) return;
+    if (
+      !new Set([
+        "asset",
+        "assignment",
+        "borrow",
+        "repair",
+        "maintenance",
+        "movement",
+        "audit",
+        "disposal",
+      ]).has(category)
+    )
+      return;
     const asset = this.historyAsset(command, result);
     if (!asset) return;
     const previousAsset = before.assets.find((item) => item.id === asset.id);
@@ -825,15 +850,20 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
       assetCode: asset.code,
       eventType: command.action.replaceAll(".", "_"),
       category,
-      title: command.action.split(".").map((part) => part[0].toUpperCase() + part.slice(1)).join(" "),
+      title: command.action
+        .split(".")
+        .map((part) => part[0].toUpperCase() + part.slice(1))
+        .join(" "),
       description: result.message,
-      previous: previousAsset ? {
-        status: previousAsset.status,
-        condition: previousAsset.condition,
-        location: previousAsset.location,
-        department: previousAsset.department,
-        assignedTo: previousAsset.assignedTo || null,
-      } : undefined,
+      previous: previousAsset
+        ? {
+            status: previousAsset.status,
+            condition: previousAsset.condition,
+            location: previousAsset.location,
+            department: previousAsset.department,
+            assignedTo: previousAsset.assignedTo || null,
+          }
+        : undefined,
       next: {
         status: asset.status,
         condition: asset.condition,
@@ -842,13 +872,17 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
         assignedTo: asset.assignedTo || null,
       },
       issue: String(command.values?.issue || "") || undefined,
-      solution: String(command.values?.solution || command.values?.outcome || "") || undefined,
+      solution:
+        String(command.values?.solution || command.values?.outcome || "") ||
+        undefined,
       notes: String(command.values?.notes || "") || undefined,
       sourceModule: category,
       sourceRecordId: result.entityId || command.entityId,
       source: "system",
       createdAt: now(),
-      occurredAt: String(command.values?.occurredAt || command.values?.date || now()),
+      occurredAt: String(
+        command.values?.occurredAt || command.values?.date || now(),
+      ),
       createdBy: actor,
       performedBy: String(command.values?.performedBy || actor),
       isLegacyImport: false,
@@ -859,14 +893,17 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
     this.state.assetHistoryEvents = [event, ...this.state.assetHistoryEvents];
 
     if (previousAsset?.condition !== asset.condition)
-      this.state.assetHistoryEvents = [{
-        ...event,
-        id: this.nextHistoryId(),
-        eventType: "condition_changed",
-        category: "condition",
-        title: "Condition changed",
-        description: `${previousAsset?.condition || "Unknown"} → ${asset.condition}`,
-      }, ...this.state.assetHistoryEvents];
+      this.state.assetHistoryEvents = [
+        {
+          ...event,
+          id: this.nextHistoryId(),
+          eventType: "condition_changed",
+          category: "condition",
+          title: "Condition changed",
+          description: `${previousAsset?.condition || "Unknown"} → ${asset.condition}`,
+        },
+        ...this.state.assetHistoryEvents,
+      ];
   }
   private finish(command: WorkflowCommand, result: WorkflowResult) {
     this.log(command, result);
@@ -1040,14 +1077,22 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
         case "history.legacy.import": {
           const asset = this.asset(String(v.assetId || command.entityId || ""));
           const fingerprint = String(v.fingerprint || "").trim();
-          if (!fingerprint) throw new Error("A stable legacy-history fingerprint is required.");
-          const existing = this.state.assetHistoryEvents.find(event => event.fingerprint === fingerprint);
+          if (!fingerprint)
+            throw new Error("A stable legacy-history fingerprint is required.");
+          const existing = this.state.assetHistoryEvents.find(
+            (event) => event.fingerprint === fingerprint,
+          );
           if (existing) {
-            result = { ok: true, message: "Legacy history event already imported; skipped.", entityId: existing.id };
+            result = {
+              ok: true,
+              message: "Legacy history event already imported; skipped.",
+              entityId: existing.id,
+            };
             break;
           }
           const occurredAt = String(v.occurredAt || "");
-          if (!occurredAt || Number.isNaN(Date.parse(occurredAt))) throw new Error("A valid original history date is required.");
+          if (!occurredAt || Number.isNaN(Date.parse(occurredAt)))
+            throw new Error("A valid original history date is required.");
           const event: AssetHistoryEvent = {
             id: String(v.id || `legacy-event-${fingerprint}`),
             assetId: asset.id,
@@ -1074,23 +1119,39 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             version: 1,
             fingerprint,
           };
-          this.state.assetHistoryEvents = [event, ...this.state.assetHistoryEvents];
-          result = { ok: true, message: "Legacy history event imported.", entityId: event.id };
+          this.state.assetHistoryEvents = [
+            event,
+            ...this.state.assetHistoryEvents,
+          ];
+          result = {
+            ok: true,
+            message: "Legacy history event imported.",
+            entityId: event.id,
+          };
           break;
         }
         case "history.manual.saveDraft": {
           const asset = this.asset(String(v.assetId || ""));
           const existing = command.entityId
-            ? this.state.assetHistoryEvents.find((event) => event.id === command.entityId)
+            ? this.state.assetHistoryEvents.find(
+                (event) => event.id === command.entityId,
+              )
             : undefined;
           if (existing && (!existing.isManual || existing.status !== "Draft"))
             throw new Error("Only manual draft notes may be updated.");
           const expectedVersion = Number(v.expectedVersion || 0);
-          if (existing && expectedVersion && existing.version !== expectedVersion)
-            throw new Error("This draft changed in another session. Reload before saving.");
+          if (
+            existing &&
+            expectedVersion &&
+            existing.version !== expectedVersion
+          )
+            throw new Error(
+              "This draft changed in another session. Reload before saving.",
+            );
           const title = String(v.title || "").trim();
           const description = String(v.description || "").trim();
-          if (!title && !description) throw new Error("Enter a title or description.");
+          if (!title && !description)
+            throw new Error("Enter a title or description.");
           const timestamp = now();
           const draft: AssetHistoryEvent = {
             id: existing?.id || this.nextHistoryId(),
@@ -1109,7 +1170,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             createdAt: existing?.createdAt || timestamp,
             occurredAt: String(v.occurredAt || timestamp),
             createdBy: existing?.createdBy || command.actor || "Naomi Williams",
-            performedBy: String(v.performedBy || command.actor || "Naomi Williams"),
+            performedBy: String(
+              v.performedBy || command.actor || "Naomi Williams",
+            ),
             isLegacyImport: false,
             isManual: true,
             status: "Draft",
@@ -1117,23 +1180,37 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             version: (existing?.version || 0) + 1,
           };
           this.state.assetHistoryEvents = existing
-            ? this.state.assetHistoryEvents.map((event) => event.id === existing.id ? draft : event)
+            ? this.state.assetHistoryEvents.map((event) =>
+                event.id === existing.id ? draft : event,
+              )
             : [draft, ...this.state.assetHistoryEvents];
-          result = { ok: true, message: "History draft saved.", entityId: draft.id };
+          result = {
+            ok: true,
+            message: "History draft saved.",
+            entityId: draft.id,
+          };
           break;
         }
         case "history.manual.finalize": {
-          const event = this.state.assetHistoryEvents.find((item) => item.id === command.entityId);
+          const event = this.state.assetHistoryEvents.find(
+            (item) => item.id === command.entityId,
+          );
           if (!event || !event.isManual || event.status !== "Draft")
             throw new Error("Manual history draft not found.");
           event.status = "Final";
           event.updatedAt = now();
           event.version += 1;
-          result = { ok: true, message: "History note finalized.", entityId: event.id };
+          result = {
+            ok: true,
+            message: "History note finalized.",
+            entityId: event.id,
+          };
           break;
         }
         case "history.manual.delete": {
-          const event = this.state.assetHistoryEvents.find((item) => item.id === command.entityId);
+          const event = this.state.assetHistoryEvents.find(
+            (item) => item.id === command.entityId,
+          );
           if (!event || !event.isManual || event.status !== "Draft")
             throw new Error("Only manual drafts may be deleted.");
           event.isArchived = true;
@@ -1141,14 +1218,22 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           event.archivedBy = command.actor || "Naomi Williams";
           event.updatedAt = now();
           event.version += 1;
-          result = { ok: true, message: "History draft deleted.", entityId: event.id };
+          result = {
+            ok: true,
+            message: "History draft deleted.",
+            entityId: event.id,
+          };
           break;
         }
         case "history.manual.correct": {
-          const original = this.state.assetHistoryEvents.find((item) => item.id === command.entityId);
-          if (!original || original.status !== "Final") throw new Error("Final history event not found.");
+          const original = this.state.assetHistoryEvents.find(
+            (item) => item.id === command.entityId,
+          );
+          if (!original || original.status !== "Final")
+            throw new Error("Final history event not found.");
           const description = String(v.description || "").trim();
-          if (!description) throw new Error("A correction explanation is required.");
+          if (!description)
+            throw new Error("A correction explanation is required.");
           const correction: AssetHistoryEvent = {
             ...original,
             id: this.nextHistoryId(),
@@ -1165,8 +1250,167 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             isManual: true,
             version: 1,
           };
-          this.state.assetHistoryEvents = [correction, ...this.state.assetHistoryEvents];
-          result = { ok: true, message: "Correction event added.", entityId: correction.id };
+          this.state.assetHistoryEvents = [
+            correction,
+            ...this.state.assetHistoryEvents,
+          ];
+          result = {
+            ok: true,
+            message: "Correction event added.",
+            entityId: correction.id,
+          };
+          break;
+        }
+        case "inventory.legacy.importBatch": {
+          const rows = Array.isArray(v.rows)
+            ? (v.rows as Array<Record<string, unknown>>)
+            : [];
+          if (!rows.length)
+            throw new Error("No new laptop rows were supplied.");
+          const actor = command.actor || "AIMS inventory importer";
+          const importedAt = now();
+          let created = 0;
+          let skipped = 0;
+          for (const row of rows) {
+            const code = String(row.code || "").trim();
+            const migrationId = String(row.id || "").trim();
+            if (!code || !migrationId)
+              throw new Error(
+                "Every imported laptop requires a stable code and migration ID.",
+              );
+            const existingInventory = this.state.inventory.find(
+              (item) => item.code.toLowerCase() === code.toLowerCase(),
+            );
+            const existingAsset = this.state.assets.find(
+              (item) => item.code.toLowerCase() === code.toLowerCase(),
+            );
+            if (existingInventory || existingAsset) {
+              skipped += 1;
+              continue;
+            }
+            const sourceData = (row.sourceData || {}) as Record<string, string>;
+            const importMetadata = {
+              source: "KCS Laptop Inventory",
+              sourceType: "legacy_inventory" as const,
+              importedAt,
+              importedBy: actor,
+              sourceRecordCode: code,
+              migrationVersion: "laptop-inventory-v1",
+            };
+            const inventoryId = `${migrationId}-inventory`;
+            const assetId = `${migrationId}-asset`;
+            const item: InventoryItem = {
+              id: inventoryId,
+              code,
+              barcode: code,
+              name: String(sourceData.brandModel || code),
+              description: String(sourceData.specifications || ""),
+              itemType: "Laptop",
+              category: "IT Equipment",
+              subcategory: "Computers / Laptops",
+              brand: String(row.brand || ""),
+              model: String(row.model || sourceData.brandModel || ""),
+              manufacturer: String(row.brand || ""),
+              unit: "piece",
+              onHand: 1,
+              reserved: 0,
+              minimum: 0,
+              reorderLevel: 0,
+              reorderQuantity: 0,
+              maximum: 1,
+              warehouse: "",
+              location: String(sourceData.location || ""),
+              department: "",
+              lastPurchaseDate: String(row.purchaseDate || ""),
+              notes: "",
+              createdBy: actor,
+              createdAt: importedAt,
+              modifiedBy: actor,
+              lastUpdated: importedAt,
+              archived: false,
+              workflowStatus: "In stock",
+              sourceData,
+              importMetadata,
+            };
+            const prefix = code.match(/^[A-Za-z]+/)?.[0] || code;
+            const codeNumber = Number(code.match(/(\d+)/)?.[1] || 0);
+            const asset: Asset = {
+              id: assetId,
+              code,
+              codePrefix: prefix,
+              codeNumber,
+              name: String(sourceData.brandModel || code),
+              description: String(sourceData.specifications || ""),
+              category: "IT Equipment",
+              subcategory: "Computers",
+              type: "Laptop",
+              brand: String(row.brand || ""),
+              model: String(row.model || sourceData.brandModel || ""),
+              serialNumber: String(sourceData.serialNumber || ""),
+              barcode: code,
+              location: String(sourceData.location || ""),
+              department: "",
+              assignedTo: String(sourceData.user || "") || undefined,
+              manufacturer: String(row.brand || "") || undefined,
+              status: String(row.status || "Available") as AssetStatus,
+              condition: String(row.condition || "Fair") as Asset["condition"],
+              purchaseDate: String(row.purchaseDate || ""),
+              warrantyExpiry: "",
+              dateAdded: today(),
+              createdBy: actor,
+              lastUpdated: today(),
+              lastModifiedBy: actor,
+              maintenanceRequired: false,
+              technicalSpecifications: (row.technicalSpecifications ||
+                {}) as Record<string, string>,
+              attachments: [],
+              photos: [],
+              notes: "",
+              sourceData,
+              importMetadata,
+              qr: true,
+            };
+            this.state.inventory = [item, ...this.state.inventory];
+            this.state.assets = [asset, ...this.state.assets];
+            const event: AssetHistoryEvent = {
+              id: `${migrationId}-history`,
+              assetId,
+              assetCode: code,
+              eventType: "inventory_import_created",
+              category: "inventory",
+              title: "Legacy laptop inventory imported",
+              description: `INVENTORY_IMPORT_CREATED: ${code}`,
+              sourceModule: "inventory_import",
+              sourceRecordId: inventoryId,
+              source: "legacy_import",
+              createdAt: importedAt,
+              occurredAt: importedAt,
+              createdBy: actor,
+              performedBy: actor,
+              importBatchId: String(v.batchId || "laptop-inventory-v1"),
+              originalLegacyText: JSON.stringify(sourceData),
+              isLegacyImport: true,
+              isManual: false,
+              status: "Final",
+              version: 1,
+              fingerprint: migrationId,
+            };
+            this.state.assetHistoryEvents = [
+              event,
+              ...this.state.assetHistoryEvents,
+            ];
+            this.log(command, {
+              ok: true,
+              message: `INVENTORY_IMPORT_CREATED: ${code}`,
+              entityId: assetId,
+            });
+            created += 1;
+          }
+          result = {
+            ok: true,
+            message: `Laptop inventory import complete: ${created} created, ${skipped} skipped.`,
+            entityId: String(v.batchId || "laptop-inventory-v1"),
+          };
           break;
         }
         case "inventory.create": {
@@ -2978,11 +3222,12 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           };
           break;
         }
+        case "reference.delete":
         case "reference.archive":
         case "reference.restore": {
           const record = this.reference(command.entityId);
           if (
-            command.action === "reference.archive" &&
+            command.action === "reference.delete" &&
             record.kind === "location"
           ) {
             const activeAssets = this.state.assets.filter(
@@ -3019,10 +3264,21 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                 `This location cannot be archived because it still contains ${activeAssets} active assets, ${activeChildren} active sub-locations, and ${tasks} open tasks. Transfer or resolve these records before archiving the location.`,
               );
           } else if (
-            command.action === "reference.archive" &&
+            command.action === "reference.delete" &&
             record.relatedCount > 0
           )
             throw new Error("Resolve active related records before archiving.");
+          if (command.action === "reference.delete") {
+            this.state.references = this.state.references.filter(
+              (item) => item.id !== record.id,
+            );
+            result = {
+              ok: true,
+              message: `${record.name} was permanently deleted.`,
+              entityId: record.id,
+            };
+            break;
+          }
           record.status =
             command.action === "reference.archive" ? "Archived" : "Active";
           result = {
@@ -3269,16 +3525,26 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
         }
         case "codeGroup.delete": {
           const group = this.codeGroup(command.entityId);
-          if (this.state.assets.some((x) => x.codePrefix === group.prefix))
-            throw new Error(
-              "This code group is used by an asset. Deactivate it instead.",
-            );
-          this.state.codeGroups = this.state.codeGroups.filter(
-            (x) => x.id !== group.id,
-          );
+          group.archived = true;
+          group.isActive = false;
+          group.deletionReason = String(v.reason || "").trim();
+          group.updatedAt = now();
           result = {
             ok: true,
-            message: `${group.name} was deleted.`,
+            message: `${group.name} was moved to the recycle bin.`,
+            entityId: group.id,
+          };
+          break;
+        }
+        case "codeGroup.restore": {
+          const group = this.codeGroup(command.entityId);
+          group.archived = false;
+          group.isActive = true;
+          group.deletionReason = undefined;
+          group.updatedAt = now();
+          result = {
+            ok: true,
+            message: `${group.name} was restored.`,
             entityId: group.id,
           };
           break;

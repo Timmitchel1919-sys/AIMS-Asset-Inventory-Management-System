@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import {
   parseCombinedWorkbooks,
   parseSelectedWorkbooks,
+  shouldExcludeMasterSheet,
 } from "./combinedWorkbookImport";
 
 function workbookFile(name: string, sheets: Record<string, unknown[][]>) {
@@ -205,5 +206,16 @@ describe("combined workbook parsing", () => {
         "Asset Code"
       ],
     ).toBe("KCSDB01");
+  });
+
+  it("always excludes planning and Wi-Fi overview worksheets from Master Data", () => {
+    [
+      "PL.KH.OB",
+      "PL.BB",
+      "PL.OB",
+      "Investaris Wifilijsten",
+      "Inventaris Wifilijsten",
+    ].forEach((name) => expect(shouldExcludeMasterSheet(name)).toBe(true));
+    expect(shouldExcludeMasterSheet("LAPTOP")).toBe(false);
   });
 });

@@ -410,3 +410,19 @@ html[data-theme="kcs-azure-intelligence"] .login-page__video-vignette{background
   .auth-page:is(.auth-login,.auth-signup)::before{width:420px;height:420px;top:-330px;left:-250px}
   .auth-page:is(.auth-login,.auth-signup)::after{width:440px;height:440px;right:-350px;bottom:-260px}
 }
+.auth-language-select {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0 0 12px auto;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+.auth-language-select select {
+  width: auto;
+  min-width: 112px;
+  min-height: 38px;
+  padding: 6px 30px 6px 10px;
+}

@@ -144,48 +144,80 @@ type ManualHistoryDraft = {
   occurredAt: string;
 };
 
-function ManualHistoryNote({ asset, existing, onClose }: { asset: Asset; existing?: AssetHistoryEvent; onClose: () => void }) {
+function ManualHistoryNote({
+  asset,
+  existing,
+  onClose,
+}: {
+  asset: Asset;
+  existing?: AssetHistoryEvent;
+  onClose: () => void;
+}) {
   const repository = useRepository();
   const app = useApp();
+  const nl = app.language === "nl";
   const key = `asset-history:${asset.id}`;
   const recovered = readLocalDraft<ManualHistoryDraft>(key);
-  const [draft, setDraft] = useState<ManualHistoryDraft>(() => recovered?.value || ({
-    eventType: existing?.eventType || "manual_note",
-    title: existing?.title || "",
-    description: existing?.description || "",
-    issue: existing?.issue || "",
-    solution: existing?.solution || "",
-    notes: existing?.notes || "",
-    performedBy: existing?.performedBy || app.user?.name || "",
-    occurredAt: (existing?.occurredAt || new Date().toISOString()).slice(0, 16),
-  }));
-  const [message, setMessage] = useState(recovered ? "Unsaved work recovered." : "");
+  const [draft, setDraft] = useState<ManualHistoryDraft>(
+    () =>
+      recovered?.value || {
+        eventType: existing?.eventType || "manual_note",
+        title: existing?.title || "",
+        description: existing?.description || "",
+        issue: existing?.issue || "",
+        solution: existing?.solution || "",
+        notes: existing?.notes || "",
+        performedBy: existing?.performedBy || app.user?.name || "",
+        occurredAt: (existing?.occurredAt || new Date().toISOString()).slice(
+          0,
+          16,
+        ),
+      },
+  );
+  const [message, setMessage] = useState(
+    recovered
+      ? nl
+        ? "Niet-opgeslagen werk is hersteld."
+        : "Unsaved work recovered."
+      : "",
+  );
   const eventId = useRef<string | undefined>(existing?.id);
   const version = useRef(existing?.version || 0);
   const autosave = useAutosaveDraft({
     key,
     value: draft,
     delay: 1000,
-    validate: value => Boolean(value.title.trim() || value.description.trim()),
-    save: async value => {
+    validate: (value) =>
+      Boolean(value.title.trim() || value.description.trim()),
+    save: async (value) => {
       const result = await repository.execute({
         action: "history.manual.saveDraft",
         entityId: eventId.current,
         actor: app.user?.name,
-        values: { ...value, assetId: asset.id, expectedVersion: version.current },
+        values: {
+          ...value,
+          assetId: asset.id,
+          expectedVersion: version.current,
+        },
       });
       if (!result.ok) throw new Error(result.message);
       eventId.current = result.entityId || eventId.current;
-      const saved = repository.snapshot().assetHistoryEvents.find(item => item.id === result.entityId);
+      const saved = repository
+        .snapshot()
+        .assetHistoryEvents.find((item) => item.id === result.entityId);
       version.current = saved?.version || version.current + 1;
     },
   });
   const update = (field: keyof ManualHistoryDraft, value: string) =>
-    setDraft(current => ({ ...current, [field]: value }));
+    setDraft((current) => ({ ...current, [field]: value }));
   async function finalize() {
     await autosave.retry();
     if (!eventId.current) {
-      setMessage("Enter a title or description before finalizing.");
+      setMessage(
+        nl
+          ? "Vul vóór het definitief opslaan een titel of beschrijving in."
+          : "Enter a title or description before finalizing.",
+      );
       return;
     }
     const result = await repository.execute({
@@ -199,37 +231,114 @@ function ManualHistoryNote({ asset, existing, onClose }: { asset: Asset; existin
       onClose();
     }
   }
-  return <Card>
-    <div className="history-note-heading">
-      <div><h2>Add History Note</h2><p className="muted">Drafts save automatically; finalizing creates immutable lifecycle evidence.</p></div>
-      <span className={`autosave-status ${autosave.status}`} role="status">
-        {autosave.status === "saving" ? "Saving…" : autosave.status === "saved" ? `Saved${autosave.lastSavedAt ? ` ${new Date(autosave.lastSavedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}` : autosave.status === "error" ? "Could not save" : autosave.status === "invalid" ? "Waiting for valid content" : "Draft"}
-      </span>
-    </div>
-    {message && <p role="status">{message}</p>}
-    <div className="workflow-form">
-      <SelectField label="Type" value={draft.eventType} onChange={event => update("eventType", event.target.value)}>
-        {['manual_note','inspection_completed','software_updated','device_cleaned','service_completed'].map(value => <option key={value} value={value}>{value.replaceAll('_',' ')}</option>)}
-      </SelectField>
-      <Field label="Occurred at" type="datetime-local" value={draft.occurredAt} onChange={event => update("occurredAt", event.target.value)}/>
-      <Field className="wide" label="Title" value={draft.title} onChange={event => update("title", event.target.value)}/>
-      <TextAreaField className="wide" label="Description" value={draft.description} onChange={event => update("description", event.target.value)}/>
-      <TextAreaField label="Issue" value={draft.issue} onChange={event => update("issue", event.target.value)}/>
-      <TextAreaField label="Solution" value={draft.solution} onChange={event => update("solution", event.target.value)}/>
-      <TextAreaField className="wide" label="Notes" value={draft.notes} onChange={event => update("notes", event.target.value)}/>
-      <Field label="Performed by" value={draft.performedBy} onChange={event => update("performedBy", event.target.value)}/>
-      <div className="form-actions wide">
-        <Button type="button" onClick={finalize}>Finalize Note</Button>
-        {autosave.status === "error" && <Button type="button" variant="secondary" onClick={() => void autosave.retry()}>Retry</Button>}
-        <Button type="button" variant="ghost" onClick={onClose}>Close</Button>
+  return (
+    <Card>
+      <div className="history-note-heading">
+        <div>
+          <h2>{nl ? "Historienotitie toevoegen" : "Add History Note"}</h2>
+          <p className="muted">
+            {nl
+              ? "Concepten worden automatisch opgeslagen. Definitief opslaan maakt een onveranderlijk History Log-record."
+              : "Drafts save automatically; finalizing creates immutable lifecycle evidence."}
+          </p>
+        </div>
+        <span className={`autosave-status ${autosave.status}`} role="status">
+          {autosave.status === "saving"
+            ? "Saving…"
+            : autosave.status === "saved"
+              ? `Saved${autosave.lastSavedAt ? ` ${new Date(autosave.lastSavedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}`
+              : autosave.status === "error"
+                ? "Could not save"
+                : autosave.status === "invalid"
+                  ? "Waiting for valid content"
+                  : "Draft"}
+        </span>
       </div>
-    </div>
-  </Card>;
+      {message && <p role="status">{message}</p>}
+      <div className="workflow-form">
+        <SelectField
+          label={nl ? "Type gebeurtenis" : "Type"}
+          value={draft.eventType}
+          onChange={(event) => update("eventType", event.target.value)}
+        >
+          {[
+            "manual_note",
+            "inspection_completed",
+            "software_updated",
+            "device_cleaned",
+            "service_completed",
+          ].map((value) => (
+            <option key={value} value={value}>
+              {value.replaceAll("_", " ")}
+            </option>
+          ))}
+        </SelectField>
+        <Field
+          label={nl ? "Datum en tijd" : "Occurred at"}
+          type="datetime-local"
+          value={draft.occurredAt}
+          onChange={(event) => update("occurredAt", event.target.value)}
+        />
+        <Field
+          className="wide"
+          label={nl ? "Titel" : "Title"}
+          value={draft.title}
+          onChange={(event) => update("title", event.target.value)}
+        />
+        <TextAreaField
+          className="wide"
+          label={nl ? "Beschrijving" : "Description"}
+          value={draft.description}
+          onChange={(event) => update("description", event.target.value)}
+        />
+        <TextAreaField
+          label={nl ? "Probleem" : "Issue"}
+          value={draft.issue}
+          onChange={(event) => update("issue", event.target.value)}
+        />
+        <TextAreaField
+          label={nl ? "Oplossing" : "Solution"}
+          value={draft.solution}
+          onChange={(event) => update("solution", event.target.value)}
+        />
+        <TextAreaField
+          className="wide"
+          label={nl ? "Notities" : "Notes"}
+          value={draft.notes}
+          onChange={(event) => update("notes", event.target.value)}
+        />
+        <Field
+          label={nl ? "Uitgevoerd door" : "Performed by"}
+          value={draft.performedBy}
+          onChange={(event) => update("performedBy", event.target.value)}
+        />
+        <div className="form-actions wide">
+          <Button type="button" onClick={finalize}>
+            {nl ? "Definitief opslaan" : "Finalize Note"}
+          </Button>
+          {autosave.status === "error" && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => void autosave.retry()}
+            >
+              {nl ? "Opnieuw proberen" : "Retry"}
+            </Button>
+          )}
+          <Button type="button" variant="ghost" onClick={onClose}>
+            {nl ? "Sluiten" : "Close"}
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
 }
 
 export function AssetHistory() {
   const { asset, snapshot } = useCurrentAsset(),
-    a = useAssetT(), app = useApp(), repository = useRepository();
+    a = useAssetT(),
+    app = useApp(),
+    repository = useRepository();
   const [loadedEvents, setLoadedEvents] = useState(snapshot.assetHistoryEvents);
   const [type, setType] = useState(""),
     [from, setFrom] = useState(""),
@@ -242,19 +351,24 @@ export function AssetHistory() {
   useEffect(() => {
     if (!asset) return;
     let active = true;
-    repository.queryAssetHistory(asset.id).then(events => {
-      if (active) setLoadedEvents(events);
-    }).catch(() => {
-      if (active) setLoadedEvents([]);
-    });
-    return () => { active = false; };
+    repository
+      .queryAssetHistory(asset.id)
+      .then((events) => {
+        if (active) setLoadedEvents(events);
+      })
+      .catch(() => {
+        if (active) setLoadedEvents([]);
+      });
+    return () => {
+      active = false;
+    };
   }, [asset, repository, snapshot.assetHistoryEvents]);
   return (
     <AssetState asset={asset}>
       {(current) => {
         const structured = loadedEvents
-          .filter(item => item.assetId === current.id && !item.isArchived)
-          .map(item => ({
+          .filter((item) => item.assetId === current.id && !item.isArchived)
+          .map((item) => ({
             id: item.id,
             type: item.eventType,
             source: item.sourceModule,
@@ -262,11 +376,15 @@ export function AssetHistory() {
             user: item.performedBy || item.createdBy,
             detail: `${item.title}${item.description ? ` · ${item.description}` : ""}`,
             before: item.previous ? JSON.stringify(item.previous) : "—",
-            after: item.next ? JSON.stringify(item.next) : item.solution || item.status,
+            after: item.next
+              ? JSON.stringify(item.next)
+              : item.solution || item.status,
             sourceRecordId: item.sourceRecordId,
             legacy: item.isLegacyImport,
           }));
-        const structuredSourceIds = new Set(structured.map(item => item.sourceRecordId).filter(Boolean));
+        const structuredSourceIds = new Set(
+          structured.map((item) => item.sourceRecordId).filter(Boolean),
+        );
         const records = [
           ...structured,
           {
@@ -280,7 +398,11 @@ export function AssetHistory() {
             source: "asset",
           },
           ...snapshot.activity
-            .filter((item) => item.entityId === current.id && !structuredSourceIds.has(item.entityId))
+            .filter(
+              (item) =>
+                item.entityId === current.id &&
+                !structuredSourceIds.has(item.entityId),
+            )
             .map((item) => ({
               id: item.id,
               type: item.action,
@@ -292,7 +414,11 @@ export function AssetHistory() {
               source: "activity",
             })),
           ...snapshot.movements
-            .filter((item) => item.assetCode === current.code && !structuredSourceIds.has(item.id))
+            .filter(
+              (item) =>
+                item.assetCode === current.code &&
+                !structuredSourceIds.has(item.id),
+            )
             .map((item) => ({
               id: item.id,
               type: item.type,
@@ -304,7 +430,11 @@ export function AssetHistory() {
               source: "movement",
             })),
           ...snapshot.assignments
-            .filter((item) => item.assetId === current.id && !structuredSourceIds.has(item.id))
+            .filter(
+              (item) =>
+                item.assetId === current.id &&
+                !structuredSourceIds.has(item.id),
+            )
             .map((item) => ({
               id: item.id,
               type: item.active ? "assignment" : "return",
@@ -318,7 +448,11 @@ export function AssetHistory() {
               source: "assignment",
             })),
           ...snapshot.borrows
-            .filter((item) => item.assetCode === current.code && !structuredSourceIds.has(item.id))
+            .filter(
+              (item) =>
+                item.assetCode === current.code &&
+                !structuredSourceIds.has(item.id),
+            )
             .map((item) => ({
               id: item.id,
               type: "borrow",
@@ -330,7 +464,11 @@ export function AssetHistory() {
               source: "borrow",
             })),
           ...snapshot.repairs
-            .filter((item) => item.assetCode === current.code && !structuredSourceIds.has(item.id))
+            .filter(
+              (item) =>
+                item.assetCode === current.code &&
+                !structuredSourceIds.has(item.id),
+            )
             .map((item) => ({
               id: item.id,
               type: "repair",
@@ -342,7 +480,11 @@ export function AssetHistory() {
               source: "repair",
             })),
           ...snapshot.maintenance
-            .filter((item) => item.assetCode === current.code && !structuredSourceIds.has(item.id))
+            .filter(
+              (item) =>
+                item.assetCode === current.code &&
+                !structuredSourceIds.has(item.id),
+            )
             .map((item) => ({
               id: item.id,
               type: "maintenance",
@@ -366,7 +508,11 @@ export function AssetHistory() {
               source: "audit",
             })),
           ...snapshot.disposals
-            .filter((item) => item.assetId === current.id && !structuredSourceIds.has(item.id))
+            .filter(
+              (item) =>
+                item.assetId === current.id &&
+                !structuredSourceIds.has(item.id),
+            )
             .map((item) => ({
               id: item.id,
               type: "disposal",
@@ -385,31 +531,59 @@ export function AssetHistory() {
             (!to || item.date <= `${to}T23:59`) &&
             (!user || item.user === user) &&
             (!source || item.source === source) &&
-            (!query || `${item.type} ${item.detail} ${item.user} ${item.before} ${item.after}`.toLowerCase().includes(query.toLowerCase())),
+            (!query ||
+              `${item.type} ${item.detail} ${item.user} ${item.before} ${item.after}`
+                .toLowerCase()
+                .includes(query.toLowerCase())),
         );
         return (
           <AssetPage
             asset={current}
             title={a("historyTitle")}
             description={`${current.code} · ${current.name}`}
-            actions={<>
-              {can(app.user?.role, "history.create_manual") && <Button onClick={() => setAddingNote(value => !value)}><Plus/>Add History Note</Button>}
-              <Button variant="secondary" onClick={() => window.print()}>
-                <Printer />
-                {a("print")}
-              </Button>
-            </>}
+            actions={
+              <>
+                {can(app.user?.role, "history.create_manual") && (
+                  <Button onClick={() => setAddingNote((value) => !value)}>
+                    <Plus />
+                    {app.language === "nl"
+                      ? "Historienotitie toevoegen"
+                      : "Add History Note"}
+                  </Button>
+                )}
+                <Button variant="secondary" onClick={() => window.print()}>
+                  <Printer />
+                  {a("print")}
+                </Button>
+              </>
+            }
           >
             {addingNote && (
               <ManualHistoryNote
                 asset={current}
-                existing={loadedEvents.find(event => event.isManual && event.status === "Draft" && (event.createdBy === app.user?.id || event.performedBy === app.user?.name))}
+                existing={loadedEvents.find(
+                  (event) =>
+                    event.isManual &&
+                    event.status === "Draft" &&
+                    (event.createdBy === app.user?.id ||
+                      event.performedBy === app.user?.name),
+                )}
                 onClose={() => setAddingNote(false)}
               />
             )}
             <Card>
               <div className="history-filters">
-                <label className="field"><span>Search</span><span className="history-search"><Search/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search history…"/></span></label>
+                <label className="field">
+                  <span>Search</span>
+                  <span className="history-search">
+                    <Search />
+                    <input
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder="Search history…"
+                    />
+                  </span>
+                </label>
                 <SelectField
                   label={a("eventType")}
                   value={type}
@@ -422,9 +596,17 @@ export function AssetHistory() {
                     ),
                   )}
                 </SelectField>
-                <SelectField label="Source module" value={source} onChange={event => setSource(event.target.value)}>
+                <SelectField
+                  label="Source module"
+                  value={source}
+                  onChange={(event) => setSource(event.target.value)}
+                >
                   <option value="">{a("all")}</option>
-                  {[...new Set(records.map(item => item.source))].map(value => <option key={value}>{value}</option>)}
+                  {[...new Set(records.map((item) => item.source))].map(
+                    (value) => (
+                      <option key={value}>{value}</option>
+                    ),
+                  )}
                 </SelectField>
                 <Field
                   label={a("dateFrom")}
@@ -670,11 +852,7 @@ export function AssetMovement() {
   async function commit(current: Asset) {
     setFeedback({ status: "loading", message: a("loading") });
     try {
-      const attachments = await uploadAimsFiles(
-        files,
-        "movements",
-        current.id,
-      );
+      const attachments = await uploadAimsFiles(files, "movements", current.id);
       const result = await repository.execute({
         action: "asset.move",
         entityId: current.id,
@@ -1075,12 +1253,23 @@ function LegacyAssetImport() {
                 if (!file) return;
                 try {
                   setFeedback({ status: "loading", message: a("loading") });
-                  setText(/\.xlsx?$/i.test(file.name) ? await excelAssetImportToCsv(file) : await file.text());
+                  setText(
+                    /\.xlsx?$/i.test(file.name)
+                      ? await excelAssetImportToCsv(file)
+                      : await file.text(),
+                  );
                   setRows([]);
                   setStage(2);
-                  setFeedback({ status: "success", message: `${file.name}: ${a("success")}` });
+                  setFeedback({
+                    status: "success",
+                    message: `${file.name}: ${a("success")}`,
+                  });
                 } catch (error) {
-                  setFeedback({ status: "error", message: error instanceof Error ? error.message : String(error) });
+                  setFeedback({
+                    status: "error",
+                    message:
+                      error instanceof Error ? error.message : String(error),
+                  });
                 }
               }}
             />

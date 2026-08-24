@@ -9,6 +9,7 @@ import {
   Palette,
   Save,
   Scale,
+  Trash2,
   School,
   ShieldCheck,
 } from "lucide-react";
@@ -19,9 +20,17 @@ import { MutationFeedback, PageHeader } from "../components/WorkflowUi";
 import { LegalPrivacySettings } from "../components/legal/LegalPrivacySettings";
 import { AppDeviceSettings } from "../components/settings/AppDeviceSettings";
 import { MasterDataSettings } from "../components/settings/MasterDataSettings";
+import { RecycleBinSettings } from "../components/settings/RecycleBinSettings";
 import { useApp } from "../context/AppContext";
 import type { ThemeId } from "../domain/types";
 import { useRepository } from "../data/repositoryContext";
+import {
+  firebaseAuth,
+  firebaseConfigured,
+  firebaseStorage,
+  firestore,
+  missingFirebaseEnvironmentVariables,
+} from "../lib/firebase";
 
 const themes: [ThemeId, string, string][] = [
   [
@@ -46,15 +55,22 @@ const tabs = [
   ["notifications", Bell],
   ["security", LockKeyhole],
   ["backup", CloudOff],
+  ["recycleBin", Trash2],
   ["integrations", Link2],
   ["legal", Scale],
 ] as const;
 type Tab = (typeof tabs)[number][0];
-export const settingsPath = (tab: Tab) => `/settings/${tab === "masterData" ? "location-code-groups" : tab}`;
+export const settingsPath = (tab: Tab) =>
+  `/settings/${tab === "masterData" ? "location-code-groups" : tab}`;
 export const tabFromPath = (pathname: string): Tab => {
   const segment = pathname.split("/").filter(Boolean).at(-1);
-  if (segment === "location-code-groups" || segment === "master-data" || segment === "location-types") return "masterData";
-  return tabs.some(([id]) => id === segment) ? segment as Tab : "general";
+  if (
+    segment === "location-code-groups" ||
+    segment === "master-data" ||
+    segment === "location-types"
+  )
+    return "masterData";
+  return tabs.some(([id]) => id === segment) ? (segment as Tab) : "general";
 };
 
 export default function Settings() {
@@ -63,11 +79,54 @@ export default function Settings() {
     repository = useRepository(),
     location = useLocation(),
     navigate = useNavigate();
-  const [tab, setTabState] = useState<Tab>(() => tabFromPath(location.pathname));
+  const [tab, setTabState] = useState<Tab>(() =>
+    tabFromPath(location.pathname),
+  );
   const [feedback, setFeedback] = useState<{
     status: "idle" | "loading" | "success" | "error";
     message: string;
   }>({ status: "idle", message: "" });
+  const firebaseConnected = Boolean(
+    firebaseConfigured && firebaseAuth && firestore && firebaseStorage,
+  );
+  const integrations = [
+    {
+      name: "Firebase",
+      connected: firebaseConnected,
+      status: firebaseConnected
+        ? nl
+          ? "Verbonden"
+          : "Connected"
+        : nl
+          ? "Configuratie ontbreekt"
+          : "Configuration missing",
+      detail: firebaseConnected
+        ? `${import.meta.env.VITE_FIREBASE_PROJECT_ID}${import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true" ? " (emulator)" : ""}`
+        : missingFirebaseEnvironmentVariables.join(", "),
+    },
+    {
+      name: nl ? "E-mailprovider" : "Email provider",
+      connected: Boolean(firebaseAuth),
+      status: firebaseAuth
+        ? nl
+          ? "Via Firebase Authentication"
+          : "Via Firebase Authentication"
+        : nl
+          ? "Niet beschikbaar"
+          : "Unavailable",
+      detail: nl
+        ? "Voor aanmelden, verificatie en wachtwoordherstel."
+        : "Used for sign-in, verification and password recovery.",
+    },
+    {
+      name: nl ? "Documentexport" : "Document export",
+      connected: true,
+      status: nl ? "Ingebouwd in AIMS" : "Built into AIMS",
+      detail: nl
+        ? "Excel-, CSV-, JSON- en rapportdownloads vereisen geen externe verbinding."
+        : "Excel, CSV, JSON and report downloads require no external connection.",
+    },
+  ];
   const labels: Record<Tab, [string, string]> = {
     masterData: [
       nl ? "Locaties & codes" : "Location & Codes",
@@ -98,6 +157,12 @@ export default function Settings() {
     backup: [
       nl ? "Back-upstatus" : "Backup status",
       "Backup connection status.",
+    ],
+    recycleBin: [
+      nl ? "Prullenbak" : "Recycle bin",
+      nl
+        ? "Herstel of verwijder veilig gearchiveerde gegevens."
+        : "Restore or safely purge archived records.",
     ],
     integrations: [
       nl ? "Integraties" : "Integrations",
@@ -150,17 +215,19 @@ export default function Settings() {
       />
       <div className="settings-layout">
         <nav className="settings-nav" aria-label="Settings sections">
-          {tabs.filter(([id])=>!['language','appearance'].includes(id)).map(([id, Icon]) => (
-            <button
-              type="button"
-              key={id}
-              className={tab === id ? "active" : ""}
-              onClick={() => setTab(id)}
-            >
-              <Icon />
-              {labels[id][0]}
-            </button>
-          ))}
+          {tabs
+            .filter(([id]) => !["language", "appearance"].includes(id))
+            .map(([id, Icon]) => (
+              <button
+                type="button"
+                key={id}
+                className={tab === id ? "active" : ""}
+                onClick={() => setTab(id)}
+              >
+                <Icon />
+                {labels[id][0]}
+              </button>
+            ))}
         </nav>
         <section className="card">
           <h2>{labels[tab][0]}</h2>
@@ -171,6 +238,8 @@ export default function Settings() {
             <AppDeviceSettings />
           ) : tab === "legal" ? (
             <LegalPrivacySettings />
+          ) : tab === "recycleBin" ? (
+            <RecycleBinSettings />
           ) : tab === "appearance" ? (
             <div className="theme-grid">
               {themes.map(([id, name, description]) => (
@@ -282,19 +351,39 @@ export default function Settings() {
               {tab === "backup" && (
                 <div className="state wide">
                   <CloudOff />
-                  <h3>Backups not enabled</h3>
-                  <p>No durable backup connection exists.</p>
+                  <h3>
+                    {nl
+                      ? "Automatische back-up niet ingeschakeld"
+                      : "Automatic backup not enabled"}
+                  </h3>
+                  <p>
+                    {nl
+                      ? "Deze status gaat over een geplande, externe back-up van alle Firebase-data. De verplichte JSON-backup vóór een Excel-import is een afzonderlijke lokale herstelkopie en blijft beschikbaar op het importscherm."
+                      : "This status concerns a scheduled external backup of all Firebase data. The mandatory JSON backup before an Excel import is a separate local recovery copy available on the import screen."}
+                  </p>
                 </div>
               )}
               {tab === "integrations" &&
-                ["Firebase", "Email provider", "Document export service"].map(
-                  (value) => (
-                    <div className="switch-row wide" key={value}>
-                      <span>{value}</span>
-                      <b>Not connected</b>
-                    </div>
-                  ),
-                )}
+                integrations.map((integration) => (
+                  <div
+                    className="switch-row wide integration-status-row"
+                    key={integration.name}
+                  >
+                    <span>
+                      <strong>{integration.name}</strong>
+                      <small>{integration.detail}</small>
+                    </span>
+                    <b
+                      className={
+                        integration.connected
+                          ? "integration-connected"
+                          : "integration-disconnected"
+                      }
+                    >
+                      {integration.status}
+                    </b>
+                  </div>
+                ))}
               <div className="wide">
                 <MutationFeedback {...feedback} />
                 {!["backup", "integrations"].includes(tab) && (

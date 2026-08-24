@@ -71,7 +71,21 @@ const historyHeaderKeys = new Set([
   "opmerkingen",
 ]);
 const ignoredMasterSheets =
-  /^(overzicht|overview|legenda|legend|plattegrond|floor\s*plan|pl\.|dashboard|summary|inventaris\s*wifi)/i;
+  /^(overzicht|overview|legenda|legend|plattegrond|floor\s*plan|pl\.|dashboard|summary|in(?:ven|ves)taris\s*wifi)/i;
+const explicitlyExcludedMasterSheets = new Set([
+  "plkhob",
+  "plbb",
+  "plob",
+  "investariswifilijsten",
+  "inventariswifilijsten",
+]);
+export const shouldExcludeMasterSheet = (sheetName: string) => {
+  const trimmed = sheetName.trim();
+  return (
+    ignoredMasterSheets.test(trimmed) ||
+    explicitlyExcludedMasterSheets.has(normalizedKey(trimmed))
+  );
+};
 const inventorySheets = new Set([
   "LAPTOP",
   "DESKTOP",
@@ -236,7 +250,7 @@ export async function parseMasterWorkbook(file: File): Promise<WorkbookSource> {
   let excludedSensitiveFields = 0;
   const sensitiveFields: SensitiveFieldOccurrence[] = [];
   for (const sheetName of workbook.SheetNames) {
-    if (ignoredMasterSheets.test(sheetName.trim())) continue;
+    if (shouldExcludeMasterSheet(sheetName)) continue;
     if (!inventorySheets.has(sheetName.trim().toUpperCase())) continue;
     const rows = rowsOf(workbook.Sheets[sheetName]);
     const headerIndex = findHeader(rows, masterHeaderKeys, 1);

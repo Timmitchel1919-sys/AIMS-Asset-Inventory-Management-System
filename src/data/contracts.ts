@@ -67,6 +67,15 @@ export interface InventoryItem {
   archived: boolean;
   archiveReason?: string;
   workflowStatus?: StockStatus;
+  sourceData?: Record<string, string>;
+  importMetadata?: {
+    source: string;
+    sourceType: "legacy_inventory";
+    importedAt: string;
+    importedBy: string;
+    sourceRecordCode: string;
+    migrationVersion: string;
+  };
 }
 export type ReservationStatus =
   | "Draft"
@@ -266,6 +275,8 @@ export interface CodeGroup {
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
+  archived?: boolean;
+  deletionReason?: string;
 }
 export interface SystemUser {
   id: string;
@@ -442,6 +453,7 @@ export type WorkflowAction =
   | "history.manual.correct"
   | "history.legacy.import"
   | "inventory.create"
+  | "inventory.legacy.importBatch"
   | "inventory.edit"
   | "inventory.archive"
   | "inventory.restore"
@@ -542,6 +554,7 @@ export type WorkflowAction =
   | "reference.edit"
   | "reference.archive"
   | "reference.restore"
+  | "reference.delete"
   | "locationType.create"
   | "locationType.edit"
   | "locationType.activate"
@@ -554,6 +567,7 @@ export type WorkflowAction =
   | "codeGroup.deactivate"
   | "codeGroup.reorder"
   | "codeGroup.delete"
+  | "codeGroup.restore"
   | "user.create"
   | "user.edit"
   | "user.activate"
@@ -602,6 +616,9 @@ export interface InventoryRepository {
   assetFacets(): Promise<Record<string, string[]>>;
   queryInventory(query: ListQuery): Promise<ListResult<InventoryItem>>;
   inventoryFacets(): Promise<Record<string, string[]>>;
-  queryAssetHistory(assetId: string, maximum?: number): Promise<AssetHistoryEvent[]>;
+  queryAssetHistory(
+    assetId: string,
+    maximum?: number,
+  ): Promise<AssetHistoryEvent[]>;
   reset(): void;
 }

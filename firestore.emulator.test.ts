@@ -714,4 +714,66 @@ describe("Firebase repository persistence and concurrency", () => {
     second.dispose();
     refreshed.dispose();
   });
+
+  it("allows a verified warehouse manager to run the validated legacy inventory import", async () => {
+    const importUid = "warehouse-import-manager";
+    const importClaims = {
+      ...verified("warehouse@kangoeroeschool.com", [
+        "inventory.view",
+        "assets.view",
+        "history.view",
+        "activity.view",
+      ]),
+      role: "warehouse-manager",
+    };
+    const db = environment.authenticatedContext(importUid, importClaims).firestore();
+    const access = async () => ({
+      permissions: [
+        "inventory.import",
+        "inventory.view",
+        "assets.view",
+        "history.view",
+        "activity.view",
+      ],
+      denials: [],
+      active: true,
+    });
+    const repository = new FirebaseInventoryRepository(db, () => importUid, access);
+    await repository.initialize();
+    const result = await repository.execute({
+      action: "inventory.legacy.importBatch",
+      actor: "Warehouse Manager",
+      values: {
+        batchId: "laptop-inventory-v1-test",
+        rows: [{
+          id: "legacy-kcsmd01",
+          code: "KCSMD01",
+          brand: "Dell",
+          model: "Latitude",
+          condition: "Good",
+          status: "Available",
+          purchaseDate: "2024-01-01",
+          sourceData: {
+            inventoryCode: "KCSMD01",
+            brandModel: "Dell Latitude",
+            specifications: "16 GB RAM",
+            serialNumber: "SERIAL-IMPORT-1",
+            user: "",
+            location: "ICT",
+            condition: "Good",
+            loanContract: "",
+            charger: "Yes",
+            laptopBag: "Yes",
+            mouse: "Yes",
+            purchase: "2024",
+          },
+        }],
+      },
+    });
+    expect(result, JSON.stringify(result)).toMatchObject({ ok: true });
+    await assertSucceeds(getDoc(doc(db, "inventoryItems/legacy-kcsmd01-inventory")));
+    await assertSucceeds(getDoc(doc(db, "assets/legacy-kcsmd01-asset")));
+    await assertSucceeds(getDoc(doc(db, "assetHistoryEvents/legacy-kcsmd01-history")));
+    repository.dispose();
+  });
 });
