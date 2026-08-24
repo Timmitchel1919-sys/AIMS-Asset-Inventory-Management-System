@@ -7,7 +7,13 @@ const exactPermissions: Partial<Record<WorkflowAction, Permission>> = {
   "asset.archive": "assets.archive",
   "asset.restore": "assets.archive",
   "asset.move": "movements.create",
+  "history.manual.saveDraft": "history.create_manual",
+  "history.manual.finalize": "history.edit_manual",
+  "history.manual.delete": "history.delete_manual",
+  "history.manual.correct": "history.edit_manual",
+  "history.legacy.import": "assets.create",
   "inventory.create": "inventory.create",
+  "inventory.legacy.importBatch": "inventory.import",
   "inventory.edit": "inventory.edit",
   "inventory.archive": "inventory.archive",
   "inventory.restore": "inventory.restore",
@@ -108,6 +114,7 @@ const exactPermissions: Partial<Record<WorkflowAction, Permission>> = {
   "reference.edit": "settings.manage",
   "reference.archive": "settings.manage",
   "reference.restore": "settings.manage",
+  "reference.delete": "settings.manage",
   "locationType.create": "locationTypes.manage",
   "locationType.edit": "locationTypes.manage",
   "locationType.activate": "locationTypes.manage",
@@ -120,6 +127,7 @@ const exactPermissions: Partial<Record<WorkflowAction, Permission>> = {
   "codeGroup.deactivate": "admin.system.configure",
   "codeGroup.reorder": "admin.system.configure",
   "codeGroup.delete": "admin.system.configure",
+  "codeGroup.restore": "admin.system.configure",
   "user.create": "admin.users.manage",
   "user.edit": "admin.users.manage",
   "user.activate": "admin.users.manage",
@@ -151,8 +159,11 @@ const exactPermissions: Partial<Record<WorkflowAction, Permission>> = {
 };
 
 export function requiredPermission(command: WorkflowCommand): Permission {
+  if (command.action === "history.manual.saveDraft" && command.entityId)
+    return "history.edit_manual";
   const permission = exactPermissions[command.action];
-  if (!permission) throw new Error(`No permission mapping exists for ${command.action}.`);
+  if (!permission)
+    throw new Error(`No permission mapping exists for ${command.action}.`);
   if (command.action.startsWith("reference.")) {
     const kind = String(command.values?.kind || "");
     if (kind === "category") return "categories.manage";

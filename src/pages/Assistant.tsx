@@ -144,7 +144,7 @@ export default function Assistant() {
           </Link>
         </div>
       </header>
-      {false && (
+      {import.meta.env.VITE_SHOW_AI_NOTICE === "true" && (
         <div className="notice warning">
           <strong>
             {nl ? "AI-assistent · alleen lezen" : "AI assistant · read only"}

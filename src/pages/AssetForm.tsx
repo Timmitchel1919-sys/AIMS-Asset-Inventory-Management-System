@@ -29,6 +29,7 @@ import { useT } from "../i18n";
 import { mappedCondition } from "../domain/assetStatus";
 import { AssetStatusBadge } from "../components/AssetStatusBadge";
 import { uploadAimsFiles } from "../services/firebaseStorageUploads";
+import { readLocalDraft, useAutosaveDraft } from "../hooks/useAutosaveDraft";
 
 const categories = [
   "Laptops",
@@ -130,6 +131,8 @@ export default function AssetForm() {
         notes: existing.notes || "",
       }
     : assetFormDefaults;
+  const draftKey = `asset-form:${existing?.id || "new"}`;
+  const recoveredDraft = readLocalDraft<AssetFormValues>(draftKey);
   const {
     register,
     handleSubmit,
@@ -139,7 +142,15 @@ export default function AssetForm() {
     watch,
   } = useForm<AssetFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: defaults,
+    defaultValues: recoveredDraft?.value || defaults,
+  });
+  const watchedValues = watch();
+  const draftAutosave = useAutosaveDraft({
+    key: draftKey,
+    value: watchedValues,
+    delay: 1000,
+    enabled: isDirty,
+    save: async () => undefined,
   });
   const selectedStatus = watch("status"),
     selectedCondition = watch("condition"),
@@ -208,6 +219,7 @@ export default function AssetForm() {
       );
       return;
     }
+    draftAutosave.clear();
     navigate(`/assets/${result.entityId || existing?.id}`, {
       replace: true,
       state: {
@@ -228,12 +240,15 @@ export default function AssetForm() {
         <PageHeader
           title={existing ? a("editTitle") : a("addTitle")}
           description={a("formDescription")}
-          actions={
+          actions={<>
+            <span className={`autosave-status ${draftAutosave.status}`} role="status">
+              {recoveredDraft && isDirty ? "Draft recovered" : draftAutosave.status === "saving" ? "Saving draft…" : draftAutosave.status === "saved" ? "Draft saved" : draftAutosave.status === "error" ? "Draft save failed" : ""}
+            </span>
             <Button type="submit" form="asset-form" disabled={isSubmitting}>
               <Save />
               {isSubmitting ? a("saving") : a("save")}
             </Button>
-          }
+          </>}
         />
         <form id="asset-form" onSubmit={submit} noValidate>
           <div className="asset-form-sections">

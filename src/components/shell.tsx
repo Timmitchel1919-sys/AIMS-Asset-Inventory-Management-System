@@ -97,7 +97,7 @@ const sidebarModuleOrder = [
   "dashboard", "assets", "inventory", "categories", "locations",
   "departments", "users", "assignments", "borrows",
   "repairs", "maintenance", "movements", "audits", "reports",
-  "disposals", "settings", "assistant",
+  "disposals", "assistant", "settings",
 ] as const;
 const routeBase = (path: string) =>
   path.replace(/\/\*$/, "").replace(/\/$/, "") || "/";

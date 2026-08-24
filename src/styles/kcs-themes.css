@@ -2298,6 +2298,13 @@ html[data-theme="kcs-azure-intelligence"] :is(.kcs-premium-action,.btn-primary,.
   transition: border-color 160ms ease,filter 160ms ease,transform 160ms ease;
   overflow: hidden;
 }
+
+html[data-theme="kcs-forest-gold"] .page-title > .actions > .btn,
+html[data-theme="kcs-azure-intelligence"] .page-title > .actions > .btn {
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+}
 html[data-theme="kcs-forest-gold"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"])::before,
 html[data-theme="kcs-azure-intelligence"] :is(.kcs-premium-action,.btn-primary,.quick-actions .btn,.subnav button,.assistant-card form .btn,.assistant-panel form button[type="submit"])::before {
   content:"";

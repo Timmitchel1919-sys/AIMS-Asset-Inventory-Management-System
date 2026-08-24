@@ -67,6 +67,15 @@ export interface InventoryItem {
   archived: boolean;
   archiveReason?: string;
   workflowStatus?: StockStatus;
+  sourceData?: Record<string, string>;
+  importMetadata?: {
+    source: string;
+    sourceType: "legacy_inventory";
+    importedAt: string;
+    importedBy: string;
+    sourceRecordCode: string;
+    migrationVersion: string;
+  };
 }
 export type ReservationStatus =
   | "Draft"
@@ -266,6 +275,8 @@ export interface CodeGroup {
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
+  archived?: boolean;
+  deletionReason?: string;
 }
 export interface SystemUser {
   id: string;
@@ -368,6 +379,39 @@ export interface ActivityRecord {
   result: "Success" | "Failure";
   detail: string;
 }
+export type AssetHistoryEventStatus = "Draft" | "Final";
+export interface AssetHistoryEvent {
+  id: string;
+  assetId: string;
+  assetCode: string;
+  eventType: string;
+  category: string;
+  title: string;
+  description: string;
+  previous?: Record<string, unknown>;
+  next?: Record<string, unknown>;
+  issue?: string;
+  solution?: string;
+  notes?: string;
+  sourceModule: string;
+  sourceRecordId?: string;
+  source: "system" | "manual" | "legacy_import" | "correction";
+  createdAt: string;
+  occurredAt: string;
+  createdBy: string;
+  performedBy?: string;
+  importBatchId?: string;
+  originalLegacyText?: string;
+  isLegacyImport: boolean;
+  isManual: boolean;
+  status: AssetHistoryEventStatus;
+  updatedAt?: string;
+  version: number;
+  fingerprint?: string;
+  isArchived?: boolean;
+  archivedAt?: string;
+  archivedBy?: string;
+}
 export interface MockSnapshot {
   assets: Asset[];
   inventory: InventoryItem[];
@@ -382,6 +426,7 @@ export interface MockSnapshot {
   disposals: Disposal[];
   notifications: Notification[];
   activity: ActivityRecord[];
+  assetHistoryEvents: AssetHistoryEvent[];
   references: ReferenceRecord[];
   locationTypes: LocationType[];
   codeGroups: CodeGroup[];
@@ -402,7 +447,13 @@ export type WorkflowAction =
   | "asset.archive"
   | "asset.restore"
   | "asset.move"
+  | "history.manual.saveDraft"
+  | "history.manual.finalize"
+  | "history.manual.delete"
+  | "history.manual.correct"
+  | "history.legacy.import"
   | "inventory.create"
+  | "inventory.legacy.importBatch"
   | "inventory.edit"
   | "inventory.archive"
   | "inventory.restore"
@@ -503,6 +554,7 @@ export type WorkflowAction =
   | "reference.edit"
   | "reference.archive"
   | "reference.restore"
+  | "reference.delete"
   | "locationType.create"
   | "locationType.edit"
   | "locationType.activate"
@@ -515,6 +567,7 @@ export type WorkflowAction =
   | "codeGroup.deactivate"
   | "codeGroup.reorder"
   | "codeGroup.delete"
+  | "codeGroup.restore"
   | "user.create"
   | "user.edit"
   | "user.activate"
@@ -563,5 +616,9 @@ export interface InventoryRepository {
   assetFacets(): Promise<Record<string, string[]>>;
   queryInventory(query: ListQuery): Promise<ListResult<InventoryItem>>;
   inventoryFacets(): Promise<Record<string, string[]>>;
+  queryAssetHistory(
+    assetId: string,
+    maximum?: number,
+  ): Promise<AssetHistoryEvent[]>;
   reset(): void;
 }

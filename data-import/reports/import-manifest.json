@@ -1,0 +1,20 @@
+{
+  "importBatchId": "pending-approved-workbook-extraction",
+  "sourceFiles": [
+    "History Log.xlsx",
+    "MASTER INVENTORY 2026.xlsx"
+  ],
+  "mode": "DRY_RUN",
+  "analysisStatus": "BLOCKED_ARTIFACT_TOOL_UNAVAILABLE",
+  "productionWrites": false,
+  "assets": null,
+  "historyEvents": null,
+  "locations": null,
+  "codeGroups": null,
+  "categories": null,
+  "warnings": 1,
+  "errors": 0,
+  "duplicates": null,
+  "excludedSensitiveFields": null,
+  "sensitiveValuesRetained": false
+}

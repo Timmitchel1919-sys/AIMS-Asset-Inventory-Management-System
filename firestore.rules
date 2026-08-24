@@ -33,6 +33,9 @@ service cloud.firestore {
       return isVerified() && !isExplicitlyDenied(value) && (
         isBootstrapAdministrator()
         || (('role' in request.auth.token) && request.auth.token.role == 'administrator')
+        || (value == 'inventory.import'
+          && ('role' in request.auth.token)
+          && request.auth.token.role in ['ict-manager', 'warehouse-manager'])
         || (('permissions' in request.auth.token) && request.auth.token.permissions is list
           && request.auth.token.permissions.size() <= 160
           && value in request.auth.token.permissions)
@@ -87,6 +90,92 @@ service cloud.firestore {
     function noPrivilegeFields(data) {
       return !data.keys().hasAny(['role', 'roles', 'permissions', 'isAdmin', 'admin']);
     }
+    function validLegacyInventorySourceData(data) {
+      return !('sourceData' in data) || (
+        data.sourceData is map
+        && data.sourceData.keys().hasOnly([
+          'inventoryCode','brandModel','specifications','serialNumber','user',
+          'location','condition','loanContract','charger','laptopBag','mouse','purchase'
+        ])
+        && shortString(data.sourceData, 'inventoryCode', 80)
+        && shortString(data.sourceData, 'brandModel', 300)
+        && shortString(data.sourceData, 'specifications', 4000)
+        && shortString(data.sourceData, 'serialNumber', 200)
+        && shortString(data.sourceData, 'user', 300)
+        && shortString(data.sourceData, 'location', 300)
+        && shortString(data.sourceData, 'condition', 100)
+        && shortString(data.sourceData, 'loanContract', 100)
+        && shortString(data.sourceData, 'charger', 100)
+        && shortString(data.sourceData, 'laptopBag', 100)
+        && shortString(data.sourceData, 'mouse', 100)
+        && shortString(data.sourceData, 'purchase', 100)
+      );
+    }
+    function validLegacyInventoryImportMetadata(data) {
+      return !('importMetadata' in data) || (
+        data.importMetadata is map
+        && data.importMetadata.keys().hasOnly([
+          'source','sourceType','importedAt','importedBy',
+          'sourceRecordCode','migrationVersion'
+        ])
+        && data.importMetadata.keys().hasAll([
+          'source','sourceType','importedAt','importedBy',
+          'sourceRecordCode','migrationVersion'
+        ])
+        && data.importMetadata.source == 'KCS Laptop Inventory'
+        && data.importMetadata.sourceType == 'legacy_inventory'
+        && data.importMetadata.importedAt is timestamp
+        && data.importMetadata.importedBy is string
+        && data.importMetadata.importedBy.size() > 0
+        && data.importMetadata.importedBy.size() <= 150
+        && data.importMetadata.sourceRecordCode is string
+        && data.importMetadata.sourceRecordCode.size() > 0
+        && data.importMetadata.sourceRecordCode.size() <= 80
+        && data.importMetadata.migrationVersion == 'laptop-inventory-v1'
+      );
+    }
+    function isAuthorizedLegacyInventoryImport(data) {
+      return hasPermission('inventory.import')
+        && ('sourceData' in data)
+        && ('importMetadata' in data)
+        && validLegacyInventorySourceData(data)
+        && validLegacyInventoryImportMetadata(data);
+    }
+    function validLegacyImportedAsset(data) {
+      return isAuthorizedLegacyInventoryImport(data)
+        && data.keys().hasAll([
+          'code','codePrefix','codeNumber','name','category','type','status',
+          'condition','sourceData','importMetadata','createdAt','createdBy',
+          'updatedAt','updatedBy'
+        ])
+        && data.code is string && data.code.size() > 0 && data.code.size() <= 40
+        && data.codePrefix is string && data.codePrefix.size() > 0 && data.codePrefix.size() <= 16
+        && data.codeNumber is int && data.codeNumber >= 1 && data.codeNumber <= 5000
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && auditMetadataValid(data) && noPrivilegeFields(data);
+    }
+    function validLegacyImportedInventory(data) {
+      return isAuthorizedLegacyInventoryImport(data)
+        && data.keys().hasAll([
+          'code','name','itemType','category','unit','onHand','reserved',
+          'sourceData','importMetadata','createdAt','createdBy','updatedAt','updatedBy'
+        ])
+        && data.code is string && data.code.size() > 0 && data.code.size() <= 80
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && data.onHand is number && data.onHand >= 0
+        && data.reserved is number && data.reserved >= 0 && data.reserved <= data.onHand
+        && auditMetadataValid(data) && noPrivilegeFields(data);
+    }
+    function validLegacyInventoryHistory(data) {
+      return hasPermission('inventory.import')
+        && data.source == 'legacy_import' && data.isLegacyImport == true
+        && data.isManual == false && data.status == 'Final'
+        && data.assetId is string && data.assetId.size() > 0 && data.assetId.size() <= 128
+        && data.assetCode is string && data.assetCode.size() > 0 && data.assetCode.size() <= 40
+        && data.eventType == 'inventory_import_created'
+        && data.occurredAt is string && data.occurredAt.size() <= 40
+        && auditMetadataValid(data) && noPrivilegeFields(data);
+    }
 
     function validUser(data) {
       return data.keys().hasOnly([
@@ -126,7 +215,8 @@ service cloud.firestore {
           'supplier','manufacturer','status','condition','purchaseDate',
           'purchasePrice','warrantyStart','warrantyExpiry','dateAdded','createdBy',
           'lastUpdated','lastModifiedBy','maintenanceRequired','usefulLifeEnd',
-          'technicalSpecifications','attachments','photos','notes','qr',
+          'technicalSpecifications','remoteAccess','attachments','photos','notes',
+          'sourceData','importMetadata','qr',
           'createdAt','updatedAt','updatedBy','isArchived','archivedAt','archivedBy'
         ])
         && data.keys().hasAll(['code','codePrefix','codeNumber','name','category','type','brand','model','serialNumber','location','department','status','condition','purchaseDate','warrantyExpiry','lastUpdated','qr','createdAt','createdBy','updatedAt','updatedBy'])
@@ -134,12 +224,14 @@ service cloud.firestore {
         && data.codePrefix is string && data.codePrefix.size() > 0 && data.codePrefix.size() <= 16
         && data.codeNumber is int && data.codeNumber >= 1 && data.codeNumber <= 5000
         && data.name is string && data.name.size() > 0 && data.name.size() <= 200
-        && data.serialNumber is string && data.serialNumber.size() > 0 && data.serialNumber.size() <= 200
+        && data.serialNumber is string && data.serialNumber.size() <= 200
         && shortString(data, 'description', 4000)
         && shortString(data, 'notes', 4000)
         && boundedList(data, 'previousCodes', 50)
         && boundedList(data, 'attachments', 50)
         && boundedList(data, 'photos', 50)
+        && validLegacyInventorySourceData(data)
+        && validLegacyInventoryImportMetadata(data)
         && data.qr is bool
         && auditMetadataValid(data)
         && noPrivilegeFields(data);
@@ -154,7 +246,8 @@ service cloud.firestore {
           'lastPurchaseDate','unitCost','currency','batchNumber','expirationDate',
           'photograph','attachments','notes','createdBy','createdAt','modifiedBy',
           'lastUpdated','archived','archiveReason','workflowStatus','updatedAt',
-          'updatedBy','isArchived','archivedAt','archivedBy'
+          'updatedBy','isArchived','archivedAt','archivedBy',
+          'sourceData','importMetadata'
         ])
         && data.keys().hasAll(['code','name','itemType','category','unit','onHand','reserved','minimum','reorderLevel','reorderQuantity','warehouse','location','createdBy','createdAt','modifiedBy','lastUpdated','archived','updatedAt','updatedBy'])
         && data.code is string && data.code.size() > 0 && data.code.size() <= 80
@@ -172,6 +265,8 @@ service cloud.firestore {
         && shortString(data, 'description', 4000)
         && shortString(data, 'notes', 4000)
         && boundedList(data, 'attachments', 50)
+        && validLegacyInventorySourceData(data)
+        && validLegacyInventoryImportMetadata(data)
         && auditMetadataValid(data)
         && noPrivilegeFields(data);
     }
@@ -213,6 +308,44 @@ service cloud.firestore {
         && data.lastLogin is string && data.lastLogin.size() <= 40
         && nullableShortString(data, 'photo', 2048)
         && auditMetadataValid(data);
+    }
+
+    function validAssetHistoryEvent(data) {
+      return data.keys().hasOnly([
+          'assetId','assetCode','eventType','category','title','description',
+          'previous','next','issue','solution','notes','sourceModule',
+          'sourceRecordId','source','occurredAt','performedBy','importBatchId',
+          'originalLegacyText','isLegacyImport','isManual','status','version',
+          'fingerprint','createdAt','createdBy','updatedAt','updatedBy',
+          'isArchived','archivedAt','archivedBy'
+        ])
+        && data.keys().hasAll([
+          'assetId','assetCode','eventType','category','title','description',
+          'sourceModule','source','occurredAt','isLegacyImport','isManual',
+          'status','version','createdAt','createdBy','updatedAt','updatedBy'
+        ])
+        && data.assetId is string && data.assetId.size() > 0 && data.assetId.size() <= 128
+        && data.assetCode is string && data.assetCode.size() > 0 && data.assetCode.size() <= 40
+        && data.eventType is string && data.eventType.size() > 0 && data.eventType.size() <= 100
+        && data.category is string && data.category.size() > 0 && data.category.size() <= 80
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 300
+        && data.description is string && data.description.size() <= 4000
+        && shortString(data, 'issue', 4000)
+        && shortString(data, 'solution', 4000)
+        && shortString(data, 'notes', 4000)
+        && data.sourceModule is string && data.sourceModule.size() <= 100
+        && nullableShortString(data, 'sourceRecordId', 160)
+        && data.source in ['system','manual','legacy_import','correction']
+        && data.occurredAt is string && data.occurredAt.size() <= 40
+        && nullableShortString(data, 'performedBy', 150)
+        && nullableShortString(data, 'importBatchId', 160)
+        && nullableShortString(data, 'originalLegacyText', 4000)
+        && data.isLegacyImport is bool && data.isManual is bool
+        && data.status in ['Draft','Final']
+        && data.version is int && data.version >= 1
+        && nullableShortString(data, 'fingerprint', 128)
+        && auditMetadataValid(data)
+        && noPrivilegeFields(data);
     }
     function validPublicDirectoryUser(data, uid) {
       return data.keys().hasOnly(['uid','displayName','photoURL','department','jobTitle','accountType','authProvider','emailVerified','status','updatedAt'])
@@ -285,6 +418,19 @@ service cloud.firestore {
         || (name in ['reports','reportResults','scheduledReports'] && hasPermission('reports.view'));
     }
 
+    // Keep the generic operational match cheap for collections that already
+    // have dedicated rules. This also keeps validated multi-document imports
+    // below Firestore's rules-expression limit.
+    function isOperationalCollection(name) {
+      return name in [
+        'inventoryTransactions','inventoryReservations','categories','locations',
+        'locationTypes','departments','assignments','borrows','repairs',
+        'maintenanceSchedules','maintenanceRecords','assetMovements','audits',
+        'auditDiscrepancies','correctiveActions','disposals','notifications',
+        'reports','reportResults','scheduledReports'
+      ];
+    }
+
     function canWriteOperationalCollection(name) {
       return (name == 'inventoryTransactions' && hasAnyPermission(['inventory.receive','inventory.issue','inventory.transfer','inventory.return','inventory.correct']))
         || (name == 'inventoryReservations' && hasAnyPermission(['inventory.reserve','inventory.reservations.approve']))
@@ -345,7 +491,8 @@ service cloud.firestore {
 
     match /assets/{id} {
       allow read: if hasPermission('assets.view');
-      allow create: if hasPermission('assets.create') && validAsset(request.resource.data);
+      allow create: if validLegacyImportedAsset(request.resource.data)
+        || (hasPermission('assets.create') && validAsset(request.resource.data));
       allow update: if hasAnyPermission(['assets.edit','assets.archive','movements.create']) && validAsset(request.resource.data) && immutableAuditFields()
         && request.resource.data.code == resource.data.code
         && request.resource.data.codePrefix == resource.data.codePrefix
@@ -354,7 +501,8 @@ service cloud.firestore {
     }
     match /inventoryItems/{id} {
       allow read: if hasPermission('inventory.view');
-      allow create: if hasPermission('inventory.create') && validInventory(request.resource.data);
+      allow create: if validLegacyImportedInventory(request.resource.data)
+        || (hasPermission('inventory.create') && validInventory(request.resource.data));
       allow update: if hasAnyPermission(['inventory.edit','inventory.archive','inventory.restore','inventory.receive','inventory.issue','inventory.transfer','inventory.return','inventory.reserve','inventory.correct']) && validInventory(request.resource.data) && immutableAuditFields()
         && request.resource.data.code == resource.data.code;
       allow delete: if false;
@@ -386,6 +534,41 @@ service cloud.firestore {
     match /activityLogs/{id} {
       allow read: if hasAnyPermission(['admin.audit.read','activity.view']);
       allow create: if isVerified() && validActivity(request.resource.data);
+      allow update, delete: if false;
+    }
+    match /assetHistoryEvents/{id} {
+      allow read: if hasAnyPermission(['history.view','assets.view']);
+      allow create: if validLegacyInventoryHistory(request.resource.data) || (validAssetHistoryEvent(request.resource.data) && (
+        (request.resource.data.isManual == true && hasPermission('history.create_manual'))
+        || (request.resource.data.isManual == false && hasAnyPermission([
+          'assets.create','assets.edit','assets.archive','assignments.manage',
+          'assignments.create','assignments.return','borrow.manage','borrows.create',
+          'borrows.approve','borrows.return','repairs.manage','repairs.create',
+          'repairs.complete','maintenance.manage','maintenance.create',
+          'maintenance.complete','movements.manage','movements.create',
+          'audits.perform','disposals.request','disposals.approve'
+        ]))
+      ));
+      allow update: if validAssetHistoryEvent(request.resource.data)
+        && resource.data.isManual == true && request.resource.data.isManual == true
+        && resource.data.status == 'Draft'
+        && hasPermission('history.edit_manual')
+        && immutableAuditFields()
+        && request.resource.data.assetId == resource.data.assetId
+        && request.resource.data.assetCode == resource.data.assetCode
+        && request.resource.data.source == resource.data.source;
+      allow delete: if resource.data.isManual == true
+        && resource.data.status == 'Draft'
+        && hasPermission('history.delete_manual');
+    }
+    match /migrationAudits/{id} {
+      allow read: if hasPermission('admin.audit.read');
+      allow create: if hasPermission('admin.system.configure')
+        && request.resource.data.importBatchId == id
+        && request.resource.data.fileFingerprint is string
+        && request.resource.data.parserSchemaVersion is int
+        && request.resource.data.actor is string
+        && request.resource.data.writeCount is int;
       allow update, delete: if false;
     }
 
@@ -431,13 +614,17 @@ service cloud.firestore {
     }
 
     match /{collectionName}/{id} {
-      allow read: if canReadOperationalCollection(collectionName);
-      allow create: if canWriteOperationalCollection(collectionName)
+      allow read: if isOperationalCollection(collectionName)
+        && canReadOperationalCollection(collectionName);
+      allow create: if isOperationalCollection(collectionName)
+        && canWriteOperationalCollection(collectionName)
         && validOperationalRecord(request.resource.data);
-      allow update: if canWriteOperationalCollection(collectionName)
+      allow update: if isOperationalCollection(collectionName)
+        && canWriteOperationalCollection(collectionName)
         && collectionName != 'inventoryTransactions'
         && validOperationalRecord(request.resource.data) && immutableAuditFields();
-      allow delete: if false;
+      allow delete: if isOperationalCollection(collectionName)
+        && collectionName == 'locations' && hasPermission('locations.manage');
     }
 
     match /{document=**} { allow read, write: if false; }

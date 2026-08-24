@@ -1,0 +1,20 @@
+/* Neutral Light option; the original Default Blue and Emerald themes remain untouched. */
+html[data-theme="aims-light"] {
+  color-scheme: light;
+  --color-background: #f4f7fb; --color-background-secondary: #edf2f8;
+  --color-surface: #fff; --color-surface-secondary: #f8fafc; --color-surface-elevated: #fff; --color-surface-hover: #edf4ff;
+  --color-primary: #2c7ef4; --color-primary-hover: #155eef; --color-primary-active: #104fc8; --color-primary-soft: #e4efff; --color-on-primary: #fff;
+  --color-secondary: #173454; --color-secondary-hover: #102640; --color-secondary-soft: #e6edf5; --color-on-secondary: #fff;
+  --color-accent: #00aeef; --color-accent-soft: #e1f7ff;
+  --color-text-primary: #14263d; --color-text-secondary: #536b82; --color-text-muted: #71869c; --color-text-disabled: #9babbc; --color-text-inverse: #fff;
+  --color-border: #c4d2e1; --color-border-subtle: #dce5ef; --color-border-strong: #2c7ef4; --color-focus-ring: rgba(44,126,244,.16);
+  --color-sidebar-background: #fff; --color-sidebar-text: #29445f; --color-sidebar-muted: #71869c; --color-sidebar-active: #155eef;
+  --color-sidebar-active-background: #e4efff; --color-sidebar-active-pointer: #f4f7fb; --gradient-sidebar: #fff;
+  --color-success: #218c4d; --color-warning: #a86800; --color-danger: #c33d4b; --color-info: #155eef;
+  --shadow-sm: 0 3px 10px rgba(16,38,64,.08); --shadow-md: 0 8px 24px rgba(16,38,64,.11); --shadow-lg: 0 14px 36px rgba(16,38,64,.14);
+  --global-search-surface: #fff; --global-search-border: #c4d2e1; --global-search-text: #14263d; --global-search-muted: #71869c;
+  --global-search-hover: #edf4ff; --global-search-active: #e4efff; --global-search-accent: #155eef; --global-search-highlight: #d9f5ff;
+}
+html[data-theme="aims-light"] body, html[data-theme="aims-light"] #root, html[data-theme="aims-light"] .app, html[data-theme="aims-light"] .main { background: #f4f7fb; color: #14263d; }
+html[data-theme="aims-light"] :is(.app-sidebar,.topbar,.bottom-nav) { background: #fff; border-color: #c4d2e1; }
+html[data-theme="aims-light"] .app-sidebar__active-notch { background-color: #f4f7fb; }

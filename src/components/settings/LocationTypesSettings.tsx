@@ -143,9 +143,30 @@ export function LocationTypesSettings() {
         </Button>
       </div>
       <label className="hierarchy-mode">
-        <span><strong>Hierarchy validation</strong><small>Strict blocks configured type mismatches; warning allows them; disabled skips type checks.</small></span>
-        <select value={snapshot.systemSettings.hierarchyValidationMode} onChange={async event=>{const result=await repository.execute({action:"settings.hierarchyValidation",values:{mode:event.target.value}});setFeedback({status:result.ok?"success":"error",message:result.message})}}>
-          <option value="strict">Strict</option><option value="warning">Warning (default)</option><option value="disabled">Disabled</option>
+        <span>
+          <strong>Hiërarchievalidatie</strong>
+          <small>
+            Controleert of een sublocatie onder het juiste type hoofdlocatie
+            wordt geplaatst. Strikt blokkeert fouten, Waarschuwing meldt ze
+            zonder blokkering en Uitgeschakeld slaat de controle over.
+          </small>
+        </span>
+        <select
+          value={snapshot.systemSettings.hierarchyValidationMode}
+          onChange={async (event) => {
+            const result = await repository.execute({
+              action: "settings.hierarchyValidation",
+              values: { mode: event.target.value },
+            });
+            setFeedback({
+              status: result.ok ? "success" : "error",
+              message: result.message,
+            });
+          }}
+        >
+          <option value="strict">Strikt</option>
+          <option value="warning">Waarschuwing (standaard)</option>
+          <option value="disabled">Uitgeschakeld</option>
         </select>
       </label>
       <MutationFeedback {...feedback} />

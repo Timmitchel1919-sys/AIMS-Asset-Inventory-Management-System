@@ -1,4 +1,5 @@
 import {
+  Archive,
   ChevronLeft,
   ChevronRight,
   Columns3,
@@ -30,7 +31,11 @@ export interface DataTableProps<T> {
   error?: string;
   pageSizeOptions?: number[];
   onRowClick?: (row: T) => void;
-  onBulkAction?: (ids: string[], action: string) => Promise<void> | void;
+  onBulkAction?: (
+    ids: string[],
+    action: string,
+    reason?: string,
+  ) => Promise<void> | void;
   filters?: ReactNode;
 }
 
@@ -182,7 +187,18 @@ export function DataTable<T>({
   }
   async function bulk(action: string) {
     if (!selected.length || !onBulkAction) return;
-    await onBulkAction(selected, action);
+    const reason =
+      action === "delete"
+        ? window
+            .prompt(
+              nl
+                ? "Geef de verplichte reden voor verwijderen naar de prullenbak:"
+                : "Enter the required reason for moving to the recycle bin:",
+            )
+            ?.trim()
+        : undefined;
+    if (action === "delete" && !reason) return;
+    await onBulkAction(selected, action, reason);
     setSelected([]);
     setNotice(nl ? "Bulkactie voltooid." : "Bulk action completed.");
   }
@@ -288,8 +304,12 @@ export function DataTable<T>({
           {onBulkAction && (
             <>
               <Button variant="secondary" onClick={() => bulk("archive")}>
-                <Trash2 />
+                <Archive />
                 {nl ? "Archiveren" : "Archive"}
+              </Button>
+              <Button variant="danger" onClick={() => bulk("delete")}>
+                <Trash2 />
+                {nl ? "Verwijderen" : "Delete"}
               </Button>
               <Button variant="secondary" onClick={() => bulk("restore")}>
                 {nl ? "Herstellen" : "Restore"}
