@@ -5,10 +5,11 @@ import {legalConfig} from '../../config/legal';
 import type {LegalSection} from '../../types/legal.types';
 import {useApp} from '../../context/AppContext';
 import '../../styles/legal.css';
+import {PrintAuditHeader} from '../PrintAuditHeader';
 
 export function LegalPageLayout({title,version,sections,children}:{title:string;version:string;sections:LegalSection[];children?:ReactNode}){
   const navigate=useNavigate(),{language}=useApp(),nl=language==='nl';
-  return <div className="legal-page"><div className="legal-page__container">
+  return <div className="legal-page"><PrintAuditHeader/><div className="legal-page__container">
     <header className="legal-page__header">
       <div className="legal-page__actions"><button onClick={()=>navigate(-1)}><ArrowLeft/>{nl?'Terug':'Back'}</button><button onClick={()=>window.print()}><Printer/>{nl?'Afdrukken / opslaan als PDF':'Print / Save PDF'}</button></div>
       <img className="legal-page__logo" src="/aims-logo.png" alt="AIMS"/>

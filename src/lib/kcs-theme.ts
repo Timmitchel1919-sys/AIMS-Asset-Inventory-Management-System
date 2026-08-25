@@ -2,8 +2,8 @@ import type {ThemeId} from '../domain/types';
 import {normalizeTheme} from '../domain/rules';
 
 export const AIMS_THEME_IDS=['aimsAzureGlass','aimsMidnight','aimsEmeraldGloss','aimsLight'] as const;
-export const PUBLIC_AIMS_THEME:ThemeId='aimsAzureGlass';
-export const DEFAULT_AIMS_THEME:ThemeId='aimsAzureGlass';
+export const PUBLIC_AIMS_THEME:ThemeId='aimsMidnight';
+export const DEFAULT_AIMS_THEME:ThemeId='aimsMidnight';
 export const AUTHENTICATED_THEME_STORAGE_KEY='authenticatedThemePreference';
 export const LEGACY_THEME_STORAGE_KEY='kcs-theme';
 export const DEFAULT_KCS_THEME=DEFAULT_AIMS_THEME;
@@ -16,7 +16,10 @@ export function getStoredKcsTheme():ThemeId{
  try{
   const current=localStorage.getItem(AUTHENTICATED_THEME_STORAGE_KEY);
   if(isValidKcsTheme(current))return normalizeTheme(current);
-  return normalizeTheme(localStorage.getItem(LEGACY_THEME_STORAGE_KEY));
+  const legacy=localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
+  if(legacy)return normalizeTheme(legacy);
+  if(typeof matchMedia==='function'&&matchMedia('(prefers-color-scheme: light)').matches)return'aimsLight';
+  return DEFAULT_AIMS_THEME;
  }catch{return DEFAULT_AIMS_THEME}
 }
 export function persistAuthenticatedTheme(theme:ThemeId):void{
@@ -24,7 +27,7 @@ export function persistAuthenticatedTheme(theme:ThemeId):void{
  try{localStorage.setItem(AUTHENTICATED_THEME_STORAGE_KEY,selected);localStorage.setItem(LEGACY_THEME_STORAGE_KEY,selected)}catch{/* Keep in-memory preference. */}
 }
 const manifestByTheme:Record<ThemeId,string>={aimsAzureGlass:'/manifest-azure.webmanifest',aimsMidnight:'/manifest-midnight.webmanifest',aimsEmeraldGloss:'/manifest-emerald-gloss.webmanifest',aimsLight:'/manifest-light.webmanifest'};
-const pwaColorByTheme:Record<ThemeId,string>={aimsAzureGlass:'#061D52',aimsMidnight:'#102640',aimsEmeraldGloss:'#063D2E',aimsLight:'#F4F7FB'};
+const pwaColorByTheme:Record<ThemeId,string>={aimsAzureGlass:'#061D52',aimsMidnight:'#102640',aimsEmeraldGloss:'#052712',aimsLight:'#F4F7FB'};
 export function applyPwaThemeBranding(theme:ThemeId=PUBLIC_AIMS_THEME):void{
  const selected=isValidKcsTheme(theme)?theme:PUBLIC_AIMS_THEME;
  const themeColor=document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');if(themeColor)themeColor.content=pwaColorByTheme[selected];
@@ -36,4 +39,4 @@ export function applyKcsTheme(theme:ThemeId,persist=true):void{
  if(persist)persistAuthenticatedTheme(selected);
  window.dispatchEvent(new CustomEvent('kcs-theme-change',{detail:{themeId:selected}}));
 }
-export function initializeKcsTheme():ThemeId{applyKcsTheme(PUBLIC_AIMS_THEME,false);return getStoredKcsTheme()}
+export function initializeKcsTheme():ThemeId{const selected=getStoredKcsTheme();applyKcsTheme(selected,false);return selected}

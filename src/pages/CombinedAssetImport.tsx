@@ -163,7 +163,7 @@ export default function CombinedAssetImport() {
         user: app.user?.name || "unknown",
         timestamp: new Date().toISOString(),
         reason: "Expliciete gebruikersbeslissing",
-        fingerprint: `${tab}:${Date.now()}`,
+        fingerprint: `${tab}:${next.audit.length}`,
       }),
     );
   async function analyze() {

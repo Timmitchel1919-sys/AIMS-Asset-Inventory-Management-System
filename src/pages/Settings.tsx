@@ -41,7 +41,7 @@ const themes: [ThemeId, string, string][] = [
   [
     "aimsEmeraldGloss",
     "AIMS Emerald Green",
-    "An enterprise-grade emerald theme with a polished, glossy finish for clarity and confident action.",
+    "A premium enterprise theme with a deep emerald sidebar, warm ivory surfaces, and restrained gold accents.",
   ],
 ];
 const tabs = [

@@ -238,6 +238,10 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         main.id ===
         (item.type === "Main location" ? item.id : item.mainLocationId),
     );
+  const locationHierarchyLabel = (item: ReferenceRecord) =>
+    item.type === "Main location" && String(item.details.prefix || "").trim()
+      ? String(item.details.prefix).trim().toUpperCase()
+      : item.name;
   const directAssets = (item: ReferenceRecord) =>
     snapshot.assets.filter(
       (asset) =>
@@ -298,11 +302,11 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
             edit(item);
           }}
         >
-          {item.name}
+          {locationHierarchyLabel(item)}
         </button>
       ),
       text: (item) =>
-        `${item.name} ${resolveMain(item)?.name || ""} ${manager(item)}`,
+        `${locationHierarchyLabel(item)} ${item.name} ${resolveMain(item)?.name || ""} ${manager(item)}`,
       sortable: true,
     },
     {
@@ -326,12 +330,13 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
               edit(resolveMain(item)!);
             }}
           >
-            {resolveMain(item)!.name}
+            {locationHierarchyLabel(resolveMain(item)!)}
           </button>
         ) : (
           "—"
         ),
-      text: (item) => resolveMain(item)?.name || "",
+      text: (item) =>
+        resolveMain(item) ? locationHierarchyLabel(resolveMain(item)!) : "",
       sortable: true,
     },
     {

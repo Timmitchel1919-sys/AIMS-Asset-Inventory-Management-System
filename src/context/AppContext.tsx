@@ -14,7 +14,6 @@ import {
   applyKcsTheme,
   getStoredKcsTheme,
   persistAuthenticatedTheme,
-  PUBLIC_AIMS_THEME,
 } from "../lib/kcs-theme";
 import { firebaseAuth } from "../lib/firebase";
 import {
@@ -147,7 +146,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     !presentationMode && Boolean(firebaseAuth),
   );
   const [theme, setThemeState] = useState<ThemeId>(() => getStoredKcsTheme());
-  const [publicPath, setPublicPath] = useState(() =>
+  const [, setPublicPath] = useState(() =>
     isPublicThemePath(
       typeof window === "undefined" ? "/" : window.location.pathname,
     ),
@@ -267,7 +266,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     });
   }, [presentationMode, mapFirebaseUser]);
-  const effectiveTheme = publicPath && !user ? PUBLIC_AIMS_THEME : theme;
+  const effectiveTheme = theme;
   useEffect(() => applyKcsTheme(effectiveTheme, false), [effectiveTheme]);
   useEffect(() => {
     document.documentElement.lang = language === "nl" ? "nl" : "en";

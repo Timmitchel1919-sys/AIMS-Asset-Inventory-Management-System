@@ -1,4 +1,4 @@
-import { Plus, Power, Trash2 } from "lucide-react";
+import { Pencil, Plus, Power, Trash2 } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 import { Badge, Button, Field } from "../ui";
 import { ConfirmDialog, Dialog, MutationFeedback } from "../WorkflowUi";
@@ -195,6 +195,7 @@ function ParentLocationsSettings() {
   const repository = useRepository(),
     snapshot = useMockSnapshot();
   const [adding, setAdding] = useState(false),
+    [editing, setEditing] = useState<ReferenceRecord | null>(null),
     [deleting, setDeleting] = useState<ReferenceRecord | null>(null),
     [feedback, setFeedback] = useState<Feedback>({
       status: "idle",
@@ -216,24 +217,33 @@ function ParentLocationsSettings() {
     setFeedback({ status: r.ok ? "success" : "error", message: r.message });
     if (r.ok) setDeleting(null);
   }
-  async function addMainLocation(event: FormEvent<HTMLFormElement>) {
+  async function saveMainLocation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const result = await repository.execute({
-      action: "reference.create",
+      action: editing ? "reference.edit" : "reference.create",
+      entityId: editing?.id,
       values: {
         kind: "location",
         name: data.get("name"),
         type: "Main location",
+        typeId: editing?.typeId || "main-location",
         status: "Active",
-        details: { manuallyCreated: true },
+        details: {
+          ...(editing?.details || {}),
+          manuallyCreated: true,
+          prefix: String(data.get("prefix") || "").trim().toUpperCase(),
+        },
       },
     });
     setFeedback({
       status: result.ok ? "success" : "error",
       message: result.message,
     });
-    if (result.ok) setAdding(false);
+    if (result.ok) {
+      setAdding(false);
+      setEditing(null);
+    }
   }
   return (
     <div>
@@ -265,12 +275,22 @@ function ParentLocationsSettings() {
             <span className="location-type-order">{index + 1}</span>
             <div>
               <strong>{location.name}</strong>
-              <small>Hoofdlocatie</small>
+              <small>
+                Hoofdlocatie · Prefix {String(location.details.prefix || "—")}
+              </small>
             </div>
             <Badge tone={location.status === "Active" ? "success" : "neutral"}>
               {location.status === "Active" ? "Actief" : "Inactief"}
             </Badge>
             <div className="location-type-actions">
+              <Button
+                variant="ghost"
+                title="Hoofdlocatie bijwerken"
+                aria-label={`${location.name} bijwerken`}
+                onClick={() => setEditing(location)}
+              >
+                <Pencil />
+              </Button>
               <Button
                 variant="ghost"
                 title={
@@ -307,18 +327,38 @@ function ParentLocationsSettings() {
         ))}
       </div>
       <Dialog
-        open={adding}
-        title="Hoofdlocatie toevoegen"
-        onClose={() => setAdding(false)}
+        open={adding || !!editing}
+        title={editing ? "Hoofdlocatie bijwerken" : "Hoofdlocatie toevoegen"}
+        onClose={() => {
+          setAdding(false);
+          setEditing(null);
+        }}
       >
-        <form className="workflow-form" onSubmit={addMainLocation}>
-          <Field name="name" label="Naam hoofdlocatie" required />
+        <form className="workflow-form" onSubmit={saveMainLocation}>
+          <Field
+            name="name"
+            label="Naam parent-/hoofdlocatie"
+            defaultValue={editing?.name}
+            required
+          />
+          <Field
+            name="prefix"
+            label="Prefix / afkorting"
+            defaultValue={String(editing?.details.prefix || "")}
+            maxLength={20}
+            required
+          />
           <div className="wide actions">
-            <Button type="submit">Hoofdlocatie opslaan</Button>
+            <Button type="submit">
+              {editing ? "Wijzigingen opslaan" : "Hoofdlocatie opslaan"}
+            </Button>
             <Button
               type="button"
               variant="ghost"
-              onClick={() => setAdding(false)}
+              onClick={() => {
+                setAdding(false);
+                setEditing(null);
+              }}
             >
               Annuleren
             </Button>
@@ -354,7 +394,7 @@ function ParentLocationsSettings() {
   );
 }
 
-function CodeGroupForm({ onClose }: { onClose: () => void }) {
+function CodeGroupForm({ onClose, group }: { onClose: () => void; group?: CodeGroup | null }) {
   const repository = useRepository();
   const [feedback, setFeedback] = useState<Feedback>({
     status: "idle",
@@ -364,7 +404,8 @@ function CodeGroupForm({ onClose }: { onClose: () => void }) {
     event.preventDefault();
     const d = new FormData(event.currentTarget),
       r = await repository.execute({
-        action: "codeGroup.create",
+        action: group ? "codeGroup.edit" : "codeGroup.create",
+        entityId: group?.id,
         values: {
           name: d.get("name"),
           prefix: d.get("prefix"),
@@ -378,14 +419,14 @@ function CodeGroupForm({ onClose }: { onClose: () => void }) {
   }
   return (
     <form className="workflow-form" onSubmit={save}>
-      <Field name="name" label="Naam" required />
-      <Field name="prefix" label="Prefix" required />
+      <Field name="name" label="Naam" defaultValue={group?.name} required />
+      <Field name="prefix" label="Prefix" defaultValue={group?.prefix} required />
       <Field
         name="minimumNumber"
         type="number"
         min="1"
         label="Minimum"
-        defaultValue="1"
+        defaultValue={String(group?.minimumNumber ?? 1)}
         required
       />
       <Field
@@ -393,7 +434,7 @@ function CodeGroupForm({ onClose }: { onClose: () => void }) {
         type="number"
         min="1"
         label="Maximum"
-        defaultValue="5000"
+        defaultValue={String(group?.maximumNumber ?? 5000)}
         required
       />
       <Field
@@ -401,7 +442,7 @@ function CodeGroupForm({ onClose }: { onClose: () => void }) {
         type="number"
         min="1"
         label="Volgend nummer"
-        defaultValue="1"
+        defaultValue={String(group?.nextAvailableNumber ?? 1)}
         required
       />
       <div className="wide">
@@ -416,6 +457,7 @@ function CodeGroupsSettings() {
   const repository = useRepository(),
     snapshot = useMockSnapshot();
   const [adding, setAdding] = useState(false),
+    [editing, setEditing] = useState<CodeGroup | null>(null),
     [deleting, setDeleting] = useState<CodeGroup | null>(null),
     [pageSize, setPageSize] = useState(15),
     [page, setPage] = useState(1),
@@ -518,6 +560,14 @@ function CodeGroupsSettings() {
             <div className="location-type-actions">
               <Button
                 variant="ghost"
+                title="Codegroep bijwerken"
+                aria-label={`${group.name} bijwerken`}
+                onClick={() => setEditing(group)}
+              >
+                <Pencil />
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={() =>
                   run(
                     group,
@@ -559,11 +609,20 @@ function CodeGroupsSettings() {
         </nav>
       ) : null}
       <Dialog
-        open={adding}
-        title="Codegroep toevoegen"
-        onClose={() => setAdding(false)}
+        open={adding || !!editing}
+        title={editing ? "Codegroep bijwerken" : "Codegroep toevoegen"}
+        onClose={() => {
+          setAdding(false);
+          setEditing(null);
+        }}
       >
-        <CodeGroupForm onClose={() => setAdding(false)} />
+        <CodeGroupForm
+          group={editing}
+          onClose={() => {
+            setAdding(false);
+            setEditing(null);
+          }}
+        />
       </Dialog>
       <ConfirmDialog
         open={!!deleting}

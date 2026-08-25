@@ -1,0 +1,53 @@
+.brand-wordmark{
+  min-width:0;
+  display:inline-flex;
+  align-items:center;
+  flex-direction:column;
+  color:var(--brand-wordmark-primary,#071f3d);
+  line-height:1;
+}
+.brand-wordmark__letters{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:.42em;
+  color:inherit;
+  font-family:Montserrat,"Avenir Next",Gotham,"Segoe UI Light","Helvetica Neue",Arial,sans-serif;
+  font-size:var(--wordmark-size,1.75rem);
+  font-weight:300;
+  letter-spacing:0;
+}
+.brand-wordmark__letters>span{display:block}
+.brand-wordmark__a{width:.92em;height:.82em;overflow:visible;color:inherit}
+.brand-wordmark__a path{fill:none;stroke:currentColor;stroke-width:5;stroke-linecap:square;stroke-linejoin:miter}
+.brand-wordmark__a circle{fill:currentColor;stroke:none}
+.brand-wordmark__subtitle{
+  margin-top:var(--wordmark-subtitle-gap,5px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  color:var(--brand-wordmark-secondary,#536b82);
+  font-family:Montserrat,"Avenir Next",Gotham,"Segoe UI",Arial,sans-serif;
+  font-size:var(--wordmark-subtitle-size,.58rem);
+  font-weight:400;
+  letter-spacing:.22em;
+  line-height:1.35;
+  text-align:center;
+}
+.brand-wordmark__subtitle{white-space:nowrap}
+.brand-wordmark__subtitle-line{display:inline}
+.brand-wordmark--header .brand-wordmark__subtitle{align-items:flex-start;white-space:normal}
+.brand-wordmark--header .brand-wordmark__subtitle-line{display:block;white-space:nowrap}
+.brand-wordmark--header{--wordmark-size:clamp(1.5rem,1.8vw,1.85rem);--wordmark-subtitle-size:clamp(.48rem,.62vw,.64rem);align-items:flex-start}
+.brand-wordmark--header .brand-wordmark__letters{justify-content:flex-start}
+.brand-wordmark--auth{--wordmark-size:clamp(3rem,4vw,4rem);--wordmark-subtitle-size:clamp(.66rem,1vw,.82rem);--wordmark-subtitle-gap:10px;width:100%}
+.brand-wordmark--auth .brand-wordmark__letters{font-weight:700}
+.brand-wordmark--auth .brand-wordmark__a path{stroke-width:7}
+.brand-wordmark--auth .brand-wordmark__subtitle{font-weight:600}
+.brand-wordmark--splash{--wordmark-size:clamp(3.5rem,7vw,6rem);--wordmark-subtitle-size:clamp(.7rem,1.2vw,1rem)}
+.brand-wordmark--compact{--wordmark-size:1.25rem;--wordmark-subtitle-size:.46rem}
+html[data-theme="kcs-azure-intelligence"],html[data-theme="aims-light"]{--brand-wordmark-primary:#071f3d;--brand-wordmark-secondary:#536b82}
+html[data-theme="aims-midnight"]{--brand-wordmark-primary:#f4f8fc;--brand-wordmark-secondary:#c1cedd}
+html[data-theme="emerald-gloss"]{--brand-wordmark-primary:#052712;--brand-wordmark-secondary:#708162}
+@media(max-width:430px){.brand-wordmark--header{--wordmark-size:1.25rem;--wordmark-subtitle-size:.43rem}.brand-wordmark--auth{--wordmark-size:clamp(2.35rem,14vw,3.25rem);--wordmark-subtitle-size:clamp(.5rem,2.4vw,.65rem)}}
+@media(max-width:360px){.brand-wordmark--header .brand-wordmark__subtitle{display:none}.brand-wordmark--header{--wordmark-size:1.15rem}}

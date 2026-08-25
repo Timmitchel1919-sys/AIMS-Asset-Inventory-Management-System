@@ -32,6 +32,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import { PrintAuditHeader } from "./PrintAuditHeader";
 import { OPEN_ACCOUNT_MENU_EVENT } from "../lib/accountMenu";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -603,6 +604,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main className="main" id="main-content" tabIndex={-1}>
+        <PrintAuditHeader />
         {presentationMode && (
           <section
             className="presentation-strip"

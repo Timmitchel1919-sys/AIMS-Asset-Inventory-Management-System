@@ -1,10 +1,14 @@
 import{readFileSync}from'node:fs';import{describe,expect,it}from'vitest';
-const gloss=readFileSync(new URL('./emerald-gloss.css',import.meta.url),'utf8'),status=readFileSync(new URL('./tokens.css',import.meta.url),'utf8');
-describe('Emerald Gloss',()=>{
- it('defines the approved brand palette and route-applied selector',()=>{for(const value of ['#27AE60','#219653','#1B7F46','#5CD48B','#145A32'])expect(gloss).toContain(value);expect(gloss).toContain('data-aims-theme="aimsEmeraldGloss"');expect(gloss).toContain('html[data-theme="emerald-gloss"]')});
- it('does not redefine permanent asset status tokens',()=>{expect(gloss).not.toContain('--asset-status-');expect(status).toContain('--asset-status-assigned-solid:#7C3AED')});
+const gloss=readFileSync(new URL('./emerald-gloss.css',import.meta.url),'utf8'),tokens=readFileSync(new URL('./tokens.css',import.meta.url),'utf8'),status=tokens;
+describe('AIMS Emerald Green',()=>{
+ it('defines the approved premium palette and route-applied selectors',()=>{for(const value of ['#052712','#21502C','#366439','#12492A','#296541','#E0B345','#FDFCF9','#FEFDFB','#E7E6E0'])expect(gloss).toContain(value);expect(gloss).toContain('data-aims-theme="aimsEmeraldGloss"');expect(gloss).toContain('html[data-theme="emerald-gloss"]')});
+ it('does not redefine permanent asset status tokens in the theme file',()=>{expect(gloss).not.toContain('--asset-status-');expect(status).toContain('--asset-status-assigned-solid:#7C3AED')});
+ it('centers the semantic token layer on the warm-emerald palette',()=>{expect(tokens).toContain('--color-sidebar-background: #052712');expect(tokens).toContain('--color-sidebar-active-background: #366439');expect(tokens).toContain('--color-background: #FDFCF9');expect(tokens).toContain('--color-accent: #E0B345')});
  it('gives glossy treatment only to primary actions, not to inactive tabs',()=>{expect(gloss).toContain('.subnav button.active');expect(gloss).not.toContain('.subnav button,')});
- it('uses green sidebar waves, a full active fill and dark-green overview figures',()=>{expect(gloss).toContain('html[data-theme="emerald-gloss"] .app-sidebar::before');expect(gloss).toContain('background:var(--emerald-gloss-gradient)');expect(gloss).not.toContain('border-left:3px');expect(gloss).toContain('.metrics-card .metric strong{color:var(--emerald-gloss-deep)}')});
- it('keeps sidebar module labels bright white',()=>{expect(gloss).toContain('.navigation-item__label{color:#F8FFFA}');expect(gloss).toContain('.navigation-item__label{color:#FFFFFF}')});
- it('includes reduced transparency fallback',()=>{expect(gloss).toContain('prefers-reduced-transparency:reduce')});
+ it('uses a deep-emerald sidebar with a glossy gold-outlined active module and a matching gold icon accent',()=>{expect(gloss).toContain('border: 0.75px solid var(--emerald-gold);');expect(gloss).toContain('background: linear-gradient(180deg, #4b7f4f 0%, var(--emerald-active) 56%, #294f2f 100%);');expect(gloss).toContain('color: var(--emerald-gold);')});
+ it('exposes the warm main canvas through the active-module notch',()=>{expect(gloss).toContain('.app-sidebar__active-notch');expect(gloss).toContain('background-color: var(--emerald-warm-bg);')});
+ it('uses subtle green sidebar waves, not neon fills',()=>{expect(gloss).toContain('html[data-theme="emerald-gloss"] .app-sidebar::before');expect(gloss).toContain('html[data-theme="emerald-gloss"] .app-sidebar::after');expect(gloss).toContain('rgba(54, 100, 57, 0.28)')});
+ it('keeps sidebar module labels bright against the deep emerald background',()=>{expect(gloss).toMatch(/\.navigation-item__label\s*\{\s*color:\s*var\(--emerald-text-on-dark\);/);expect(gloss).toMatch(/\[aria-current="page"\]\)\s*\.navigation-item__label\s*\{\s*color:\s*#ffffff;/)});
+ it('renders the theme-picker swatch with sidebar, primary green, and warm-canvas columns',()=>{expect(gloss).toContain('.theme-aimsEmeraldGloss i span:first-child');expect(gloss).toContain('background: #052712;');expect(gloss).toContain('.theme-aimsEmeraldGloss i span:nth-child(3)');expect(gloss).toContain('background: #FDFCF9;')});
+ it('includes reduced transparency and reduced motion fallbacks',()=>{expect(gloss).toContain('prefers-reduced-transparency: reduce');expect(gloss).toContain('prefers-reduced-motion: reduce')});
 });

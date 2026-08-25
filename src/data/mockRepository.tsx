@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useApp } from "../context/AppContext";
 import type {
   Asset,
   AssetStatus,
@@ -4135,10 +4136,25 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
   }
 }
 
-export class MockInventoryRepository extends WorkflowRepositoryEngine {}
+export class MockInventoryRepository extends WorkflowRepositoryEngine {
+  private currentActor?: string;
+
+  setActor(actor?: string) {
+    this.currentActor = actor;
+  }
+
+  override execute(command: WorkflowCommand) {
+    return super.execute({
+      ...command,
+      actor: command.actor || this.currentActor || "Unknown user",
+    });
+  }
+}
 
 const repository = new MockInventoryRepository();
 export function MockRepositoryProvider({ children }: { children: ReactNode }) {
+  const { user } = useApp();
+  repository.setActor(user?.name || user?.email);
   return (
     <RepositoryProvider repository={repository}>{children}</RepositoryProvider>
   );

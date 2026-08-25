@@ -129,62 +129,85 @@
 }
 
 [data-theme="emerald-gloss"] {
-  --color-background: #F7FAF8;
-  --color-background-secondary: #EEF9F3;
-  --color-surface: #FFFFFF;
-  --color-surface-secondary: #F1F7F4;
-  --color-surface-elevated: #FFFFFF;
-  --color-surface-hover: #EAF6EF;
+  color-scheme: light;
+  --color-background: #FDFCF9;
+  --color-background-secondary: #F5F7F2;
+  --color-surface: #FEFDFB;
+  --color-surface-secondary: #F8F8F4;
+  --color-surface-elevated: #FEFDFB;
+  --color-surface-hover: #F3F5F1;
 
-  --color-primary: #27AE60;
-  --color-primary-hover: #219653;
-  --color-primary-active: #1B7F46;
-  --color-primary-soft: #DDF5E8;
+  --color-primary: #296541;
+  --color-primary-hover: #21502C;
+  --color-primary-active: #052712;
+  --color-primary-soft: rgba(41,101,65,.12);
   --color-on-primary: #ffffff;
 
-  --color-secondary: #145A32;
-  --color-secondary-hover: #0F4526;
-  --color-secondary-soft: #EEF9F3;
+  --color-secondary: #12492A;
+  --color-secondary-hover: #0D3820;
+  --color-secondary-soft: rgba(18,73,42,.12);
   --color-on-secondary: #ffffff;
 
-  --color-accent: #5CD48B;
-  --color-accent-hover: #27AE60;
-  --color-accent-soft: #DDF5E8;
+  --color-accent: #E0B345;
+  --color-accent-hover: #CDAA43;
+  --color-accent-soft: rgba(224,179,69,.16);
 
-  --color-text-primary: #17221C;
-  --color-text-secondary: #536B5D;
-  --color-text-muted: #7A8F82;
-  --color-text-disabled: #A9BBAF;
-  --color-text-inverse: #ffffff;
+  --color-text-primary: #102018;
+  --color-text-secondary: #81837D;
+  --color-text-muted: #909792;
+  --color-text-disabled: #B7BDB4;
+  --color-text-inverse: #F1F3EB;
 
-  --color-border: #D7E6DC;
-  --color-border-subtle: #E7F0EA;
-  --color-border-strong: #B9D5C3;
-  --color-focus-ring: #27AE60;
+  --color-border: #E7E6E0;
+  --color-border-subtle: #EFEEE8;
+  --color-border-strong: #CBC8BC;
+  --color-focus-ring: rgba(41,101,65,.20);
 
-  --color-success: #27AE60;
-  --color-success-soft: #DDF5E8;
-  --color-warning: #C48A06;
-  --color-warning-soft: #FFF3D6;
-  --color-danger: #D3392E;
-  --color-danger-soft: #FDE4E2;
-  --color-info: #1D7DB8;
-  --color-info-soft: #E1F1FA;
+  --color-success: #296541;
+  --color-success-soft: rgba(41,101,65,.12);
+  --color-warning: #EA9A32;
+  --color-warning-soft: rgba(234,154,50,.14);
+  --color-danger: #E45E36;
+  --color-danger-soft: rgba(228,94,54,.14);
+  --color-info: #21502C;
+  --color-info-soft: rgba(33,80,44,.12);
 
-  --color-sidebar-background: linear-gradient(180deg,#123C28 0%,#145A32 50%,#0F3222 100%);
-  --color-sidebar-text: #EAF7EF;
-  --color-sidebar-muted: #A9C8B5;
-  --color-sidebar-active-background: linear-gradient(180deg,#5CD48B 0%,#27AE60 45%,#219653 100%);
+  --color-sidebar-background: #052712;
+  --color-sidebar-text: #F1F3EB;
+  --color-sidebar-muted: #ADB9AA;
+  --color-sidebar-active: #366439;
+  --color-sidebar-active-background: #366439;
   --color-sidebar-active-text: #ffffff;
-  --color-sidebar-active-pointer: #FFFFFF;
-  --color-sidebar-hover: rgba(255,255,255,.06);
+  --color-sidebar-active-pointer: #FDFCF9;
+  --color-sidebar-hover: rgba(255,255,255,.05);
+  --gradient-sidebar: #052712;
+
+  --global-search-surface: #FFFFFF;
+  --global-search-border: #E7E6E0;
+  --global-search-text: #102018;
+  --global-search-muted: #909792;
+  --global-search-hover: rgba(41,101,65,.07);
+  --global-search-active: rgba(41,101,65,.12);
+  --global-search-accent: #296541;
+  --global-search-highlight: rgba(224,179,69,.22);
 
   --color-input-background: #ffffff;
-  --color-input-border: #B9D5C3;
-  --color-input-text: #17221C;
-  --color-input-placeholder: #7A8F82;
-  --color-table-header: #F1F7F4;
-  --color-overlay: rgba(15,42,27,.55);
+  --color-input-border: #E7E6E0;
+  --color-input-text: #102018;
+  --color-input-placeholder: #909792;
+  --color-table-header: #F7F7F2;
+  --color-overlay: rgba(5,39,18,.28);
+
+  --chart-1: #296541;
+  --chart-2: #E0B345;
+  --chart-3: #E45E36;
+  --chart-4: #EA9A32;
+  --chart-5: #ADB9AA;
+  --chart-grid: rgba(16,32,24,.08);
+
+  --shadow-sm: 0 1px 2px rgba(5,39,18,.06);
+  --shadow-md: 0 8px 22px rgba(5,39,18,.07);
+  --shadow-lg: 0 18px 48px rgba(5,39,18,.10);
 }
 
 @media (prefers-reduced-motion:reduce) {

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="kcs-azure-intelligence">
+<html lang="en" data-theme="aims-midnight" data-aims-theme="aimsMidnight">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -15,7 +15,7 @@
     <link id="kcs-manifest" rel="manifest" href="/manifest-azure.webmanifest" />
     <title>AIMS Asset &amp; Inventory Management System</title>
     <script>
-      (function(){try{var t=localStorage.getItem('authenticatedThemePreference')||localStorage.getItem('kcs-theme');var green=t==='aimsEmeraldGloss'||t==='emerald-gloss'||t==='aimsEmeraldGlass'||t==='kcs-forest-gold';document.documentElement.dataset.theme=green?'emerald-gloss':'kcs-azure-intelligence';document.getElementById('kcs-manifest').href=green?'/manifest-emerald-gloss.webmanifest':'/manifest-azure.webmanifest'}catch(e){}})();
+      (function(){try{var t=localStorage.getItem('authenticatedThemePreference')||localStorage.getItem('kcs-theme');if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'aimsLight':'aimsMidnight';var m={aimsAzureGlass:['kcs-azure-intelligence','/manifest-azure.webmanifest','#061D52'],aimsMidnight:['aims-midnight','/manifest-midnight.webmanifest','#102640'],aimsEmeraldGloss:['emerald-gloss','/manifest-emerald-gloss.webmanifest','#052712'],aimsLight:['aims-light','/manifest-light.webmanifest','#F4F7FB']};var x=m[t]||m.aimsMidnight;document.documentElement.dataset.aimsTheme=t;document.documentElement.dataset.theme=x[0];document.getElementById('kcs-manifest').href=x[1];document.getElementById('kcs-theme-color').content=x[2]}catch(e){}})();
     </script>
   </head>
   <body>

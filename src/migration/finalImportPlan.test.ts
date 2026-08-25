@@ -5,7 +5,6 @@ import {
   applyApprovedBulkResolutions,
   applyApprovedReferenceStructure,
   newReviewManifest,
-  selectedWorkbooksFingerprint,
 } from "./importReview";
 import {
   backupDownload,

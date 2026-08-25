@@ -38,9 +38,9 @@ describe('app download and admin access integration',()=>{
 
   it('shows the combined import action only with assets.import permission',()=>{
     const assetsSource=readFileSync('src/pages/Assets.tsx','utf8');
-    expect(assetsSource).toContain("can(user?.role,'assets.import')");
-    expect(assetsSource).toContain("navigate('/assets/import')");
-    expect(assetsSource).toContain("t('assets.import')");
+    expect(assetsSource).toMatch(/can\(user\?\.role,\s*["']assets\.import["']\)/);
+    expect(assetsSource).toMatch(/navigate\(["']\/assets\/import["']\)/);
+    expect(assetsSource).toMatch(/t\(["']assets\.import["']\)/);
   });
 
   it('deploys verified school-domain rules with default deny',()=>{

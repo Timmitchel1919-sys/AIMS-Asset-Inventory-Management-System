@@ -28,6 +28,7 @@ import type {
 } from "./contracts";
 import { WorkflowRepositoryEngine } from "./mockRepository";
 import { RepositoryProvider } from "./repositoryContext";
+import { useApp } from "../context/AppContext";
 
 const collections = {
   assets: "assets",
@@ -178,6 +179,8 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     private readonly db: Firestore,
     private readonly actorUid: () => string | undefined = () =>
       firebaseAuth?.currentUser?.uid,
+    private readonly actorName: () => string | undefined = () =>
+      firebaseAuth?.currentUser?.displayName || firebaseAuth?.currentUser?.email || undefined,
     private readonly actorAccess?: () => Promise<ActorAccess>,
   ) {
     super();
@@ -517,6 +520,11 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
   override async execute(command: WorkflowCommand): Promise<WorkflowResult> {
     if (!this.initialized)
       return { ok: false, message: "AIMS data is still loading. Please wait." };
+    command = {
+      ...command,
+      actor:
+        command.actor || this.actorName() || this.actorUid() || "Unknown user",
+    };
     const before = structuredClone(this.snapshot());
     try {
       const access = await this.resolveActorAccess();
@@ -601,9 +609,19 @@ export function FirebaseRepositoryProvider({
 }: {
   children: ReactNode;
 }) {
+  const { user } = useApp();
   const repository = useMemo(
-    () => new FirebaseInventoryRepository(requireFirebase().db),
-    [],
+    () =>
+      new FirebaseInventoryRepository(
+        requireFirebase().db,
+        () => firebaseAuth?.currentUser?.uid,
+        () =>
+          user?.name ||
+          user?.email ||
+          firebaseAuth?.currentUser?.displayName ||
+          undefined,
+      ),
+    [user?.email, user?.name],
   );
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [error, setError] = useState("");

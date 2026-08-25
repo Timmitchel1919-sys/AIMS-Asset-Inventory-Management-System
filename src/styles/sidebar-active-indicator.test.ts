@@ -16,8 +16,9 @@ describe('active sidebar indicator',()=>{
     expect(shell).not.toContain('border-right:8px solid var(--color-sidebar-active-pointer,#fff)');
     expect(shell).not.toContain('.navigation-item:is(.active,[aria-current="page"])::after');
   });
-  it('uses a solid white notch without an edge stripe',()=>{
-    expect(tokens.match(/--color-sidebar-active-pointer:\s*#FFFFFF/g)).toHaveLength(3);
+  it('uses a solid notch matching each theme\'s own canvas, without an edge stripe',()=>{
+    expect(tokens.match(/--color-sidebar-active-pointer:\s*#FFFFFF/g)).toHaveLength(2);
+    expect(tokens).toContain('--color-sidebar-active-pointer: #FDFCF9');
     expect(shell).not.toContain('filter:drop-shadow(-1px 0 1px');
   });
 });

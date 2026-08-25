@@ -1130,7 +1130,7 @@ export function AssetDisposal() {
 
 const sample =
   "code,name,serialnumber,category,location,department,brand,model\nKCSMD01,Imported laptop,IMP-001,Laptops,ICT Store,ICT,Dell,Latitude";
-function LegacyAssetImport() {
+export function LegacyAssetImport() {
   const a = useAssetT(),
     repository = useRepository(),
     snapshot = useMockSnapshot(),

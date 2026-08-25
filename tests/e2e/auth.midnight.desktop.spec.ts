@@ -1,18 +1,20 @@
 import{expect,test}from'@playwright/test';
 
-test.beforeEach(async({page})=>{await page.addInitScript(()=>{localStorage.setItem('kcs-auth','out');localStorage.setItem('kcs-language','en')})});
+test.beforeEach(async({page})=>{await page.addInitScript(()=>{localStorage.setItem('kcs-auth','out');localStorage.setItem('kcs-language','en');localStorage.setItem('authenticatedThemePreference','aimsMidnight')})});
 
 test.describe('theme-responsive AIMS authentication',()=>{
   test('desktop login is accessible, validates input and preserves authentication',async({page})=>{
     await page.setViewportSize({width:1440,height:900});
     await page.goto('/login');
-    await expect(page.locator('.auth-page')).toHaveAttribute('data-auth-theme','aimsAzureGlass');
-    await expect(page.getByRole('heading',{name:'AIMS Asset & Inventory Management System'})).toBeVisible();
-    await expect(page.getByAltText('AIMS logo')).toBeVisible();
+    await expect(page.locator('.auth-page')).toHaveAttribute('data-auth-theme','aimsMidnight');
+    await expect(page.getByAltText('AIMS logo')).toHaveCount(1);
+    await expect(page.getByRole('img',{name:'AIMS Asset & Inventory Management System'})).toBeVisible();
+    await expect(page.getByLabel('Choose language')).toHaveCount(0);
     await expect(page.getByText('Sign in to continue to your secure, role-aware workspace.')).toHaveCount(0);
     await expect(page.locator('.auth-logo-lockup strong')).toHaveCount(0);
-    await expect(page.locator('.auth-logo-lockup img')).toHaveAttribute('src','/aims-logo-blue.png');
+    await expect(page.locator('.auth-logo-lockup img')).toHaveCount(0);
     await expect(page.locator('.auth-card')).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-theme','aims-midnight');
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(1440);
 
     const email=page.getByLabel('Email address'),password=page.getByLabel('Password',{exact:true});

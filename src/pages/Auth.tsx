@@ -14,6 +14,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui";
 import { IctSupportDialog } from "../components/auth/IctSupportDialog";
+import { AimsWordmark } from "../components/branding/AimsWordmark";
 import { legalConfig } from "../config/legal";
 import { useApp } from "../context/AppContext";
 import {
@@ -137,6 +138,13 @@ export default function Auth({
     <div className={`auth-page auth-${mode}`} data-auth-theme={app.theme}>
       <section className="auth-brand">
         <div className="auth-brand-content">
+          <div className="auth-brand-header">
+            <img src="/aims-logo-blue.png" alt="AIMS logo" />
+            <div>
+              <strong>AIMS</strong>
+              <small>{nl ? "Asset- en inventarisbeheersysteem" : "Asset & Inventory Management System"}</small>
+            </div>
+          </div>
           <div className="auth-brand-copy">
             <h1>
               <span>AIMS Asset &amp; Inventory</span>
@@ -153,42 +161,44 @@ export default function Auth({
               <span>
                 <ShieldCheck />
               </span>
-              {nl ? "Veilige accounttoegang" : "Secure account access"}
+              <div><strong>{nl ? "Veilige accounttoegang" : "Secure account access"}</strong><small>{nl ? "Meerlaagse beveiliging om uw gegevens en middelen te beschermen." : "Layered security to protect your data and assets."}</small></div>
             </li>
             <li>
               <span>
                 <ClipboardCheck />
               </span>
-              {nl ? "Traceerbare inventarisprocessen" : "Traceable inventory workflows"}
+              <div><strong>{nl ? "Traceerbare inventarisprocessen" : "Traceable inventory workflows"}</strong><small>{nl ? "Realtime data en rapporten voor betere beslissingen." : "Real-time data and reporting for better decisions."}</small></div>
             </li>
             <li>
               <span>
                 <ScanLine />
               </span>
-              {nl ? "Mobiele controles en scans" : "Mobile-ready audits and scanning"}
+              <div><strong>{nl ? "Mobiele controles en scans" : "Mobile-ready audits and scanning"}</strong><small>{nl ? "Vereenvoudig verificaties en verminder handmatige taken." : "Simplify verification and reduce manual work."}</small></div>
             </li>
             <li>
               <span>
                 <School />
               </span>
-              St. Kangoeroe Community School
+              <div><strong>St. Kangoeroe Community School</strong><small>{nl ? "Vertrouwd door scholen en organisaties." : "Trusted by schools and organizations."}</small></div>
             </li>
           </ul>
         </div>
       </section>
       <main className="auth-panel">
         <div className="auth-card login-card">
-          <label className="auth-language-select">
-            <span>{nl ? "Taal" : "Language"}</span>
-            <select
-              value={app.language}
-              onChange={(event) => app.setLanguage(event.target.value as "en" | "nl")}
-              aria-label={nl ? "Taal kiezen" : "Choose language"}
-            >
-              <option value="en">English</option>
-              <option value="nl">Nederlands</option>
-            </select>
-          </label>
+          {mode !== "login" && (
+            <label className="auth-language-select">
+              <span>{nl ? "Taal" : "Language"}</span>
+              <select
+                value={app.language}
+                onChange={(event) => app.setLanguage(event.target.value as "en" | "nl")}
+                aria-label={nl ? "Taal kiezen" : "Choose language"}
+              >
+                <option value="en">English</option>
+                <option value="nl">Nederlands</option>
+              </select>
+            </label>
+          )}
           {done ? (
             <>
               <span className="auth-success">
@@ -207,11 +217,7 @@ export default function Auth({
           ) : (
             <>
               <div className="auth-logo-lockup">
-                <img
-                  className="mobile-auth-logo"
-                  src="/aims-logo-blue.png"
-                  alt="AIMS logo"
-                />
+                <AimsWordmark variant="auth" />
               </div>
               {mode !== "login" && <h2>{title}</h2>}
               {mode === "signup" && (
@@ -243,6 +249,7 @@ export default function Auth({
                       name="email"
                       type="email"
                       autoComplete="email"
+                      placeholder={nl ? "voorbeeld@school.nl" : "example@school.org"}
                       required={mode !== "login" || !DEMO_AUTH_MODE}
                       disabled={submitting}
                     />
@@ -262,6 +269,7 @@ export default function Auth({
                         autoComplete={
                           mode === "login" ? "current-password" : "new-password"
                         }
+                        placeholder="••••••••••••••"
                         required={mode !== "login" || !DEMO_AUTH_MODE}
                         disabled={submitting}
                       />

@@ -1,119 +1,55 @@
+/* AIMS Emerald Green — premium enterprise theme (deep emerald sidebar, warm ivory canvas, gold accents). */
 :root {
-  --emerald-gloss-primary: #27ae60;
-  --emerald-gloss-primary-hover: #219653;
-  --emerald-gloss-primary-active: #1b7f46;
-  --emerald-gloss-secondary: #5cd48b;
-  --emerald-gloss-deep: #145a32;
-  --emerald-gloss-light: #bfe7d0;
-  --emerald-gloss-soft: #dcefe4;
-  --emerald-gloss-ink: #17221c;
-  --emerald-gloss-white: #ffffff;
-  --emerald-gloss-gradient: linear-gradient(
-    180deg,
-    #5cd48b 0%,
-    #27ae60 45%,
-    #219653 100%
-  );
-  --emerald-gloss-gradient-hover: linear-gradient(
-    180deg,
-    #67dc94 0%,
-    #2dbb69 45%,
-    #1f8a4c 100%
-  );
-  --emerald-gloss-highlight: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.34) 0%,
-    rgba(255, 255, 255, 0.1) 42%,
-    rgba(255, 255, 255, 0) 52%
-  );
-}
-
-/* Brand + Tailwind-style aliases, kept in sync with the project's --color-* tokens (see tokens.css). */
-html[data-theme="emerald-gloss"] {
-  --brand-primary: var(--emerald-gloss-primary);
-  --brand-primary-hover: var(--emerald-gloss-primary-hover);
-  --brand-primary-active: var(--emerald-gloss-primary-active);
-  --brand-secondary: var(--emerald-gloss-secondary);
-  --brand-dark: #1f8a4c;
-  --brand-deep: var(--emerald-gloss-deep);
-  --brand-light: var(--emerald-gloss-light);
-  --brand-soft: var(--emerald-gloss-soft);
-  --surface: var(--color-surface);
-  --surface-secondary: var(--color-surface-secondary);
-  --surface-hover: var(--color-surface-hover);
-  --surface-active: var(--emerald-gloss-light);
-  --text-primary: var(--color-text-primary);
-  --text-secondary: var(--color-text-secondary);
-  --text-muted: var(--color-text-muted);
-  --text-on-primary: var(--color-on-primary);
-  --border-focus: var(--emerald-gloss-primary);
-  --focus-ring: 0 0 0 3px rgba(39, 174, 96, 0.2);
-  --gradient-primary: var(--emerald-gloss-gradient);
-  --gradient-primary-hover: var(--emerald-gloss-gradient-hover);
-  --gradient-dark: linear-gradient(
-    135deg,
-    #145a32 0%,
-    #1f8a4c 50%,
-    #27ae60 100%
-  );
-  --gradient-soft: linear-gradient(135deg, #ffffff 0%, #eef9f3 100%);
-  --gloss-highlight: var(--emerald-gloss-highlight);
+  --emerald-deep: #052712;
+  --emerald-nav: #21502C;
+  --emerald-active: #366439;
+  --emerald-mid: #2B5A34;
+  --emerald-icon: #12492A;
+  --emerald-secondary: #296541;
+  --emerald-gold: #E0B345;
+  --emerald-gold-strong: #CDAA43;
+  --emerald-warm-bg: #FDFCF9;
+  --emerald-soft-white: #FEFDFB;
+  --emerald-border: #E7E6E0;
+  --emerald-muted-green: #708162;
+  --emerald-text-secondary: #81837D;
+  --emerald-muted: #909792;
+  --emerald-text-on-dark: #F1F3EB;
+  --emerald-nav-muted: #ADB9AA;
+  --emerald-icon-inactive: #E9EEE0;
+  --emerald-gradient-primary: linear-gradient(180deg, #296541 0%, #12492A 100%);
+  --emerald-gradient-primary-hover: linear-gradient(180deg, #2f7049 0%, #163f24 100%);
+  --emerald-gradient-icon: linear-gradient(180deg, #296541 0%, #052712 100%);
 }
 
 html[data-aims-theme="aimsEmeraldGloss"] body,
-html[data-aims-theme="aimsEmeraldGloss"] .app {
-  background: radial-gradient(
-    circle at 20% 20%,
-    #dcefe4 0%,
-    #e9f3ed 45%,
-    #ffffff 100%
-  );
-  color: var(--emerald-gloss-ink);
-}
-html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar {
-  background: var(--color-sidebar-background);
-}
-html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar nav a.active,
-html[data-aims-theme="aimsEmeraldGloss"]
-  .app-sidebar
-  nav
-  a[aria-current="page"] {
-  border: 1px solid rgba(140, 230, 172, 0.46);
-  background: var(--emerald-gloss-gradient);
-  color: #fff;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.24),
-    inset 0 -1px 0 rgba(20, 90, 50, 0.2);
-}
-html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar nav a.active svg,
-html[data-aims-theme="aimsEmeraldGloss"]
-  .app-sidebar
-  nav
-  a[aria-current="page"]
-  svg {
-  color: var(--emerald-gloss-secondary);
-}
-html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar nav a:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-}
-html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar .navigation-item__label {
-  color: #f8fffa;
-}
-html[data-aims-theme="aimsEmeraldGloss"]
-  .app-sidebar
-  nav
-  a:is(.active, [aria-current="page"])
-  .navigation-item__label {
-  color: #ffffff;
-}
-html[data-aims-theme="aimsEmeraldGloss"] .topbar {
-  border-bottom: 1px solid var(--color-border);
-  background: #ffffff;
-  color: var(--emerald-gloss-ink);
+html[data-aims-theme="aimsEmeraldGloss"] .app,
+html[data-aims-theme="aimsEmeraldGloss"] .main,
+html[data-aims-theme="aimsEmeraldGloss"] .page,
+html[data-aims-theme="aimsEmeraldGloss"] .dashboard-grid,
+html[data-aims-theme="aimsEmeraldGloss"] .dashboard-bottom {
+  background-color: var(--emerald-warm-bg);
+  color: #102018;
 }
 
-/* Azure's sidebar wave geometry, recolored for Emerald Gloss. */
+/* Sidebar / topbar / mobile bottom nav shell surfaces. */
+html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar,
+html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar__header,
+html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar > .sidebar-foot {
+  background: var(--emerald-deep);
+  border-color: var(--emerald-deep);
+}
+html[data-aims-theme="aimsEmeraldGloss"] .topbar {
+  background: var(--emerald-soft-white);
+  border-color: var(--emerald-border);
+  color: #102018;
+}
+html[data-aims-theme="aimsEmeraldGloss"] .bottom-nav {
+  background: var(--emerald-soft-white);
+  border-color: var(--emerald-border);
+}
+
+/* Subtle sidebar-edge waves, recolored to Emerald + a faint gold hint. */
 html[data-theme="emerald-gloss"] .app-sidebar::before {
   content: "";
   position: absolute;
@@ -123,11 +59,11 @@ html[data-theme="emerald-gloss"] .app-sidebar::before {
   left: -270px;
   bottom: -210px;
   border-radius: 46% 54% 50% 50% / 43% 47% 53% 57%;
-  border: 1px solid rgba(92, 212, 139, 0.2);
+  border: 1px solid rgba(54, 100, 57, 0.28);
   box-shadow:
-    0 0 0 36px rgba(92, 212, 139, 0.05),
-    0 0 0 76px rgba(92, 212, 139, 0.035),
-    0 0 0 122px rgba(92, 212, 139, 0.022);
+    0 0 0 36px rgba(43, 90, 52, 0.2),
+    0 0 0 76px rgba(43, 90, 52, 0.09),
+    0 0 0 122px rgba(224, 179, 69, 0.05);
   transform: rotate(-13deg);
   pointer-events: none;
 }
@@ -140,183 +76,213 @@ html[data-theme="emerald-gloss"] .app-sidebar::after {
   right: -255px;
   top: 145px;
   border-radius: 50%;
-  border-top: 1px solid rgba(140, 230, 172, 0.2);
-  border-bottom: 1px solid rgba(39, 174, 96, 0.09);
-  box-shadow: 0 -20px 48px rgba(39, 174, 96, 0.075);
+  border-top: 1px solid rgba(54, 100, 57, 0.2);
+  border-bottom: 1px solid rgba(224, 179, 69, 0.05);
+  box-shadow: 0 -20px 48px rgba(43, 90, 52, 0.1);
   transform: rotate(-19deg);
   pointer-events: none;
 }
-html[data-theme="emerald-gloss"] .metrics-card .metric strong {
-  color: var(--emerald-gloss-deep);
+
+/* Active-module triangle notch exposes the warm main canvas behind the sidebar. */
+html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar__active-notch {
+  background-color: var(--emerald-warm-bg);
 }
 
-/* Glossy primary buttons: polished gradient + soft highlight sheen, no neon/plastic glow. */
-html[data-aims-theme="aimsEmeraldGloss"]
-  :is(
-    .btn-primary,
-    .kcs-premium-action,
-    .quick-actions .btn,
-    .subnav button.active,
-    .assistant-card form .btn,
-    .assistant-panel form button[type="submit"]
-  ) {
-  position: relative;
-  overflow: hidden;
-  color: #fff;
-  background: var(--emerald-gloss-gradient);
-  border: 1px solid rgba(20, 90, 50, 0.24);
+/* Navigation: emerald active surface with a gold outline + gold icon accent. */
+html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar .navigation-item__icon {
+  color: var(--emerald-icon-inactive);
+}
+html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar .navigation-item__label {
+  color: var(--emerald-text-on-dark);
+}
+html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar nav .navigation-item:hover:not(.active):not([aria-current="page"]) {
+  background: linear-gradient(180deg, #3f7144 0%, var(--emerald-nav) 58%, #193f24 100%);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.2) inset,
-    0 -1px 0 rgba(20, 90, 50, 0.18) inset,
-    var(--shadow-sm);
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 4px 10px rgba(5, 39, 18, 0.2);
+  color: var(--emerald-text-on-dark);
+}
+html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar nav .navigation-item:is(.active, [aria-current="page"]) {
+  color: #ffffff;
+  border: 0.75px solid var(--emerald-gold);
+  background: linear-gradient(180deg, #4b7f4f 0%, var(--emerald-active) 56%, #294f2f 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 5px 12px rgba(5, 39, 18, 0.23);
+}
+html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar nav .navigation-item:is(.active, [aria-current="page"]) .navigation-item__icon {
+  color: var(--emerald-gold);
+}
+html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar nav .navigation-item:is(.active, [aria-current="page"]) .navigation-item__label {
+  color: #ffffff;
+}
+html[data-aims-theme="aimsEmeraldGloss"] .sidebar-section-label {
+  color: var(--emerald-nav-muted);
+}
+
+/* Cards, panels, modals, dropdowns — soft warm-white surfaces with restrained shadow. */
+html[data-aims-theme="aimsEmeraldGloss"] :is(.card, .panel, .modal, .dialog, [role="dialog"], .dropdown-menu, .profile-menu, .profile-menu-panel, .menu, .popover, .drawer, .data-card, .assistant-panel) {
+  background-color: var(--emerald-soft-white);
+  border-color: var(--emerald-border);
+  color: #102018;
+  box-shadow: 0 8px 22px rgba(5, 39, 18, 0.07);
+}
+html[data-aims-theme="aimsEmeraldGloss"] .card:hover {
+  box-shadow: 0 12px 30px rgba(5, 39, 18, 0.09);
+}
+html[data-aims-theme="aimsEmeraldGloss"] :is(.dropdown-menu, .profile-menu-panel, .menu, .popover) :is(a, button):hover {
+  background: var(--emerald-warm-bg);
+}
+
+/* Inputs. */
+html[data-aims-theme="aimsEmeraldGloss"] :is(input, select, textarea, .global-search__input-wrapper > input) {
+  color: #102018;
+  background-color: #ffffff;
+  border-color: var(--emerald-border);
+}
+html[data-aims-theme="aimsEmeraldGloss"] :is(input, textarea)::placeholder {
+  color: var(--emerald-muted);
+  opacity: 1;
+}
+html[data-aims-theme="aimsEmeraldGloss"] :is(input, select, textarea):focus-visible {
+  border-color: var(--emerald-secondary);
+  box-shadow: 0 0 0 3px rgba(41, 101, 65, 0.12);
+  outline: none;
+}
+html[data-aims-theme="aimsEmeraldGloss"] :is(.data-toolbar, .table-filters, .filter-bar, .search) {
+  background-color: var(--emerald-soft-white);
+  border-color: var(--emerald-border);
+  color: #102018;
+}
+html[data-aims-theme="aimsEmeraldGloss"] :focus-visible {
+  outline-color: var(--emerald-secondary);
+}
+
+/* Buttons. */
+html[data-aims-theme="aimsEmeraldGloss"] :is(.btn-primary, .kcs-premium-action, .quick-actions .btn, .subnav button.active, .assistant-card form .btn, .assistant-panel form button[type="submit"]) {
+  color: #ffffff;
+  background: var(--emerald-gradient-primary);
+  border: 1px solid transparent;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 6px 18px rgba(5, 39, 18, 0.2);
   transition:
     transform var(--duration-fast) ease,
     box-shadow var(--duration-fast) ease,
-    filter var(--duration-fast) ease;
+    filter var(--duration-fast) ease,
+    background var(--duration-fast) ease;
 }
-html[data-aims-theme="aimsEmeraldGloss"]
-  :is(
-    .btn-primary,
-    .kcs-premium-action,
-    .quick-actions .btn,
-    .subnav button.active,
-    .assistant-card form .btn,
-    .assistant-panel form button[type="submit"]
-  )::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: var(--emerald-gloss-highlight);
-}
-html[data-aims-theme="aimsEmeraldGloss"]
-  :is(
-    .btn-primary,
-    .kcs-premium-action,
-    .quick-actions .btn,
-    .subnav button.active,
-    .assistant-card form .btn,
-    .assistant-panel form button[type="submit"]
-  ):hover:not(:disabled) {
-  background: var(--emerald-gloss-gradient-hover);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.24) inset,
-    0 -1px 0 rgba(20, 90, 50, 0.2) inset,
-    var(--shadow-md);
+html[data-aims-theme="aimsEmeraldGloss"] :is(.btn-primary, .kcs-premium-action, .quick-actions .btn, .subnav button.active, .assistant-card form .btn, .assistant-panel form button[type="submit"]):hover:not(:disabled) {
+  background: var(--emerald-nav);
   transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 22px rgba(5, 39, 18, 0.24);
 }
-html[data-aims-theme="aimsEmeraldGloss"]
-  :is(
-    .btn-primary,
-    .kcs-premium-action,
-    .quick-actions .btn,
-    .subnav button.active,
-    .assistant-card form .btn,
-    .assistant-panel form button[type="submit"]
-  ):active:not(:disabled) {
+html[data-aims-theme="aimsEmeraldGloss"] :is(.btn-primary, .kcs-premium-action, .quick-actions .btn, .subnav button.active, .assistant-card form .btn, .assistant-panel form button[type="submit"]):active:not(:disabled) {
+  background: var(--emerald-deep);
   transform: translateY(0);
-  filter: brightness(0.96);
 }
-html[data-aims-theme="aimsEmeraldGloss"]
-  :is(
-    .btn-primary,
-    .kcs-premium-action,
-    .quick-actions .btn,
-    .subnav button.active,
-    .assistant-card form .btn,
-    .assistant-panel form button[type="submit"]
-  ):focus-visible {
+html[data-aims-theme="aimsEmeraldGloss"] :is(.btn-primary, .kcs-premium-action, .quick-actions .btn, .subnav button.active, .assistant-card form .btn, .assistant-panel form button[type="submit"]):focus-visible {
   outline: none;
-  box-shadow: var(--focus-ring), var(--shadow-sm);
+  box-shadow: 0 0 0 3px rgba(41, 101, 65, 0.2), 0 6px 18px rgba(5, 39, 18, 0.2);
 }
-html[data-aims-theme="aimsEmeraldGloss"]
-  :is(
-    .btn-primary,
-    .kcs-premium-action,
-    .quick-actions .btn,
-    .subnav button.active,
-    .assistant-card form .btn,
-    .assistant-panel form button[type="submit"]
-  ):disabled {
+html[data-aims-theme="aimsEmeraldGloss"] :is(.btn-primary, .kcs-premium-action, .quick-actions .btn, .subnav button.active, .assistant-card form .btn, .assistant-panel form button[type="submit"]):disabled {
   opacity: 0.55;
   cursor: not-allowed;
   transform: none;
   filter: none;
 }
-/* Secondary buttons stay restrained — no gloss. */
 html[data-aims-theme="aimsEmeraldGloss"] .btn-secondary {
-  background: #fff;
-  color: var(--emerald-gloss-deep);
-  border-color: var(--color-border-strong);
-  box-shadow: var(--shadow-xs, var(--shadow-sm));
+  background: var(--emerald-soft-white);
+  color: var(--emerald-icon);
+  border-color: var(--emerald-border);
+  box-shadow: none;
 }
 html[data-aims-theme="aimsEmeraldGloss"] .btn-secondary:hover {
-  background: var(--emerald-gloss-soft);
-  border-color: var(--emerald-gloss-primary);
+  background: #f5f7f2;
+  border-color: var(--emerald-border);
 }
 
-html[data-aims-theme="aimsEmeraldGloss"]
-  :is(.card, .dialog, .drawer, .data-card, .assistant-panel, .profile-menu) {
-  border-color: var(--color-border);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-}
-html[data-aims-theme="aimsEmeraldGloss"] .card:hover {
-  box-shadow: var(--shadow-md);
-}
+/* Circular icon buttons / dashboard metric icon surfaces. */
 html[data-aims-theme="aimsEmeraldGloss"] .metric-icon {
-  background: var(--emerald-gloss-gradient);
-  color: #fff;
+  background: var(--emerald-gradient-icon);
+  color: var(--emerald-text-on-dark);
   border-color: transparent;
 }
-html[data-aims-theme="aimsEmeraldGloss"] tbody tr:hover td {
-  background: #f5fbf7;
+html[data-aims-theme="aimsEmeraldGloss"] .metric strong {
+  color: var(--emerald-secondary);
 }
-html[data-aims-theme="aimsEmeraldGloss"] tr[aria-selected="true"] td {
-  background: #e7f7ee;
-}
-html[data-aims-theme="aimsEmeraldGloss"]
-  input:not([type="checkbox"]):not([type="radio"]):hover,
+
+/* Badges. */
+html[data-aims-theme="aimsEmeraldGloss"] .badge-success { background: rgba(41,101,65,.12); color: var(--emerald-icon); border-color: var(--emerald-secondary); }
+html[data-aims-theme="aimsEmeraldGloss"] .badge-warning { background: rgba(234,154,50,.14); color: #8a5a11; border-color: #EA9A32; }
+html[data-aims-theme="aimsEmeraldGloss"] .badge-danger { background: rgba(228,94,54,.14); color: #9c3a1c; border-color: #E45E36; }
+html[data-aims-theme="aimsEmeraldGloss"] .badge-info { background: rgba(33,80,44,.12); color: var(--emerald-nav); border-color: var(--emerald-nav); }
+html[data-aims-theme="aimsEmeraldGloss"] .badge-neutral { background: #F3F5F1; color: #53645A; border-color: var(--emerald-border); }
+
+/* Tables. */
+html[data-aims-theme="aimsEmeraldGloss"] table { color: #102018; background: var(--emerald-soft-white); }
+html[data-aims-theme="aimsEmeraldGloss"] :is(thead, thead th) { color: #53645A; background: #F7F7F2; border-color: var(--emerald-border); }
+html[data-aims-theme="aimsEmeraldGloss"] :is(tbody td, tbody th) { border-color: var(--emerald-border); color: #102018; }
+html[data-aims-theme="aimsEmeraldGloss"] tbody tr:hover { background: rgba(41, 101, 65, 0.05); }
+html[data-aims-theme="aimsEmeraldGloss"] tbody tr:is(.selected, [aria-selected="true"]) { background: rgba(41, 101, 65, 0.09); }
+html[data-aims-theme="aimsEmeraldGloss"] input:not([type="checkbox"]):not([type="radio"]):hover,
 html[data-aims-theme="aimsEmeraldGloss"] select:hover,
 html[data-aims-theme="aimsEmeraldGloss"] textarea:hover {
-  border-color: #8fc3a2;
+  border-color: var(--emerald-secondary);
 }
-html[data-aims-theme="aimsEmeraldGloss"] :focus-visible {
-  outline-color: var(--emerald-gloss-primary);
+
+/* Mobile bottom navigation. */
+html[data-aims-theme="aimsEmeraldGloss"] .bottom-nav a { color: var(--emerald-muted-green); }
+html[data-aims-theme="aimsEmeraldGloss"] .bottom-nav a:is(.active, [aria-current="page"]) { color: var(--emerald-icon); background: rgba(41, 101, 65, 0.08); }
+html[data-aims-theme="aimsEmeraldGloss"] .bottom-nav a:is(.active, [aria-current="page"]) svg { color: var(--emerald-gold); }
+
+/* Modal / dialog overlay. */
+html[data-aims-theme="aimsEmeraldGloss"] .scrim,
+html[data-aims-theme="aimsEmeraldGloss"] .account-sheet-scrim {
+  background: rgba(5, 39, 18, 0.28);
 }
+
+/* Generic auth-adjacent surfaces (fine-grained login/signup treatment lives in auth.css). */
+html[data-aims-theme="aimsEmeraldGloss"] :is(.auth-page, .auth-shell, .login-page, .signup-page) {
+  background-color: var(--emerald-warm-bg);
+  color: #102018;
+}
+
+/* Sidebar logo lockup. */
 html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar__logo-button svg {
   width: 100%;
   height: 100%;
   display: block;
 }
 html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar__logo-button img {
-  filter: drop-shadow(0 4px 12px rgba(20, 90, 50, 0.16));
+  filter: drop-shadow(0 4px 12px rgba(5, 39, 18, 0.32));
 }
 
+/* Theme picker swatch preview. */
 .theme-aimsEmeraldGloss i {
-  background: var(--emerald-gloss-light, #ddf5e8);
+  background: #F5F7F2;
 }
 .theme-aimsEmeraldGloss i span:first-child {
-  background: #145a32;
+  background: #052712;
 }
 .theme-aimsEmeraldGloss i span:nth-child(2) {
-  background: linear-gradient(135deg, #5cd48b, #27ae60);
+  background: linear-gradient(135deg, #296541, #12492A);
 }
 .theme-aimsEmeraldGloss i span:nth-child(3) {
-  background: #ffffff;
+  background: #FDFCF9;
 }
 
+@media (max-width: 780px) {
+  html[data-theme="emerald-gloss"] .app-sidebar::before { opacity: 0.82; }
+  html[data-theme="emerald-gloss"] .app-sidebar::after { opacity: 0.72; }
+}
 @media (prefers-reduced-transparency: reduce) {
-  html[data-aims-theme="aimsEmeraldGloss"]
-    :is(
-      .topbar,
-      .card,
-      .dialog,
-      .drawer,
-      .data-card,
-      .assistant-panel,
-      .profile-menu
-    ) {
+  html[data-aims-theme="aimsEmeraldGloss"] :is(.topbar, .card, .dialog, .drawer, .data-card, .assistant-panel, .profile-menu) {
     background: #fff;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="emerald-gloss"] *,
+  html[data-theme="emerald-gloss"] *::before,
+  html[data-theme="emerald-gloss"] *::after {
+    scroll-behavior: auto;
   }
 }

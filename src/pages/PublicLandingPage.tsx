@@ -10,25 +10,23 @@ import {
   Languages,
   LockKeyhole,
   Menu,
-  Monitor,
   PackageOpen,
+  PlayCircle,
   Repeat2,
   ScanLine,
   ShieldCheck,
   Smartphone,
-  Tablet,
   Users,
   Warehouse,
   Wrench,
   X,
 } from "lucide-react";
-import { PwaInstallButton } from "../components/PwaStatus";
 import { DownloadAppLink } from "../components/download/DownloadAppLink";
+import { AimsWordmark } from "../components/branding/AimsWordmark";
 import { AimsDeviceShowcase } from "../components/public/AimsDevicePreviews";
 import {
   aimsLandingCopy,
   featureContent,
-  securityContent,
   workflowContent,
 } from "../content/aimsLanding";
 import { useApp } from "../context/AppContext";
@@ -60,7 +58,6 @@ const securityIcons = [
   ShieldCheck,
   ClipboardCheck,
 ];
-const deviceIcons = [Monitor, BarChart3, Tablet, Smartphone, ScanLine];
 function Icon({
   as: IconComponent,
 }: {
@@ -72,7 +69,6 @@ function Icon({
     </span>
   );
 }
-
 export default function PublicLandingPage() {
   const app = useApp(),
     language = app.language,
@@ -85,19 +81,17 @@ export default function PublicLandingPage() {
     [c.nav.workflow, "#workflow"],
     [c.nav.security, "#security"],
     [c.nav.support, "/support"],
+    [language === "nl" ? "Over ons" : "About us", "#about"],
   ] as const;
   return (
-    <div className="aims-public-page" data-theme="aimsAzureGlass">
+    <div className="aims-public-page">
       <a className="aims-skip-link" href="#main-content">
         {c.skip}
       </a>
       <header className="aims-public-header">
         <Link className="aims-brand" to="/" aria-label={`AIMS — ${c.brand}`}>
           <img className="aims-mark" src="/aims-logo-blue.png" alt="" />
-          <span>
-            <b>AIMS</b>
-            <small>{c.brand}</small>
-          </span>
+          <AimsWordmark variant="header" />
         </Link>
         <nav
           id="public-navigation"
@@ -137,10 +131,10 @@ export default function PublicLandingPage() {
               <option value="nl">NL</option>
             </select>
           </label>
-          <DownloadAppLink className="aims-glossy-button">
-            {language === "nl" ? "App downloaden" : "Download App"}
+          <DownloadAppLink className="aims-glossy-button aims-install-button">
+            Download App
           </DownloadAppLink>
-          <Link className="aims-glossy-button" to={action}>
+          <Link className="aims-glossy-button aims-signin-button" to={action}>
             {app.user ? c.open : c.signIn}
             <ArrowRight />
           </Link>
@@ -161,39 +155,33 @@ export default function PublicLandingPage() {
           <div className="aims-container aims-hero-grid">
             <div className="aims-hero-copy">
               <p className="aims-eyebrow">{c.heroEyebrow}</p>
-              <h1>{c.heroTitle}</h1>
-              <p className="aims-lead">{c.heroText}</p>
+              <h1>
+                <span>{language === "nl" ? "Beheer elk middel." : "Manage every asset."}</span>
+                <span className="aims-hero-highlight">{language === "nl" ? "Met duidelijkheid en verantwoordelijkheid." : "With clarity and accountability."}</span>
+              </h1>
+              <p className="aims-lead">{language === "nl" ? "AIMS helpt scholen en organisaties middelen gedurende hun volledige levenscyclus te volgen, beheren en beschermen — van aanschaf tot afvoer." : "AIMS helps schools and organizations track, manage, and protect assets across their entire lifecycle — from acquisition to disposal."}</p>
               <div className="aims-actions">
-                <a className="aims-secondary-button" href="#features">
-                  {c.explore}
-                </a>
+                <a className="aims-glossy-button" href="#features"><Boxes />{c.explore}</a>
+                <a className="aims-secondary-button" href="#workflow"><PlayCircle />{c.watchHow}</a>
+              </div>
+              <ul className="aims-hero-trust" aria-label={language === "nl" ? "Belangrijkste voordelen" : "Key benefits"}>
+                <li><CheckCircle2 />{language === "nl" ? "Centraal en nauwkeurig" : "Centralized & Accurate"}</li>
+                <li><ShieldCheck />{language === "nl" ? "Veilig en conform" : "Secure & Compliant"}</li>
+                <li><Smartphone />{language === "nl" ? "Overal toegang" : "Anywhere Access"}</li>
+              </ul>
+            </div>
+            <div className="aims-hero-visual" aria-label={language === "nl" ? "AIMS-dashboard op laptop, tablet en mobiele telefoon" : "AIMS dashboard shown across laptop, tablet, and mobile devices"}>
+              <div className="aims-hero-device-showcase">
+                <AimsDeviceShowcase language={language} />
               </div>
             </div>
-            <div className="aims-hero-visual" aria-hidden="true">
-              <div className="aims-hero-orbit">
-                <ShieldCheck />
-                <img src="/aims-logo-blue.png" alt="" />
-              </div>
-            </div>
-          </div>
-        </section>
-        <section
-          className="aims-showcase-section"
-          aria-labelledby="showcase-title"
-        >
-          <div className="aims-container">
-            <header className="aims-section-heading">
-              <h2 id="showcase-title">{c.showcaseTitle}</h2>
-              <p>{c.showcaseText}</p>
-            </header>
-            <AimsDeviceShowcase language={language} />
           </div>
         </section>
         <section className="aims-section" id="features">
           <div className="aims-container">
             <header className="aims-section-heading">
-              <h2>{c.featuresTitle}</h2>
-              <p>{c.featuresText}</p>
+              <h2>{language === "nl" ? "Alles wat u nodig hebt, in één systeem" : "Everything you need, in one system"}</h2>
+              <p>{language === "nl" ? "Acht verbonden modules voor controle over de volledige levenscyclus." : "Eight connected capabilities for complete lifecycle control."}</p>
             </header>
             <div className="aims-feature-grid">
               {featureContent[language].map(([title, text], index) => (
@@ -209,8 +197,8 @@ export default function PublicLandingPage() {
         <section className="aims-section aims-section--mist" id="workflow">
           <div className="aims-container">
             <header className="aims-section-heading">
-              <h2>{c.workflowTitle}</h2>
-              <p>{c.workflowText}</p>
+              <h2>{language === "nl" ? "Hoe AIMS werkt" : "How AIMS Works"}</h2>
+              <p>{language === "nl" ? "Een eenvoudige workflow voor volledig beheer van de levenscyclus van middelen." : "A simple workflow for complete asset lifecycle management."}</p>
             </header>
             <ol className="aims-workflow">
               {workflowContent[language].map(([title, text], index) => (
@@ -227,52 +215,36 @@ export default function PublicLandingPage() {
         <section className="aims-section aims-security-section" id="security">
           <div className="aims-container">
             <header className="aims-section-heading">
-              <h2>{c.securityTitle}</h2>
-              <p>{c.securityText}</p>
+              <h2>{language === "nl" ? "Gebouwd voor moderne organisaties" : "Built for Modern Organizations"}</h2>
+              <p>{language === "nl" ? "Krachtige functies die controle en vertrouwen versterken." : "Powerful features that drive control and confidence."}</p>
             </header>
             <div className="aims-security-grid">
-              {securityContent[language].map((title, index) => (
+              {[
+                [language === "nl" ? "Rolgebaseerde toegang" : "Role-Based Access", language === "nl" ? "Geef iedere gebruiker precies de juiste bevoegdheden." : "Give every user exactly the permissions they need."],
+                ["QR / Barcode Tracking", language === "nl" ? "Identificeer en controleer middelen direct." : "Identify and verify assets instantly."],
+                [language === "nl" ? "Onderhoudshistorie" : "Maintenance History", language === "nl" ? "Bewaar service, reparaties en onderhoud op één plek." : "Keep service, repair and maintenance records together."],
+                [language === "nl" ? "Slimme rapportage" : "Smart Reporting", language === "nl" ? "Zet actuele gegevens om in betrouwbare inzichten." : "Turn current records into reliable insight."],
+                [language === "nl" ? "Mobiel gereed" : "Mobile Ready", language === "nl" ? "Werk veilig op desktop, tablet en telefoon." : "Work securely across desktop, tablet and phone."],
+                ["PWA Installable", language === "nl" ? "Installeer AIMS rechtstreeks op ondersteunde apparaten." : "Install AIMS directly on supported devices."],
+              ].map(([title, text], index) => (
                 <article key={title}>
                   <Icon as={securityIcons[index]} />
                   <h3>{title}</h3>
+                  <p>{text}</p>
                 </article>
               ))}
             </div>
           </div>
         </section>
-        <section className="aims-section aims-device-compatibility">
-          <div className="aims-container aims-split">
-            <div>
-              <h2>{c.devicesTitle}</h2>
-              <p>{c.devicesText}</p>
-              <ul>
-                {[
-                  c.preview.desktop,
-                  c.preview.laptop,
-                  c.preview.tablet,
-                  c.preview.mobile,
-                  c.install,
-                ].map((label, index) => (
-                  <li key={label}>
-                    <Icon as={deviceIcons[index]} />
-                    {label}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="aims-pwa-card">
-              <DownloadArtwork />
-              <h3>{c.pwaTitle}</h3>
-              <p>{c.pwaText}</p>
-              <PwaInstallButton>{c.install}</PwaInstallButton>
-            </div>
-          </div>
-        </section>
-        <section className="aims-final-cta">
+        <section className="aims-final-cta" id="about">
           <div className="aims-container">
             <div>
-              <h2>{c.ctaTitle}</h2>
-              <p>{c.ctaText}</p>
+              <h2>{language === "nl" ? "Klaar om duidelijkheid en controle in uw middelen te brengen?" : "Ready to bring clarity and control to your assets?"}</h2>
+              <p>{language === "nl" ? "Sluit u aan bij scholen en organisaties die AIMS vertrouwen voor verantwoordelijk middelenbeheer." : "Join schools and organizations that trust AIMS for accountable asset management."}</p>
+            </div>
+            <div className="aims-actions">
+              <Link className="aims-glossy-button" to={action}>{language === "nl" ? "Vandaag beginnen" : "Get Started Today"}<ArrowRight /></Link>
+              <DownloadAppLink className="aims-secondary-button">{language === "nl" ? "App installeren" : "Install App"}</DownloadAppLink>
             </div>
           </div>
         </section>
@@ -280,11 +252,8 @@ export default function PublicLandingPage() {
       <footer className="aims-footer">
         <div className="aims-container aims-footer-grid">
           <div className="aims-footer-brand">
-            <div>
-              <b>AIMS</b>
-              <p>{c.brand}</p>
-              <small>{c.tagline}</small>
-            </div>
+            <img className="aims-mark" src="/aims-logo-blue.png" alt="" />
+            <div><b>AIMS</b><p>{c.brand}</p><small>{language === "nl" ? "Een modern middelen- en voorraadbeheersysteem voor scholen en organisaties die waarde hechten aan duidelijkheid, controle en verantwoordelijkheid." : "A modern asset and inventory management system built for schools and organizations that value clarity, control and accountability."}</small></div>
           </div>
           <div>
             <h2>{c.footerProduct}</h2>
@@ -297,6 +266,7 @@ export default function PublicLandingPage() {
             <a href="#features">{c.nav.features}</a>
             <a href="#workflow">{c.nav.workflow}</a>
             <a href="#security">{c.nav.security}</a>
+            <span>{language === "nl" ? "Prijzen" : "Pricing"}</span>
           </div>
           <div>
             <h2>{c.footerResources}</h2>
@@ -304,11 +274,24 @@ export default function PublicLandingPage() {
             <span>{c.documentation}</span>
             <Link to="/privacy">{c.privacy}</Link>
             <Link to="/terms">{c.terms}</Link>
+            <span>{language === "nl" ? "Handleidingen" : "Guides"}</span>
+            <span>{language === "nl" ? "Release-opmerkingen" : "Release Notes"}</span>
           </div>
-          <div className="aims-footer-meta">
-            <p>{c.authorized}</p>
-            <p>{c.version}</p>
-            <p>{c.presentation}</p>
+          <div>
+            <h2>{language === "nl" ? "Bedrijf" : "Company"}</h2>
+            <a href="#about">{language === "nl" ? "Over ons" : "About Us"}</a>
+            <Link to="/privacy">{c.privacy}</Link>
+            <Link to="/terms">{c.terms}</Link>
+          </div>
+          <div>
+            <h2>{language === "nl" ? "Blijf verbonden" : "Stay Connected"}</h2>
+            <Link to="/support">{language === "nl" ? "Helpcentrum" : "Help Center"}</Link>
+            <Link to="/support">{language === "nl" ? "Contact opnemen" : "Contact Support"}</Link>
+            <form className="aims-footer-subscribe" onSubmit={(event) => event.preventDefault()}>
+              <label className="sr-only" htmlFor="aims-footer-email">Email</label>
+              <input id="aims-footer-email" type="email" placeholder={language === "nl" ? "Uw e-mailadres" : "Your email address"} />
+              <button type="submit" aria-label={language === "nl" ? "Aanmelden voor updates" : "Subscribe for updates"}><ArrowRight /></button>
+            </form>
           </div>
         </div>
         <div className="aims-footer-bottom aims-container">{c.copyright}</div>
@@ -317,13 +300,3 @@ export default function PublicLandingPage() {
   );
 }
 
-function DownloadArtwork() {
-  return (
-    <div className="aims-pwa-art" aria-hidden="true">
-      <Smartphone />
-      <span>
-        <ArrowRight />
-      </span>
-    </div>
-  );
-}

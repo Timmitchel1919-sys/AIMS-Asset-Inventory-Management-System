@@ -16,6 +16,15 @@ describe('list exports',()=>{
     expect(createSpreadsheetXml(unsafe,columns,metadata)).not.toContain('<script>');
     expect(createPrintHtml(unsafe,columns,metadata)).toContain('&lt;script&gt;');
   });
+  it('adds organization branding and print audit metadata',()=>{
+    const output=createPrintHtml(rows,columns,metadata);
+    expect(output).toContain('AIMS');
+    expect(output).toContain('St. Kangoeroe Community School');
+    expect(output).toContain('/kcs-school-logo.jpg');
+    expect(output).toContain('Afgedrukt door:');
+    expect(output).toContain('Tester');
+    expect(output).toContain('2026-07-30');
+  });
   it('neutralizes spreadsheet formula prefixes without changing ordinary values',()=>{
     expect(neutralizeSpreadsheetFormula('=HYPERLINK("bad")')).toBe('\'=HYPERLINK("bad")');
     expect(neutralizeSpreadsheetFormula('+1+1')).toBe("'+1+1");
