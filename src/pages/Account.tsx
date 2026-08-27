@@ -27,6 +27,7 @@ const themes: [ThemeId, string][] = [
   ["aimsMidnight", "AIMS Midnight"],
   ["aimsEmeraldGloss", "AIMS Emerald Green"],
 ];
+const DATE_TIME_FORMAT_EXAMPLE = new Date(2026, 7, 27, 13, 5);
 export function ProfilePage() {
   const app = useApp(),
     nl = app.language === "nl",
@@ -247,6 +248,8 @@ export function PreferencesPage() {
       )}
       <div className="account-settings-grid">
         <TypographySettings />
+        <div className="preferences-columns">
+          <div className="preferences-column">
         <Card>
           <Palette />
           <h2>{nl ? "Thema's" : "Themes"}</h2>
@@ -270,22 +273,6 @@ export function PreferencesPage() {
               </button>
             ))}
           </div>
-        </Card>
-        <Card className="preferences-card--compact">
-          <Languages />
-          <h2>{nl ? "Taal" : "Language"}</h2>
-          <SelectField
-            label={nl ? "Taal" : "Language"}
-            value={app.language}
-            onChange={async (event) => {
-              const language = event.target.value as "en" | "nl";
-              app.setLanguage(language);
-              await save({ language });
-            }}
-          >
-            <option value="en">{nl ? "Engels" : "English"}</option>
-            <option value="nl">Nederlands</option>
-          </SelectField>
         </Card>
         <Card className="preferences-card--compact">
           <MonitorCog />
@@ -314,6 +301,28 @@ export function PreferencesPage() {
             <option>24-hour</option>
             <option>12-hour</option>
           </SelectField>
+          <p className="preference-format-example" aria-live="polite">
+            <small>{nl ? "Voorbeeld" : "Example"}</small>
+            <strong>{app.formatDateTime(DATE_TIME_FORMAT_EXAMPLE)}</strong>
+          </p>
+        </Card>
+          </div>
+          <div className="preferences-column">
+        <Card className="preferences-card--compact">
+          <Languages />
+          <h2>{nl ? "Taal" : "Language"}</h2>
+          <SelectField
+            label={nl ? "Taal" : "Language"}
+            value={app.language}
+            onChange={async (event) => {
+              const language = event.target.value as "en" | "nl";
+              app.setLanguage(language);
+              await save({ language });
+            }}
+          >
+            <option value="en">{nl ? "Engels" : "English"}</option>
+            <option value="nl">Nederlands</option>
+          </SelectField>
         </Card>
         <Card>
           <Bell />
@@ -337,6 +346,8 @@ export function PreferencesPage() {
             </label>
           ))}
         </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

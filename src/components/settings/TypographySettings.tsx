@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { Type } from "lucide-react";
-import { Button, Card, SelectField } from "../ui";
+import { Card, SelectField } from "../ui";
 import { useApp } from "../../context/AppContext";
 import {
-  DEFAULT_FONT_FAMILY,
-  DEFAULT_FONT_SIZE,
   FONT_FAMILIES,
   FONT_SIZES,
   resolveFontFamily,
@@ -39,12 +37,11 @@ export function TypographySettings() {
     setMessage("");
     setError("");
     try {
-      await app.updatePreferences({
-        fontFamily: nextFamily,
-        fontSize: nextSize,
-      });
-      setMessage(nl ? "Typografie opgeslagen." : "Typography saved.");
+      await app.updatePreferences({ fontFamily: nextFamily, fontSize: nextSize });
+      setMessage(nl ? "Typografie automatisch opgeslagen." : "Typography saved automatically.");
     } catch {
+      setFontFamily(savedFamily);
+      setFontSize(savedSize);
       setError(
         nl
           ? "Typografie kon niet worden opgeslagen. Uw vorige instelling is hersteld."
@@ -63,57 +60,32 @@ export function TypographySettings() {
         <SelectField
           label={nl ? "Lettertype" : "Font"}
           value={fontFamily}
+          disabled={busy}
           onChange={(event) => {
-            setMessage("");
-            setError("");
-            setFontFamily(resolveFontFamily(event.target.value));
+            const nextFamily = resolveFontFamily(event.target.value);
+            setFontFamily(nextFamily);
+            void persist(nextFamily, fontSize);
           }}
         >
-          {FONT_FAMILIES.map((font) => (
-            <option key={font} value={font}>
-              {font}
-            </option>
-          ))}
+          {FONT_FAMILIES.map((font) => <option key={font} value={font}>{font}</option>)}
         </SelectField>
         <SelectField
           label={nl ? "Tekstgrootte" : "Text size"}
           value={fontSize}
+          disabled={busy}
           onChange={(event) => {
-            setMessage("");
-            setError("");
-            setFontSize(resolveFontSize(Number(event.target.value)));
+            const nextSize = resolveFontSize(Number(event.target.value));
+            setFontSize(nextSize);
+            void persist(fontFamily, nextSize);
           }}
         >
           {FONT_SIZES.map((size, index) => (
-            <option key={size} value={size}>
-              {sizeNames[nl ? "nl" : "en"][index]} — {size}px
-            </option>
+            <option key={size} value={size}>{sizeNames[nl ? "nl" : "en"][index]} — {size}px</option>
           ))}
         </SelectField>
       </div>
       {message ? <p className="notice success" role="status">{message}</p> : null}
       {error ? <p className="notice error" role="alert">{error}</p> : null}
-      <div className="typography-actions">
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={busy}
-          onClick={() => {
-            setFontFamily(DEFAULT_FONT_FAMILY);
-            setFontSize(DEFAULT_FONT_SIZE);
-            void persist(DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE);
-          }}
-        >
-          {nl ? "Standaard herstellen" : "Reset to default"}
-        </Button>
-        <Button
-          type="button"
-          disabled={busy || (fontFamily === savedFamily && fontSize === savedSize)}
-          onClick={() => void persist(fontFamily, fontSize)}
-        >
-          {busy ? (nl ? "Opslaan…" : "Saving…") : (nl ? "Wijzigingen opslaan" : "Save changes")}
-        </Button>
-      </div>
     </Card>
   );
 }

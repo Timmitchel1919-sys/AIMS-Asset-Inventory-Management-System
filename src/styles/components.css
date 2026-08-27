@@ -3475,9 +3475,13 @@ html[data-aims-theme="aimsEmeraldGloss"]
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .typography-settings-card { grid-column: 1 / -1; }
+.preferences-columns { grid-column:1 / -1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start; }
+.preferences-column { display:grid;gap:16px;align-content:start;min-width:0; }
+.preferences-column > .card { min-width:0; }
 .typography-controls { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
-.typography-actions { display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:14px; }
 .account-settings-grid > .card.preferences-card--compact { align-self:start;padding-bottom:14px; }
+.preference-format-example { display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:12px 0 0;padding-top:10px;border-top:1px solid var(--color-border);font-variant-numeric:tabular-nums; }
+.preference-format-example small { color:var(--color-text-muted); }
 .pagination { display:none!important; }
 .profile-details label {
   display: grid;
@@ -3534,6 +3538,7 @@ html[data-aims-theme="aimsEmeraldGloss"]
   .account-settings-grid .theme-grid {
     grid-template-columns: 1fr 1fr;
   }
+  .preferences-columns { grid-template-columns:1fr; }
   .typography-controls { grid-template-columns:1fr; }
 }
 @media (max-width: 390px) {
