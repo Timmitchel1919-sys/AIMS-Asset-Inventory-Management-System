@@ -19,7 +19,7 @@ import { useApp } from "../context/AppContext";
 const MovementChart = lazy(() => import("../components/dashboard/MovementChart"));
 
 export default function Dashboard() {
-  const { user, language, formatDateTime } = useApp(),
+  const { user, language, formatDate, formatDateTime } = useApp(),
     nl = language === "nl",
     navigate = useNavigate(),
     snapshot = useMockSnapshot();
@@ -344,7 +344,7 @@ export default function Dashboard() {
             {filtered.borrows.map((item) => (
               <button key={item.id}>
                 <span>
-                  <b>{item.dueDate}</b>
+                  <b>{formatDate(item.dueDate)}</b>
                   <small>{item.asset}</small>
                 </span>
                 <span>
@@ -358,7 +358,7 @@ export default function Dashboard() {
             {filtered.maintenance.map((item) => (
               <button key={item.id}>
                 <span>
-                  <b>{item.nextDate}</b>
+                  <b>{formatDate(item.nextDate)}</b>
                   <small>{item.asset}</small>
                 </span>
                 <span>

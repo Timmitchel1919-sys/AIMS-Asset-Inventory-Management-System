@@ -22,7 +22,7 @@ import { uploadAimsFiles } from "../services/firebaseStorageUploads";
 import { StatusBadge } from "../components/AssetStatusBadge";
 
 export default function AssignmentsPage() {
-  const { language } = useApp(),
+  const { language, formatAuto } = useApp(),
     nl = language === "nl",
     snapshot = useMockSnapshot(),
     repository = useRepository(),
@@ -308,7 +308,7 @@ export default function AssignmentsPage() {
                 }).map(([label, value]) => (
                   <div key={label}>
                     <small>{label}</small>
-                    <strong>{value}</strong>
+                    <strong>{formatAuto(value)}</strong>
                   </div>
                 ))}
               </div>

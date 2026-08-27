@@ -39,6 +39,10 @@ export interface DataTableProps<T> {
 
 const quote = (value: string) => `"${value.replaceAll('"', '""')}"`;
 
+const ISO_DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+const ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/;
+const DATEISH_COLUMN = /(date|time|at$|created|updated|due|deadline|scheduled)/i;
+
 export function DataTable<T>({
   id,
   rows,
@@ -55,6 +59,22 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   const { language, formatDate, formatDateTime } = useApp();
   const nl = language === "nl";
+  // Route any value that renders as an ISO date/date-time through the user's
+  // preference, whatever the column is named. Falls back to the column-id
+  // heuristic for date-ish columns that carry a non-ISO string.
+  const toDisplay = (columnId: string, rendered: ReactNode) => {
+    if (typeof rendered !== "string") return rendered;
+    const value = rendered.trim();
+    if (ISO_DATE_TIME.test(value)) return formatDateTime(value);
+    if (ISO_DATE_ONLY.test(value)) return formatDate(value);
+    if (!DATEISH_COLUMN.test(columnId)) return rendered;
+    return /[T:]|\d{1,2}:\d{2}/.test(value) ? formatDateTime(value) : formatDate(value);
+  };
+  const cellSearchText = (column: DataColumn<T>, row: T) => {
+    const raw = String(column.text?.(row) ?? column.render(row) ?? "");
+    const shown = toDisplay(column.id, column.text ? String(column.text(row)) : column.render(row));
+    return typeof shown === "string" && shown !== raw ? `${raw} ${shown}` : raw;
+  };
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [visible, setVisible] = useState<string[]>(() => {
@@ -85,11 +105,12 @@ export function DataTable<T>({
     () =>
       rows.filter((row) =>
         columns.some((column) =>
-          String(column.text?.(row) ?? column.render(row) ?? "")
+          cellSearchText(column, row)
             .toLowerCase()
             .includes(query.toLowerCase()),
         ),
       ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [columns, query, rows],
   );
   const sorted = useMemo(() => {
@@ -124,13 +145,8 @@ export function DataTable<T>({
               !visibleColumns.slice(0, 5).includes(column),
           ),
         ];
-  const renderCell = (column: DataColumn<T>, row: T) => {
-    const rendered = column.render(row);
-    if (typeof rendered !== "string" || !/(date|time|at$|created|updated|due|deadline|scheduled)/i.test(column.id)) return rendered;
-    return /[T:]|\d{1,2}:\d{2}/.test(rendered)
-      ? formatDateTime(rendered)
-      : formatDate(rendered);
-  };
+  const renderCell = (column: DataColumn<T>, row: T) =>
+    toDisplay(column.id, column.render(row));
   useEffect(() => {
     localStorage.setItem(`kcs-columns-${id}`, JSON.stringify(visible));
   }, [id, visible]);

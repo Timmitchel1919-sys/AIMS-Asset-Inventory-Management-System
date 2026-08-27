@@ -608,7 +608,7 @@ export default function CombinedAssetImport() {
                   <span>Bestandsfingerprints: {manifest.fileFingerprint}</span>
                   <span>
                     Analysetijdstip:{" "}
-                    {analyzedAt ? new Date(analyzedAt).toLocaleString() : "—"}
+                    {analyzedAt ? app.formatDateTime(analyzedAt) : "—"}
                   </span>
                 </div>
               ) : null}

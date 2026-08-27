@@ -390,7 +390,7 @@ export default function AssetDetail() {
                 {overview.map(([label, value]) => (
                   <div key={label}>
                     <dt>{label}</dt>
-                    <dd>{value}</dd>
+                    <dd>{app.formatAuto(value)}</dd>
                   </div>
                 ))}
               </dl>

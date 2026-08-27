@@ -37,3 +37,35 @@ export function formatPreferredDateTime(value: string | number | Date, dateForma
   if (!asDate(value)) return String(value);
   return `${formatPreferredDate(value, dateFormat)} ${formatPreferredTime(value, timeFormat)}`;
 }
+
+const ISO_DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+const ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$/;
+
+/**
+ * True when the value is an ISO date (`YYYY-MM-DD`) or ISO date-time
+ * (`YYYY-MM-DDTHH:mm[...]`) string — the shape every date persisted in AIMS uses.
+ * Anything else (labels, codes, free text) is left untouched.
+ */
+export function looksLikeDateValue(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  const trimmed = value.trim();
+  return ISO_DATE_ONLY.test(trimmed) || ISO_DATE_TIME.test(trimmed);
+}
+
+/**
+ * Formats a value with the user's preferences only when it looks like an ISO
+ * date/date-time string; otherwise returns it verbatim. This lets any module
+ * pass a mixed value (`asset.warrantyExpiry`, a status label, `"—"`) through a
+ * single call and get preference-aware output where it matters.
+ */
+export function formatMaybePreferredDateTime(
+  value: unknown,
+  dateFormat: DateFormat,
+  timeFormat: TimeFormat,
+) {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  if (ISO_DATE_TIME.test(trimmed)) return formatPreferredDateTime(trimmed, dateFormat, timeFormat);
+  if (ISO_DATE_ONLY.test(trimmed)) return formatPreferredDate(trimmed, dateFormat);
+  return value;
+}

@@ -40,6 +40,7 @@ import {
   resolveFontSize,
 } from "../domain/typographyPreferences";
 import {
+  formatMaybePreferredDateTime,
   formatPreferredDate,
   formatPreferredDateTime,
   formatPreferredTime,
@@ -138,6 +139,12 @@ type Ctx = {
   formatDate: (value: string | number | Date) => string;
   formatTime: (value: string | number | Date) => string;
   formatDateTime: (value: string | number | Date) => string;
+  /**
+   * Formats the value with the current date/time preferences when it looks like
+   * an ISO date or date-time string, and returns it unchanged otherwise. Use
+   * this for mixed values coming out of records and detail views.
+   */
+  formatAuto: <T>(value: T) => T | string;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (v: boolean) => void;
   mobileOpen: boolean;
@@ -431,6 +438,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         preferences.dateFormat || "DD-MM-YYYY",
         preferences.timeFormat || "24-hour",
       ),
+      formatAuto: (input) =>
+        formatMaybePreferredDateTime(
+          input,
+          preferences.dateFormat || "DD-MM-YYYY",
+          preferences.timeFormat || "24-hour",
+        ) as typeof input | string,
       setLanguage: (l: "en" | "nl") => {
         setLanguageState(l);
         localStorage.setItem("kcs-language", l);
