@@ -724,7 +724,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
   }
   return (
     <OfflineGate>
-      <div className="page">
+      <div className={`page reference-data-page reference-data-${kind}`}>
         <PageHeader
           title={labels[0]}
           description={labels[1]}

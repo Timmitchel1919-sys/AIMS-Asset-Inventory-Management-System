@@ -9,7 +9,7 @@ import {
   Shuffle,
 } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
-import { Badge, Button, Field, TextAreaField } from "../components/ui";
+import { Button, Field, TextAreaField } from "../components/ui";
 import { DataTable, type DataColumn } from "../components/DataTable";
 import {
   ConfirmDialog,
@@ -21,6 +21,7 @@ import {
 import { useApp } from "../context/AppContext";
 import type { InventoryItem, WorkflowAction } from "../data/contracts";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
+import { StatusBadge } from "../components/AssetStatusBadge";
 
 type Operation =
   | "create"
@@ -70,7 +71,7 @@ export default function InventoryPage() {
   const columns: DataColumn<InventoryItem>[] = [
     {
       id: "code",
-      label: nl ? "Artikelcode" : "Item code",
+      label: "Inv.code",
       render: (item) => <strong>{item.code}</strong>,
       text: (item) => item.code,
       sortable: true,
@@ -119,29 +120,7 @@ export default function InventoryPage() {
     {
       id: "status",
       label: "Status",
-      render: (item) => (
-        <Badge
-          tone={
-            item.archived
-              ? "neutral"
-              : item.onHand - item.reserved < item.minimum
-                ? "danger"
-                : "success"
-          }
-        >
-          {item.archived
-            ? nl
-              ? "Gearchiveerd"
-              : "Archived"
-            : item.onHand - item.reserved < item.minimum
-              ? nl
-                ? "Lage voorraad"
-                : "Low stock"
-              : nl
-                ? "Gezond"
-                : "Healthy"}
-        </Badge>
-      ),
+      render: (item) => <StatusBadge status={item.archived ? "Archived" : item.onHand-item.reserved<item.minimum ? (nl?"Lage voorraad":"Low stock") : (nl?"Gezond":"Healthy")} size="compact" variant="table" />,
       text: (item) => (item.archived ? "Archived" : "Active"),
     },
   ];

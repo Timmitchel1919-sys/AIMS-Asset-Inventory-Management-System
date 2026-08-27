@@ -1,0 +1,205 @@
+/* Orbital hero visual: stationary AIMS logo with three labels orbiting it.
+   Light theme is the default/base; Midnight and Emerald override the tokens
+   below. All continuous motion uses `transform` only (rotate), driven by a
+   single Framer Motion value so the orbit and every label's upright
+   counter-rotation can never drift out of sync. */
+
+.aims-orbital-hero {
+  position: relative;
+  width: clamp(320px, 42vw, 620px);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+
+  --orbit-radius: 230px;
+
+  --orbital-bg-arc-1: #d5effe;
+  --orbital-bg-arc-2: rgba(44, 126, 244, 0.05);
+  --orbital-bg-arc-3: rgba(0, 174, 239, 0.04);
+  --orbital-ring-inner: rgba(44, 126, 244, 0.18);
+  --orbital-ring-middle: rgba(44, 126, 244, 0.12);
+  --orbital-ring-outer: rgba(0, 174, 239, 0.28);
+  --orbital-logo-bg: #ffffff;
+  --orbital-logo-border: rgba(44, 126, 244, 0.18);
+  --orbital-logo-shadow: 0 14px 36px rgba(7, 31, 61, 0.1);
+  --orbital-chip-bg: #ffffff;
+  --orbital-chip-text: #071f3d;
+  --orbital-chip-icon: #2c7ef4;
+  --orbital-chip-border: rgba(44, 126, 244, 0.12);
+  --orbital-chip-shadow: 0 8px 24px rgba(7, 31, 61, 0.1);
+}
+
+@media (min-width: 1440px) {
+  .aims-orbital-hero { --orbit-radius: 250px; }
+}
+@media (max-width: 1024px) {
+  .aims-orbital-hero { --orbit-radius: 180px; }
+}
+@media (max-width: 480px) {
+  .aims-orbital-hero { --orbit-radius: 138px; }
+}
+
+/* Large soft static arcs — never rotate, sit behind everything. */
+.aims-orbital-arcs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 25%, var(--orbital-bg-arc-1) 0%, transparent 46%),
+    radial-gradient(circle at 75% 70%, var(--orbital-bg-arc-2) 0%, transparent 55%),
+    radial-gradient(circle at 20% 80%, var(--orbital-bg-arc-3) 0%, transparent 50%);
+}
+
+/* Concentric rings, above the arcs, below everything else. */
+.aims-orbital-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.aims-orbital-ring--inner {
+  width: calc(var(--orbit-radius) * 0.62);
+  height: calc(var(--orbit-radius) * 0.62);
+  border: 1px solid var(--orbital-ring-inner);
+}
+.aims-orbital-ring--middle {
+  width: calc(var(--orbit-radius) * 1.5);
+  height: calc(var(--orbit-radius) * 1.5);
+  border: 1px solid var(--orbital-ring-middle);
+}
+.aims-orbital-ring--outer {
+  /* Traces the same path the orbiting chips travel. */
+  width: calc(var(--orbit-radius) * 2);
+  height: calc(var(--orbit-radius) * 2);
+  border: 1.5px dashed var(--orbital-ring-outer);
+}
+
+/* Central, stationary AIMS logo without a surrounding card. */
+.aims-orbital-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  width: clamp(105px, 20vw, 150px);
+  height: clamp(105px, 20vw, 150px);
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: translate(-50%, -50%);
+}
+.aims-orbital-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* The rotating layer: only `transform: rotate()` is animated. */
+.aims-orbital-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  will-change: transform;
+}
+.aims-orbital-anchor {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+}
+.aims-orbital-counter-angle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Pivot at the anchor point (not this box's own center) so the combined
+     translate(-50%,-50%) + rotate(-angle) below both centers the chip on
+     its orbit point and cancels the anchor's static angle without drift. */
+  transform-origin: 0 0;
+}
+
+.aims-orbital-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 16px;
+  background: var(--orbital-chip-bg);
+  border: 1px solid var(--orbital-chip-border);
+  box-shadow: var(--orbital-chip-shadow);
+  color: var(--orbital-chip-text);
+  font-size: 0.86rem;
+  font-weight: 700;
+  white-space: nowrap;
+  will-change: transform;
+}
+.aims-orbital-chip-icon {
+  display: grid;
+  place-items: center;
+  color: var(--orbital-chip-icon);
+}
+.aims-orbital-chip-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Dark / Midnight theme. */
+html[data-theme="aims-midnight"] .aims-orbital-hero {
+  --orbital-bg-arc-1: rgba(23, 52, 84, 0.55);
+  --orbital-bg-arc-2: rgba(44, 126, 244, 0.09);
+  --orbital-bg-arc-3: rgba(0, 174, 239, 0.07);
+  --orbital-ring-inner: rgba(90, 162, 255, 0.15);
+  --orbital-ring-middle: rgba(90, 162, 255, 0.12);
+  --orbital-ring-outer: rgba(0, 174, 239, 0.28);
+  --orbital-logo-bg: #173454;
+  --orbital-logo-border: rgba(90, 162, 255, 0.22);
+  --orbital-logo-shadow: 0 16px 40px rgba(0, 0, 0, 0.32);
+  --orbital-chip-bg: #173454;
+  --orbital-chip-text: #f4f8fc;
+  --orbital-chip-icon: #00aeef;
+  --orbital-chip-border: rgba(90, 162, 255, 0.18);
+  --orbital-chip-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+}
+
+/* AIMS Emerald Green theme. */
+html[data-theme="emerald-gloss"] .aims-orbital-hero {
+  --orbital-bg-arc-1: rgba(41, 101, 65, 0.08);
+  --orbital-bg-arc-2: rgba(224, 179, 69, 0.07);
+  --orbital-bg-arc-3: rgba(41, 101, 65, 0.05);
+  --orbital-ring-inner: rgba(41, 101, 65, 0.18);
+  --orbital-ring-middle: rgba(41, 101, 65, 0.12);
+  --orbital-ring-outer: rgba(224, 179, 69, 0.35);
+  --orbital-logo-bg: #fefdfb;
+  --orbital-logo-border: rgba(41, 101, 65, 0.18);
+  --orbital-logo-shadow: 0 14px 36px rgba(5, 39, 18, 0.12);
+  --orbital-chip-bg: #fefdfb;
+  --orbital-chip-text: #052712;
+  --orbital-chip-icon: #12492a;
+  --orbital-chip-border: rgba(41, 101, 65, 0.14);
+  --orbital-chip-shadow: 0 8px 24px rgba(5, 39, 18, 0.1);
+}
+
+/* Small screens: tighter chips so labels never overlap or overflow. */
+@media (max-width: 480px) {
+  .aims-orbital-chip {
+    padding: 7px 11px;
+    gap: 6px;
+    font-size: 0.72rem;
+    border-radius: 12px;
+  }
+  .aims-orbital-chip-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aims-orbital-logo {
+    animation: none;
+  }
+}

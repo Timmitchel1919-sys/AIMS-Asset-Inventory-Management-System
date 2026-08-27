@@ -20,6 +20,7 @@ import { AccountBackButton, PageHeader } from "../components/WorkflowUi";
 import { authErrorMessage, updateSelfProfile } from "../auth/firebaseAuth";
 import { useApp } from "../context/AppContext";
 import type { ThemeId } from "../domain/types";
+import { TypographySettings } from "../components/settings/TypographySettings";
 
 const themes: [ThemeId, string][] = [
   ["aimsAzureGlass", "AIMS Azure Blue"],
@@ -170,7 +171,7 @@ export function ProfilePage() {
                 <small>{nl ? "Account aangemaakt" : "Account created"}</small>
                 <strong>
                   {user?.accountCreatedAt
-                  ? new Date(user.accountCreatedAt).toLocaleDateString(nl ? "nl-NL" : "en-US")
+                  ? app.formatDate(user.accountCreatedAt)
                     : nl ? "Niet beschikbaar" : "Not available"}
                 </strong>
               </div>
@@ -245,6 +246,7 @@ export function PreferencesPage() {
         </p>
       )}
       <div className="account-settings-grid">
+        <TypographySettings />
         <Card>
           <Palette />
           <h2>{nl ? "Thema's" : "Themes"}</h2>
@@ -269,7 +271,7 @@ export function PreferencesPage() {
             ))}
           </div>
         </Card>
-        <Card>
+        <Card className="preferences-card--compact">
           <Languages />
           <h2>{nl ? "Taal" : "Language"}</h2>
           <SelectField
@@ -285,7 +287,7 @@ export function PreferencesPage() {
             <option value="nl">Nederlands</option>
           </SelectField>
         </Card>
-        <Card>
+        <Card className="preferences-card--compact">
           <MonitorCog />
           <h2>{nl ? "Datum en tijd" : "Date & time"}</h2>
           <SelectField

@@ -14,6 +14,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui";
 import { IctSupportDialog } from "../components/auth/IctSupportDialog";
+import { AimsPublicLockup } from "../components/branding/AimsPublicLockup";
 import { AimsWordmark } from "../components/branding/AimsWordmark";
 import { legalConfig } from "../config/legal";
 import { useApp } from "../context/AppContext";
@@ -101,9 +102,10 @@ export default function Auth({
         setDone(true);
       } else {
         await app.login(email, data.get("remember") === "on", password);
-        const target =
-          (location.state as { from?: { pathname?: string } } | null)?.from
-            ?.pathname || "/dashboard";
+        const from = (location.state as { from?: { pathname?: string; search?: string; hash?: string } } | null)?.from;
+        const target = from?.pathname
+          ? `${from.pathname}${from.search || ""}${from.hash || ""}`
+          : "/dashboard";
         if (import.meta.env.DEV && DEMO_AUTH_MODE)
           console.info("Redirecting to dashboard");
         navigate(target, { replace: true });
@@ -121,7 +123,11 @@ export default function Auth({
       if (import.meta.env.VITE_APP_MODE === "presentation")
         await app.login("ict-staff", true);
       else await googleLogin(true);
-      navigate("/dashboard", { replace: true });
+      const from = (location.state as { from?: { pathname?: string; search?: string; hash?: string } } | null)?.from;
+      const target = from?.pathname
+        ? `${from.pathname}${from.search || ""}${from.hash || ""}`
+        : "/dashboard";
+      navigate(target, { replace: true });
     } catch (reason) {
       setError(authErrorMessage(reason));
     } finally {
@@ -134,22 +140,20 @@ export default function Auth({
       : mode === "signup"
         ? nl ? "Maak uw AIMS-account" : "Create your AIMS account"
         : nl ? "Herstel uw wachtwoord" : "Reset your password";
+  const routeReason = (location.state as { reason?: string } | null)?.reason;
+  const routeMessage = routeReason === "session-expired"
+    ? nl ? "Uw sessie is verlopen. Meld u opnieuw aan." : "Your session has expired. Please sign in again."
+    : routeReason === "signed-out"
+      ? nl ? "U bent afgemeld." : "You have been signed out."
+      : "";
   return (
     <div className={`auth-page auth-${mode}`} data-auth-theme={app.theme}>
       <section className="auth-brand">
         <div className="auth-brand-content">
           <div className="auth-brand-header">
-            <img src="/aims-logo-blue.png" alt="AIMS logo" />
-            <div>
-              <strong>AIMS</strong>
-              <small>{nl ? "Asset- en inventarisbeheersysteem" : "Asset & Inventory Management System"}</small>
-            </div>
+            <AimsPublicLockup />
           </div>
           <div className="auth-brand-copy">
-            <h1>
-              <span>AIMS Asset &amp; Inventory</span>
-              <span>Management System</span>
-            </h1>
             <p>
               {nl
                 ? "Volledig inzicht, verantwoordelijkheid en levenscyclusbeheer voor schoolmiddelen."
@@ -186,7 +190,7 @@ export default function Auth({
       </section>
       <main className="auth-panel">
         <div className="auth-card login-card">
-          {mode !== "login" && (
+          {mode === "forgot" && (
             <label className="auth-language-select">
               <span>{nl ? "Taal" : "Language"}</span>
               <select
@@ -216,13 +220,17 @@ export default function Auth({
             </>
           ) : (
             <>
-              <div className="auth-logo-lockup">
-                <AimsWordmark variant="auth" />
-              </div>
-              {mode !== "login" && <h2>{title}</h2>}
-              {mode === "signup" && (
-                <p>{nl ? "Registreer met uw goedgekeurde school-e-mailadres." : "Register with your approved school email address."}</p>
+              {mode === "login" && routeMessage && (
+                <p className="auth-route-status" role="status" aria-live="polite">
+                  {routeMessage}
+                </p>
               )}
+              {mode === "forgot" && (
+                <div className="auth-logo-lockup">
+                  <AimsWordmark variant="auth" />
+                </div>
+              )}
+              {mode === "forgot" && <h2>{title}</h2>}
               <form onSubmit={submit} noValidate>
                 {mode === "signup" && (
                   <label>
@@ -252,6 +260,7 @@ export default function Auth({
                       placeholder={nl ? "voorbeeld@school.nl" : "example@school.org"}
                       required={mode !== "login" || !DEMO_AUTH_MODE}
                       disabled={submitting}
+                      autoFocus={mode === "login"}
                     />
                   </div>
                   {errors.email && (

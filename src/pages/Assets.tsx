@@ -13,7 +13,6 @@ import {
   FilterField,
   FilterInput,
   FilterPanel,
-  PaginationControls,
   ResponsiveDataList,
   SavedViewSelector,
   type ListColumn,
@@ -26,6 +25,7 @@ import {
 } from "../components/WorkflowUi";
 import { Button, Field, SelectField } from "../components/ui";
 import { AssetStatusBadge } from "../components/AssetStatusBadge";
+import { ConditionBadge } from "../components/ConditionBadge";
 import { QrAssetScanner } from "../components/QrAssetScanner";
 import { useApp } from "../context/AppContext";
 import {
@@ -51,8 +51,8 @@ import { useT } from "../i18n";
 
 const columnIds = [
   "code",
-  "name",
   "category",
+  "name",
   "serial",
   "location",
   "department",
@@ -108,8 +108,8 @@ export default function Assets() {
       field: "code",
       direction: "asc",
     }),
-    [pageSize, setPageSize] = useState(5),
     [cursor, setCursor] = useState<string | undefined>();
+  const pageSize = 5000;
   const [result, setResult] = useState<ListResult<Asset>>(emptyResult),
     [facets, setFacets] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true),
@@ -267,6 +267,13 @@ export default function Assets() {
         value: (asset) => asset.code,
       },
       {
+        id: "category",
+        label: t("assets.category"),
+        sortable: true,
+        render: (asset) => asset.category,
+        value: (asset) => asset.category,
+      },
+      {
         id: "name",
         label: t("assets.asset"),
         required: true,
@@ -280,13 +287,6 @@ export default function Assets() {
           </span>
         ),
         value: (asset) => asset.name,
-      },
-      {
-        id: "category",
-        label: t("assets.category"),
-        sortable: true,
-        render: (asset) => asset.category,
-        value: (asset) => asset.category,
       },
       {
         id: "serial",
@@ -315,7 +315,6 @@ export default function Assets() {
         render: (asset) => (
           <AssetStatusBadge
             status={asset.status}
-            condition={asset.condition}
             size="compact"
             variant="table"
           />
@@ -326,7 +325,7 @@ export default function Assets() {
         id: "condition",
         label: t("assets.condition"),
         sortable: true,
-        render: (asset) => t(`condition.${asset.condition}`),
+        render: (asset) => <ConditionBadge condition={asset.condition} size="compact" variant="table" />,
         value: (asset) => t(`condition.${asset.condition}`),
       },
       {
@@ -387,7 +386,6 @@ export default function Assets() {
       ),
     );
     setSort(view.sort[0] || { field: "code", direction: "asc" });
-    setPageSize(view.pageSize);
     setVisible(view.visibleColumns);
     setCursor(undefined);
     setSelected([]);
@@ -764,27 +762,6 @@ export default function Assets() {
                       : "asc",
                 }));
                 setCursor(undefined);
-              }}
-            />
-          )}
-          {!error && hasLoaded && (
-            <PaginationControls
-              totalCount={result.totalCount}
-              pageSize={pageSize}
-              hasNext={result.hasNext}
-              hasPrevious={result.hasPrevious}
-              onPageSize={(size) => {
-                setPageSize(size);
-                setCursor(undefined);
-                setSelected([]);
-              }}
-              onNext={() => {
-                setCursor(result.nextCursor);
-                setSelected([]);
-              }}
-              onPrevious={() => {
-                setCursor(result.previousCursor);
-                setSelected([]);
               }}
             />
           )}

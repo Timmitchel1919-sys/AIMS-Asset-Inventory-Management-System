@@ -4,14 +4,17 @@
   --radius-sm: .5rem; --radius-md: .75rem; --radius-lg: 1rem; --radius-xl: 1.25rem;
   --shadow-sm: 0 1px 2px rgba(16,46,32,.05); --shadow-md: 0 8px 24px rgba(1,91,43,.07); --shadow-lg: 0 18px 48px rgba(1,55,30,.12);
   --duration-fast: 140ms; --duration-normal: 220ms;
-  --asset-status-available-bg:#DCFCE7; --asset-status-available-text:#166534; --asset-status-available-border:#22C55E; --asset-status-available-solid:#16A34A;
-  --asset-status-assigned-bg:#EDE9FE; --asset-status-assigned-text:#5B21B6; --asset-status-assigned-border:#8B5CF6; --asset-status-assigned-solid:#7C3AED;
-  --asset-status-borrowed-bg:#FEF9C3; --asset-status-borrowed-text:#854D0E; --asset-status-borrowed-border:#EAB308; --asset-status-borrowed-solid:#CA8A04;
-  --asset-status-reserved-bg:#DBEAFE; --asset-status-reserved-text:#1E40AF; --asset-status-reserved-border:#3B82F6; --asset-status-reserved-solid:#2563EB;
-  --asset-status-under-maintenance-bg:#FFEDD5; --asset-status-under-maintenance-text:#9A3412; --asset-status-under-maintenance-border:#F97316; --asset-status-under-maintenance-solid:#EA580C;
+  --asset-status-available-bg:#CCFBF1; --asset-status-available-text:#0F766E; --asset-status-available-border:#5EEAD4; --asset-status-available-solid:#0D9488;
+  --asset-status-assigned-bg:#EDE9FE; --asset-status-assigned-text:#5B21B6; --asset-status-assigned-border:#C4B5FD; --asset-status-assigned-solid:#7C3AED;
+  --asset-status-borrowed-bg:#FEF9C3; --asset-status-borrowed-text:#854D0E; --asset-status-borrowed-border:#FDE047; --asset-status-borrowed-solid:#EAB308;
+  --asset-status-reserved-bg:#DBEAFE; --asset-status-reserved-text:#1E40AF; --asset-status-reserved-border:#93C5FD; --asset-status-reserved-solid:#2563EB;
+  --asset-status-under-maintenance-bg:#FEF3C7; --asset-status-under-maintenance-text:#92400E; --asset-status-under-maintenance-border:#FCD34D; --asset-status-under-maintenance-solid:#D97706;
   --asset-status-under-repair-bg:#FCE7F3; --asset-status-under-repair-text:#9D174D; --asset-status-under-repair-border:#EC4899; --asset-status-under-repair-solid:#DB2777;
-  --asset-status-damaged-bg:#FEE2E2; --asset-status-damaged-text:#991B1B; --asset-status-damaged-border:#EF4444; --asset-status-damaged-solid:#DC2626;
+  --asset-status-damaged-bg:#FEE2E2; --asset-status-damaged-text:#991B1B; --asset-status-damaged-border:#FCA5A5; --asset-status-damaged-solid:#B91C1C;
   --asset-status-archived-bg:#F1F5F9; --asset-status-archived-text:#334155; --asset-status-archived-border:#94A3B8; --asset-status-archived-solid:#64748B;
+  --asset-condition-good:#22C55E; --asset-condition-good-bg:rgba(34,197,94,.10); --asset-condition-good-text:#166534;
+  --asset-condition-fair:#F97316; --asset-condition-fair-bg:rgba(249,115,22,.10); --asset-condition-fair-text:#9A3412;
+  --asset-condition-poor:#DC2626; --asset-condition-poor-bg:rgba(220,38,38,.10); --asset-condition-poor-text:#991B1B;
 }
 
 :root,[data-theme="kcs-forest-gold"] {

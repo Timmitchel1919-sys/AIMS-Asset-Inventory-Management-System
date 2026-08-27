@@ -19,7 +19,7 @@ import { useApp } from "../context/AppContext";
 const MovementChart = lazy(() => import("../components/dashboard/MovementChart"));
 
 export default function Dashboard() {
-  const { user, language } = useApp(),
+  const { user, language, formatDateTime } = useApp(),
     nl = language === "nl",
     navigate = useNavigate(),
     snapshot = useMockSnapshot();
@@ -307,7 +307,7 @@ export default function Dashboard() {
               <tbody>
                 {filtered.movements.map((movement) => (
                   <tr key={movement.id}>
-                    <td>{movement.date}</td>
+                    <td>{formatDateTime(movement.date)}</td>
                     <td>
                       <span
                         className={`movement-icon ${movement.type.toLowerCase()}`}

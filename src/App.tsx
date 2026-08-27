@@ -8,7 +8,7 @@ import {useApp} from './context/AppContext';
 import {DEMO_AUTH_MODE} from './auth/aimsEmailPolicy';
 
 function RenderRoute({route}:{route:AppRoute}){
-  const {user,authLoading,emailVerified,accessDenied}=useApp();
+  const {user,authLoading,emailVerified,accessDenied,sessionExpired}=useApp();
   const location=useLocation();
   const Page=route.component;
   if(authLoading)return <RouteLoader/>;
@@ -20,7 +20,7 @@ function RenderRoute({route}:{route:AppRoute}){
     if(route.id==='verify-email'&&emailVerified)return <Navigate to="/dashboard" replace/>;
     return <RouteErrorBoundary><Suspense fallback={<RouteLoader/>}><Page/></Suspense></RouteErrorBoundary>;
   }
-  if(!user)return <Navigate to="/login" state={{from:location}} replace/>;
+  if(!user)return <Navigate to="/login" state={{from:location,reason:sessionExpired?'session-expired':undefined}} replace/>;
   if(!emailVerified&&!(DEMO_AUTH_MODE&&user.isDemoUser))return <Navigate to="/verify-email" replace/>;
   if(!DEMO_AUTH_MODE&&!can(user.role,route.permission))return <Navigate to="/403" replace/>;
   return <AppShell><RouteErrorBoundary><Suspense fallback={<RouteLoader/>}><Page/></Suspense></RouteErrorBoundary></AppShell>;

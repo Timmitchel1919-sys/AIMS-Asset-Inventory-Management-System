@@ -1,0 +1,3 @@
+import{assetConditionDefinition}from"../domain/assetCondition";
+import{useT}from"../i18n";
+export function ConditionBadge({condition,size="standard",variant="badge"}:{condition:string;size?:"compact"|"standard";variant?:"badge"|"table"|"mobile"|"print"}){const t=useT(),definition=assetConditionDefinition(condition),label=definition?t(definition.translationKey):condition||t("assets.conditionUnknown");return <span className={`asset-condition ${definition?.colorToken||"asset-condition-unknown"} ${size} ${variant}`} aria-label={`${t("assets.condition")}: ${label}`} title={label}><i aria-hidden="true"/><span>{label}</span></span>}

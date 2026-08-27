@@ -177,6 +177,21 @@ service cloud.firestore {
         && auditMetadataValid(data) && noPrivilegeFields(data);
     }
 
+    function validPreferences(preferences) {
+      return preferences is map
+        && preferences.keys().hasOnly([
+          'theme','language','dateFormat','timeFormat','notifications',
+          'fontFamily','fontSize'
+        ])
+        && (!('theme' in preferences) || preferences.theme in ['aimsAzureGlass','aimsMidnight','aimsEmeraldGloss','aimsLight'])
+        && (!('language' in preferences) || preferences.language in ['en','nl'])
+        && (!('dateFormat' in preferences) || preferences.dateFormat in ['DD-MM-YYYY','MM-DD-YYYY','YYYY-MM-DD'])
+        && (!('timeFormat' in preferences) || preferences.timeFormat in ['24-hour','12-hour'])
+        && (!('notifications' in preferences) || (preferences.notifications is map && preferences.notifications.size() <= 20))
+        && (!('fontFamily' in preferences) || preferences.fontFamily in ['Inter','Montserrat','Source Sans 3','Roboto','Open Sans'])
+        && (!('fontSize' in preferences) || (preferences.fontSize is int && preferences.fontSize >= 12 && preferences.fontSize <= 16));
+    }
+
     function validUser(data) {
       return data.keys().hasOnly([
           'uid','displayName','email','emailNormalized','photoURL','department',
@@ -203,7 +218,7 @@ service cloud.firestore {
         && data.status == 'active'
         && data.createdAt is timestamp && data.updatedAt is timestamp
         && data.firstLoginAt is timestamp && data.lastLoginAt is timestamp
-        && data.preferences is map && data.preferences.size() <= 20;
+        && data.preferences.size() <= 20 && validPreferences(data.preferences);
     }
 
     function validAsset(data) {

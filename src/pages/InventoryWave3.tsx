@@ -36,6 +36,7 @@ import type {
   WorkflowAction,
 } from "../data/contracts";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
+import { StatusBadge } from "../components/AssetStatusBadge";
 import {
   analyzeLaptopInventory,
   rowsForImport,
@@ -94,7 +95,7 @@ function InventoryBackButton({ nl }: { nl: boolean }) {
 const itemColumns = (nl: boolean): DataColumn<InventoryItem>[] => [
   {
     id: "code",
-    label: nl ? "Artikelcode" : "Item code",
+    label: "Inv.code",
     render: (x) => (
       <Link to={`/inventory/${x.id}`}>
         <strong>{x.code}</strong>
@@ -151,17 +152,7 @@ const itemColumns = (nl: boolean): DataColumn<InventoryItem>[] => [
   {
     id: "status",
     label: "Status",
-    render: (x) => (
-      <Badge
-        tone={
-          stockStatus(x) === "Low stock" || stockStatus(x) === "Out of stock"
-            ? "danger"
-            : "success"
-        }
-      >
-        {stockStatus(x)}
-      </Badge>
-    ),
+    render: (x) => <StatusBadge status={stockStatus(x)} size="compact" variant="table" />,
     text: (x) => stockStatus(x),
   },
   {
@@ -225,7 +216,7 @@ export function InventoryList() {
             </>
           }
         />
-        <div className="status-summary">
+        <div className="status-summary inventory-status-summary">
           <section className="card">
             <b>{snapshot.inventory.length}</b>
             <small>{nl ? "Artikelen" : "Items"}</small>
@@ -928,7 +919,7 @@ export function Reservations() {
     {
       id: "status",
       label: "Status",
-      render: (x) => <Badge>{x.status}</Badge>,
+      render: (x) => <StatusBadge status={x.status} size="compact" variant="table" />,
       text: (x) => x.status,
     },
     {
@@ -1064,7 +1055,7 @@ export function LowStock() {
               : "Mock reorder recommendations; no purchase orders are created."
           }
         />
-        <section className="card data-card">
+        <section className="card data-card inventory-workflow-panel">
           <DataTable
             id="low-stock"
             rows={rows}
@@ -1121,7 +1112,7 @@ export function InventoryImport() {
   const columns: DataColumn<LaptopImportRow>[] = [
     {
       id: "code",
-      label: "Code",
+      label: "Inv.code",
       render: (row) => row.code,
       text: (row) => row.code,
     },

@@ -618,7 +618,7 @@ export default function CombinedAssetImport() {
                     <thead>
                       <tr>
                         <th>Status</th>
-                        <th>Code</th>
+                        <th>Inv.code</th>
                         <th>Werkblad / rij</th>
                         <th>Merk/model</th>
                         <th>Serienummer</th>

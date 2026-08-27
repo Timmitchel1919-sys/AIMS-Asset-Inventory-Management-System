@@ -13,10 +13,12 @@ describe('theme-responsive authentication surface',()=>{
     for(const selector of [':focus-within','.invalid',':disabled','@media (max-width:767px)','@media (prefers-reduced-motion:reduce)'])expect(css).toContain(selector);
   });
 
-  it('keeps signup on the frozen login background with card-local hidden scrolling',()=>{
+  it('keeps signup on the frozen login background with a visible card-local scrollbar',()=>{
     expect(css).toContain('.auth-page.auth-signup');
     expect(css).toContain('position:fixed;inset:0;height:100dvh');
-    expect(css).toContain('.auth-signup .login-card::-webkit-scrollbar{display:none');
+    expect(css).toContain('scrollbar-width:thin');
+    expect(css).toContain('.auth-signup .login-card::-webkit-scrollbar{width:8px}');
+    expect(css).toContain('.auth-signup .login-card::-webkit-scrollbar-thumb');
     expect(css).toContain('.auth-signup .auth-brand-content{width:min(650px,100%);height:auto;min-height:0;justify-content:center');
   });
 

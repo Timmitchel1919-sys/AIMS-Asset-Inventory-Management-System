@@ -1,7 +1,5 @@
 import {
   Archive,
-  ChevronLeft,
-  ChevronRight,
   Columns3,
   Download,
   Save,
@@ -51,16 +49,13 @@ export function DataTable<T>({
   emptyDescription,
   loading = false,
   error,
-  pageSizeOptions = [10, 25, 50],
   onRowClick,
   onBulkAction,
   filters,
 }: DataTableProps<T>) {
-  const { language } = useApp();
+  const { language, formatDate, formatDateTime } = useApp();
   const nl = language === "nl";
   const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(pageSizeOptions[0]);
   const [selected, setSelected] = useState<string[]>([]);
   const [visible, setVisible] = useState<string[]>(() => {
     try {
@@ -114,12 +109,7 @@ export function DataTable<T>({
       return sort.direction === "asc" ? result : -result;
     });
   }, [columns, searchable, sort]);
-  const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
-  const currentPage = Math.min(page, pageCount);
-  const pageRows = sorted.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
+  const pageRows = sorted;
   const visibleColumns = columns.filter((column) =>
     visible.includes(column.id),
   );
@@ -134,6 +124,13 @@ export function DataTable<T>({
               !visibleColumns.slice(0, 5).includes(column),
           ),
         ];
+  const renderCell = (column: DataColumn<T>, row: T) => {
+    const rendered = column.render(row);
+    if (typeof rendered !== "string" || !/(date|time|at$|created|updated|due|deadline|scheduled)/i.test(column.id)) return rendered;
+    return /[T:]|\d{1,2}:\d{2}/.test(rendered)
+      ? formatDateTime(rendered)
+      : formatDate(rendered);
+  };
   useEffect(() => {
     localStorage.setItem(`kcs-columns-${id}`, JSON.stringify(visible));
   }, [id, visible]);
@@ -222,7 +219,6 @@ export function DataTable<T>({
             value={query}
             onChange={(event) => {
               setQuery(event.target.value);
-              setPage(1);
             }}
             placeholder={searchPlaceholder}
           />
@@ -345,7 +341,7 @@ export function DataTable<T>({
                     />
                   </th>
                   {visibleColumns.map((column) => (
-                    <th key={column.id}>
+                    <th key={column.id} data-column-id={column.id}>
                       {column.sortable ? (
                         <button
                           onClick={() =>
@@ -389,7 +385,9 @@ export function DataTable<T>({
                       />
                     </td>
                     {visibleColumns.map((column) => (
-                      <td key={column.id}>{column.render(row)}</td>
+                      <td key={column.id} data-column-id={column.id}>
+                        {renderCell(column, row)}
+                      </td>
                     ))}
                   </tr>
                 ))}
@@ -412,7 +410,7 @@ export function DataTable<T>({
                 {mobileColumns.map((column) => (
                   <div key={column.id}>
                     <small>{column.label}</small>
-                    <span>{column.render(row)}</span>
+                    <span>{renderCell(column, row)}</span>
                   </div>
                 ))}
               </article>
@@ -420,46 +418,6 @@ export function DataTable<T>({
           </div>
         </>
       )}
-      <footer className="pagination">
-        <label>
-          {nl ? "Rijen per pagina" : "Rows per page"}
-          <select
-            value={pageSize}
-            onChange={(event) => {
-              setPageSize(Number(event.target.value));
-              setPage(1);
-            }}
-          >
-            {pageSizeOptions.map((size) => (
-              <option key={size}>{size}</option>
-            ))}
-          </select>
-        </label>
-        <span>
-          {sorted.length
-            ? `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, sorted.length)} ${nl ? "van" : "of"} ${sorted.length}`
-            : `0 ${nl ? "resultaten" : "results"}`}
-        </span>
-        <Button
-          variant="ghost"
-          aria-label={nl ? "Vorige pagina" : "Previous page"}
-          disabled={currentPage === 1}
-          onClick={() => setPage((value) => Math.max(1, value - 1))}
-        >
-          <ChevronLeft />
-        </Button>
-        <b>
-          {currentPage}/{pageCount}
-        </b>
-        <Button
-          variant="ghost"
-          aria-label={nl ? "Volgende pagina" : "Next page"}
-          disabled={currentPage === pageCount}
-          onClick={() => setPage((value) => Math.min(pageCount, value + 1))}
-        >
-          <ChevronRight />
-        </Button>
-      </footer>
     </div>
   );
 }

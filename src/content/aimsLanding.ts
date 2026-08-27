@@ -2,6 +2,7 @@ export const aimsLandingCopy={
   en:{
     skip:'Skip to content',brand:'Asset & Inventory Management System',tagline:'Clarity, control and accountability across every asset.',
     nav:{home:'Home',features:'Features',workflow:'How It Works',security:'Security',support:'Support'},language:'Language',menu:'Open navigation',close:'Close navigation',install:'Install App',signIn:'Sign in',open:'Open Dashboard',explore:'Explore features',watchHow:'See how it works',
+    orbitScan:'Scanning',orbitAssets:'Assets',orbitSecure:'Secure',orbitVisualLabel:'AIMS brand visualization',
     heroEyebrow:'CLARITY. CONTROL. ACCOUNTABILITY.',heroTitle:'Manage every asset with clarity and accountability',heroText:'AIMS helps schools and organizations register, track, assign, maintain, audit and report on physical assets and inventory across their complete lifecycle.',
     showcaseTitle:'One system. Precisely adapted to every screen.',showcaseText:'Purpose-built AIMS previews show the same accountable workflow across desktop, laptop, tablet and mobile layouts.',
     featuresTitle:'Core modules for the complete asset lifecycle',featuresText:'Structured tools connect daily asset work with reliable oversight.',
@@ -16,6 +17,7 @@ export const aimsLandingCopy={
   nl:{
     skip:'Ga naar inhoud',brand:'Asset- en inventarisbeheersysteem',tagline:'Duidelijkheid, controle en verantwoordelijkheid voor elk middel.',
     nav:{home:'Home',features:'Functies',workflow:'Hoe het werkt',security:'Beveiliging',support:'Ondersteuning'},language:'Taal',menu:'Navigatie openen',close:'Navigatie sluiten',install:'App installeren',signIn:'Aanmelden',open:'Dashboard openen',explore:'Functies bekijken',watchHow:'Bekijk hoe het werkt',
+    orbitScan:'Scannen',orbitAssets:'Middelen',orbitSecure:'Veilig',orbitVisualLabel:'AIMS merkvisualisatie',
     heroEyebrow:'DUIDELIJKHEID. CONTROLE. VERANTWOORDELIJKHEID.',heroTitle:'Beheer elk middel met duidelijkheid en verantwoordelijkheid',heroText:'AIMS helpt scholen en organisaties fysieke middelen en voorraad gedurende hun volledige levenscyclus te registreren, volgen, toewijzen, onderhouden, controleren en rapporteren.',
     showcaseTitle:'Eén systeem. Precies aangepast aan elk scherm.',showcaseText:'Doelgerichte AIMS-voorbeelden tonen dezelfde controleerbare werkwijze op desktop, laptop, tablet en mobiel.',
     featuresTitle:'Kernmodules voor de volledige levenscyclus',featuresText:'Gestructureerde hulpmiddelen verbinden dagelijks middelenbeheer met betrouwbaar toezicht.',

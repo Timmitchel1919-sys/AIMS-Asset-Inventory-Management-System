@@ -1,10 +1,3 @@
-import {describe,expect,it} from 'vitest';
-import {ASSET_STATUS_DEFINITIONS,assetStatusDefinition,isValidStatusCondition,normalizeAssetStatus} from './assetStatus';
-describe('permanent asset status standard',()=>{
-  it.each([
-    ['available','Good','green'],['assigned','Good','purple'],['borrowed','Good','yellow'],['reserved','Good','blue'],['underMaintenance','Fair','orange'],['underRepair','Good','magenta'],['damaged','Poor','red'],['archived','Good','slate gray']
-  ] as const)('%s has its permanent condition and semantic color',(key,condition,color)=>{expect(ASSET_STATUS_DEFINITIONS[key]).toMatchObject({condition,color})});
-  it('normalizes known variants and keeps unknown values reportable',()=>{expect(normalizeAssetStatus('AVAILABLE')).toBe('available');expect(normalizeAssetStatus('maintenance')).toBe('underMaintenance');expect(assetStatusDefinition('custom')).toBeUndefined()});
-  it('blocks invalid mapped combinations',()=>{expect(isValidStatusCondition('Damaged','Good')).toBe(false);expect(isValidStatusCondition('Damaged','Poor')).toBe(true)});
-  it('keeps canonical keys stable',()=>expect(Object.keys(ASSET_STATUS_DEFINITIONS)).toEqual(['available','assigned','borrowed','reserved','underMaintenance','underRepair','damaged','archived']));
-});
+import{describe,expect,it}from"vitest";
+import{ASSET_STATUS_DEFINITIONS,assetStatusDefinition,normalizeAssetStatus}from"./assetStatus";
+describe("AIMS operational status standard",()=>{it.each([["available","#0D9488","circleCheck"],["assigned","#7C3AED","arrowUpRight"],["borrowed","#EAB308","arrowLeftRight"],["reserved","#2563EB","clock"],["underMaintenance","#D97706","cog"],["underRepair","#DB2777","wrench"],["damaged","#B91C1C","alert"],["archived","#64748B","packageClosed"]]as const)("%s keeps its color and icon",(key,color,icon)=>expect(ASSET_STATUS_DEFINITIONS[key]).toMatchObject({color,icon}));it("normalizes English and Dutch variants and preserves unknown fallbacks",()=>{expect(normalizeAssetStatus("BESCHIKBAAR")).toBe("available");expect(normalizeAssetStatus("in_maintenance")).toBe("underMaintenance");expect(assetStatusDefinition("custom")).toBeUndefined()});it("keeps canonical keys stable",()=>expect(Object.keys(ASSET_STATUS_DEFINITIONS)).toEqual(["available","assigned","borrowed","reserved","underMaintenance","underRepair","damaged","archived"]))});

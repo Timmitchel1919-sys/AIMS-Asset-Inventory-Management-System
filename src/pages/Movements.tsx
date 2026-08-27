@@ -83,7 +83,7 @@ export default function MovementsPage() {
     },
     {
       id: "code",
-      label: nl ? "Code" : "Code",
+      label: "Inv.code",
       render: (item) => item.assetCode,
       text: (item) => item.assetCode,
     },

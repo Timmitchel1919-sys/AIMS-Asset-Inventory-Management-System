@@ -1,7 +1,6 @@
 import { z } from "zod";
 import type { Asset, AssetStatus, Condition, Role } from "./types";
 import { normalizeAssetCode } from "./assetCode";
-import { isValidStatusCondition } from "./assetStatus";
 
 export type AssetCodePrefix = string;
 export interface AssetFormValues {
@@ -133,12 +132,6 @@ export function assetFormSchema(messages: ValidationMessages, isEdit = false) {
     })
     .superRefine((value, context) => {
       if(!value.currentLocationId&&!value.location)context.addIssue({code:"custom",path:["currentLocationId"],message:messages.required});
-      if (!isValidStatusCondition(value.status, value.condition))
-        context.addIssue({
-          code: "custom",
-          path: ["condition"],
-          message: "Condition must match asset status.",
-        });
       if (
         isEdit &&
         value.codeCorrection &&

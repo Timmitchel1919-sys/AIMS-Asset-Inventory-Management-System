@@ -29,23 +29,21 @@ for (const theme of ['aimsAzureGlass', 'aimsMidnight', 'aimsEmeraldGloss'] as co
       await expect(page.locator('.aims-brand .brand-wordmark__a circle')).toHaveCount(1);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
       await page.goto('/login');
-      await expect(page.locator('.login-card .brand-wordmark--auth')).toBeVisible();
-      await expect(page.locator('.login-card .brand-wordmark__a circle')).toHaveCount(1);
+      await expect(page.locator('.login-card .brand-wordmark--auth')).toHaveCount(0);
       await expect(page.locator('.login-card img')).toHaveCount(0);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
     }
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/signup');
-    await expect(page.locator('.login-card .brand-wordmark--auth')).toBeVisible();
-    await expect(page.locator('.login-card .brand-wordmark__subtitle')).toHaveText('ASSET & INVENTORY MANAGEMENT SYSTEM');
+    await expect(page.locator('.login-card .brand-wordmark--auth')).toHaveCount(0);
     await expect(page.locator('.login-card img')).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/login');
-    await expect(page.locator('.login-card .brand-wordmark--auth')).toBeVisible();
+    await expect(page.locator('.login-card .brand-wordmark--auth')).toHaveCount(0);
     await page.screenshot({ path: `docs/design/wordmark-${theme}-login.png` });
     await page.goto('/signup');
-    await expect(page.locator('.login-card .brand-wordmark--auth')).toBeVisible();
+    await expect(page.locator('.login-card .brand-wordmark--auth')).toHaveCount(0);
     await page.screenshot({ path: `docs/design/wordmark-${theme}-signup.png` });
     expect(errors).toEqual([]);
   });

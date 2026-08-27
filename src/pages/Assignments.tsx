@@ -2,7 +2,6 @@ import { Plus, RotateCcw, Signature } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { useParams } from "react-router-dom";
 import {
-  Badge,
   Button,
   Field,
   SelectField,
@@ -20,6 +19,7 @@ import type { Assignment } from "../data/contracts";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { SignaturePad } from "../components/SignaturePad";
 import { uploadAimsFiles } from "../services/firebaseStorageUploads";
+import { StatusBadge } from "../components/AssetStatusBadge";
 
 export default function AssignmentsPage() {
   const { language } = useApp(),
@@ -87,15 +87,7 @@ export default function AssignmentsPage() {
       id: "status",
       label: "Status",
       render: (item) => (
-        <Badge tone={item.active ? "info" : "success"}>
-          {item.active
-            ? nl
-              ? "Actief"
-              : "Active"
-            : nl
-              ? "Geretourneerd"
-              : "Returned"}
-        </Badge>
+        <StatusBadge status={item.active ? (nl ? "Actief" : "Active") : (nl ? "Geretourneerd" : "Returned")} size="compact" variant="table" />
       ),
       text: (item) => (item.active ? "Active" : "Returned"),
     },

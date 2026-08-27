@@ -19,6 +19,7 @@ import { useApp } from "../context/AppContext";
 import type { Repair } from "../domain/types";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { uploadAimsFiles } from "../services/firebaseStorageUploads";
+import { StatusBadge } from "../components/AssetStatusBadge";
 
 export default function RepairsPage() {
   const { language } = useApp(),
@@ -53,7 +54,7 @@ export default function RepairsPage() {
     },
     {
       id: "code",
-      label: "KCS code",
+      label: "Inv.code",
       render: (item) => item.assetCode,
       text: (item) => item.assetCode,
     },
@@ -97,11 +98,7 @@ export default function RepairsPage() {
     {
       id: "status",
       label: "Status",
-      render: (item) => (
-        <Badge tone={item.status === "Completed" ? "success" : "warning"}>
-          {item.status}
-        </Badge>
-      ),
+      render: (item) => <StatusBadge status={item.status} size="compact" variant="table" />,
       text: (item) => item.status,
     },
   ];

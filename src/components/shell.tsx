@@ -41,9 +41,15 @@ import {
   useRef,
   useState,
   type FormEvent,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 import { useApp } from "../context/AppContext";
+import {
+  FONT_FAMILY_STACKS,
+  resolveFontFamily,
+  resolveFontSize,
+} from "../domain/typographyPreferences";
 import { can } from "../auth/permissions";
 import { matchRoute, navRoutes, type RouteIcon } from "../routes/manifest";
 import { useT } from "../i18n";
@@ -137,6 +143,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     mobileSearchRef = useRef<HTMLDivElement>(null),
     [activeNotchTop, setActiveNotchTop] = useState<number | null>(null);
   const presentationMode = import.meta.env.VITE_APP_MODE === "presentation";
+  const appFontFamily = resolveFontFamily(app.preferences.fontFamily);
+  const appFontSize = resolveFontSize(app.preferences.fontSize);
+  const typographyStyle = {
+    "--font-family-app": FONT_FAMILY_STACKS[appFontFamily],
+    "--font-size-base": `${appFontSize}px`,
+  } as CSSProperties;
   const [assistantOpen, setAssistantOpen] = useState(false),
     [assistantQuery, setAssistantQuery] = useState(""),
     [listening, setListening] = useState(false),
@@ -314,7 +326,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     recognition.start();
   }
   return (
-    <div className={`app ${app.sidebarCollapsed ? "collapsed" : ""}`}>
+    <div
+      className={`app authenticated-app ${app.sidebarCollapsed ? "collapsed" : ""}`}
+      style={typographyStyle}
+    >
       <a className="skip-link" href="#main-content">
         {app.language === "nl" ? "Naar hoofdinhoud" : "Skip to main content"}
       </a>
@@ -591,7 +606,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     onClick={async () => {
                       setProfileOpen(false);
                       await app.logout();
-                      navigate("/", { replace: true });
+                      navigate("/login", { replace: true, state: { reason: "signed-out" } });
                     }}
                   >
                     <LogOut />

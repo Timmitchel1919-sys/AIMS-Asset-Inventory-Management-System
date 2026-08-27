@@ -1,11 +1,12 @@
 import {CalendarDays,CheckCircle2,Plus} from 'lucide-react';
 import {useMemo,useState,type FormEvent} from 'react';
-import {Badge,Button,Field,SelectField,TextAreaField} from '../components/ui';
+import {Button,Field,SelectField,TextAreaField} from '../components/ui';
 import {DataTable,type DataColumn} from '../components/DataTable';
 import {ConfirmDialog,Dialog,MutationFeedback,OfflineGate,PageHeader} from '../components/WorkflowUi';
 import {useApp} from '../context/AppContext';
 import type {Maintenance} from '../domain/types';
 import {useMockSnapshot,useRepository} from '../data/repositoryContext';
+import {StatusBadge} from '../components/AssetStatusBadge';
 
 export default function MaintenancePage(){
   const {language}=useApp(),nl=language==='nl',snapshot=useMockSnapshot(),repository=useRepository();
@@ -14,12 +15,12 @@ export default function MaintenancePage(){
   const rows=useMemo(()=>snapshot.maintenance.map(item=>item.status!=='Completed'&&new Date(item.nextDate)<new Date()?{...item,status:'Overdue' as const}:item),[snapshot.maintenance]);
   const columns:DataColumn<Maintenance>[]=[
     {id:'asset',label:nl?'Middel':'Asset',render:item=><strong>{item.asset}</strong>,text:item=>item.asset},
-    {id:'code',label:'KCS code',render:item=>item.assetCode,text:item=>item.assetCode},
+    {id:'code',label:'Inv.code',render:item=>item.assetCode,text:item=>item.assetCode},
     {id:'type',label:nl?'Onderhoudstype':'Maintenance type',render:item=>item.type,text:item=>item.type},
     {id:'frequency',label:nl?'Herhaling':'Recurrence',render:item=>item.frequency,text:item=>item.frequency},
     {id:'next',label:nl?'Volgende datum':'Next date',render:item=>item.nextDate,text:item=>item.nextDate,sortable:true},
     {id:'assignee',label:nl?'Toegewezen aan':'Assigned to',render:item=>item.assignee,text:item=>item.assignee},
-    {id:'status',label:'Status',render:item=><Badge tone={item.status==='Overdue'?'danger':item.status==='Completed'?'success':'info'}>{item.status}</Badge>,text:item=>item.status}
+    {id:'status',label:'Status',render:item=><StatusBadge status={item.status} size="compact" variant="table"/>,text:item=>item.status}
   ];
   async function schedule(event:FormEvent<HTMLFormElement>){event.preventDefault();const values=Object.fromEntries(new FormData(event.currentTarget).entries());const result=await repository.execute({action:'maintenance.create',entityId:String(values.assetId),values});setFeedback({status:result.ok?'success':'error',message:result.message});if(result.ok)setCreate(false)}
   async function complete(){if(!selected)return;const notes=(document.querySelector('[name="maintenanceNotes"]') as HTMLTextAreaElement)?.value;const result=await repository.execute({action:'maintenance.complete',entityId:selected.id,values:{notes}});setFeedback({status:result.ok?'success':'error',message:result.message});if(result.ok){setSelected(null);setConfirm(false)}}

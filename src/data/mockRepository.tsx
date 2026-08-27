@@ -67,16 +67,9 @@ import {
   validMovement,
   validateLocationMove,
 } from "../domain/rules";
-import { mappedCondition } from "../domain/assetStatus";
 import { RepositoryProvider } from "./repositoryContext";
 
 const clone = <T,>(value: T): T => structuredClone(value);
-const enforceMappedCondition = <T extends Record<string, unknown>>(
-  values: T,
-) => {
-  const condition = mappedCondition(String(values.status || ""));
-  return condition ? { ...values, condition } : values;
-};
 const today = () => new Date().toISOString().slice(0, 10);
 const now = () => new Date().toISOString();
 const id = (prefix: string, count: number) =>
@@ -914,7 +907,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
   async execute(command: WorkflowCommand): Promise<WorkflowResult> {
     await new Promise((resolve) => setTimeout(resolve, 120));
     const historyBefore = clone(this.state);
-    const v = enforceMappedCondition(command.values || {});
+    const v = command.values || {};
     let result: WorkflowResult = { ok: true, message: "Operation completed." };
     try {
       switch (command.action) {
@@ -3913,7 +3906,6 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
         if (assignment) {
           const asset = this.asset(assignment.assetId);
           asset.status = "Assigned";
-          asset.condition = "Good";
         }
       }
       if (
@@ -3929,19 +3921,8 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           );
           if (asset) {
             asset.status = "Under Repair";
-            asset.condition = "Good";
           }
         }
-      }
-      if (result.ok && command.action === "asset.archive") {
-        const asset = this.asset(command.entityId);
-        asset.condition = "Good";
-      }
-      if (result.ok && command.action === "disposal.archive") {
-        const disposal = this.state.disposals.find(
-          (item) => item.id === command.entityId,
-        );
-        if (disposal) this.asset(disposal.assetId).condition = "Good";
       }
       this.recordAutomaticHistory(command, result, historyBefore);
     } catch (error) {

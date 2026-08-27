@@ -25,6 +25,7 @@ import {
   type User as FirebaseUser,
 } from "firebase/auth";
 import { requireFirebase } from "../lib/firebase";
+import type { FontFamily, FontSize } from "../domain/typographyPreferences";
 import {
   AIMS_ACCESS_MESSAGE,
   AIMS_ACCOUNT_TYPE,
@@ -60,6 +61,8 @@ export type UserPreferences = {
   dateFormat?: "DD-MM-YYYY" | "MM-DD-YYYY" | "YYYY-MM-DD";
   timeFormat?: "24-hour" | "12-hour";
   notifications?: Record<string, boolean>;
+  fontFamily?: FontFamily;
+  fontSize?: FontSize;
 };
 export type UserProfile = {
   uid: string;
@@ -281,6 +284,8 @@ async function provisionDemoUserProfile(
       preferences: {
         theme: "aimsAzureGlass",
         language: currentLanguagePreference(),
+        fontFamily: "Inter",
+        fontSize: 14,
       },
     });
   else
@@ -349,6 +354,8 @@ export async function ensureAimsUserProfile(
       preferences: {
         theme: "aimsAzureGlass",
         language: currentLanguagePreference(),
+        fontFamily: "Inter",
+        fontSize: 14,
       },
     });
   else

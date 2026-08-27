@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -32,6 +33,17 @@ import {
   isVerificationRequired,
 } from "../auth/aimsEmailPolicy";
 import { AIMS_BOOTSTRAP_ADMIN_UID } from "../auth/accessBootstrap";
+import {
+  DEFAULT_FONT_FAMILY,
+  DEFAULT_FONT_SIZE,
+  resolveFontFamily,
+  resolveFontSize,
+} from "../domain/typographyPreferences";
+import {
+  formatPreferredDate,
+  formatPreferredDateTime,
+  formatPreferredTime,
+} from "../domain/dateTimePreferences";
 
 const demoUsers: Record<Role, User> = {
   administrator: {
@@ -105,6 +117,7 @@ type Ctx = {
   authLoading: boolean;
   emailVerified: boolean;
   accessDenied: boolean;
+  sessionExpired: boolean;
   preferences: UserPreferences;
   updatePreferences: (value: UserPreferences) => Promise<void>;
   login: (
@@ -122,6 +135,9 @@ type Ctx = {
   setThemeRoute: (pathname: string) => void;
   language: "en" | "nl";
   setLanguage: (l: "en" | "nl") => void;
+  formatDate: (value: string | number | Date) => string;
+  formatTime: (value: string | number | Date) => string;
+  formatDateTime: (value: string | number | Date) => string;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (v: boolean) => void;
   mobileOpen: boolean;
@@ -142,6 +158,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   });
   const [emailVerified, setEmailVerified] = useState(presentationMode);
   const [accessDenied, setAccessDenied] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const explicitLogout = useRef(false);
+  const restoredAuthenticatedSession = useRef(false);
   const [authLoading, setAuthLoading] = useState(
     !presentationMode && Boolean(firebaseAuth),
   );
@@ -159,6 +178,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   const [mobileOpen, setMobileOpen] = useState(false);
   const [preferences, setPreferences] = useState<UserPreferences>(() => ({
+    fontFamily: DEFAULT_FONT_FAMILY,
+    fontSize: DEFAULT_FONT_SIZE,
     dateFormat:
       (localStorage.getItem(
         "aims-date-format",
@@ -180,8 +201,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!firebaseUser) {
         setUser(null);
         setEmailVerified(false);
+        setPreferences((current) => ({
+          ...current,
+          fontFamily: DEFAULT_FONT_FAMILY,
+          fontSize: DEFAULT_FONT_SIZE,
+        }));
         return;
       }
+      // Unmount the authenticated shell while resolving the next UID so a
+      // shared browser can never display the previous user's typography.
+      setUser(null);
+      setPreferences((current) => ({
+        ...current,
+        fontFamily: DEFAULT_FONT_FAMILY,
+        fontSize: DEFAULT_FONT_SIZE,
+      }));
       const demoUser = DEMO_AUTH_MODE && firebaseUser.isAnonymous;
       if (!canFirebaseUserAccess(firebaseUser)) {
         setAccessDenied(true);
@@ -239,7 +273,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
       setEmailVerified(canProvision);
       if (profile.preferences) {
-        setPreferences((current) => ({ ...current, ...profile.preferences }));
+        setPreferences((current) => ({
+          ...current,
+          ...profile.preferences,
+          fontFamily: resolveFontFamily(profile.preferences?.fontFamily),
+          fontSize: resolveFontSize(profile.preferences?.fontSize),
+        }));
         if (profile.preferences.theme) {
           const next = normalizeTheme(profile.preferences.theme as ThemeId);
           setThemeState(next);
@@ -257,6 +296,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (presentationMode || !firebaseAuth) return;
     return onAuthStateChanged(firebaseAuth, async (current) => {
       try {
+        if (!current && restoredAuthenticatedSession.current && !explicitLogout.current) {
+          setSessionExpired(true);
+        }
+        if (current) {
+          restoredAuthenticatedSession.current = true;
+          explicitLogout.current = false;
+          setSessionExpired(false);
+        }
         await mapFirebaseUser(current);
       } catch (error) {
         if (import.meta.env.DEV)
@@ -280,8 +327,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       authLoading,
       emailVerified,
       accessDenied,
+      sessionExpired,
       preferences,
       updatePreferences: async (next) => {
+        const previous = preferences;
         const merged = {
           ...preferences,
           ...next,
@@ -291,11 +340,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
           },
         };
         setPreferences(merged);
-        if (merged.dateFormat)
-          localStorage.setItem("aims-date-format", merged.dateFormat);
-        if (merged.timeFormat)
-          localStorage.setItem("aims-time-format", merged.timeFormat);
-        if (!presentationMode) await savePreferences(merged);
+        try {
+          if (merged.dateFormat)
+            localStorage.setItem("aims-date-format", merged.dateFormat);
+          if (merged.timeFormat)
+            localStorage.setItem("aims-time-format", merged.timeFormat);
+          if (!presentationMode) await savePreferences(merged);
+        } catch (error) {
+          setPreferences(previous);
+          throw error;
+        }
       },
       login: async (
         identity: Role | string = "ict-staff",
@@ -303,11 +357,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
         password = "",
       ) => {
         setAccessDenied(false);
+        setSessionExpired(false);
+        explicitLogout.current = false;
         if (presentationMode) {
           const role = (
             identity.includes("@") ? "ict-staff" : identity
           ) as Role;
           setUser(demoUsers[role] || demoUsers["ict-staff"]);
+          setPreferences((current) => ({
+            ...current,
+            fontFamily: DEFAULT_FONT_FAMILY,
+            fontSize: DEFAULT_FONT_SIZE,
+          }));
           localStorage.setItem("kcs-auth", "in");
           localStorage.setItem("kcs-role", role);
           setEmailVerified(true);
@@ -322,8 +383,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       },
       logout: async () => {
         setAccessDenied(false);
+        setSessionExpired(false);
+        explicitLogout.current = true;
+        setUser(null);
+        setEmailVerified(false);
+        setPreferences((current) => ({
+          ...current,
+          fontFamily: DEFAULT_FONT_FAMILY,
+          fontSize: DEFAULT_FONT_SIZE,
+        }));
         if (presentationMode) {
-          setUser(null);
           localStorage.setItem("kcs-auth", "out");
           return;
         }
@@ -355,6 +424,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setThemeRoute: (pathname: string) =>
         setPublicPath(isPublicThemePath(pathname)),
       language,
+      formatDate: (input) => formatPreferredDate(input, preferences.dateFormat || "DD-MM-YYYY"),
+      formatTime: (input) => formatPreferredTime(input, preferences.timeFormat || "24-hour"),
+      formatDateTime: (input) => formatPreferredDateTime(
+        input,
+        preferences.dateFormat || "DD-MM-YYYY",
+        preferences.timeFormat || "24-hour",
+      ),
       setLanguage: (l: "en" | "nl") => {
         setLanguageState(l);
         localStorage.setItem("kcs-language", l);
@@ -369,6 +445,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       authLoading,
       emailVerified,
       accessDenied,
+      sessionExpired,
       preferences,
       presentationMode,
       mapFirebaseUser,

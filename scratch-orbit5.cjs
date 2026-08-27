@@ -1,0 +1,27 @@
+const { chromium } = require('@playwright/test');
+(async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.addInitScript(() => localStorage.setItem('kcs-auth', 'out'));
+  await page.goto('http://localhost:5190/', { timeout: 60000 });
+  await page.waitForSelector('.aims-orbital-hero');
+  await page.waitForTimeout(300);
+  console.log('step1: locating chip');
+  const box = await page.locator('.aims-orbital-chip').first().boundingBox();
+  console.log('chip box', box);
+  await page.mouse.move(box.x + box.width/2, box.y + box.height/2);
+  console.log('step2: moved mouse over chip');
+  await page.waitForTimeout(200);
+  const a = await page.evaluate(() => getComputedStyle(document.querySelector('.aims-orbital-chip')).transform);
+  await page.waitForTimeout(1000);
+  const b = await page.evaluate(() => getComputedStyle(document.querySelector('.aims-orbital-chip')).transform);
+  console.log('paused: transform unchanged while hovered ->', a === b);
+  await page.mouse.move(50, 50);
+  await page.waitForTimeout(200);
+  const c = await page.evaluate(() => getComputedStyle(document.querySelector('.aims-orbital-chip')).transform);
+  await page.waitForTimeout(1000);
+  const d = await page.evaluate(() => getComputedStyle(document.querySelector('.aims-orbital-chip')).transform);
+  console.log('resumed: transform changes after unhover ->', c !== d);
+  await browser.close();
+  console.log('DONE');
+})().catch(e => { console.error('ERR', e); process.exit(1); });

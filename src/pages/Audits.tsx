@@ -1,12 +1,13 @@
 import {ClipboardCheck,Plus,QrCode} from 'lucide-react';
 import {useState,type FormEvent} from 'react';
 import {useNavigate,useParams} from 'react-router-dom';
-import {Badge,Button,Field,SelectField,TextAreaField} from '../components/ui';
+import {Button,Field,SelectField,TextAreaField} from '../components/ui';
 import {DataTable,type DataColumn} from '../components/DataTable';
 import {Dialog,MutationFeedback,OfflineGate,PageHeader} from '../components/WorkflowUi';
 import {useApp} from '../context/AppContext';
 import type {Audit} from '../domain/types';
 import {useMockSnapshot,useRepository} from '../data/repositoryContext';
+import {StatusBadge} from '../components/AssetStatusBadge';
 
 const outcomes=['Verified','Missing','Damaged','Wrong location','Wrong assigned user','Needs repair','Needs maintenance','Data incorrect','Not accessible'];
 export default function AuditsPage(){
@@ -22,7 +23,7 @@ export default function AuditsPage(){
     {id:'deadline',label:nl?'Deadline':'Deadline',render:item=>item.deadline,text:item=>item.deadline,sortable:true},
     {id:'progress',label:nl?'Voortgang':'Progress',render:item=>`${item.progress}%`,text:item=>item.progress,sortable:true},
     {id:'issues',label:nl?'Afwijkingen':'Discrepancies',render:item=>item.discrepancies,text:item=>item.discrepancies},
-    {id:'status',label:'Status',render:item=><Badge tone={item.status==='Completed'?'success':'info'}>{item.status}</Badge>,text:item=>item.status}
+    {id:'status',label:'Status',render:item=><StatusBadge status={item.status} size="compact" variant="table"/>,text:item=>item.status}
   ];
   async function generate(event:FormEvent<HTMLFormElement>){event.preventDefault();const values:Record<string,unknown>=Object.fromEntries(new FormData(event.currentTarget).entries());if(values.percentage)values.count=Math.max(1,Math.round(snapshot.assets.length*Number(values.percentage)/100));const result=await repository.execute({action:'audit.generate',values});setFeedback({status:result.ok?'success':'error',message:result.message});if(result.ok){setCreate(false);setSelected(snapshot.audits.find(item=>item.id===result.entityId)||null);navigate(`/audits/${result.entityId}`)}}
   async function record(event:FormEvent<HTMLFormElement>){event.preventDefault();if(!selected)return;const values=Object.fromEntries(new FormData(event.currentTarget).entries());const discrepancy=values.outcome!=='Verified';const result=await repository.execute({action:discrepancy?'audit.discrepancy':'audit.verify',entityId:selected.id,values});setFeedback({status:result.ok?'success':'error',message:result.message})}

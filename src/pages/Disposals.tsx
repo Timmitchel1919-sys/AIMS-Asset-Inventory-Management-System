@@ -8,7 +8,6 @@ import {
 import { useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  Badge,
   Button,
   Field,
   SelectField,
@@ -27,6 +26,7 @@ import { useApp } from "../context/AppContext";
 import type { Disposal } from "../data/contracts";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { uploadAimsFiles } from "../services/firebaseStorageUploads";
+import { StatusBadge } from "../components/AssetStatusBadge";
 
 const methods = [
   "Sale",
@@ -38,14 +38,6 @@ const methods = [
   "Parts recovery",
   "Other authorized method",
 ];
-const tone = (status: Disposal["status"]) =>
-  status === "Completed" || status === "Permanently Archived"
-    ? "success"
-    : status === "Rejected"
-      ? "danger"
-      : status === "Approved" || status === "Method Selected"
-        ? "info"
-        : "warning";
 export default function Disposals() {
   const app = useApp(),
     nl = app.language === "nl",
@@ -71,7 +63,7 @@ export default function Disposals() {
     },
     {
       id: "code",
-      label: "KCS code",
+      label: "Inv.code",
       render: (item) => item.assetCode,
       text: (item) => item.assetCode,
       sortable: true,
@@ -104,7 +96,7 @@ export default function Disposals() {
     {
       id: "status",
       label: "Status",
-      render: (item) => <Badge tone={tone(item.status)}>{item.status}</Badge>,
+      render: (item) => <StatusBadge status={item.status} size="compact" variant="table" />,
       text: (item) => item.status,
     },
   ];

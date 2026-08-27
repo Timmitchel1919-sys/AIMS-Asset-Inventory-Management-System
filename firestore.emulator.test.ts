@@ -343,6 +343,21 @@ describe("AIMS Firestore authorization", () => {
     await assertSucceeds(setDoc(doc(db, "users/user-1"), profile));
     await assertSucceeds(
       updateDoc(doc(db, "users/user-1"), {
+        preferences: {
+          fontFamily: "Montserrat",
+          fontSize: 13,
+        },
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(db, "users/user-1"), {
+        preferences: { fontFamily: "Comic Sans", fontSize: 24 },
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await assertSucceeds(
+      updateDoc(doc(db, "users/user-1"), {
         displayName: "School User Updated",
         updatedAt: serverTimestamp(),
         lastLoginAt: serverTimestamp(),

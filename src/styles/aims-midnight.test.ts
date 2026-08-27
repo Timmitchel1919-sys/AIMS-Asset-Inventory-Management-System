@@ -13,4 +13,11 @@ describe('AIMS Midnight theme contract',()=>{
   it('covers notch, mobile waves, forms, tables, auth and bottom navigation',()=>{
     for(const selector of ['.app-sidebar__active-notch','@media (max-width: 780px)',':is(input,select,textarea','.bottom-nav a',':is(.auth-page','.btn.primary','tbody tr:hover'])expect(css).toContain(selector);
   });
+  it('uses a glossy cyan fill and a thin white outline for hovered, focused and active sidebar modules',()=>{
+    expect(css).toContain('.navigation-item:is(:hover,:focus-visible,.active,[aria-current="page"])');
+    expect(css).toContain('border-width: 1px');
+    expect(css).toContain('border-color: #ffffff');
+    expect(css).toContain('background: linear-gradient(180deg, #5adfff 0%, #00aeef 48%, #008dcc 100%)');
+    expect(css).toContain('inset 0 1px 0 rgba(255,255,255,.58)');
+  });
 });

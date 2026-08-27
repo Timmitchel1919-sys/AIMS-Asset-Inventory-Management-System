@@ -210,12 +210,12 @@ html[data-aims-theme="aimsEmeraldGloss"] .metric strong {
   color: var(--emerald-secondary);
 }
 
-/* Badges. */
-html[data-aims-theme="aimsEmeraldGloss"] .badge-success { background: rgba(41,101,65,.12); color: var(--emerald-icon); border-color: var(--emerald-secondary); }
-html[data-aims-theme="aimsEmeraldGloss"] .badge-warning { background: rgba(234,154,50,.14); color: #8a5a11; border-color: #EA9A32; }
-html[data-aims-theme="aimsEmeraldGloss"] .badge-danger { background: rgba(228,94,54,.14); color: #9c3a1c; border-color: #E45E36; }
-html[data-aims-theme="aimsEmeraldGloss"] .badge-info { background: rgba(33,80,44,.12); color: var(--emerald-nav); border-color: var(--emerald-nav); }
-html[data-aims-theme="aimsEmeraldGloss"] .badge-neutral { background: #F3F5F1; color: #53645A; border-color: var(--emerald-border); }
+/* Badges — kept opaque enough to still read as their own chip on the new pale-green panels. */
+html[data-aims-theme="aimsEmeraldGloss"] .badge-success { background: #24B35E; color: #ffffff; border-color: #1C8A49; }
+html[data-aims-theme="aimsEmeraldGloss"] .badge-warning { background: rgba(234,154,50,.22); color: #8a5a11; border-color: #EA9A32; }
+html[data-aims-theme="aimsEmeraldGloss"] .badge-danger { background: rgba(228,94,54,.22); color: #9c3a1c; border-color: #E45E36; }
+html[data-aims-theme="aimsEmeraldGloss"] .badge-info { background: rgba(33,80,44,.26); color: var(--emerald-nav); border-color: var(--emerald-nav); }
+html[data-aims-theme="aimsEmeraldGloss"] .badge-neutral { background: #E4E8E1; color: #53645A; border-color: var(--emerald-border); }
 
 /* Tables. */
 html[data-aims-theme="aimsEmeraldGloss"] table { color: #102018; background: var(--emerald-soft-white); }
@@ -254,6 +254,72 @@ html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar__logo-button svg {
 }
 html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar__logo-button img {
   filter: drop-shadow(0 4px 12px rgba(5, 39, 18, 0.32));
+}
+
+/* Warehouse inventory action bar: pill links from "Voorraad ontvangen" to "Lage voorraad". */
+html[data-aims-theme="aimsEmeraldGloss"] .inventory-action-card a {
+  background: #EAF7EF;
+  border-color: #EAF7EF;
+  color: #102018;
+}
+html[data-aims-theme="aimsEmeraldGloss"] .inventory-action-card a:hover {
+  background: #D6F0DE;
+  border-color: #D6F0DE;
+  color: #102018;
+}
+
+/* Inner panels (edit dialogs, workflow forms) — every module reuses these shared components. */
+html[data-aims-theme="aimsEmeraldGloss"] :is(.dialog, .workflow-form, .inventory-workflow-panel) {
+  background-color: #EAF7EF;
+  border-color: #EAF7EF;
+}
+
+/* Module subtitle text under the module name — every module page shares PageHeader. */
+html[data-aims-theme="aimsEmeraldGloss"] .page-title p {
+  background: #C8EAD6;
+  border-color: #C8EAD6;
+  color: #111827;
+}
+
+/* ICT Assets: code column. */
+html[data-aims-theme="aimsEmeraldGloss"] .asset-code {
+  color: #27AE60;
+}
+
+/* Location hierarchy: location column. */
+html[data-aims-theme="aimsEmeraldGloss"] .data-table-locations td[data-column-id="name"],
+html[data-aims-theme="aimsEmeraldGloss"] .data-table-locations td[data-column-id="name"] .table-link {
+  color: #27AE60;
+}
+
+/* Departments: status column. */
+html[data-aims-theme="aimsEmeraldGloss"] .data-table-departments td[data-column-id="status"] .badge {
+  color: #27AE60;
+  border-color: #27AE60;
+  background: rgba(39, 174, 96, 0.12);
+}
+
+/* Warehouse inventory: glass-card summary tiles, Items through Low stock. */
+html[data-aims-theme="aimsEmeraldGloss"] .inventory-status-summary .card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.72) 0%, rgba(254, 253, 251, 0.42) 55%, rgba(245, 247, 242, 0.5) 100%);
+  border: 1px solid rgba(224, 179, 69, 0.32);
+  box-shadow: 0 10px 26px rgba(5, 39, 18, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -1px 0 rgba(41, 101, 65, 0.08);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+}
+html[data-aims-theme="aimsEmeraldGloss"] .inventory-status-summary .card::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 55% 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+html[data-aims-theme="aimsEmeraldGloss"] .inventory-status-summary .card b {
+  color: #12492a;
 }
 
 /* Theme picker swatch preview. */

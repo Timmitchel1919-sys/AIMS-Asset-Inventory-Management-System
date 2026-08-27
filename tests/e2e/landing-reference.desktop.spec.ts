@@ -14,10 +14,9 @@ for (const [name, theme, cssTheme] of [
     await page.goto('/');
     await expect(page.locator('html')).toHaveAttribute('data-theme', cssTheme);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Beheer elk middel');
-    await expect(page.locator('.aims-hero-device-showcase .aims-device-stage')).toBeVisible();
-    await expect(page.locator('.aims-hero-device-showcase .aims-stage-laptop')).toBeVisible();
-    await expect(page.locator('.aims-hero-device-showcase .aims-stage-tablet')).toBeVisible();
-    await expect(page.locator('.aims-hero-device-showcase .aims-stage-mobile')).toBeVisible();
+    await expect(page.locator('.aims-orbital-hero')).toBeVisible();
+    await expect(page.locator('.aims-orbital-chip')).toHaveCount(3);
+    await expect(page.locator('.aims-showcase-section .aims-device-stage')).toBeVisible();
     await expect(page.locator('.aims-feature-grid article')).toHaveCount(8);
     await expect(page.locator('.aims-hero-trust li')).toHaveCount(3);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1680);

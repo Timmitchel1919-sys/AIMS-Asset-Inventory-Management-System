@@ -1,0 +1,55 @@
+.aims-public-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: #071f3d;
+}
+.aims-public-lockup > img {
+  width: 62px;
+  height: 62px;
+  flex: none;
+  object-fit: contain;
+}
+.aims-public-lockup__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.aims-public-lockup__copy strong {
+  font-size: 1.55rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  line-height: 1;
+}
+.aims-public-lockup__copy small {
+  margin-top: 5px;
+  color: #536b82;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.aims-public-lockup--inverse {
+  color: #fff;
+}
+.aims-public-lockup--inverse .aims-public-lockup__copy small {
+  color: #b9ccdf;
+}
+@media (max-width: 680px) {
+  .aims-public-lockup {
+    gap: 5px;
+  }
+  .aims-public-lockup > img {
+    width: 34px;
+    height: 34px;
+  }
+  .aims-public-lockup__copy strong {
+    font-size: 0.82rem;
+    letter-spacing: 0.14em;
+  }
+  .aims-public-lockup__copy small {
+    display: none;
+  }
+}

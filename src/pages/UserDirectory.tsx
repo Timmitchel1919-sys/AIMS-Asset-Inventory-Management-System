@@ -26,7 +26,7 @@ const initials = (name: string) =>
   name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "U";
 
 export default function UserDirectory() {
-  const { language } = useApp(), snapshot = useMockSnapshot(), nl = language === "nl";
+  const { language, formatDateTime } = useApp(), snapshot = useMockSnapshot(), nl = language === "nl";
   const firebaseMode = import.meta.env.VITE_APP_MODE !== "presentation" && !DEMO_AUTH_MODE;
   const [registeredUsers, setRegisteredUsers] = useState<DirectoryUser[] | null>(null);
   const [error, setError] = useState("");
@@ -66,7 +66,7 @@ export default function UserDirectory() {
   const providerLabel = (value: DirectoryUser["authProvider"]) => value === "anonymous"
     ? (nl ? "Anoniem" : "Anonymous")
     : value === "google" ? "Google" : (nl ? "E-mail en wachtwoord" : "Email & Password");
-  const dateLabel = (value?: string) => value ? new Date(value).toLocaleString(language) : "—";
+  const dateLabel = (value?: string) => value ? formatDateTime(value) : "—";
   const columns: DataColumn<DirectoryUser>[] = [
     { id: "user", label: nl ? "Gebruiker" : "User", render: (item) => <div className="directory-user"><span>{item.photoURL ? <img src={item.photoURL} alt="" /> : initials(item.displayName)}</span><strong>{item.displayName}</strong></div>, text: (item) => item.displayName, sortable: true },
     { id: "department", label: nl ? "Afdeling" : "Department", render: (item) => item.department || "—", text: (item) => item.department || "" },

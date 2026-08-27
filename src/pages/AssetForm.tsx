@@ -26,8 +26,6 @@ import {
 } from "../domain/assetManagement";
 import type { AssetStatus, Condition } from "../domain/types";
 import { useT } from "../i18n";
-import { mappedCondition } from "../domain/assetStatus";
-import { AssetStatusBadge } from "../components/AssetStatusBadge";
 import { uploadAimsFiles } from "../services/firebaseStorageUploads";
 import { readLocalDraft, useAutosaveDraft } from "../hooks/useAutosaveDraft";
 
@@ -152,16 +150,6 @@ export default function AssetForm() {
     enabled: isDirty,
     save: async () => undefined,
   });
-  const selectedStatus = watch("status"),
-    selectedCondition = watch("condition"),
-    lockedCondition = mappedCondition(selectedStatus);
-  useEffect(() => {
-    if (lockedCondition && selectedCondition !== lockedCondition)
-      setValue("condition", lockedCondition, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-  }, [lockedCondition, selectedCondition, setValue]);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
       if (isDirty) event.preventDefault();
@@ -338,10 +326,6 @@ export default function AssetForm() {
                 </SelectField>
                 <SelectField
                   label={a("condition")}
-                  aria-describedby={
-                    lockedCondition ? "condition-status-help" : undefined
-                  }
-                  disabled={!!lockedCondition}
                   {...register("condition")}
                 >
                   {conditions.map((value) => (
@@ -350,21 +334,6 @@ export default function AssetForm() {
                     </option>
                   ))}
                 </SelectField>
-                {lockedCondition && (
-                  <div className="wide" id="condition-status-help">
-                    <p className="field-hint">
-                      {t("assets.conditionDetermined")}
-                    </p>
-                    <div aria-label={t("assets.statusPreview")}>
-                      <AssetStatusBadge
-                        status={selectedStatus}
-                        condition={lockedCondition}
-                        showCondition
-                        variant="solid"
-                      />
-                    </div>
-                  </div>
-                )}
                 <SelectField
                   label={a("location")}
                   required

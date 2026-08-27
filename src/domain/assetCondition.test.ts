@@ -1,0 +1,3 @@
+import{describe,expect,it}from"vitest";
+import{ASSET_CONDITION_DEFINITIONS,assetConditionDefinition,normalizeAssetCondition}from"./assetCondition";
+describe("KCS condition standard",()=>{it.each([["good","#22C55E"],["fair","#F97316"],["poor","#DC2626"]]as const)("%s keeps its fixed color",(key,color)=>expect(ASSET_CONDITION_DEFINITIONS[key].color).toBe(color));it("normalizes English and Dutch without changing unknown values",()=>{expect(normalizeAssetCondition("GOED")).toBe("good");expect(normalizeAssetCondition("Redelijk")).toBe("fair");expect(assetConditionDefinition("custom")).toBeUndefined()})});

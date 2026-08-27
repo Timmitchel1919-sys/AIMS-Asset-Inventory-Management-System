@@ -1,11 +1,6 @@
-import {Archive,Bookmark,CheckCircle2,CircleHelp,Hand,TriangleAlert,UserCheck,Wrench} from 'lucide-react';
-import {assetStatusDefinition} from '../domain/assetStatus';
-import {useT} from '../i18n';
-export function AssetStatusBadge({status,condition,size='standard',variant='badge',showCondition=false}:{status:string;condition?:string;size?:'compact'|'standard';variant?:'badge'|'solid'|'table'|'mobile'|'print';showCondition?:boolean}){
-  const t=useT(),definition=assetStatusDefinition(status);
-  const Icon=definition?{check:CheckCircle2,userCheck:UserCheck,hand:Hand,bookmark:Bookmark,wrench:Wrench,tool:Wrench,alert:TriangleAlert,archive:Archive}[definition.icon]:CircleHelp;
-  const statusLabel=definition?t(definition.translationKey):status;
-  const conditionLabel=definition?t(definition.conditionTranslationKey):(condition?t(`condition.${condition}`):t('assets.conditionUnknown'));
-  const words=statusLabel.split(/\s+/),stackStatus=status==='Under Maintenance';
-  return <span className={`asset-status ${definition?.colorToken||'asset-status-unknown'} ${size} ${variant} ${stackStatus?'asset-status--stacked':''}`} aria-label={`${statusLabel}; ${t('assets.condition')}: ${conditionLabel}`}><Icon aria-hidden="true"/><span>{stackStatus?words.map(word=><span key={word}>{word}</span>):statusLabel}</span>{showCondition&&<small>{conditionLabel}</small>}</span>;
-}
+import{ArrowLeftRight,ArrowUpRight,CircleCheck,CircleHelp,Clock3,Cog,Package,TriangleAlert,Wrench}from"lucide-react";
+import{assetStatusDefinition,type AssetStatusIcon}from"../domain/assetStatus";
+import{useT}from"../i18n";
+const icons:Record<AssetStatusIcon,typeof CircleCheck>={circleCheck:CircleCheck,arrowUpRight:ArrowUpRight,arrowLeftRight:ArrowLeftRight,clock:Clock3,cog:Cog,wrench:Wrench,alert:TriangleAlert,packageClosed:Package};
+export function StatusBadge({status,size="standard",variant="badge"}:{status:string;size?:"compact"|"standard";variant?:"badge"|"solid"|"table"|"mobile"|"print"}){const t=useT(),definition=assetStatusDefinition(status),Icon=definition?icons[definition.icon]:CircleHelp,label=definition?t(definition.translationKey):status||"Unknown",words=label.split(/\s+/),normalized=label.toLocaleLowerCase(),stacked=definition?.key==="underMaintenance"||normalized==="niet beschikbaar"||normalized==="not available";return <span className={`asset-status ${definition?.colorToken||"asset-status-unknown"} ${size} ${variant} ${stacked?"asset-status--stacked":""}`} aria-label={`${t("assets.status")}: ${label}`} title={label}><Icon aria-hidden="true"/><span>{stacked?words.map(word=><span key={word}>{word}</span>):label}</span></span>}
+export const AssetStatusBadge=StatusBadge;

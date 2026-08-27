@@ -1,16 +1,9 @@
 import { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
 
-function printMoment(language: "en" | "nl", value: Date) {
-  return new Intl.DateTimeFormat(language === "nl" ? "nl-NL" : "en-GB", {
-    dateStyle: "full",
-    timeStyle: "medium",
-  }).format(value);
-}
-
 /** Shared audit header for every browser print and Save as PDF operation. */
 export function PrintAuditHeader() {
-  const { language, user } = useApp();
+  const { language, user, formatDateTime } = useApp();
   const [printedAt, setPrintedAt] = useState(() => new Date());
 
   useEffect(() => {
@@ -33,7 +26,7 @@ export function PrintAuditHeader() {
       <p className="print-audit-meta">
         <strong>{language === "nl" ? "Afgedrukt door" : "Printed by"}:</strong> {printedBy}
         <span aria-hidden="true"> · </span>
-        <strong>{language === "nl" ? "Datum en tijd" : "Date and time"}:</strong> {printMoment(language, printedAt)}
+        <strong>{language === "nl" ? "Datum en tijd" : "Date and time"}:</strong> {formatDateTime(printedAt)}
       </p>
     </header>
   );

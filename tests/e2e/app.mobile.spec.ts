@@ -1,12 +1,11 @@
 import{expect,test}from'@playwright/test';
 test.describe('KCS mobile acceptance',()=>{
-  test('logout returns to landing and sign in returns to the platform',async({page})=>{
+  test('logout returns directly to login and sign in returns to the platform',async({page})=>{
     await page.goto('/dashboard');
     await page.getByRole('button',{name:/open account menu/i}).click();
     await page.getByRole('menuitem',{name:/sign out/i}).click();
-    await expect(page).toHaveURL(/\/$/);
-    await page.getByRole('link',{name:/sign in/i}).click();
     await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByRole('status')).toContainText(/signed out/i);
     await page.getByLabel(/email address/i).fill('verified.e2e@kangoeroeschool.com');
     await page.getByLabel('Password',{exact:true}).fill('presentation-only');
     await page.getByRole('button',{name:/sign in/i}).click();

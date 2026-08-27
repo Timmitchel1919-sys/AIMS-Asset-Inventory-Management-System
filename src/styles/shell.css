@@ -272,3 +272,10 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button{width:50px;he
 .app-sidebar--collapsed .app-sidebar__logo-button img,
 html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform:scale(1.28)}
 }
+
+.authenticated-app{--font-size-xs:max(11px,calc(var(--font-size-base) - 2px));--font-size-sm:max(12px,calc(var(--font-size-base) - 1px));--font-size-md:var(--font-size-base);--font-size-lg:min(18px,calc(var(--font-size-base) + 2px));--font-size-xl:min(20px,calc(var(--font-size-base) + 4px));font-family:var(--font-family-app);font-size:var(--font-size-base);line-height:1.5}
+.authenticated-app :is(button,input,select,textarea){font-family:inherit}
+.authenticated-app main :is(input,select,textarea),.authenticated-app main .btn{font-size:var(--font-size-sm)}
+.authenticated-app .desktop-table table{font-size:clamp(12px,calc(var(--font-size-base) - 1px),15px)}
+.authenticated-app .desktop-table th{font-size:clamp(11px,calc(var(--font-size-base) - 2px),14px)}
+.authenticated-app .page>header h1{font-size:clamp(28px,calc(var(--font-size-base) + 16px),32px)}

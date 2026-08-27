@@ -13,7 +13,11 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/aims-16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/aims-180.png" />
     <link id="kcs-manifest" rel="manifest" href="/manifest-azure.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Montserrat:wght@400;500;600;700&amp;family=Open+Sans:wght@400;500;600;700&amp;family=Roboto:wght@400;500;600;700&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
     <title>AIMS Asset &amp; Inventory Management System</title>
+    <style>html,body,#root{min-height:100%;background:#00071c}body{margin:0}</style>
     <script>
       (function(){try{var t=localStorage.getItem('authenticatedThemePreference')||localStorage.getItem('kcs-theme');if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'aimsLight':'aimsMidnight';var m={aimsAzureGlass:['kcs-azure-intelligence','/manifest-azure.webmanifest','#061D52'],aimsMidnight:['aims-midnight','/manifest-midnight.webmanifest','#102640'],aimsEmeraldGloss:['emerald-gloss','/manifest-emerald-gloss.webmanifest','#052712'],aimsLight:['aims-light','/manifest-light.webmanifest','#F4F7FB']};var x=m[t]||m.aimsMidnight;document.documentElement.dataset.aimsTheme=t;document.documentElement.dataset.theme=x[0];document.getElementById('kcs-manifest').href=x[1];document.getElementById('kcs-theme-color').content=x[2]}catch(e){}})();
     </script>

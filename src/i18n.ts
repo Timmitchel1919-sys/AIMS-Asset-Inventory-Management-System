@@ -131,7 +131,7 @@ const en = {
   "assets.scannerHelp": "Scan a QR code or search by KCS code.",
   "assets.search": "Search code, asset, serial number, brand or model…",
   "assets.code": "KCS code",
-  "assets.codeColumn": "Code",
+  "assets.codeColumn": "Inv.code",
   "assets.alphabet": "Alphabet",
   "assets.conditionUnknown": "Unknown condition",
   "assets.conditionDetermined": "Condition is determined by asset status.",
@@ -337,7 +337,7 @@ const nl: Record<keyof typeof en, string> = {
   "assets.scannerHelp": "Scan een QR-code of zoek op KCS-code.",
   "assets.search": "Zoek code, middel, serienummer, merk of model…",
   "assets.code": "KCS-code",
-  "assets.codeColumn": "Code",
+  "assets.codeColumn": "Inv.code",
   "assets.alphabet": "Alfabet",
   "assets.conditionUnknown": "Onbekende conditie",
   "assets.conditionDetermined":

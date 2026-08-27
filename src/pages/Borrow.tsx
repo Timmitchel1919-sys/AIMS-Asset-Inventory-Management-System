@@ -1,14 +1,13 @@
 import {Check,FileCheck2,PackageCheck,Plus,RotateCcw,ThumbsDown,X} from 'lucide-react';
 import {useMemo,useState,type FormEvent} from 'react';
 import {useNavigate,useParams} from 'react-router-dom';
-import {Badge,Button,Field,SelectField,TextAreaField} from '../components/ui';
+import {Button,Field,SelectField,TextAreaField} from '../components/ui';
 import {DataTable,type DataColumn} from '../components/DataTable';
 import {ConfirmDialog,Dialog,MutationFeedback,OfflineGate,PageHeader} from '../components/WorkflowUi';
 import {useApp} from '../context/AppContext';
 import type {BorrowRecord} from '../domain/types';
 import {useMockSnapshot,useRepository} from '../data/repositoryContext';
-
-const tone=(status:BorrowRecord['status'])=>status==='Returned'?'success':status==='Overdue'||status==='Rejected'?'danger':status==='Pending Approval'?'warning':'info';
+import {StatusBadge} from '../components/AssetStatusBadge';
 
 export default function BorrowPage({overdue=false}:{overdue?:boolean}={}){
   const {language}=useApp(),nl=language==='nl',snapshot=useMockSnapshot(),repository=useRepository(),navigate=useNavigate(),params=useParams();
@@ -21,11 +20,11 @@ export default function BorrowPage({overdue=false}:{overdue?:boolean}={}){
   const columns:DataColumn<BorrowRecord>[]=[
     {id:'reference',label:nl?'Referentie':'Reference',render:item=><strong>{item.reference}</strong>,text:item=>item.reference,sortable:true},
     {id:'asset',label:nl?'Middel':'Asset',render:item=>item.asset,text:item=>item.asset},
-    {id:'code',label:'KCS code',render:item=>item.assetCode,text:item=>item.assetCode,sortable:true},
+    {id:'code',label:'Inv.code',render:item=>item.assetCode,text:item=>item.assetCode,sortable:true},
     {id:'borrower',label:nl?'Lener':'Borrower',render:item=>item.borrower,text:item=>item.borrower,sortable:true},
     {id:'department',label:nl?'Afdeling':'Department',render:item=>item.department,text:item=>item.department},
     {id:'due',label:nl?'Vervaldatum':'Due date',render:item=>item.dueDate,text:item=>item.dueDate,sortable:true},
-    {id:'status',label:'Status',render:item=><Badge tone={tone(item.status)}>{item.status}</Badge>,text:item=>item.status}
+    {id:'status',label:'Status',render:item=><StatusBadge status={item.status} size="compact" variant="table"/>,text:item=>item.status}
   ];
   async function createRequest(event:FormEvent<HTMLFormElement>){event.preventDefault();const values=Object.fromEntries(new FormData(event.currentTarget).entries());setFeedback({status:'loading',message:nl?'Verzoek aanmakenâ€¦':'Creating requestâ€¦'});const result=await repository.execute({action:'borrow.create',entityId:String(values.assetId),values});setFeedback({status:result.ok?'success':'error',message:result.message});if(result.ok)setTimeout(()=>{setCreate(false);setSelected(snapshot.borrows.find(item=>item.id===result.entityId)||null);navigate(`/borrow/${result.entityId}`)},350)}
   async function perform(){

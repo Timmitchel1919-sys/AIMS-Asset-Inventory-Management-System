@@ -64,13 +64,13 @@ html[data-theme="aims-midnight"] {
   --chart-4: #f5b942;
   --chart-5: #536b82;
   --chart-grid: rgba(193,206,221,.12);
-  --asset-status-available-bg:#124a31; --asset-status-available-text:#9cf2bd; --asset-status-available-border:#22c55e; --asset-status-available-solid:#16a34a;
+  --asset-status-available-bg:#103f42; --asset-status-available-text:#99f6e4; --asset-status-available-border:#0D9488; --asset-status-available-solid:#0D9488;
   --asset-status-assigned-bg:#40266e; --asset-status-assigned-text:#d7c2ff; --asset-status-assigned-border:#9b72f5; --asset-status-assigned-solid:#7c3aed;
-  --asset-status-borrowed-bg:#5c4812; --asset-status-borrowed-text:#ffe785; --asset-status-borrowed-border:#eab308; --asset-status-borrowed-solid:#ca8a04;
+  --asset-status-borrowed-bg:#5c4812; --asset-status-borrowed-text:#ffe785; --asset-status-borrowed-border:#eab308; --asset-status-borrowed-solid:#eab308;
   --asset-status-reserved-bg:#173f78; --asset-status-reserved-text:#a8ceff; --asset-status-reserved-border:#3b82f6; --asset-status-reserved-solid:#2563eb;
-  --asset-status-under-maintenance-bg:#693517; --asset-status-under-maintenance-text:#ffc392; --asset-status-under-maintenance-border:#f97316; --asset-status-under-maintenance-solid:#ea580c;
+  --asset-status-under-maintenance-bg:#593811; --asset-status-under-maintenance-text:#fcd34d; --asset-status-under-maintenance-border:#d97706; --asset-status-under-maintenance-solid:#d97706;
   --asset-status-under-repair-bg:#65254b; --asset-status-under-repair-text:#ffb5dc; --asset-status-under-repair-border:#ec4899; --asset-status-under-repair-solid:#db2777;
-  --asset-status-damaged-bg:#68242b; --asset-status-damaged-text:#ffb1b1; --asset-status-damaged-border:#ef4444; --asset-status-damaged-solid:#dc2626;
+  --asset-status-damaged-bg:#5b2025; --asset-status-damaged-text:#fecaca; --asset-status-damaged-border:#b91c1c; --asset-status-damaged-solid:#b91c1c;
   --asset-status-archived-bg:#354a60; --asset-status-archived-text:#e1e8f0; --asset-status-archived-border:#94a3b8; --asset-status-archived-solid:#64748b;
 }
 
@@ -101,10 +101,15 @@ html[data-theme="aims-midnight"] .app-sidebar::after {
   border-top: 1px solid rgba(44,126,244,.10); border-bottom: 1px solid rgba(0,174,239,.05);
   box-shadow: 0 -20px 48px rgba(21,94,239,.06); transform: rotate(-19deg); pointer-events: none;
 }
-html[data-theme="aims-midnight"] .app-sidebar nav .navigation-item:is(.active,[aria-current="page"]) {
-  color: #f4f8fc; background: rgba(44,126,244,.18); border-color: #2c7ef4;
+html[data-theme="aims-midnight"] .app-sidebar nav .navigation-item:is(:hover,:focus-visible,.active,[aria-current="page"]) {
+  color: #ffffff;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #ffffff;
+  background: linear-gradient(180deg, #5adfff 0%, #00aeef 48%, #008dcc 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.58), inset 0 -1px 0 rgba(4,57,88,.32), 0 7px 18px rgba(0,174,239,.3);
 }
-html[data-theme="aims-midnight"] .app-sidebar nav .navigation-item:is(.active,[aria-current="page"]) .navigation-item__icon { color: #5aa2ff; }
+html[data-theme="aims-midnight"] .app-sidebar nav .navigation-item:is(:hover,:focus-visible,.active,[aria-current="page"]) .navigation-item__icon { color: #ffffff; }
 html[data-theme="aims-midnight"] .app-sidebar__active-notch { background-color: #0b1a2e; }
 
 html[data-theme="aims-midnight"] :is(.card,.panel,.modal,.dialog,[role="dialog"],.dropdown-menu,.profile-menu,.profile-menu-panel,.menu,.popover) {

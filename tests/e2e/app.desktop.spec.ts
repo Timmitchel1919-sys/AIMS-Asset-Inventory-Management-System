@@ -4,13 +4,18 @@ async function signedOut(page:Page){await page.addInitScript(()=>localStorage.se
 async function openFirstRecord(page:Page){await page.locator('tbody tr').first().click()}
 
 test.describe('KCS desktop frontend acceptance',()=>{
-  test('logout returns to landing and sign in returns to the platform',async({page})=>{
+  test('startup separates first public, returning signed-out and authenticated users',async({browser})=>{
+    const firstContext=await browser.newContext();const first=await firstContext.newPage();await first.addInitScript(()=>{localStorage.setItem('kcs-auth','out');localStorage.removeItem('aims_public_entry_seen')});await first.goto('/');await expect(first.getByRole('button',{name:/enter aims/i})).toBeVisible();await first.getByRole('button',{name:/enter aims/i}).click();await expect(first).toHaveURL(/\/$/);await expect(first.getByRole('banner').getByRole('link',{name:/sign in/i})).toBeVisible();await firstContext.close();
+    const returningContext=await browser.newContext();const returning=await returningContext.newPage();await returning.addInitScript(()=>{localStorage.setItem('kcs-auth','out');localStorage.setItem('aims_public_entry_seen','true')});await returning.goto('/');await expect(returning).toHaveURL(/\/login$/);await returningContext.close();
+    const authenticatedContext=await browser.newContext();const authenticated=await authenticatedContext.newPage();await authenticated.goto('/');await expect(authenticated).toHaveURL(/\/dashboard$/);await authenticatedContext.close();
+  });
+
+  test('logout returns directly to login and sign in returns to the platform',async({page})=>{
     await page.goto('/dashboard');
     await page.getByRole('button',{name:/open account menu/i}).click();
     await page.getByRole('menuitem',{name:/sign out/i}).click();
-    await expect(page).toHaveURL(/\/$/);
-    await page.getByRole('link',{name:/sign in/i}).click();
     await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByRole('status')).toContainText(/signed out/i);
     await page.getByLabel(/email address/i).fill('verified.e2e@kangoeroeschool.com');
     await page.getByLabel('Password',{exact:true}).fill('presentation-only');
     await page.getByRole('button',{name:/sign in/i}).click();

@@ -28,6 +28,7 @@ import {
   OfflineGate,
 } from "../components/WorkflowUi";
 import { AssetStatusBadge } from "../components/AssetStatusBadge";
+import { ConditionBadge } from "../components/ConditionBadge";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { labelPayload } from "../domain/assetManagement";
@@ -327,9 +328,8 @@ export default function AssetDetail() {
             <div>
               <AssetStatusBadge
                 status={asset.status}
-                condition={asset.condition}
-                showCondition
               />
+              <ConditionBadge condition={asset.condition} />
               <h2>{asset.name}</h2>
               <p>
                 {asset.category} · {asset.type}

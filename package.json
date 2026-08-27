@@ -28,6 +28,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "firebase": "^12.17.1",
+    "framer-motion": "^13.1.1",
     "i18next": "^25.6.0",
     "lucide-react": "^0.548.0",
     "qrcode.react": "^4.2.0",

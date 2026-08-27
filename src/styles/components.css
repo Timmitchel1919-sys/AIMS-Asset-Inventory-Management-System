@@ -463,6 +463,13 @@
   max-width: 1480px;
   margin: auto;
 }
+
+/* Align protected module panels with the topbar search and user controls. */
+.main > .page {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
 .page-title {
   display: flex;
   align-items: flex-end;
@@ -1275,8 +1282,9 @@ html[data-aims-theme="aimsEmeraldGloss"]
   font-weight: 650;
 }
 .assistant-card {
-  max-width: 850px;
-  margin: auto;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
   padding: 0;
   overflow: hidden;
 }
@@ -3466,6 +3474,11 @@ html[data-aims-theme="aimsEmeraldGloss"]
 .account-settings-grid .theme-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+.typography-settings-card { grid-column: 1 / -1; }
+.typography-controls { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
+.typography-actions { display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:14px; }
+.account-settings-grid > .card.preferences-card--compact { align-self:start;padding-bottom:14px; }
+.pagination { display:none!important; }
 .profile-details label {
   display: grid;
   gap: 5px;
@@ -3521,6 +3534,7 @@ html[data-aims-theme="aimsEmeraldGloss"]
   .account-settings-grid .theme-grid {
     grid-template-columns: 1fr 1fr;
   }
+  .typography-controls { grid-template-columns:1fr; }
 }
 @media (max-width: 390px) {
   .account-settings-grid .theme-grid {
