@@ -225,15 +225,7 @@ export default function Auth({
             </>
           ) : (
             <>
-              {mode === "login" ? (
-                <img
-                  className="auth-card-logo"
-                  src="/aims-logo-transparent.png"
-                  alt="AIMS Asset & Inventory Management System"
-                  width={132}
-                  height={132}
-                />
-              ) : (
+              {mode !== "login" && (
                 <>
                   <h2>{title}</h2>
                   <p className="auth-card-subtitle">{subtitle}</p>
