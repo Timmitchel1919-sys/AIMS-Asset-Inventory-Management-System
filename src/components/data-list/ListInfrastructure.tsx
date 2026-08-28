@@ -12,6 +12,7 @@ import {
 import { useId, type ReactNode } from "react";
 import { Button, Loader, State } from "../ui";
 import { useT } from "../../i18n";
+import { useApp } from "../../context/AppContext";
 
 export interface ListColumn<T> {
   id: string;
@@ -445,9 +446,13 @@ export function ResponsiveDataList<T>({
   sort?: { field: string; direction: "asc" | "desc" };
 }) {
   const t = useT(),
+    { formatAuto } = useApp(),
     visibleSet = new Set(visible),
     selectedSet = new Set(selected),
     shown = columns.filter((column) => visibleSet.has(column.id));
+  // Any cell that renders as an ISO date/date-time string (e.g. the
+  // "last updated" column) follows the user's date & time preference.
+  const cell = (column: ListColumn<T>, row: T) => formatAuto(column.render(row));
   const allSelected =
     rows.length > 0 && rows.every((row) => selectedSet.has(rowKey(row)));
   const toggleAll = (checked: boolean) =>
@@ -514,7 +519,7 @@ export function ResponsiveDataList<T>({
                     />
                   </td>
                   {shown.map((column) => (
-                    <td key={column.id}>{column.render(row)}</td>
+                    <td key={column.id}>{cell(column, row)}</td>
                   ))}
                 </tr>
               );
@@ -551,7 +556,7 @@ export function ResponsiveDataList<T>({
               {shown.map((column) => (
                 <div key={column.id}>
                   <small>{column.label}</small>
-                  <span>{column.render(row)}</span>
+                  <span>{cell(column, row)}</span>
                 </div>
               ))}
             </article>

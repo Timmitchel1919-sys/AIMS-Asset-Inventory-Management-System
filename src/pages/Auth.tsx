@@ -140,12 +140,6 @@ export default function Auth({
       : mode === "signup"
         ? nl ? "Maak uw AIMS-account" : "Create your AIMS account"
         : nl ? "Herstel uw wachtwoord" : "Reset your password";
-  const routeReason = (location.state as { reason?: string } | null)?.reason;
-  const routeMessage = routeReason === "session-expired"
-    ? nl ? "Uw sessie is verlopen. Meld u opnieuw aan." : "Your session has expired. Please sign in again."
-    : routeReason === "signed-out"
-      ? nl ? "U bent afgemeld." : "You have been signed out."
-      : "";
   return (
     <div className={`auth-page auth-${mode}`} data-auth-theme={app.theme}>
       <section className="auth-brand">
@@ -220,11 +214,6 @@ export default function Auth({
             </>
           ) : (
             <>
-              {mode === "login" && routeMessage && (
-                <p className="auth-route-status" role="status" aria-live="polite">
-                  {routeMessage}
-                </p>
-              )}
               {mode === "forgot" && (
                 <div className="auth-logo-lockup">
                   <AimsWordmark variant="auth" />

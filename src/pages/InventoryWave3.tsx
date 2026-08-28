@@ -516,7 +516,7 @@ export function InventoryForm() {
 
 export function InventoryDetail() {
   const { itemId } = useParams(),
-    { language } = useApp(),
+    { language, formatAuto } = useApp(),
     nl = language === "nl",
     snapshot = useMockSnapshot(),
     item = snapshot.inventory.find((x) => x.id === itemId);
@@ -596,7 +596,7 @@ export function InventoryDetail() {
             }).map(([k, v]) => (
               <div key={k}>
                 <dt>{k}</dt>
-                <dd>{v || "—"}</dd>
+                <dd>{formatAuto(v) || "—"}</dd>
               </div>
             ))}
           </dl>
