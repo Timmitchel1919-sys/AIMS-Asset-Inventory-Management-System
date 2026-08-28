@@ -100,7 +100,9 @@ export function DataTable<T>({
     direction: "asc" | "desc";
   } | null>(null);
   const [showColumns, setShowColumns] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  // Every module table shows the full data set by default; the text "collapse"
+  // control under the table folds it down to a 30-row preview and back.
+  const [collapsed, setCollapsed] = useState(false);
   const [savedViews, setSavedViews] = useState<string[]>(() =>
     JSON.parse(localStorage.getItem(`kcs-views-${id}`) || "[]"),
   );
@@ -138,7 +140,7 @@ export function DataTable<T>({
   const totalCount = sorted.length;
   const collapsible = totalCount > COLLAPSED_ROW_LIMIT;
   const pageRows =
-    collapsible && !expanded ? sorted.slice(0, COLLAPSED_ROW_LIMIT) : sorted;
+    collapsible && collapsed ? sorted.slice(0, COLLAPSED_ROW_LIMIT) : sorted;
   const visibleColumns = columns.filter((column) =>
     visible.includes(column.id),
   );
@@ -292,35 +294,6 @@ export function DataTable<T>({
           </Button>
         </div>
       </div>
-      <div className="data-table-summary">
-        <span
-          className="data-table-count"
-          title={
-            nl
-              ? `${totalCount} records in deze module`
-              : `${totalCount} records in this module`
-          }
-        >
-          <b>{totalCount.toLocaleString(nl ? "nl-NL" : "en-US")}</b>
-          <small>{nl ? "records" : "records"}</small>
-        </span>
-        {collapsible && (
-          <button
-            type="button"
-            className="data-table-collapse"
-            aria-expanded={expanded}
-            onClick={() => setExpanded((value) => !value)}
-          >
-            {expanded
-              ? nl
-                ? `Inklappen · ${COLLAPSED_ROW_LIMIT} tonen`
-                : `Collapse · show ${COLLAPSED_ROW_LIMIT}`
-              : nl
-                ? `Uitklappen · alle ${totalCount.toLocaleString("nl-NL")} tonen`
-                : `Expand · show all ${totalCount.toLocaleString("en-US")}`}
-          </button>
-        )}
-      </div>
       {(query || savedViews.length > 0) && (
         <div className="filter-chips">
           {query && (
@@ -471,6 +444,35 @@ export function DataTable<T>({
           </div>
         </>
       )}
+      <div className="data-table-summary">
+        <span
+          className="data-table-count"
+          title={
+            nl
+              ? `${totalCount} records in deze module`
+              : `${totalCount} records in this module`
+          }
+        >
+          <b>{totalCount.toLocaleString(nl ? "nl-NL" : "en-US")}</b>
+          <small>{nl ? "records" : "records"}</small>
+        </span>
+        {collapsible && (
+          <button
+            type="button"
+            className="data-table-collapse"
+            aria-expanded={!collapsed}
+            onClick={() => setCollapsed((value) => !value)}
+          >
+            {collapsed
+              ? nl
+                ? `Uitklappen · alle ${totalCount.toLocaleString("nl-NL")} tonen`
+                : `Expand · show all ${totalCount.toLocaleString("en-US")}`
+              : nl
+                ? `Inklappen · ${COLLAPSED_ROW_LIMIT} tonen`
+                : `Collapse · show ${COLLAPSED_ROW_LIMIT}`}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

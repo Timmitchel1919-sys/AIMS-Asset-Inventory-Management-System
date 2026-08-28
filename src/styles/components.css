@@ -811,8 +811,8 @@ td small {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 8px 13px;
-  border-bottom: 1px solid var(--color-border-subtle);
+  padding: 10px 13px;
+  border-top: 1px solid var(--color-border-subtle);
 }
 .data-table-count {
   display: inline-flex;
