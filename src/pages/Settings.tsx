@@ -136,27 +136,47 @@ export default function Settings() {
     ],
     app: [
       nl ? "App en apparaat" : "App & Device",
-      "Installation, version, and device information.",
+      nl
+        ? "Installatie-, versie- en apparaatinformatie."
+        : "Installation, version, and device information.",
     ],
     general: [
       nl ? "Algemeen" : "General",
-      "School identity and official contact fields.",
+      nl
+        ? "Schoolidentiteit en officiële contactgegevens."
+        : "School identity and official contact fields.",
     ],
-    language: [nl ? "Taal" : "Language", "Choose the application language."],
-    appearance: [nl ? "Thema’s" : "Themes", "Choose the visual theme."],
-    inventory: [nl ? "Voorraad" : "Inventory", "Inventory rules and defaults."],
+    language: [
+      nl ? "Taal" : "Language",
+      nl ? "Kies de taal van de applicatie." : "Choose the application language.",
+    ],
+    appearance: [
+      nl ? "Thema’s" : "Themes",
+      nl ? "Kies het visuele thema." : "Choose the visual theme.",
+    ],
+    inventory: [
+      nl ? "Voorraad" : "Inventory",
+      nl ? "Voorraadregels en standaardwaarden." : "Inventory rules and defaults.",
+    ],
     audits: [
       nl ? "Controles" : "Audits",
-      "Selection and verification defaults.",
+      nl
+        ? "Standaardwaarden voor selectie en verificatie."
+        : "Selection and verification defaults.",
     ],
     notifications: [
       nl ? "Meldingen" : "Notifications",
-      "Channels and operational thresholds.",
+      nl
+        ? "Kanalen en operationele drempelwaarden."
+        : "Channels and operational thresholds.",
     ],
-    security: [nl ? "Beveiliging" : "Security", "Session and approval policy."],
+    security: [
+      nl ? "Beveiliging" : "Security",
+      nl ? "Sessie- en goedkeuringsbeleid." : "Session and approval policy.",
+    ],
     backup: [
       nl ? "Back-upstatus" : "Backup status",
-      "Backup connection status.",
+      nl ? "Status van de back-upverbinding." : "Backup connection status.",
     ],
     recycleBin: [
       nl ? "Prullenbak" : "Recycle bin",
@@ -166,11 +186,13 @@ export default function Settings() {
     ],
     integrations: [
       nl ? "Integraties" : "Integrations",
-      "External service connections.",
+      nl ? "Verbindingen met externe diensten." : "External service connections.",
     ],
     legal: [
       nl ? "Juridisch en privacy" : "Legal & Privacy",
-      "Published policies, privacy contacts, and version information.",
+      nl
+        ? "Gepubliceerd beleid, privacycontacten en versie-informatie."
+        : "Published policies, privacy contacts, and version information.",
     ],
   };
   useEffect(() => {
@@ -187,7 +209,10 @@ export default function Settings() {
   };
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setFeedback({ status: "loading", message: "Saving settings…" });
+    setFeedback({
+      status: "loading",
+      message: nl ? "Instellingen opslaan…" : "Saving settings…",
+    });
     localStorage.setItem(
       `kcs-settings-${tab}`,
       JSON.stringify(
@@ -214,7 +239,10 @@ export default function Settings() {
         }
       />
       <div className="settings-layout">
-        <nav className="settings-nav" aria-label="Settings sections">
+        <nav
+          className="settings-nav"
+          aria-label={nl ? "Instellingensecties" : "Settings sections"}
+        >
           {tabs
             .filter(([id]) => !["language", "appearance"].includes(id))
             .map(([id, Icon]) => (
@@ -258,7 +286,7 @@ export default function Settings() {
                   </i>
                   <b>{name}</b>
                   <small>{description}</small>
-                  {app.theme === id && <em>Active</em>}
+                  {app.theme === id && <em>{nl ? "Actief" : "Active"}</em>}
                 </button>
               ))}
             </div>
@@ -268,25 +296,29 @@ export default function Settings() {
                 <>
                   <Field
                     name="schoolName"
-                    label="School name"
+                    label={nl ? "Schoolnaam" : "School name"}
                     defaultValue="St. Kangoeroe Community School"
                   />
-                  <Field name="logo" type="file" label="School logo" />
+                  <Field
+                    name="logo"
+                    type="file"
+                    label={nl ? "Schoollogo" : "School logo"}
+                  />
                   <Field
                     name="address"
                     className="wide"
-                    label="Address"
+                    label={nl ? "Adres" : "Address"}
                     defaultValue="Edmundstraat 3–5, Uitvlucht, Paramaribo, Suriname"
                   />
                   <Field
                     name="telephone"
-                    label="Telephone"
+                    label={nl ? "Telefoon" : "Telephone"}
                     defaultValue="+597 430870"
                   />
                   <Field
                     name="email"
                     type="email"
-                    label="Email"
+                    label={nl ? "E-mail" : "Email"}
                     defaultValue="administratie@kangoeroeschool.com"
                   />
                 </>
@@ -294,7 +326,7 @@ export default function Settings() {
               {tab === "language" && (
                 <SelectField
                   name="language"
-                  label="Language"
+                  label={nl ? "Taal" : "Language"}
                   value={app.language}
                   onChange={async (event) => {
                     const next = event.target.value as "en" | "nl";
@@ -312,11 +344,17 @@ export default function Settings() {
                     name="defaultMinimum"
                     type="number"
                     min="0"
-                    label="Default minimum stock"
+                    label={
+                      nl ? "Standaard minimumvoorraad" : "Default minimum stock"
+                    }
                     defaultValue="5"
                   />
                   <label className="switch-row">
-                    <span>Confirm high-risk actions</span>
+                    <span>
+                      {nl
+                        ? "Bevestig acties met hoog risico"
+                        : "Confirm high-risk actions"}
+                    </span>
                     <input name="confirmRisk" type="checkbox" defaultChecked />
                   </label>
                 </div>
@@ -326,25 +364,32 @@ export default function Settings() {
                   name="defaultCount"
                   type="number"
                   min="1"
-                  label="Default sample"
+                  label={nl ? "Standaardsteekproef" : "Default sample"}
                   defaultValue="25"
                 />
               )}
               {tab === "notifications" &&
-                ["Overdue returns", "Low stock", "Maintenance", "Audits"].map(
-                  (value) => (
-                    <label className="switch-row" key={value}>
-                      <span>{value}</span>
-                      <input name={value} type="checkbox" defaultChecked />
-                    </label>
-                  ),
-                )}
+                (
+                  [
+                    ["Overdue returns", nl ? "Achterstallige retouren" : "Overdue returns"],
+                    ["Low stock", nl ? "Lage voorraad" : "Low stock"],
+                    ["Maintenance", nl ? "Onderhoud" : "Maintenance"],
+                    ["Audits", nl ? "Controles" : "Audits"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <label className="switch-row" key={value}>
+                    <span>{label}</span>
+                    <input name={value} type="checkbox" defaultChecked />
+                  </label>
+                ))}
               {tab === "security" && (
                 <Field
                   name="sessionMinutes"
                   type="number"
                   min="5"
-                  label="Session duration (minutes)"
+                  label={
+                    nl ? "Sessieduur (minuten)" : "Session duration (minutes)"
+                  }
                   defaultValue="60"
                 />
               )}
@@ -389,7 +434,7 @@ export default function Settings() {
                 {!["backup", "integrations"].includes(tab) && (
                   <Button type="submit">
                     <Save />
-                    Save settings
+                    {nl ? "Instellingen opslaan" : "Save settings"}
                   </Button>
                 )}
               </div>

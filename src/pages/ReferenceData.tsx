@@ -28,7 +28,9 @@ function ParentLocationForm({
   onSaved: (id: string) => void;
   onCancel: () => void;
 }) {
-  const repository = useRepository(),
+  const { language } = useApp(),
+    nl = language === "nl",
+    repository = useRepository(),
     snapshot = useMockSnapshot(),
     [typeId, setTypeId] = useState(""),
     [mainLocationId, setMainLocationId] = useState(""),
@@ -43,7 +45,10 @@ function ParentLocationForm({
       container = snapshot.references.find(
         (x) => x.id === data.get("containerLocationId"),
       );
-    setFeedback({ status: "loading", message: "Creating parent location…" });
+    setFeedback({
+      status: "loading",
+      message: nl ? "Bovenliggende locatie aanmaken…" : "Creating parent location…",
+    });
     const result = await repository.execute({
       action: "reference.create",
       values: {
@@ -66,7 +71,7 @@ function ParentLocationForm({
   }
   return (
     <form className="workflow-form" onSubmit={submit}>
-      <Field name="name" label="Name" required />
+      <Field name="name" label={nl ? "Naam" : "Name"} required />
       <SelectField
         name="typeId"
         label="Type"
@@ -74,7 +79,7 @@ function ParentLocationForm({
         onChange={(event) => setTypeId(event.target.value)}
         required
       >
-        <option value="">Select a type</option>
+        <option value="">{nl ? "Selecteer een type" : "Select a type"}</option>
         {snapshot.locationTypes
           .filter((x) => x.isActive)
           .sort((a, b) => a.sortOrder - b.sortOrder)
@@ -86,12 +91,14 @@ function ParentLocationForm({
       </SelectField>
       <SelectField
         name="mainLocationId"
-        label="Main location"
+        label={nl ? "Hoofdlocatie" : "Main location"}
         value={mainLocationId}
         onChange={(event) => setMainLocationId(event.target.value)}
         required
       >
-        <option value="">Select a Main location</option>
+        <option value="">
+          {nl ? "Selecteer een hoofdlocatie" : "Select a Main location"}
+        </option>
         {snapshot.references
           .filter(
             (x) =>
@@ -105,8 +112,13 @@ function ParentLocationForm({
             </option>
           ))}
       </SelectField>
-      <SelectField name="containerLocationId" label="Located inside">
-        <option value="">Not inside another location</option>
+      <SelectField
+        name="containerLocationId"
+        label={nl ? "Bevindt zich in" : "Located inside"}
+      >
+        <option value="">
+          {nl ? "Niet binnen een andere locatie" : "Not inside another location"}
+        </option>
         {snapshot.references
           .filter(
             (x) =>
@@ -121,17 +133,22 @@ function ParentLocationForm({
             </option>
           ))}
       </SelectField>
-      <Field name="manager" label="Manager" />
+      <Field
+        name="manager"
+        label={nl ? "Verantwoordelijke" : "Manager"}
+      />
       <SelectField name="status" label="Status" defaultValue="Active">
-        <option>Active</option>
-        <option value="Archived">Inactive</option>
+        <option value="Active">{nl ? "Actief" : "Active"}</option>
+        <option value="Archived">{nl ? "Inactief" : "Inactive"}</option>
       </SelectField>
       <div className="wide">
         <MutationFeedback {...feedback} />
         <div className="actions">
-          <Button type="submit">Create containing location</Button>
+          <Button type="submit">
+            {nl ? "Omvattende locatie aanmaken" : "Create containing location"}
+          </Button>
           <Button type="button" variant="ghost" onClick={onCancel}>
-            Cancel
+            {nl ? "Annuleren" : "Cancel"}
           </Button>
         </div>
       </div>
@@ -288,12 +305,32 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         snapshot.users.find(
           (user) => user.id === (item.managerUserId || item.managerId),
         )?.name ||
-        "Not assigned",
+        (nl ? "Niet toegewezen" : "Not assigned"),
     );
+  const statusLabel = (status: string) => {
+    if (!nl) return status;
+    const map: Record<string, string> = {
+      Active: "Actief",
+      Inactive: "Inactief",
+      "Temporarily closed": "Tijdelijk gesloten",
+      Archived: "Gearchiveerd",
+    };
+    return map[status] || status;
+  };
+  const typeOptionLabel = (value: string) => {
+    if (!nl) return value;
+    const map: Record<string, string> = {
+      Serialized: "Geserialiseerd",
+      "Quantity-based": "Hoeveelheidsgebaseerd",
+      Mixed: "Gemengd",
+      Department: "Afdeling",
+    };
+    return map[value] || value;
+  };
   const locationColumns: DataColumn<ReferenceRecord>[] = [
     {
       id: "name",
-      label: "Location",
+      label: nl ? "Locatie" : "Location",
       render: (item) => (
         <button
           className="table-link"
@@ -318,10 +355,10 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     },
     {
       id: "mainLocation",
-      label: "Main location",
+      label: nl ? "Hoofdlocatie" : "Main location",
       render: (item) =>
         item.type === "Main location" ? (
-          <span>Top-level location</span>
+          <span>{nl ? "Locatie op hoofdniveau" : "Top-level location"}</span>
         ) : resolveMain(item) ? (
           <button
             className="table-link"
@@ -341,17 +378,21 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     },
     {
       id: "assets",
-      label: "Assets at location",
+      label: nl ? "Middelen op locatie" : "Assets at location",
       render: (item) => {
         const count = directAssets(item).length;
         return count ? (
           <button
             className="count-link location-column-value"
-            title="Active assets currently registered at this physical location."
+            title={
+              nl
+                ? "Actieve middelen die momenteel op deze fysieke locatie zijn geregistreerd."
+                : "Active assets currently registered at this physical location."
+            }
             onClick={(event) => {
               event.stopPropagation();
               setInsight({
-                title: `Assets at ${item.name}`,
+                title: nl ? `Middelen op ${item.name}` : `Assets at ${item.name}`,
                 kind: "assets",
                 location: item,
               });
@@ -368,17 +409,23 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     },
     {
       id: "subLocations",
-      label: "Sub-locations",
+      label: nl ? "Sublocaties" : "Sub-locations",
       render: (item) => {
         const count = directChildren(item).length;
         return count ? (
           <button
             className="count-link location-column-value"
-            title="Active child locations directly below this location."
+            title={
+              nl
+                ? "Actieve onderliggende locaties direct onder deze locatie."
+                : "Active child locations directly below this location."
+            }
             onClick={(event) => {
               event.stopPropagation();
               setInsight({
-                title: `Sub-locations in ${item.name}`,
+                title: nl
+                  ? `Sublocaties in ${item.name}`
+                  : `Sub-locations in ${item.name}`,
                 kind: "children",
                 location: item,
               });
@@ -395,17 +442,23 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     },
     {
       id: "openTasks",
-      label: "Open tasks",
+      label: nl ? "Openstaande taken" : "Open tasks",
       render: (item) => {
         const count = openTasks(item).length;
         return count ? (
           <button
             className="count-link location-column-value"
-            title="Unfinished operational tasks associated with this location."
+            title={
+              nl
+                ? "Onafgeronde operationele taken die aan deze locatie zijn gekoppeld."
+                : "Unfinished operational tasks associated with this location."
+            }
             onClick={(event) => {
               event.stopPropagation();
               setInsight({
-                title: `Open tasks at ${item.name}`,
+                title: nl
+                  ? `Openstaande taken op ${item.name}`
+                  : `Open tasks at ${item.name}`,
                 kind: "tasks",
                 location: item,
               });
@@ -422,7 +475,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     },
     {
       id: "manager",
-      label: "Manager",
+      label: nl ? "Verantwoordelijke" : "Manager",
       render: (item) => <span className="location-column-value location-manager-value">{manager(item)}</span>,
       text: manager,
       sortable: true,
@@ -440,24 +493,28 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 : "neutral"
           }
         >
-          {item.status}
+          {statusLabel(item.status)}
         </Badge>
       ),
-      text: (item) => item.status,
+      text: (item) => statusLabel(item.status),
       sortable: true,
     },
     {
       id: "actions",
-      label: "Actions",
+      label: nl ? "Acties" : "Actions",
       render: (item) => (
         <details
           className="row-menu"
           onClick={(event) => event.stopPropagation()}
         >
-          <summary>Actions</summary>
+          <summary>{nl ? "Acties" : "Actions"}</summary>
           <div>
-            <button onClick={() => edit(item)}>View location</button>
-            <button onClick={() => edit(item)}>Edit location</button>
+            <button onClick={() => edit(item)}>
+              {nl ? "Locatie bekijken" : "View location"}
+            </button>
+            <button onClick={() => edit(item)}>
+              {nl ? "Locatie bewerken" : "Edit location"}
+            </button>
             <button
               onClick={() => {
                 edit(null);
@@ -469,38 +526,50 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 setSelectedParentId(item.id);
               }}
             >
-              Add sub-location
+              {nl ? "Sublocatie toevoegen" : "Add sub-location"}
             </button>
             <button
               onClick={() =>
                 setInsight({
-                  title: `Assets at ${item.name}`,
+                  title: nl ? `Middelen op ${item.name}` : `Assets at ${item.name}`,
                   kind: "assets",
                   location: item,
                 })
               }
             >
-              View assets
+              {nl ? "Middelen bekijken" : "View assets"}
             </button>
             <button
               onClick={() =>
                 setInsight({
-                  title: `Open tasks at ${item.name}`,
+                  title: nl
+                    ? `Openstaande taken op ${item.name}`
+                    : `Open tasks at ${item.name}`,
                   kind: "tasks",
                   location: item,
                 })
               }
             >
-              View tasks
+              {nl ? "Taken bekijken" : "View tasks"}
             </button>
-            <button onClick={() => edit(item)}>Assign or change manager</button>
+            <button onClick={() => edit(item)}>
+              {nl
+                ? "Verantwoordelijke toewijzen of wijzigen"
+                : "Assign or change manager"}
+            </button>
             <button
               onClick={() => {
                 setRecord(item);
                 setConfirm(true);
               }}
             >
-              {item.status === "Active" ? "Deactivate" : "Archive"}
+              {item.status === "Active"
+                ? nl
+                  ? "Deactiveren"
+                  : "Deactivate"
+                : nl
+                  ? "Archiveren"
+                  : "Archive"}
             </button>
           </div>
         </details>
@@ -554,10 +623,10 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       label: "Status",
       render: (item) => (
         <Badge tone={item.status === "Active" ? "success" : "neutral"}>
-          {item.status}
+          {statusLabel(item.status)}
         </Badge>
       ),
-      text: (item) => item.status,
+      text: (item) => statusLabel(item.status),
     },
   ];
   const columns = kind === "location" ? locationColumns : legacyColumns;
@@ -620,7 +689,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     if (kind === "location" && (!selectedType || !selectedType.isActive)) {
       setFeedback({
         status: "error",
-        message: "Select an active location type.",
+        message: nl
+          ? "Selecteer een actief locatietype."
+          : "Select an active location type.",
       });
       return;
     }
@@ -628,14 +699,18 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     if (kind === "location" && !isTopLevel && !selectedMainLocationId) {
       setFeedback({
         status: "error",
-        message: "Main location is required for all non-top-level locations.",
+        message: nl
+          ? "Een hoofdlocatie is verplicht voor alle locaties die niet op hoofdniveau staan."
+          : "Main location is required for all non-top-level locations.",
       });
       return;
     }
     if (kind === "location" && isTopLevel && !["administrator", "ict-staff"].includes(user?.role || "")) {
       setFeedback({
         status: "error",
-        message: "Only authenticated IT members may create a Main location.",
+        message: nl
+          ? "Alleen geverifieerde IT-medewerkers mogen een hoofdlocatie aanmaken."
+          : "Only authenticated IT members may create a Main location.",
       });
       return;
     }
@@ -646,8 +721,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     ) {
       setFeedback({
         status: "error",
-        message:
-          "The containing location must belong to the selected Main location.",
+        message: nl
+          ? "De omvattende locatie moet bij de geselecteerde hoofdlocatie horen."
+          : "The containing location must belong to the selected Main location.",
       });
       return;
     }
@@ -664,7 +740,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     if (invalidConfiguredParent && hierarchyMode === "strict") {
       setFeedback({
         status: "error",
-        message: `${parent.type} is not an allowed parent for ${selectedType.name}.`,
+        message: nl
+          ? `${parent.type} is geen toegestane bovenliggende locatie voor ${selectedType.name}.`
+          : `${parent.type} is not an allowed parent for ${selectedType.name}.`,
       });
       return;
     }
@@ -691,7 +769,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       status: result.ok ? "success" : "error",
       message:
         result.ok && invalidConfiguredParent && hierarchyMode === "warning"
-          ? `Warning: ${parent?.type} is not a configured parent for ${selectedType?.name}. Saved because validation mode is warning.`
+          ? nl
+            ? `Waarschuwing: ${parent?.type} is geen geconfigureerde bovenliggende locatie voor ${selectedType?.name}. Opgeslagen omdat de validatiemodus op waarschuwing staat.`
+            : `Warning: ${parent?.type} is not a configured parent for ${selectedType?.name}. Saved because validation mode is warning.`
           : result.message,
     });
     if (result.ok) setTimeout(() => setDialog(false), 300);
@@ -751,11 +831,13 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
               kind === "location" ? (
                 <div className="location-filters">
                   <select
-                    aria-label="Main location"
+                    aria-label={nl ? "Hoofdlocatie" : "Main location"}
                     value={mainFilter}
                     onChange={(event) => setMainFilter(event.target.value)}
                   >
-                    <option value="all">All main locations</option>
+                    <option value="all">
+                      {nl ? "Alle hoofdlocaties" : "All main locations"}
+                    </option>
                     {mainLocations.map((main) => (
                       <option key={main.id} value={main.id}>
                         {main.name}
@@ -764,11 +846,13 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                   </select>
                   <select
                     className="location-type-filter"
-                    aria-label="Location type"
+                    aria-label={nl ? "Locatietype" : "Location type"}
                     value={typeFilter}
                     onChange={(event) => setTypeFilter(event.target.value)}
                   >
-                    <option value="all">All types</option>
+                    <option value="all">
+                      {nl ? "Alle typen" : "All types"}
+                    </option>
                     {snapshot.locationTypes
                       .filter((type) => type.isActive)
                       .map((type) => (
@@ -782,11 +866,19 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                     value={statusFilter}
                     onChange={(event) => setStatusFilter(event.target.value)}
                   >
-                    <option value="all">All statuses</option>
-                    <option>Active</option>
-                    <option>Inactive</option>
-                    <option>Temporarily closed</option>
-                    <option>Archived</option>
+                    <option value="all">
+                      {nl ? "Alle statussen" : "All statuses"}
+                    </option>
+                    <option value="Active">{nl ? "Actief" : "Active"}</option>
+                    <option value="Inactive">
+                      {nl ? "Inactief" : "Inactive"}
+                    </option>
+                    <option value="Temporarily closed">
+                      {nl ? "Tijdelijk gesloten" : "Temporarily closed"}
+                    </option>
+                    <option value="Archived">
+                      {nl ? "Gearchiveerd" : "Archived"}
+                    </option>
                   </select>
                 </div>
               ) : undefined
@@ -802,13 +894,14 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
           {kind === "location" && record && (
             <div className="location-detail-summary">
               <div>
-                <small>Main location</small>
+                <small>{nl ? "Hoofdlocatie" : "Main location"}</small>
                 <strong>
-                  {resolveMain(record)?.name || "Top-level location"}
+                  {resolveMain(record)?.name ||
+                    (nl ? "Locatie op hoofdniveau" : "Top-level location")}
                 </strong>
               </div>
               <div>
-                <small>Located inside</small>
+                <small>{nl ? "Bevindt zich in" : "Located inside"}</small>
                 <strong>
                   {locations.find(
                     (item) => item.id === record.containerLocationId,
@@ -816,15 +909,17 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 </strong>
               </div>
               <div>
-                <small>Manager</small>
+                <small>{nl ? "Verantwoordelijke" : "Manager"}</small>
                 <strong>{manager(record)}</strong>
               </div>
               <div>
-                <small>Direct assets</small>
+                <small>{nl ? "Directe middelen" : "Direct assets"}</small>
                 <strong>{directAssets(record).length}</strong>
               </div>
               <div>
-                <small>Assets in sub-locations</small>
+                <small>
+                  {nl ? "Middelen in sublocaties" : "Assets in sub-locations"}
+                </small>
                 <strong>
                   {
                     snapshot.assets.filter(
@@ -839,7 +934,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 </strong>
               </div>
               <div>
-                <small>Total within hierarchy</small>
+                <small>
+                  {nl ? "Totaal binnen hiërarchie" : "Total within hierarchy"}
+                </small>
                 <strong>
                   {directAssets(record).length +
                     snapshot.assets.filter(
@@ -853,11 +950,11 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 </strong>
               </div>
               <div>
-                <small>Sub-locations</small>
+                <small>{nl ? "Sublocaties" : "Sub-locations"}</small>
                 <strong>{directChildren(record).length}</strong>
               </div>
               <div>
-                <small>Open tasks</small>
+                <small>{nl ? "Openstaande taken" : "Open tasks"}</small>
                 <strong>{openTasks(record).length}</strong>
               </div>
             </div>
@@ -883,7 +980,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 }}
                 required
               >
-                <option value="">Select a type</option>
+                <option value="">
+                  {nl ? "Selecteer een type" : "Select a type"}
+                </option>
                 {[...snapshot.locationTypes]
                   .filter((type) => type.isActive || type.id === selectedTypeId)
                   .sort((a, b) => a.sortOrder - b.sortOrder)
@@ -893,7 +992,11 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                     </option>
                   ))}
                 {user && (
-                  <option value="__add__">+ Add new location type</option>
+                  <option value="__add__">
+                    {nl
+                      ? "+ Nieuw locatietype toevoegen"
+                      : "+ Add new location type"}
+                  </option>
                 )}
               </SelectField>
             ) : (
@@ -907,7 +1010,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                   ? ["Serialized", "Quantity-based", "Mixed"]
                   : ["Department"]
                 ).map((value) => (
-                  <option key={value}>{value}</option>
+                  <option key={value} value={value}>
+                    {typeOptionLabel(value)}
+                  </option>
                 ))}
               </SelectField>
             )}
@@ -915,7 +1020,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
               <>
                 <SelectField
                   name="mainLocationId"
-                  label="Main location"
+                  label={nl ? "Hoofdlocatie" : "Main location"}
                   value={selectedMainLocationId}
                   onChange={(event) => {
                     setSelectedMainLocationId(event.target.value);
@@ -924,7 +1029,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                   required={selectedTypeId !== "main-location"}
                   disabled={selectedTypeId === "main-location"}
                 >
-                  <option value="">Select a Main location</option>
+                  <option value="">
+                    {nl ? "Selecteer een hoofdlocatie" : "Select a Main location"}
+                  </option>
                   {mainLocations.map((main) => (
                     <option key={main.id} value={main.id}>
                       {main.name}
@@ -933,7 +1040,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 </SelectField>
                 <SelectField
                   name="parentId"
-                  label="Located inside"
+                  label={nl ? "Bevindt zich in" : "Located inside"}
                   value={selectedParentId}
                   onChange={(event) => {
                     if (event.target.value === "__add_parent__") {
@@ -943,7 +1050,11 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                     setSelectedParentId(event.target.value);
                   }}
                 >
-                  <option value="">Not inside another location</option>
+                  <option value="">
+                    {nl
+                      ? "Niet binnen een andere locatie"
+                      : "Not inside another location"}
+                  </option>
                   {snapshot.references
                     .filter(
                       (x) =>
@@ -961,7 +1072,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                     ))}
                   {user && (
                     <option value="__add_parent__">
-                      + Add containing location
+                      {nl
+                        ? "+ Omvattende locatie toevoegen"
+                        : "+ Add containing location"}
                     </option>
                   )}
                 </SelectField>
@@ -1003,32 +1116,38 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                   label="Status"
                   defaultValue={record?.status || "Active"}
                 >
-                  <option>Active</option>
-                  <option>Inactive</option>
-                  <option>Temporarily closed</option>
-                  <option>Archived</option>
+                  <option value="Active">{nl ? "Actief" : "Active"}</option>
+                  <option value="Inactive">
+                    {nl ? "Inactief" : "Inactive"}
+                  </option>
+                  <option value="Temporarily closed">
+                    {nl ? "Tijdelijk gesloten" : "Temporarily closed"}
+                  </option>
+                  <option value="Archived">
+                    {nl ? "Gearchiveerd" : "Archived"}
+                  </option>
                 </SelectField>
                 <Field
                   name="codeGroup"
-                  label="Code group"
+                  label={nl ? "Codegroep" : "Code group"}
                   defaultValue={String(record?.details.codeGroup || "")}
                 />
                 <Field
                   name="storagePosition"
-                  label="Storage position"
+                  label={nl ? "Opslagpositie" : "Storage position"}
                   defaultValue={String(record?.details.storagePosition || "")}
                 />
                 <Field
                   name="capacity"
                   type="number"
                   min="0"
-                  label="Capacity"
+                  label={nl ? "Capaciteit" : "Capacity"}
                   defaultValue={Number(record?.details.capacity || 0)}
                 />
                 <TextAreaField
                   className="wide"
                   name="notes"
-                  label="Notes"
+                  label={nl ? "Notities" : "Notes"}
                   defaultValue={String(record?.details.notes || "")}
                 />
               </>
@@ -1111,7 +1230,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         </Dialog>
         <Dialog
           open={!!insight}
-          title={insight?.title || "Location details"}
+          title={insight?.title || (nl ? "Locatiedetails" : "Location details")}
           onClose={() => setInsight(null)}
         >
           {insight?.kind === "assets" ? (
@@ -1126,7 +1245,8 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                     {asset.code} · {asset.category} · {asset.status}
                   </span>
                   <small>
-                    {asset.assignedTo || "Not assigned"} · {asset.location}
+                    {asset.assignedTo || (nl ? "Niet toegewezen" : "Not assigned")} ·{" "}
+                    {asset.location}
                   </small>
                 </button>
               ))}
@@ -1143,10 +1263,11 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 >
                   <strong>{child.name}</strong>
                   <span>
-                    {child.type} · {directAssets(child).length} assets
+                    {child.type} · {directAssets(child).length}{" "}
+                    {nl ? "middelen" : "assets"}
                   </span>
                   <small>
-                    {manager(child)} · {child.status}
+                    {manager(child)} · {statusLabel(child.status)}
                   </small>
                 </button>
               ))}
@@ -1157,10 +1278,19 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 <div key={task.id}>
                   <strong>{task.asset}</strong>
                   <span>
-                    {"type" in task ? task.type : "Repair"} · {task.status}
+                    {"type" in task
+                      ? task.type
+                      : nl
+                        ? "Reparatie"
+                        : "Repair"}{" "}
+                    · {task.status}
                   </span>
                   <small>
-                    {"assignee" in task ? task.assignee : "Unassigned"}
+                    {"assignee" in task
+                      ? task.assignee
+                      : nl
+                        ? "Niet toegewezen"
+                        : "Unassigned"}
                   </small>
                 </div>
               ))}
@@ -1186,8 +1316,12 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         </Dialog>
         <Dialog
           open={typeDialog}
-          title="Add location type"
-          description="Create a type without leaving this location."
+          title={nl ? "Locatietype toevoegen" : "Add location type"}
+          description={
+            nl
+              ? "Maak een type aan zonder deze locatie te verlaten."
+              : "Create a type without leaving this location."
+          }
           onClose={() => setTypeDialog(false)}
         >
           <LocationTypeForm
@@ -1200,8 +1334,12 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         </Dialog>
         <Dialog
           open={parentDialog}
-          title="Add containing location"
-          description="Create a containing room or storage location without losing this form."
+          title={nl ? "Omvattende locatie toevoegen" : "Add containing location"}
+          description={
+            nl
+              ? "Maak een omvattende ruimte of opslaglocatie aan zonder dit formulier te verliezen."
+              : "Create a containing room or storage location without losing this form."
+          }
           onClose={() => setParentDialog(false)}
         >
           <ParentLocationForm
@@ -1211,7 +1349,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
               setParentDialog(false);
               setFeedback({
                 status: "success",
-                message: "Containing location created and selected.",
+                message: nl
+                  ? "Omvattende locatie aangemaakt en geselecteerd."
+                  : "Containing location created and selected.",
               });
             }}
           />

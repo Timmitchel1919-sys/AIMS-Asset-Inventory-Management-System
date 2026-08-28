@@ -19,7 +19,9 @@ export function LocationTypeForm({
   onSaved: (id: string) => void;
   onCancel: () => void;
 }) {
-  const snapshot = useMockSnapshot(),
+  const { language } = useApp(),
+    nl = language === "nl",
+    snapshot = useMockSnapshot(),
     repository = useRepository(),
     [feedback, setFeedback] = useState<Feedback>({
       status: "idle",
@@ -28,7 +30,10 @@ export function LocationTypeForm({
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    setFeedback({ status: "loading", message: "Saving location type…" });
+    setFeedback({
+      status: "loading",
+      message: nl ? "Locatietype opslaan…" : "Saving location type…",
+    });
     const result = await repository.execute({
       action: value ? "locationType.edit" : "locationType.create",
       entityId: value?.id,
@@ -47,19 +52,34 @@ export function LocationTypeForm({
   }
   return (
     <form className="workflow-form" onSubmit={save}>
-      <Field name="name" label="Name" defaultValue={value?.name} required />
-      <Field name="code" label="Code" defaultValue={value?.code} required />
+      <Field
+        name="name"
+        label={nl ? "Naam" : "Name"}
+        defaultValue={value?.name}
+        required
+      />
+      <Field
+        name="code"
+        label={nl ? "Code" : "Code"}
+        defaultValue={value?.code}
+        required
+      />
       <TextAreaField
         className="wide"
         name="description"
-        label="Description"
+        label={nl ? "Omschrijving" : "Description"}
         defaultValue={value?.description}
       />
       <fieldset className="wide location-parent-types">
-        <legend>Choose allowed parent location types</legend>
+        <legend>
+          {nl
+            ? "Kies toegestane bovenliggende locatietypen"
+            : "Choose allowed parent location types"}
+        </legend>
         <p className="wide">
-          Select the parent types yourself. Leave every option unchecked when
-          this should be a top-level/root location.
+          {nl
+            ? "Selecteer zelf de bovenliggende typen. Laat elke optie uitgevinkt wanneer dit een locatie op hoofdniveau/root moet zijn."
+            : "Select the parent types yourself. Leave every option unchecked when this should be a top-level/root location."}
         </p>
         {snapshot.locationTypes
           .filter((x) => x.id !== value?.id)
@@ -79,9 +99,9 @@ export function LocationTypeForm({
       <div className="wide">
         <MutationFeedback {...feedback} />
         <div className="actions">
-          <Button type="submit">Save type</Button>
+          <Button type="submit">{nl ? "Type opslaan" : "Save type"}</Button>
           <Button type="button" variant="ghost" onClick={onCancel}>
-            Cancel
+            {nl ? "Annuleren" : "Cancel"}
           </Button>
         </div>
       </div>
@@ -90,7 +110,8 @@ export function LocationTypeForm({
 }
 
 export function LocationTypesSettings() {
-  const { user } = useApp(),
+  const { user, language } = useApp(),
+    nl = language === "nl",
     repository = useRepository(),
     snapshot = useMockSnapshot(),
     [editing, setEditing] = useState<LocationType | null | undefined>(
@@ -104,8 +125,12 @@ export function LocationTypesSettings() {
   if (!user)
     return (
       <div className="state">
-        <h3>IT member access required</h3>
-        <p>Sign in with your KCS IT account to manage location types.</p>
+        <h3>{nl ? "Toegang voor IT-medewerker vereist" : "IT member access required"}</h3>
+        <p>
+          {nl
+            ? "Meld u aan met uw KCS IT-account om locatietypen te beheren."
+            : "Sign in with your KCS IT account to manage location types."}
+        </p>
       </div>
     );
   const types = [...snapshot.locationTypes].sort(
@@ -134,21 +159,25 @@ export function LocationTypesSettings() {
     <div className="location-types-settings">
       <div className="section-toolbar">
         <div>
-          <h3>Location types</h3>
-          <p>Control hierarchy levels and their permitted parents.</p>
+          <h3>{nl ? "Locatietypen" : "Location types"}</h3>
+          <p>
+            {nl
+              ? "Beheer hiërarchieniveaus en hun toegestane bovenliggende typen."
+              : "Control hierarchy levels and their permitted parents."}
+          </p>
         </div>
         <Button onClick={() => setEditing(null)}>
           <Plus />
-          Add type
+          {nl ? "Type toevoegen" : "Add type"}
         </Button>
       </div>
       <label className="hierarchy-mode">
         <span>
-          <strong>Hiërarchievalidatie</strong>
+          <strong>{nl ? "Hiërarchievalidatie" : "Hierarchy validation"}</strong>
           <small>
-            Controleert of een sublocatie onder het juiste type hoofdlocatie
-            wordt geplaatst. Strikt blokkeert fouten, Waarschuwing meldt ze
-            zonder blokkering en Uitgeschakeld slaat de controle over.
+            {nl
+              ? "Controleert of een sublocatie onder het juiste type hoofdlocatie wordt geplaatst. Strikt blokkeert fouten, Waarschuwing meldt ze zonder blokkering en Uitgeschakeld slaat de controle over."
+              : "Checks whether a sub-location is placed under the correct main location type. Strict blocks errors, Warning reports them without blocking and Disabled skips the check."}
           </small>
         </span>
         <select
@@ -164,9 +193,13 @@ export function LocationTypesSettings() {
             });
           }}
         >
-          <option value="strict">Strikt</option>
-          <option value="warning">Waarschuwing (standaard)</option>
-          <option value="disabled">Uitgeschakeld</option>
+          <option value="strict">{nl ? "Strikt" : "Strict"}</option>
+          <option value="warning">
+            {nl ? "Waarschuwing (standaard)" : "Warning (default)"}
+          </option>
+          <option value="disabled">
+            {nl ? "Uitgeschakeld" : "Disabled"}
+          </option>
         </select>
       </label>
       <MutationFeedback {...feedback} />
@@ -184,9 +217,11 @@ export function LocationTypesSettings() {
                 <strong>
                   {type.name} <code>{type.code}</code>
                 </strong>
-                <small>{type.description || "No description"}</small>
                 <small>
-                  Parents:{" "}
+                  {type.description || (nl ? "Geen omschrijving" : "No description")}
+                </small>
+                <small>
+                  {nl ? "Bovenliggend:" : "Parents:"}{" "}
                   {type.allowedParentTypeIds.length
                     ? type.allowedParentTypeIds
                         .map(
@@ -195,11 +230,19 @@ export function LocationTypesSettings() {
                               ?.name || id,
                         )
                         .join(", ")
-                    : "None (root type)"}
+                    : nl
+                      ? "Geen (roottype)"
+                      : "None (root type)"}
                 </small>
               </div>
               <Badge tone={type.isActive ? "success" : "neutral"}>
-                {type.isActive ? "Active" : "Inactive"}
+                {type.isActive
+                  ? nl
+                    ? "Actief"
+                    : "Active"
+                  : nl
+                    ? "Inactief"
+                    : "Inactive"}
               </Badge>
               <div className="location-type-actions">
                 <Button
@@ -208,7 +251,9 @@ export function LocationTypesSettings() {
                   onClick={() =>
                     run("locationType.reorder", type, { direction: -1 })
                   }
-                  aria-label={`Move ${type.name} up`}
+                  aria-label={
+                    nl ? `${type.name} omhoog verplaatsen` : `Move ${type.name} up`
+                  }
                 >
                   <ArrowUp />
                 </Button>
@@ -218,14 +263,20 @@ export function LocationTypesSettings() {
                   onClick={() =>
                     run("locationType.reorder", type, { direction: 1 })
                   }
-                  aria-label={`Move ${type.name} down`}
+                  aria-label={
+                    nl
+                      ? `${type.name} omlaag verplaatsen`
+                      : `Move ${type.name} down`
+                  }
                 >
                   <ArrowDown />
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={() => setEditing(type)}
-                  aria-label={`Edit ${type.name}`}
+                  aria-label={
+                    nl ? `${type.name} bewerken` : `Edit ${type.name}`
+                  }
                 >
                   <Edit3 />
                 </Button>
@@ -239,18 +290,28 @@ export function LocationTypesSettings() {
                       type,
                     )
                   }
-                  aria-label={`${type.isActive ? "Deactivate" : "Activate"} ${type.name}`}
+                  aria-label={
+                    nl
+                      ? `${type.name} ${type.isActive ? "deactiveren" : "activeren"}`
+                      : `${type.isActive ? "Deactivate" : "Activate"} ${type.name}`
+                  }
                 >
                   <Power />
                 </Button>
                 <Button
                   variant="danger"
                   onClick={() => setDeleting(type)}
-                  aria-label={`Delete ${type.name}`}
+                  aria-label={
+                    nl ? `${type.name} verwijderen` : `Delete ${type.name}`
+                  }
                   title={
                     used
-                      ? "Used types cannot be deleted; deactivate instead."
-                      : "Delete type"
+                      ? nl
+                        ? "Gebruikte typen kunnen niet worden verwijderd; deactiveer ze in plaats daarvan."
+                        : "Used types cannot be deleted; deactivate instead."
+                      : nl
+                        ? "Type verwijderen"
+                        : "Delete type"
                   }
                 >
                   <Trash2 />
@@ -262,8 +323,20 @@ export function LocationTypesSettings() {
       </div>
       <Dialog
         open={editing !== undefined}
-        title={editing ? "Edit location type" : "Add location type"}
-        description="Define the type and which hierarchy levels may contain it."
+        title={
+          editing
+            ? nl
+              ? "Locatietype bewerken"
+              : "Edit location type"
+            : nl
+              ? "Locatietype toevoegen"
+              : "Add location type"
+        }
+        description={
+          nl
+            ? "Definieer het type en welke hiërarchieniveaus het mogen bevatten."
+            : "Define the type and which hierarchy levels may contain it."
+        }
         onClose={() => setEditing(undefined)}
       >
         {editing !== undefined && (
@@ -276,7 +349,7 @@ export function LocationTypesSettings() {
       </Dialog>
       <ConfirmDialog
         open={!!deleting}
-        title="Delete location type"
+        title={nl ? "Locatietype verwijderen" : "Delete location type"}
         description={
           deleting &&
           snapshot.references.some(
@@ -285,10 +358,14 @@ export function LocationTypesSettings() {
               (x.typeId === deleting.id ||
                 (!x.typeId && x.type === deleting.name)),
           )
-            ? "This type is in use and cannot be deleted. Deactivate it instead."
-            : "This permanently removes the location type."
+            ? nl
+              ? "Dit type is in gebruik en kan niet worden verwijderd. Deactiveer het in plaats daarvan."
+              : "This type is in use and cannot be deleted. Deactivate it instead."
+            : nl
+              ? "Hiermee wordt het locatietype definitief verwijderd."
+              : "This permanently removes the location type."
         }
-        confirmLabel="Delete"
+        confirmLabel={nl ? "Verwijderen" : "Delete"}
         danger
         onClose={() => setDeleting(null)}
         onConfirm={async () => {
