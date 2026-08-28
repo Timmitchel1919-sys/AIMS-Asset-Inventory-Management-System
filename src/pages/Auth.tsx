@@ -15,7 +15,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui";
 import { IctSupportDialog } from "../components/auth/IctSupportDialog";
 import { AimsPublicLockup } from "../components/branding/AimsPublicLockup";
-import { AimsWordmark } from "../components/branding/AimsWordmark";
 import { legalConfig } from "../config/legal";
 import { useApp } from "../context/AppContext";
 import {
@@ -226,12 +225,19 @@ export default function Auth({
             </>
           ) : (
             <>
-              <div className="auth-logo-lockup">
-                <AimsWordmark variant="auth" />
-              </div>
-              <h2>{title}</h2>
-              {mode !== "login" && (
-                <p className="auth-card-subtitle">{subtitle}</p>
+              {mode === "login" ? (
+                <img
+                  className="auth-card-logo"
+                  src="/aims-logo-transparent.png"
+                  alt="AIMS Asset & Inventory Management System"
+                  width={132}
+                  height={132}
+                />
+              ) : (
+                <>
+                  <h2>{title}</h2>
+                  <p className="auth-card-subtitle">{subtitle}</p>
+                </>
               )}
               <form onSubmit={submit} noValidate>
                 {mode === "signup" && (

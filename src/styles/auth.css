@@ -45,13 +45,16 @@
 .auth-card h2{margin:0 0 10px;text-align:center;font-size:2rem;font-weight:700;line-height:1.15;letter-spacing:-.025em;color:var(--auth-text-primary)}
 .auth-card>p,.auth-card-subtitle{margin:0 0 24px;text-align:center;font-size:.95rem;font-weight:400;line-height:1.55;color:var(--auth-text-secondary)}
 .auth-logo-lockup+h2{margin-top:2px}
-/* The frozen mobile sign-in card cannot scroll, so keep it exactly as tuned:
-   the card header (wordmark + heading + subtitle) is a desktop-only addition.
-   The left brand panel already carries the wordmark on larger screens. */
+/* Real AIMS logo asset at the top of the sign-in card (reference screenshot). */
+.auth-card-logo{
+  display:block;
+  width:clamp(96px,10vw,132px);
+  height:auto;
+  margin:0 auto 22px;
+  object-fit:contain;
+}
 @media(max-width:767px){
-  .auth-login .login-card>.auth-logo-lockup,
-  .auth-login .login-card>h2,
-  .auth-login .login-card>.auth-card-subtitle{display:none}
+  .auth-login .login-card .auth-card-logo{width:48px;margin:0 auto 8px}
 }
 
 .auth-card form>label{display:block;margin:0 0 18px;font-size:.78rem;font-weight:600;color:var(--auth-text-primary)}
@@ -1016,4 +1019,79 @@ html[data-theme] .auth-login .login-card {
   color: #315979;
   font-size: .84rem;
   line-height: 1.4;
+}
+
+/* ========================================================================
+   Reference-matched AIMS authentication polish — single authoritative block.
+   Light near-white background with soft curved blue "wave" shapes behind the
+   content, left-panel proportions tuned to the screenshots, and the real AIMS
+   logo asset on the sign-in card. Visual only; no auth logic changes.
+   ======================================================================== */
+html[data-theme] .auth-page:is(.auth-login, .auth-signup),
+html[data-theme] .auth-page.auth-login {
+  background:
+    radial-gradient(56% 46% at 4% -6%, rgba(145,189,240,.24), transparent 72%),
+    radial-gradient(50% 58% at 106% 108%, rgba(187,220,247,.32), transparent 74%),
+    radial-gradient(circle at 50% 42%, #ffffff 0%, #f7fbff 30%, #e8f4fd 64%, #d9eefb 100%) !important;
+}
+
+html[data-theme] .auth-page:is(.auth-login, .auth-signup)::before,
+html[data-theme] .auth-page:is(.auth-login, .auth-signup)::after,
+html[data-theme="emerald-gloss"] .auth-page:is(.auth-login, .auth-signup)::before,
+html[data-theme="emerald-gloss"] .auth-page:is(.auth-login, .auth-signup)::after {
+  content: "";
+  display: block !important;
+  position: absolute;
+  z-index: -1;
+  border: 0 !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+html[data-theme] .auth-page:is(.auth-login, .auth-signup)::before {
+  width: min(1160px, 86vw);
+  height: min(1160px, 86vw);
+  inset: -46% auto auto -28%;
+  border-radius: 46% 54% 58% 42% / 54% 44% 56% 46%;
+  background: radial-gradient(circle at 42% 42%, rgba(214,240,252,.92), rgba(186,220,247,.30) 52%, transparent 78%) !important;
+}
+
+html[data-theme] .auth-page:is(.auth-login, .auth-signup)::after {
+  width: min(1320px, 94vw);
+  height: min(1320px, 94vw);
+  inset: auto -34% -52% auto;
+  border-radius: 54% 46% 40% 60% / 44% 54% 46% 56%;
+  background: radial-gradient(circle at 60% 60%, rgba(216,238,252,.84), rgba(145,189,240,.24) 50%, transparent 76%) !important;
+}
+
+/* Left brand panel proportions tuned to the reference screenshots. */
+html[data-theme] .auth-page:is(.auth-login, .auth-signup) .auth-brand-copy p {
+  font-size: clamp(1.15rem, 1.4vw, 1.45rem) !important;
+  line-height: 1.65 !important;
+}
+html[data-theme] .auth-page:is(.auth-login, .auth-signup) .auth-brand ul { gap: 26px; }
+html[data-theme] .auth-page:is(.auth-login, .auth-signup) .auth-brand li > span {
+  width: clamp(48px, 3.4vw, 54px) !important;
+  height: clamp(48px, 3.4vw, 54px) !important;
+  border-radius: 14px !important;
+}
+html[data-theme] .auth-page:is(.auth-login, .auth-signup) .auth-brand li svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+html[data-theme] .auth-page:is(.auth-login, .auth-signup) .auth-brand li strong {
+  font-size: clamp(1.02rem, 1.15vw, 1.18rem) !important;
+}
+html[data-theme] .auth-page.auth-login .auth-brand h1,
+html[data-theme] .auth-page.auth-signup .auth-brand h1 {
+  font-size: clamp(3rem, 3.9vw, 4.75rem) !important;
+}
+
+@media (max-width: 767px) {
+  html[data-theme] .auth-page:is(.auth-login, .auth-signup)::before {
+    width: 640px; height: 640px; inset: -300px auto auto -240px;
+  }
+  html[data-theme] .auth-page:is(.auth-login, .auth-signup)::after {
+    width: 700px; height: 700px; inset: auto -320px -300px auto;
+  }
 }
