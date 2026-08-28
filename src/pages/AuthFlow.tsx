@@ -95,7 +95,7 @@ export function VerifyEmailPage() {
             variant="secondary"
             onClick={async () => {
               await app.logout();
-              navigate("/login", { replace: true, state: { reason: "signed-out" } });
+              navigate("/", { replace: true });
             }}
           >
             <LogOut />
@@ -118,7 +118,7 @@ export function AccessDeniedPage() {
           <h1>Access Restricted</h1>
           <p>AIMS is available only to authorized Kangoeroe School users.</p>
           <p>Please sign in with your @kangoeroeschool.com account.</p>
-          <Button onClick={async () => { await app.logout(); navigate("/login", { replace: true, state: { reason: "signed-out" } }); }}>
+          <Button onClick={async () => { await app.logout(); navigate("/", { replace: true }); }}>
             Sign Out and Return Home
           </Button>
         </Card>

@@ -5,66 +5,72 @@ import "./BrandedSplash.css";
 
 type BrandedSplashProps = {
   language: "en" | "nl";
-  mode: "checking" | "gateway";
-  onEnter?: () => void;
 };
 
-export function BrandedSplash({ language, mode, onEnter }: BrandedSplashProps) {
+/**
+ * The approved AIMS branded splash. Fixed brand palette (independent of the
+ * user theme), official logo, wordmark + subtitle, blue/cyan glow, bottom wave
+ * pattern, Scannen / Middelen / Veilig orbital animation and a loading
+ * indicator. Visible for a fixed 10s window owned by AppStartupGate — this
+ * component only renders the branded frame and its entrance/exit.
+ */
+export function BrandedSplash({ language }: BrandedSplashProps) {
   const reducedMotion = useReducedMotion();
-  const gateway = mode === "gateway";
-  const enterLabel = language === "nl" ? "AIMS openen" : "Enter AIMS";
-  const helper = language === "nl"
-    ? "Open de openbare AIMS-werkruimte"
-    : "Open the AIMS public workspace";
-  const enter = (delay: number) => reducedMotion
-    ? { initial: false as const, animate: { opacity: 1 }, transition: { duration: 0 } }
-    : { initial: { opacity: 0, scale: 0.97 }, animate: { opacity: 1, scale: 1 }, transition: { delay, duration: 0.48, ease: "easeOut" as const } };
+  const nl = language === "nl";
+  const loadingLabel = nl
+    ? "Beveiligde werkruimte laden..."
+    : "Secure workspace loading...";
+  const a11yLabel = nl
+    ? "AIMS beveiligde werkruimte wordt geladen"
+    : "Loading AIMS secure workspace";
 
-  const brandedContent = <>
-    <motion.div className="aims-splash-orbit-entrance" {...enter(0.12)}>
-      <SplashOrbit logoSrc="/aims-logo-transparent.png" />
-    </motion.div>
-    <motion.div className="aims-splash-wordmark" {...enter(0.3)}>
-      <AimsWordmark variant="splash" />
-    </motion.div>
-    {gateway && (
-      <motion.span className="aims-splash-enter-copy" {...enter(0.55)}>
-        <strong>{enterLabel}</strong>
-        <small>{helper}</small>
-      </motion.span>
-    )}
-  </>;
+  // Visual timeline (motion only — the 10s duration is fixed regardless):
+  // 150ms logo, 350ms wordmark + subtitle, 650ms orbit items, 800ms loader.
+  const enter = (delay: number) =>
+    reducedMotion
+      ? {
+          initial: false as const,
+          animate: { opacity: 1 },
+          transition: { duration: 0 },
+        }
+      : {
+          initial: { opacity: 0, scale: 0.97 },
+          animate: { opacity: 1, scale: 1 },
+          transition: { delay, duration: 0.48, ease: "easeOut" as const },
+        };
 
-  return <motion.div
-    className={`aims-branded-splash aims-branded-splash--${mode}`}
-    initial={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    transition={{ duration: reducedMotion ? 0.12 : 0.4, ease: "easeOut" }}
-    role={gateway ? undefined : "status"}
-    aria-live={gateway ? undefined : "polite"}
-    aria-label={gateway ? undefined : language === "nl" ? "AIMS-sessie wordt gecontroleerd" : "Checking AIMS session"}
-  >
-    <div className="aims-splash-content">
-      {gateway ? (
-        <motion.button
-          type="button"
-          className="aims-splash-entry-control"
-          onClick={onEnter}
-          aria-label={enterLabel}
-          whileTap={reducedMotion ? undefined : { scale: 0.98 }}
-        >
-          {brandedContent}
-        </motion.button>
-      ) : (
+  return (
+    <motion.div
+      className="aims-branded-splash"
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: reducedMotion ? 0.12 : 0.4, ease: "easeOut" }}
+      role="status"
+      aria-live="polite"
+      aria-label={a11yLabel}
+    >
+      <div className="aims-splash-content">
         <div className="aims-splash-checking-content">
-          {brandedContent}
-          <motion.div className="aims-splash-loading" {...enter(0.7)}>
+          <motion.div className="aims-splash-orbit-entrance" {...enter(0.15)}>
+            <SplashOrbit
+              logoSrc="/aims-logo-transparent.png"
+              itemsDelay={reducedMotion ? 0 : 0.65}
+            />
+          </motion.div>
+          <motion.div className="aims-splash-wordmark" {...enter(0.35)}>
+            <AimsWordmark variant="splash" />
+          </motion.div>
+          <motion.div className="aims-splash-loading" {...enter(0.8)}>
             <span className="aims-splash-spinner" aria-hidden="true" />
-            <p>Secure workspace loading...</p>
+            <p>{loadingLabel}</p>
           </motion.div>
         </div>
-      )}
-    </div>
-    <div className="aims-splash-waves" aria-hidden="true"><span /><span /><span /></div>
-  </motion.div>;
+      </div>
+      <div className="aims-splash-waves" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+    </motion.div>
+  );
 }

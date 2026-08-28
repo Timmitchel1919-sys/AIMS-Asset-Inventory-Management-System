@@ -606,7 +606,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                     onClick={async () => {
                       setProfileOpen(false);
                       await app.logout();
-                      navigate("/login", { replace: true, state: { reason: "signed-out" } });
+                      // Sign out returns to the public Landing page — never the
+                      // splash or the login screen (no startup friction).
+                      navigate("/", { replace: true });
                     }}
                   >
                     <LogOut />

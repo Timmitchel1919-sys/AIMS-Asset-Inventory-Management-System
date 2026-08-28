@@ -1,93 +1,114 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { useLocation, useNavigate } from "react-router-dom";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useApp } from "../../context/AppContext";
+import {
+  firebaseConfigured,
+  missingFirebaseEnvironmentVariables,
+} from "../../lib/firebase";
 import { BrandedSplash } from "./BrandedSplash";
+import "./AppStartupGate.css";
 
-const PUBLIC_ENTRY_SEEN_KEY = "aims_public_entry_seen";
+/**
+ * Explicit product requirement: the AIMS branded splash stays visible for a
+ * FIXED 10 seconds on every fresh app open / relaunch. It is never shortened by
+ * a fast startup, and never replayed on internal navigation, login success or
+ * logout — only a genuine app (re)load mounts this gate again.
+ */
+const SPLASH_DURATION = 10000;
 
-type PublicEntryState = "checking" | "gateway" | "ready";
+type StartupState =
+  | "initializing"
+  | "authenticated"
+  | "unauthenticated"
+  | "error";
 
-function hasSeenPublicEntry() {
-  try {
-    return window.localStorage.getItem(PUBLIC_ENTRY_SEEN_KEY) === "true";
-  } catch {
-    return false;
-  }
-}
-
-function rememberPublicEntry() {
-  try {
-    window.localStorage.setItem(PUBLIC_ENTRY_SEEN_KEY, "true");
-  } catch {
-    // Storage can be unavailable in restricted/private browser contexts.
-  }
+function StartupServiceWarning({ language }: { language: "en" | "nl" }) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+  const nl = language === "nl";
+  return (
+    <div className="aims-startup-warning" role="status" aria-live="polite">
+      <p>
+        {nl
+          ? "Sommige AIMS-diensten konden niet worden geïnitialiseerd. Controleer je verbinding en probeer het opnieuw."
+          : "Some AIMS services could not be initialized. Check your connection and try again."}
+      </p>
+      <button
+        type="button"
+        onClick={() => setDismissed(true)}
+        aria-label={nl ? "Melding sluiten" : "Dismiss message"}
+      >
+        ×
+      </button>
+    </div>
+  );
 }
 
 export function AppStartupGate({ children }: { children: ReactNode }) {
   const { authLoading, language, user } = useApp();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [entryState, setEntryState] = useState<PublicEntryState>("checking");
+  const reducedMotion = useReducedMotion();
+  const [splashComplete, setSplashComplete] = useState(false);
 
+  // One authoritative startup timer, armed once when the app boots. No nested or
+  // competing timers anywhere else.
   useEffect(() => {
-    if (authLoading || entryState !== "checking") return;
+    const timer = window.setTimeout(
+      () => setSplashComplete(true),
+      SPLASH_DURATION,
+    );
+    return () => window.clearTimeout(timer);
+  }, []);
 
-    const query = new URLSearchParams(location.search);
-    const forcedWelcome = location.pathname === "/welcome" || query.get("welcome") === "1";
-    const publicRoot = location.pathname === "/";
+  // Firebase init, auth/session restore, and theme/language resolution all run
+  // inside AppProvider while the splash is visible. We derive one centralised
+  // StartupState continuously so the destination decision is ready before the
+  // timer fires — never after. Routing itself is enforced by the router's auth
+  // guards (this gate only owns the splash), so the state drives presentation.
+  const firebaseUnavailable =
+    !firebaseConfigured || missingFirebaseEnvironmentVariables.length > 0;
+  const startupState: StartupState = authLoading
+    ? "initializing"
+    : user
+      ? "authenticated"
+      : firebaseUnavailable
+        ? "error"
+        : "unauthenticated";
 
-    if (forcedWelcome) {
-      setEntryState("gateway");
-      return;
-    }
+  // At the 10s mark: if initialization failed, the router still routes to the
+  // safe public shell; we add a non-blocking, non-technical warning. Security is
+  // never bypassed — route guards remain authoritative.
+  const initFailed = splashComplete && startupState === "error";
+  const showSplash = !splashComplete;
 
-    if (user) {
-      rememberPublicEntry();
-      if (publicRoot) navigate("/dashboard", { replace: true });
-      setEntryState("ready");
-      return;
-    }
+  return (
+    <>
+      {/*
+        Children mount and initialize during the splash. They are kept visually
+        behind the opaque splash on a dark ground, then cross-faded in as the
+        splash fades out — so there is never a white flash on reveal, for either
+        the Landing or the Dashboard destination.
+      */}
+      <motion.div
+        className="aims-startup-shell"
+        aria-hidden={showSplash}
+        initial={false}
+        animate={{ opacity: showSplash ? 0 : 1 }}
+        transition={{
+          duration: showSplash ? 0 : reducedMotion ? 0.15 : 0.42,
+          ease: "easeOut",
+        }}
+        style={{ visibility: showSplash ? "hidden" : "visible" }}
+      >
+        {children}
+      </motion.div>
 
-    if (!publicRoot) {
-      setEntryState("ready");
-      return;
-    }
+      <AnimatePresence>
+        {showSplash && (
+          <BrandedSplash key="aims-splash" language={language} />
+        )}
+      </AnimatePresence>
 
-    if (hasSeenPublicEntry()) {
-      navigate("/login", { replace: true });
-      setEntryState("ready");
-      return;
-    }
-
-    setEntryState("gateway");
-  }, [authLoading, entryState, location.pathname, location.search, navigate, user]);
-
-  function enterAims() {
-    rememberPublicEntry();
-    navigate("/", { replace: location.pathname === "/welcome" });
-    setEntryState("ready");
-  }
-
-  const showOverlay = entryState !== "ready";
-
-  return <>
-    <motion.div
-      aria-hidden={showOverlay}
-      initial={false}
-      animate={{ opacity: showOverlay ? 0 : 1, y: showOverlay ? 4 : 0 }}
-      transition={{ duration: 0.38, ease: "easeOut" }}
-      style={{ visibility: showOverlay ? "hidden" : "visible" }}
-    >
-      {children}
-    </motion.div>
-    <AnimatePresence mode="wait">
-      {entryState === "checking" && (
-        <BrandedSplash key="aims-session-check" language={language} mode="checking" />
-      )}
-      {entryState === "gateway" && (
-        <BrandedSplash key="aims-public-gateway" language={language} mode="gateway" onEnter={enterAims} />
-      )}
-    </AnimatePresence>
-  </>;
+      {initFailed && <StartupServiceWarning language={language} />}
+    </>
+  );
 }

@@ -39,6 +39,10 @@ export interface DataTableProps<T> {
 
 const quote = (value: string) => `"${value.replaceAll('"', '""')}"`;
 
+// Every module table shows a capped preview by default; the text "collapse"
+// toggle in the summary bar expands it to the full result set and back.
+const COLLAPSED_ROW_LIMIT = 30;
+
 const ISO_DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 const ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/;
 const DATEISH_COLUMN = /(date|time|at$|created|updated|due|deadline|scheduled)/i;
@@ -96,6 +100,7 @@ export function DataTable<T>({
     direction: "asc" | "desc";
   } | null>(null);
   const [showColumns, setShowColumns] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [savedViews, setSavedViews] = useState<string[]>(() =>
     JSON.parse(localStorage.getItem(`kcs-views-${id}`) || "[]"),
   );
@@ -130,7 +135,10 @@ export function DataTable<T>({
       return sort.direction === "asc" ? result : -result;
     });
   }, [columns, searchable, sort]);
-  const pageRows = sorted;
+  const totalCount = sorted.length;
+  const collapsible = totalCount > COLLAPSED_ROW_LIMIT;
+  const pageRows =
+    collapsible && !expanded ? sorted.slice(0, COLLAPSED_ROW_LIMIT) : sorted;
   const visibleColumns = columns.filter((column) =>
     visible.includes(column.id),
   );
@@ -283,6 +291,35 @@ export function DataTable<T>({
             {nl ? "Exporteren" : "Export"}
           </Button>
         </div>
+      </div>
+      <div className="data-table-summary">
+        <span
+          className="data-table-count"
+          title={
+            nl
+              ? `${totalCount} records in deze module`
+              : `${totalCount} records in this module`
+          }
+        >
+          <b>{totalCount.toLocaleString(nl ? "nl-NL" : "en-US")}</b>
+          <small>{nl ? "records" : "records"}</small>
+        </span>
+        {collapsible && (
+          <button
+            type="button"
+            className="data-table-collapse"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((value) => !value)}
+          >
+            {expanded
+              ? nl
+                ? `Inklappen · ${COLLAPSED_ROW_LIMIT} tonen`
+                : `Collapse · show ${COLLAPSED_ROW_LIMIT}`
+              : nl
+                ? `Uitklappen · alle ${totalCount.toLocaleString("nl-NL")} tonen`
+                : `Expand · show all ${totalCount.toLocaleString("en-US")}`}
+          </button>
+        )}
       </div>
       {(query || savedViews.length > 0) && (
         <div className="filter-chips">

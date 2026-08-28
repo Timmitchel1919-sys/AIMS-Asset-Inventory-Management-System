@@ -806,6 +806,56 @@ td small {
   gap: 8px;
   border-bottom: 1px solid var(--color-border-subtle);
 }
+.data-table-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 13px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.data-table-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-background-secondary, var(--color-surface-elevated));
+  line-height: 1;
+}
+.data-table-count b {
+  font-size: 0.95rem;
+  font-weight: 750;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.data-table-count small {
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+.data-table-collapse {
+  margin-left: auto;
+  padding: 5px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary, #155eef);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: var(--radius-sm, 6px);
+}
+.data-table-collapse:hover {
+  text-decoration: underline;
+}
+.data-table-collapse:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
 .search {
   height: 40px;
   display: flex;
