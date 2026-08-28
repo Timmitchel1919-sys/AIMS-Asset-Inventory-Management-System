@@ -111,6 +111,8 @@ const en = {
   "common.next": "Next",
   "common.rowsPerPage": "Rows per page",
   "common.records": "records",
+  "common.totalRecords": "total records",
+  "common.showAllData": "Show all data",
   "common.tryAgain": "Try again",
   "common.noResults": "No assets found",
   "common.noResultsHelp": "Adjust the search or filters, or add a new asset.",
@@ -316,6 +318,8 @@ const nl: Record<keyof typeof en, string> = {
   "common.next": "Volgende",
   "common.rowsPerPage": "Rijen per pagina",
   "common.records": "records",
+  "common.totalRecords": "totaal records",
+  "common.showAllData": "Alle data tonen",
   "common.tryAgain": "Opnieuw proberen",
   "common.noResults": "Geen middelen gevonden",
   "common.noResultsHelp":

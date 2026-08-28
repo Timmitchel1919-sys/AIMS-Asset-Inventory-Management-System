@@ -806,53 +806,63 @@ td small {
   gap: 8px;
   border-bottom: 1px solid var(--color-border-subtle);
 }
-.data-table-summary {
+/* Summary strip beneath every module data panel: total-count box + label on
+   the left, text collapse toggle on the right. */
+.data-collapse-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 10px 13px;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
   border-top: 1px solid var(--color-border-subtle);
+  background: var(--color-background-secondary, transparent);
 }
-.data-table-count {
+.data-collapse-total {
   display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  padding: 4px 10px;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-background-secondary, var(--color-surface-elevated));
-  line-height: 1;
+  align-items: center;
+  gap: 10px;
 }
-.data-table-count b {
-  font-size: 0.95rem;
-  font-weight: 750;
+.data-collapse-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--color-input-border, var(--color-border));
+  border-radius: 10px;
+  background: var(--color-surface, var(--color-surface-elevated));
   color: var(--color-text-primary);
+  font-size: 0.95rem;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
-.data-table-count small {
-  font-size: 0.68rem;
-  font-weight: 650;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.data-collapse-label {
   color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
 }
-.data-table-collapse {
+.data-collapse-toggle {
   margin-left: auto;
-  padding: 5px 6px;
-  border: 0;
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--color-input-border, var(--color-border));
+  border-radius: 12px;
+  background: var(--color-surface, var(--color-surface-elevated));
   color: var(--color-primary, #155eef);
   font: inherit;
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 750;
   cursor: pointer;
-  border-radius: var(--radius-sm, 6px);
 }
-.data-table-collapse:hover {
-  text-decoration: underline;
+.data-collapse-toggle:hover {
+  background: var(--color-surface-hover, var(--color-background-secondary));
 }
-.data-table-collapse:focus-visible {
+.data-collapse-toggle:focus-visible {
   outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
 }

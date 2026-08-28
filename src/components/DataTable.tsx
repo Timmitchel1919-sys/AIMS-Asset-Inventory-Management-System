@@ -9,6 +9,10 @@ import {
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Button, Loader, State } from "./ui";
 import { useApp } from "../context/AppContext";
+import {
+  COLLAPSED_ROW_LIMIT,
+  DataCollapseBar,
+} from "./data-list/DataCollapseBar";
 
 export interface DataColumn<T> {
   id: string;
@@ -38,10 +42,6 @@ export interface DataTableProps<T> {
 }
 
 const quote = (value: string) => `"${value.replaceAll('"', '""')}"`;
-
-// Every module table shows a capped preview by default; the text "collapse"
-// toggle in the summary bar expands it to the full result set and back.
-const COLLAPSED_ROW_LIMIT = 30;
 
 const ISO_DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 const ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/;
@@ -444,35 +444,11 @@ export function DataTable<T>({
           </div>
         </>
       )}
-      <div className="data-table-summary">
-        <span
-          className="data-table-count"
-          title={
-            nl
-              ? `${totalCount} records in deze module`
-              : `${totalCount} records in this module`
-          }
-        >
-          <b>{totalCount.toLocaleString(nl ? "nl-NL" : "en-US")}</b>
-          <small>{nl ? "records" : "records"}</small>
-        </span>
-        {collapsible && (
-          <button
-            type="button"
-            className="data-table-collapse"
-            aria-expanded={!collapsed}
-            onClick={() => setCollapsed((value) => !value)}
-          >
-            {collapsed
-              ? nl
-                ? `Uitklappen · alle ${totalCount.toLocaleString("nl-NL")} tonen`
-                : `Expand · show all ${totalCount.toLocaleString("en-US")}`
-              : nl
-                ? `Inklappen · ${COLLAPSED_ROW_LIMIT} tonen`
-                : `Collapse · show ${COLLAPSED_ROW_LIMIT}`}
-          </button>
-        )}
-      </div>
+      <DataCollapseBar
+        total={totalCount}
+        collapsed={collapsed}
+        onToggle={() => setCollapsed((value) => !value)}
+      />
     </div>
   );
 }

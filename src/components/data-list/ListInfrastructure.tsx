@@ -9,10 +9,11 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useId, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { Button, Loader, State } from "../ui";
 import { useT } from "../../i18n";
 import { useApp } from "../../context/AppContext";
+import { COLLAPSED_ROW_LIMIT, DataCollapseBar } from "./DataCollapseBar";
 
 export interface ListColumn<T> {
   id: string;
@@ -450,16 +451,26 @@ export function ResponsiveDataList<T>({
     visibleSet = new Set(visible),
     selectedSet = new Set(selected),
     shown = columns.filter((column) => visibleSet.has(column.id));
+  // Full data set by default; the collapse control under the panel folds it to
+  // a 30-row preview and back.
+  const [collapsed, setCollapsed] = useState(false);
+  const displayRows =
+    collapsed && rows.length > COLLAPSED_ROW_LIMIT
+      ? rows.slice(0, COLLAPSED_ROW_LIMIT)
+      : rows;
   // Any cell that renders as an ISO date/date-time string (e.g. the
   // "last updated" column) follows the user's date & time preference.
   const cell = (column: ListColumn<T>, row: T) => formatAuto(column.render(row));
   const allSelected =
-    rows.length > 0 && rows.every((row) => selectedSet.has(rowKey(row)));
+    displayRows.length > 0 &&
+    displayRows.every((row) => selectedSet.has(rowKey(row)));
   const toggleAll = (checked: boolean) =>
     onSelection(
       checked
-        ? [...new Set([...selected, ...rows.map(rowKey)])]
-        : selected.filter((id) => !rows.some((row) => rowKey(row) === id)),
+        ? [...new Set([...selected, ...displayRows.map(rowKey)])]
+        : selected.filter(
+            (id) => !displayRows.some((row) => rowKey(row) === id),
+          ),
     );
   return (
     <div className="data-table" data-testid={`table-${id}`}>
@@ -494,7 +505,7 @@ export function ResponsiveDataList<T>({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => {
+            {displayRows.map((row) => {
               const key = rowKey(row);
               return (
                 <tr
@@ -528,7 +539,7 @@ export function ResponsiveDataList<T>({
         </table>
       </div>
       <div className="mobile-records">
-        {rows.map((row) => {
+        {displayRows.map((row) => {
           const key = rowKey(row);
           return (
             <article
@@ -563,6 +574,11 @@ export function ResponsiveDataList<T>({
           );
         })}
       </div>
+      <DataCollapseBar
+        total={rows.length}
+        collapsed={collapsed}
+        onToggle={() => setCollapsed((value) => !value)}
+      />
     </div>
   );
 }
