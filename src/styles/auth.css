@@ -1012,9 +1012,9 @@ html[data-theme] .auth-login .login-card {
 
 /* ========================================================================
    Reference-matched AIMS authentication polish — single authoritative block.
-   Light near-white background with soft curved blue "wave" shapes behind the
-   content, left-panel proportions tuned to the screenshots, and the real AIMS
-   logo asset on the sign-in card. Visual only; no auth logic changes.
+   Light near-white background with concentric blue rings behind the content
+   (upper-left + lower-right) and left-panel proportions tuned to the
+   screenshots. Visual only; no auth logic changes.
    ======================================================================== */
 html[data-theme] .auth-page:is(.auth-login, .auth-signup),
 html[data-theme] .auth-page.auth-login {
@@ -1024,6 +1024,7 @@ html[data-theme] .auth-page.auth-login {
     radial-gradient(circle at 50% 42%, #ffffff 0%, #f7fbff 30%, #e8f4fd 64%, #d9eefb 100%) !important;
 }
 
+/* Concentric blue rings behind the content, upper-left and lower-right. */
 html[data-theme] .auth-page:is(.auth-login, .auth-signup)::before,
 html[data-theme] .auth-page:is(.auth-login, .auth-signup)::after,
 html[data-theme="emerald-gloss"] .auth-page:is(.auth-login, .auth-signup)::before,
@@ -1032,25 +1033,34 @@ html[data-theme="emerald-gloss"] .auth-page:is(.auth-login, .auth-signup)::after
   display: block !important;
   position: absolute;
   z-index: -1;
-  border: 0 !important;
-  box-shadow: none !important;
+  border-radius: 50% !important;
+  border: 1.5px solid rgba(44,126,244,.30) !important;
+  background: transparent !important;
   pointer-events: none;
 }
 
 html[data-theme] .auth-page:is(.auth-login, .auth-signup)::before {
-  width: min(1160px, 86vw);
-  height: min(1160px, 86vw);
-  inset: -46% auto auto -28%;
-  border-radius: 46% 54% 58% 42% / 54% 44% 56% 46%;
-  background: radial-gradient(circle at 42% 42%, rgba(214,240,252,.92), rgba(186,220,247,.30) 52%, transparent 78%) !important;
+  width: 460px;
+  height: 460px;
+  inset: -232px auto auto -184px;
+  box-shadow:
+    0 0 0 3px rgba(44,126,244,.22),
+    0 0 0 96px transparent,
+    0 0 0 99px rgba(44,126,244,.16),
+    0 0 0 210px transparent,
+    0 0 0 213px rgba(44,126,244,.10) !important;
 }
 
 html[data-theme] .auth-page:is(.auth-login, .auth-signup)::after {
-  width: min(1320px, 94vw);
-  height: min(1320px, 94vw);
-  inset: auto -34% -52% auto;
-  border-radius: 54% 46% 40% 60% / 44% 54% 46% 56%;
-  background: radial-gradient(circle at 60% 60%, rgba(216,238,252,.84), rgba(145,189,240,.24) 50%, transparent 76%) !important;
+  width: 520px;
+  height: 520px;
+  inset: auto -252px -272px auto;
+  box-shadow:
+    0 0 0 3px rgba(44,126,244,.20),
+    0 0 0 108px transparent,
+    0 0 0 111px rgba(44,126,244,.14),
+    0 0 0 240px transparent,
+    0 0 0 243px rgba(44,126,244,.09) !important;
 }
 
 /* Left brand panel proportions tuned to the reference screenshots. */
@@ -1078,9 +1088,21 @@ html[data-theme] .auth-page.auth-signup .auth-brand h1 {
 
 @media (max-width: 767px) {
   html[data-theme] .auth-page:is(.auth-login, .auth-signup)::before {
-    width: 640px; height: 640px; inset: -300px auto auto -240px;
+    width: 300px; height: 300px; inset: -168px auto auto -128px;
+    box-shadow:
+      0 0 0 2px rgba(44,126,244,.22),
+      0 0 0 66px transparent,
+      0 0 0 68px rgba(44,126,244,.14),
+      0 0 0 144px transparent,
+      0 0 0 146px rgba(44,126,244,.09) !important;
   }
   html[data-theme] .auth-page:is(.auth-login, .auth-signup)::after {
-    width: 700px; height: 700px; inset: auto -320px -300px auto;
+    width: 340px; height: 340px; inset: auto -184px -196px auto;
+    box-shadow:
+      0 0 0 2px rgba(44,126,244,.20),
+      0 0 0 76px transparent,
+      0 0 0 78px rgba(44,126,244,.12),
+      0 0 0 160px transparent,
+      0 0 0 162px rgba(44,126,244,.08) !important;
   }
 }
