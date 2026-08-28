@@ -40,17 +40,18 @@
 
 .aims-splash-orbit {
   /*
-   * ONE responsive scale for the whole composition. Only this value changes
-   * per device (phone / tablet / desktop); the largest ring, the inner rings,
-   * the logo and the chip orbit radius all derive from it. That keeps every
-   * proportion locked — the logo never changes size relative to the rings, and
+   * ONE responsive scale for the whole composition. It follows the SMALLER of
+   * the viewport axes (so it never overflows in landscape or portrait), and is
+   * clamped for tiny and huge screens. The largest ring, the inner rings, the
+   * logo and the chip orbit radius all derive from it, so every proportion is
+   * locked: the logo never changes size relative to the rings, and
    * "Scannen / Middelen / Veilig" always sit exactly on the largest ring at
-   * every screen size.
+   * every screen size and orientation.
    */
-  --splash-orbit-radius: clamp(172px, 16vw, 226px);
+  --splash-orbit-radius: clamp(92px, min(30vw, 26vh), 228px);
   position: relative;
-  width: calc(var(--splash-orbit-radius) * 2 + clamp(88px, 12vw, 150px));
-  max-width: calc(100vw - 24px);
+  width: calc(var(--splash-orbit-radius) * 2 + clamp(96px, 13vw, 156px));
+  max-width: calc(100vw - 28px);
   aspect-ratio: 1;
   margin-inline: auto;
 }
@@ -65,16 +66,23 @@
 }
 
 .aims-splash-ring--outer {
-  /* Largest ring == the exact path the labels orbit on (diameter = 2 x radius). */
+  /* The largest / outermost orbit == the exact circular path the labels travel
+     on (diameter = 2 x radius). A thin cyan line with a soft glow — visible but
+     never competing with the centred AIMS logo. */
   width: calc(var(--splash-orbit-radius) * 2);
   height: calc(var(--splash-orbit-radius) * 2);
-  border-color: rgba(2, 206, 253, 0.16);
-  border-style: dashed;
+  border-width: 1.5px;
+  border-color: rgba(2, 206, 253, 0.32);
+  box-shadow:
+    0 0 22px rgba(2, 206, 253, 0.12),
+    inset 0 0 22px rgba(2, 206, 253, 0.06);
 }
 
 .aims-splash-ring--middle {
   width: calc(var(--splash-orbit-radius) * 1.4);
   height: calc(var(--splash-orbit-radius) * 1.4);
+  border-style: dashed;
+  border-color: rgba(4, 156, 250, 0.14);
 }
 
 .aims-splash-ring--inner {
@@ -90,7 +98,8 @@
   z-index: 4;
   display: grid;
   /* Locked fraction of the orbit radius: the logo scales together with the
-     rings as one unit, and stays visually constant relative to them. */
+     rings as one unit, and stays visually constant relative to them. It is the
+     fixed anchor of the system — it never orbits. */
   width: calc(var(--splash-orbit-radius) * 0.82);
   aspect-ratio: 1;
   place-items: center;
@@ -102,6 +111,14 @@
   height: 100%;
   object-fit: contain;
   filter: drop-shadow(0 0 24px rgba(0, 93, 236, 0.3)) drop-shadow(0 0 46px rgba(2, 206, 253, 0.12));
+  /* Extremely restrained "breathing" — 1.0 -> 1.015 -> 1.0. Never a rotation. */
+  animation: aims-splash-logo-breathe 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes aims-splash-logo-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
 }
 
 .aims-splash-orbit-layer {
@@ -131,13 +148,18 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 13px;
-  border: 1px solid rgba(73, 156, 250, 0.28);
+  padding: clamp(7px, 0.9vw, 10px) clamp(11px, 1.2vw, 15px);
+  border: 1px solid rgba(73, 156, 250, 0.4);
   border-radius: 999px;
-  background: rgba(2, 29, 88, 0.88);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  background: rgba(2, 29, 88, 0.82);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.28),
+    0 0 18px rgba(2, 206, 253, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
   color: var(--splash-text);
-  font-size: 0.76rem;
+  font-size: clamp(0.66rem, 0.9vw, 0.78rem);
   font-weight: 750;
   white-space: nowrap;
   will-change: transform;
@@ -220,16 +242,11 @@
   to { transform: translate3d(1.5%, -2px, 0); opacity: 1; }
 }
 
-/* Per-device adaptation: change ONLY the single scale variable. Every ring,
-   the logo and the chip radius follow it automatically, so the composition
-   stays perfectly proportional on phones, tablets and monitors. */
-@media (min-width: 769px) and (max-width: 1200px) {
-  .aims-splash-orbit { --splash-orbit-radius: clamp(150px, 19vw, 200px); }
-}
-
+/* The base --splash-orbit-radius (min(30vw, 23vh) clamped) already adapts to
+   every width, height and orientation. These queries only fine-tune the pieces
+   that are not pure geometry: icon size, and vertical breathing room on short
+   windows / landscape phones. */
 @media (max-width: 768px) {
-  .aims-splash-orbit { --splash-orbit-radius: clamp(112px, 32vw, 156px); }
-  .aims-splash-orbit-chip { gap: 6px; padding: 7px 10px; font-size: 0.66rem; }
   .aims-splash-orbit-chip svg { width: 15px; height: 15px; }
   .aims-splash-wordmark { margin-top: -6px; }
   .aims-branded-splash .brand-wordmark {
@@ -238,19 +255,11 @@
   }
 }
 
-@media (max-width: 380px) {
-  .aims-splash-orbit { --splash-orbit-radius: clamp(96px, 34vw, 120px); }
-}
-
 @media (max-height: 720px) {
-  .aims-splash-orbit { --splash-orbit-radius: min(20vh, 150px); }
+  .aims-splash-orbit { --splash-orbit-radius: clamp(72px, min(28vw, 20vh), 150px); }
   .aims-splash-wordmark { margin-top: -12px; }
-  .aims-branded-splash .brand-wordmark { --wordmark-size: clamp(2.7rem, 8vh, 4rem); }
+  .aims-branded-splash .brand-wordmark { --wordmark-size: clamp(2.4rem, 8vh, 4rem); }
   .aims-splash-loading { margin-top: 14px; }
-}
-
-@media (max-height: 720px) and (max-width: 768px) {
-  .aims-splash-orbit { --splash-orbit-radius: min(18vh, 34vw, 132px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -259,11 +268,11 @@
     transform: rotate(0deg) !important;
     will-change: auto;
   }
+  .aims-splash-logo img { animation: none !important; }
   .aims-splash-waves span { animation: none; }
   .aims-splash-spinner { animation-duration: 1.5s; }
 }
 
-.aims-splash-entry-control,
 .aims-splash-checking-content {
   display: flex;
   width: 100%;
@@ -271,61 +280,4 @@
   align-items: center;
   color: inherit;
   text-align: center;
-}
-
-.aims-splash-entry-control {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  font: inherit;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.aims-splash-entry-control .aims-splash-logo {
-  border-radius: 28%;
-  transition: transform .2s ease, box-shadow .2s ease;
-}
-
-.aims-splash-entry-control:hover .aims-splash-logo {
-  transform: translate(-50%, -50%) scale(1.025);
-  box-shadow: 0 0 24px rgba(0,93,236,.18), 0 0 46px rgba(2,206,253,.1);
-}
-
-.aims-splash-entry-control:active .aims-splash-logo {
-  transform: translate(-50%, -50%) scale(.98);
-}
-
-.aims-splash-entry-control:focus-visible .aims-splash-logo {
-  box-shadow: 0 0 0 3px rgba(4,156,250,.25), 0 0 28px rgba(0,93,236,.24);
-}
-
-.aims-splash-enter-copy {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 7px;
-  margin-top: 22px;
-}
-
-.aims-splash-enter-copy strong {
-  color: var(--splash-text);
-  font-size: .94rem;
-  font-weight: 750;
-  letter-spacing: .08em;
-}
-
-.aims-splash-enter-copy small {
-  color: var(--splash-text-muted);
-  font-size: .72rem;
-  font-weight: 500;
-  letter-spacing: .035em;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .aims-splash-entry-control .aims-splash-logo {
-    transition-duration: .01ms;
-  }
 }

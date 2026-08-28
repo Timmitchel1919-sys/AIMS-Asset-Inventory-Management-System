@@ -77,11 +77,14 @@ describe("AIMS branded splash visuals are preserved", () => {
     expect(splash).toMatch(/aria-live="polite"/);
   });
 
-  it("orbits Scannen / Middelen / Veilig ~120deg apart, 20s linear infinite clockwise", () => {
+  it("orbits Scannen / Middelen / Veilig ~120deg apart, one revolution 12-16s, linear infinite", () => {
     expect(orbit).toMatch(/label: "Scannen", angle: 0/);
     expect(orbit).toMatch(/label: "Middelen", angle: 120/);
     expect(orbit).toMatch(/label: "Veilig", angle: 240/);
-    expect(orbit).toMatch(/duration: 20,\s*ease: "linear",\s*repeat: Infinity/);
+    const revolution = orbit.match(/duration:\s*(\d+),\s*ease: "linear",\s*repeat: Infinity/);
+    expect(revolution).not.toBeNull();
+    expect(Number(revolution![1])).toBeGreaterThanOrEqual(12);
+    expect(Number(revolution![1])).toBeLessThanOrEqual(16);
   });
 
   it("counter-rotates the chips so labels never turn upside down", () => {
@@ -107,9 +110,15 @@ describe("AIMS branded splash visuals are preserved", () => {
       /\.aims-splash-logo\s*\{[^}]*width:\s*calc\(var\(--splash-orbit-radius\)\s*\*\s*0?\.\d+\)/,
     );
     expect(splashCss).not.toMatch(/\.aims-splash-logo\s*\{[^}]*width:\s*clamp\(/);
-    // Media queries adapt by retuning only the single scale variable.
-    const mediaBlocks = splashCss.match(/@media[^{]+\{[^@]*?--splash-orbit-radius[^@]*?\}/g) ?? [];
-    expect(mediaBlocks.length).toBeGreaterThanOrEqual(3);
+    // The base scale variable is viewport-aware on BOTH axes (min(vw, vh)), so
+    // the orbit adapts to width, height and orientation without per-device
+    // rewrites; only short viewports get one extra fine-tune.
+    expect(splashCss).toMatch(
+      /--splash-orbit-radius:\s*clamp\([^;]*min\([^;]*vw[^;]*vh[^;]*\)[^;]*\)/,
+    );
+    expect(splashCss).toMatch(
+      /@media \(max-height: 720px\)[^}]*--splash-orbit-radius/,
+    );
   });
 });
 

@@ -28,8 +28,8 @@ function SplashOrbitItem({
         className="aims-splash-orbit-angle"
         style={{ transform: `rotate(${-item.angle}deg) translate(-50%,-50%)` }}
       >
-        {/* Outer orbit adds +360°/20s; this chip subtracts -360°/20s so the
-            label never rotates upside down. */}
+        {/* The outer orbit adds +360°/14s; this chip subtracts -360°/14s so the
+            pill/text/icon stay upright while travelling the orbital track. */}
         <motion.span
           className="aims-splash-orbit-chip"
           style={{ rotate: counterRotate }}
@@ -57,9 +57,10 @@ export function SplashOrbit({
       rotate.set(0);
       return;
     }
-    // 20s, linear, infinite, clockwise (increasing rotation).
+    // One revolution every 14s — constant angular velocity (linear), infinite,
+    // clockwise. 0deg and 360deg are identical, so the loop is seamless.
     const controls = animate(rotate, [0, 360], {
-      duration: 20,
+      duration: 14,
       ease: "linear",
       repeat: Infinity,
     });
