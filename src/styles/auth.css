@@ -43,7 +43,16 @@
 .auth-card>.auth-logo-lockup>.mobile-auth-logo{display:block;width:112px;height:112px;margin:0;border:0;border-radius:0;background:transparent;object-fit:contain;filter:var(--brand-logo-filter);box-shadow:none}
 .auth-logo-lockup strong{font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;color:var(--auth-navy)}
 .auth-card h2{margin:0 0 10px;text-align:center;font-size:2rem;font-weight:700;line-height:1.15;letter-spacing:-.025em;color:var(--auth-text-primary)}
-.auth-card>p{margin:0 0 24px;text-align:center;font-size:.95rem;font-weight:400;line-height:1.55;color:var(--auth-text-secondary)}
+.auth-card>p,.auth-card-subtitle{margin:0 0 24px;text-align:center;font-size:.95rem;font-weight:400;line-height:1.55;color:var(--auth-text-secondary)}
+.auth-logo-lockup+h2{margin-top:2px}
+/* The frozen mobile sign-in card cannot scroll, so keep it exactly as tuned:
+   the card header (wordmark + heading + subtitle) is a desktop-only addition.
+   The left brand panel already carries the wordmark on larger screens. */
+@media(max-width:767px){
+  .auth-login .login-card>.auth-logo-lockup,
+  .auth-login .login-card>h2,
+  .auth-login .login-card>.auth-card-subtitle{display:none}
+}
 
 .auth-card form>label{display:block;margin:0 0 18px;font-size:.78rem;font-weight:600;color:var(--auth-text-primary)}
 .auth-card form>label>span{display:block;margin-bottom:8px}

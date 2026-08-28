@@ -94,6 +94,23 @@ describe("AIMS branded splash visuals are preserved", () => {
     expect(orbit).toMatch(/alt="AIMS Asset & Inventory Management System"/);
     expect(orbit).not.toMatch(/aims-splash-logo[^]*?animate=\{\{ rotate/);
   });
+
+  it("places the labels exactly on the largest ring and scales the whole composition from one variable", () => {
+    // Chip orbit distance == largest ring radius (ring diameter = 2 x radius).
+    expect(orbit).toMatch(/translateX\(var\(--splash-orbit-radius\)\)/);
+    expect(splashCss).toMatch(
+      /\.aims-splash-ring--outer\s*\{[^}]*width:\s*calc\(var\(--splash-orbit-radius\)\s*\*\s*2\)/,
+    );
+    // Logo size is a locked fraction of the same radius (constant relative to
+    // the rings; only the shared variable changes per device).
+    expect(splashCss).toMatch(
+      /\.aims-splash-logo\s*\{[^}]*width:\s*calc\(var\(--splash-orbit-radius\)\s*\*\s*0?\.\d+\)/,
+    );
+    expect(splashCss).not.toMatch(/\.aims-splash-logo\s*\{[^}]*width:\s*clamp\(/);
+    // Media queries adapt by retuning only the single scale variable.
+    const mediaBlocks = splashCss.match(/@media[^{]+\{[^@]*?--splash-orbit-radius[^@]*?\}/g) ?? [];
+    expect(mediaBlocks.length).toBeGreaterThanOrEqual(3);
+  });
 });
 
 describe("logout returns to the public Landing page, never the splash or login", () => {

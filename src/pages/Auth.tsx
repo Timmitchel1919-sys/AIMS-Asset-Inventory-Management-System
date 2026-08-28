@@ -140,6 +140,18 @@ export default function Auth({
       : mode === "signup"
         ? nl ? "Maak uw AIMS-account" : "Create your AIMS account"
         : nl ? "Herstel uw wachtwoord" : "Reset your password";
+  const subtitle =
+    mode === "login"
+      ? nl
+        ? "Meld u aan met uw goedgekeurde schoolaccount."
+        : "Sign in with your approved school account."
+      : mode === "signup"
+        ? nl
+          ? "Registreer met uw goedgekeurde school-e-mailadres."
+          : "Register with your approved school email address."
+        : nl
+          ? "Voer uw e-mailadres in; we sturen u een herstellink."
+          : "Enter your email address and we'll send you a reset link.";
   return (
     <div className={`auth-page auth-${mode}`} data-auth-theme={app.theme}>
       <section className="auth-brand">
@@ -214,12 +226,13 @@ export default function Auth({
             </>
           ) : (
             <>
-              {mode === "forgot" && (
-                <div className="auth-logo-lockup">
-                  <AimsWordmark variant="auth" />
-                </div>
+              <div className="auth-logo-lockup">
+                <AimsWordmark variant="auth" />
+              </div>
+              <h2>{title}</h2>
+              {mode !== "login" && (
+                <p className="auth-card-subtitle">{subtitle}</p>
               )}
-              {mode === "forgot" && <h2>{title}</h2>}
               <form onSubmit={submit} noValidate>
                 {mode === "signup" && (
                   <label>
