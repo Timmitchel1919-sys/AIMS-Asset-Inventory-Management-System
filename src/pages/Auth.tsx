@@ -225,7 +225,7 @@ export default function Auth({
             </>
           ) : (
             <>
-              {mode !== "login" && (
+              {mode === "forgot" && (
                 <>
                   <h2>{title}</h2>
                   <p className="auth-card-subtitle">{subtitle}</p>
