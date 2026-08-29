@@ -110,14 +110,12 @@ describe("AIMS branded splash visuals are preserved", () => {
       /\.aims-splash-logo\s*\{[^}]*width:\s*calc\(var\(--splash-orbit-radius\)\s*\*\s*0?\.\d+\)/,
     );
     expect(splashCss).not.toMatch(/\.aims-splash-logo\s*\{[^}]*width:\s*clamp\(/);
-    // The base scale variable is viewport-aware on BOTH axes (vw AND vh, capped
-    // via min()), so the whole circle plus the top-most label always clears the
-    // viewport edge on any width, height or orientation.
-    const baseRadius = splashCss.match(/--splash-orbit-radius:\s*([^;]+);/);
-    expect(baseRadius).not.toBeNull();
-    expect(baseRadius![1]).toMatch(/min\(/);
-    expect(baseRadius![1]).toMatch(/vw/);
-    expect(baseRadius![1]).toMatch(/vh/);
+    // The base scale variable is viewport-aware on BOTH axes (min(vw, vh)), so
+    // the orbit adapts to width, height and orientation without per-device
+    // rewrites; only short viewports get one extra fine-tune.
+    expect(splashCss).toMatch(
+      /--splash-orbit-radius:\s*clamp\([^;]*min\([^;]*vw[^;]*vh[^;]*\)[^;]*\)/,
+    );
     expect(splashCss).toMatch(
       /@media \(max-height: 720px\)[^}]*--splash-orbit-radius/,
     );
