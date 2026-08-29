@@ -1106,3 +1106,27 @@ html[data-theme] .auth-page.auth-signup .auth-brand h1 {
       0 0 0 162px rgba(44,126,244,.08) !important;
   }
 }
+
+/* ========================================================================
+   Auth glass card — one authoritative surface for /login and /signup.
+   Clean flat white, subtle uniform hairline border, soft diffuse shadow and
+   a generous radius, matching the supplied reference exactly. No diagonal
+   gradient, no heavy backdrop blur, no blue accent left-border.
+   ======================================================================== */
+html[data-theme] .auth-page:is(.auth-login, .auth-signup) .login-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(44, 126, 244, 0.16) !important;
+  border-radius: 24px !important;
+  box-shadow:
+    0 22px 50px rgba(9, 30, 66, 0.10),
+    0 4px 14px rgba(9, 30, 66, 0.05) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: #071f3d !important;
+}
+
+@media (max-width: 767px) {
+  html[data-theme] .auth-page:is(.auth-login, .auth-signup) .login-card {
+    border-radius: 22px !important;
+  }
+}
