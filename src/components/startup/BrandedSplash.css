@@ -48,9 +48,9 @@
    * "Scannen / Middelen / Veilig" always sit exactly on the largest ring at
    * every screen size and orientation.
    */
-  --splash-orbit-radius: clamp(92px, min(30vw, 26vh), 228px);
+  --splash-orbit-radius: min(clamp(88px, 28vw, 208px), 20vh);
   position: relative;
-  width: calc(var(--splash-orbit-radius) * 2 + clamp(96px, 13vw, 156px));
+  width: calc(var(--splash-orbit-radius) * 2 + clamp(64px, 8vw, 104px));
   max-width: calc(100vw - 28px);
   aspect-ratio: 1;
   margin-inline: auto;
@@ -67,15 +67,16 @@
 
 .aims-splash-ring--outer {
   /* The largest / outermost orbit == the exact circular path the labels travel
-     on (diameter = 2 x radius). A thin cyan line with a soft glow — visible but
+     on (diameter = 2 x radius). Scannen / Middelen / Veilig all sit permanently
+     on this glowing line. A thin cyan stroke with a soft glow — visible but
      never competing with the centred AIMS logo. */
   width: calc(var(--splash-orbit-radius) * 2);
   height: calc(var(--splash-orbit-radius) * 2);
   border-width: 1.5px;
-  border-color: rgba(2, 206, 253, 0.32);
+  border-color: rgba(2, 206, 253, 0.44);
   box-shadow:
-    0 0 22px rgba(2, 206, 253, 0.12),
-    inset 0 0 22px rgba(2, 206, 253, 0.06);
+    0 0 28px rgba(2, 206, 253, 0.18),
+    inset 0 0 26px rgba(2, 206, 253, 0.07);
 }
 
 .aims-splash-ring--middle {
@@ -242,10 +243,10 @@
   to { transform: translate3d(1.5%, -2px, 0); opacity: 1; }
 }
 
-/* The base --splash-orbit-radius (min(30vw, 23vh) clamped) already adapts to
+/* The base --splash-orbit-radius already caps itself at 20vh (min(...,20vh)) so
+   the whole circle plus the top-most label always clears the viewport edge on
    every width, height and orientation. These queries only fine-tune the pieces
-   that are not pure geometry: icon size, and vertical breathing room on short
-   windows / landscape phones. */
+   that are not pure geometry: icon size and vertical breathing room. */
 @media (max-width: 768px) {
   .aims-splash-orbit-chip svg { width: 15px; height: 15px; }
   .aims-splash-wordmark { margin-top: -6px; }
@@ -256,7 +257,7 @@
 }
 
 @media (max-height: 720px) {
-  .aims-splash-orbit { --splash-orbit-radius: clamp(72px, min(28vw, 20vh), 150px); }
+  .aims-splash-orbit { --splash-orbit-radius: min(clamp(68px, 26vw, 140px), 17vh); }
   .aims-splash-wordmark { margin-top: -12px; }
   .aims-branded-splash .brand-wordmark { --wordmark-size: clamp(2.4rem, 8vh, 4rem); }
   .aims-splash-loading { margin-top: 14px; }
