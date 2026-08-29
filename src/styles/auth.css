@@ -1130,3 +1130,9 @@ html[data-theme] .auth-page:is(.auth-login, .auth-signup) .login-card {
     border-radius: 22px !important;
   }
 }
+
+/* Brand lockup subtitle + description paragraph in black (requested). */
+html[data-theme] .auth-page:is(.auth-login, .auth-signup) .auth-brand-header .aims-public-lockup__copy small,
+html[data-theme] .auth-page:is(.auth-login, .auth-signup) .auth-brand-copy p {
+  color: #000000 !important;
+}
