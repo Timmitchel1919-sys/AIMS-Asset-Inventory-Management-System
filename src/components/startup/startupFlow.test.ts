@@ -89,7 +89,18 @@ describe("AIMS branded splash visuals are preserved", () => {
 
   it("counter-rotates the chips so labels never turn upside down", () => {
     expect(orbit).toMatch(/useTransform\(rotate, \(value\) => -value\)/);
-    expect(orbit).toMatch(/style=\{\{ rotate: counterRotate \}\}/);
+    expect(orbit).toMatch(/rotate: counterRotate/);
+  });
+
+  it("places every label centre exactly on the ring (pure translation, all angles)", () => {
+    // rotate(a) translateX(r) rotate(-a) == pure translation to the ring point,
+    // so 120° and 240° land on the line just like 0° — no drift.
+    expect(orbit).toMatch(
+      /rotate\(\$\{item\.angle\}deg\) translateX\(var\(--splash-orbit-radius\)\) rotate\(\$\{-item\.angle\}deg\)/,
+    );
+    // Pill centred on that point in screen space (no rotation mixed into it).
+    expect(orbit).toMatch(/x: "-50%", y: "-50%"/);
+    expect(orbit).not.toMatch(/rotate\(\$\{-item\.angle\}deg\) translate\(-50%,-50%\)/);
   });
 
   it("keeps the AIMS logo stationary at the orbit centre with an accessible alt", () => {

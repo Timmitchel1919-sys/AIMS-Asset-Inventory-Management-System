@@ -138,12 +138,6 @@
   transform-origin: 0 0;
 }
 
-.aims-splash-orbit-angle {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
 .aims-splash-orbit-chip {
   display: inline-flex;
   align-items: center;
@@ -263,11 +257,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .aims-splash-orbit-layer,
-  .aims-splash-orbit-chip {
+  /* Stop the spin only. The chip keeps its framer-driven
+     translate(-50%,-50%) centring + counter-rotation (which resolves to 0),
+     so the three labels stay parked exactly on the outer ring, 120° apart. */
+  .aims-splash-orbit-layer {
     transform: rotate(0deg) !important;
     will-change: auto;
   }
+  .aims-splash-orbit-chip { will-change: auto; }
   .aims-splash-logo img { animation: none !important; }
   .aims-splash-waves span { animation: none; }
   .aims-splash-spinner { animation-duration: 1.5s; }

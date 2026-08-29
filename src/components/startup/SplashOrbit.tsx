@@ -18,26 +18,26 @@ function SplashOrbitItem({
   counterRotate: ReturnType<typeof useTransform<number, number>>;
 }) {
   return (
+    // rotate(angle) → translateX(radius) → rotate(-angle) is a PURE translation
+    // to the exact point on the outer orbit for this angle, with the local axes
+    // left screen-aligned. That keeps every label's centre mathematically on
+    // the ring for 0°, 120° AND 240° alike — none of them drift off the line.
     <div
       className="aims-splash-orbit-anchor"
       style={{
-        transform: `rotate(${item.angle}deg) translateX(var(--splash-orbit-radius))`,
+        transform: `rotate(${item.angle}deg) translateX(var(--splash-orbit-radius)) rotate(${-item.angle}deg)`,
       }}
     >
-      <div
-        className="aims-splash-orbit-angle"
-        style={{ transform: `rotate(${-item.angle}deg) translate(-50%,-50%)` }}
+      {/* x/y -50% centres the pill on that point (screen space, no rotation
+          mixed in). The outer orbit adds +360°/14s; this chip subtracts
+          -360°/14s so the pill/text/icon stay upright on the track. */}
+      <motion.span
+        className="aims-splash-orbit-chip"
+        style={{ rotate: counterRotate, x: "-50%", y: "-50%" }}
       >
-        {/* The outer orbit adds +360°/14s; this chip subtracts -360°/14s so the
-            pill/text/icon stay upright while travelling the orbital track. */}
-        <motion.span
-          className="aims-splash-orbit-chip"
-          style={{ rotate: counterRotate }}
-        >
-          <span aria-hidden="true">{item.icon}</span>
-          <span>{item.label}</span>
-        </motion.span>
-      </div>
+        <span aria-hidden="true">{item.icon}</span>
+        <span>{item.label}</span>
+      </motion.span>
     </div>
   );
 }
