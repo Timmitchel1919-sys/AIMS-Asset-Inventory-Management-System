@@ -1137,7 +1137,7 @@ html[data-theme] .auth-page:is(.auth-login, .auth-signup) .auth-brand-copy p {
   color: #000000 !important;
 }
 
-/* Sign-in controls: standard 60px vertical height on desktop / tablet.
+/* Sign-in controls: compact 46px vertical height on desktop / tablet.
    Vertical sizing only — colours, borders, radius, icons, fonts, horizontal
    padding and element spacing are untouched. Mobile (frozen card) keeps its
    existing tuned heights. */
@@ -1145,7 +1145,7 @@ html[data-theme] .auth-page:is(.auth-login, .auth-signup) .auth-brand-copy p {
   html[data-theme] .auth-login .login-card form label > div,
   html[data-theme] .auth-login .login-card form > .auth-submit,
   html[data-theme] .auth-login .login-card .google-login {
-    height: 60px !important;
-    min-height: 60px !important;
+    height: 46px !important;
+    min-height: 46px !important;
   }
 }
