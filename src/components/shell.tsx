@@ -45,6 +45,7 @@ import {
   type ReactNode,
 } from "react";
 import { useApp } from "../context/AppContext";
+import { ConnectivityPill } from "./ConnectivityPill";
 import {
   FONT_FAMILY_STACKS,
   resolveFontFamily,
@@ -491,6 +492,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
         )}
         <div className="top-actions">
+          <ConnectivityPill />
           <button
             className="top-notifications"
             aria-label={`${t("nav.notifications")}: ${unreadNotificationCount}`}

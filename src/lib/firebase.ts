@@ -1,7 +1,13 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAI, GoogleAIBackend } from "firebase/ai";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
-import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import {
+  connectFirestoreEmulator,
+  getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from "firebase/firestore";
 import { connectStorageEmulator, getStorage } from "firebase/storage";
 import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 
@@ -36,7 +42,23 @@ const app = firebaseConfigured
     : initializeApp(config)
   : null;
 export const firebaseAuth = app ? getAuth(app) : null;
-export const firestore = app ? getFirestore(app) : null;
+
+// Persistent local cache: the app opens cold offline for read/search, and
+// non-transactional writes queue and replay on reconnect. Falls back to the
+// default in-memory instance where IndexedDB is unavailable.
+function initFirestore() {
+  if (!app) return null;
+  try {
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
+  } catch {
+    return getFirestore(app);
+  }
+}
+export const firestore = initFirestore();
 export const firebaseStorage = app ? getStorage(app) : null;
 export const firebaseFunctions = app ? getFunctions(app, "southamerica-east1") : null;
 export const firebaseAi = app

@@ -1,7 +1,7 @@
 import {AlertTriangle,ArrowLeft,CheckCircle2,X} from 'lucide-react';
 import {useEffect,useId,useRef,type FormEvent,type ReactNode} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {Button,State} from './ui';
+import {Button} from './ui';
 import {useApp} from '../context/AppContext';
 import {requestAccountMenuOpen} from '../lib/accountMenu';
 
@@ -38,9 +38,10 @@ export function MutationFeedback({status,message}:{status:'idle'|'loading'|'succ
 }
 
 export function OfflineGate({children}:{children:ReactNode}){
-  const {language}=useApp();
-  if(typeof navigator!=='undefined'&&!navigator.onLine)return <State type="offline" title={language==='nl'?'U bent offline':'You are offline'} description={language==='nl'?'De applicatieshell is beschikbaar, maar mockmutaties zijn uitgeschakeld totdat de verbinding is hersteld.':'The application shell is available, but mock mutations are disabled until the connection is restored.'}/>;
-  return children;
+  // Phase 7: reads and edits to existing records work offline, so this no
+  // longer blocks the page. Connection-required actions are refused in the
+  // repository and the shell shows the live connectivity state.
+  return <>{children}</>;
 }
 
 export function FormShell({onSubmit,children}:{onSubmit:(event:FormEvent<HTMLFormElement>)=>void;children:ReactNode}){

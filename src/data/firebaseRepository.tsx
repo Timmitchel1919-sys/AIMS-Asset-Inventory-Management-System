@@ -10,11 +10,17 @@ import {
   query,
   runTransaction,
   serverTimestamp,
+  writeBatch,
   type DocumentData,
   type Firestore,
   where,
 } from "firebase/firestore";
 import { firebaseAuth, requireFirebase } from "../lib/firebase";
+import { reportWriteError } from "../lib/connectivity";
+import {
+  isConnectionRequiredAction,
+  OFFLINE_BLOCKED_MESSAGE_EN,
+} from "./offlinePolicy";
 import { rolePermissions, type Permission } from "../auth/permissions";
 import { AIMS_BOOTSTRAP_ADMIN_UID } from "../auth/accessBootstrap";
 import {
@@ -446,6 +452,11 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       return;
     }
 
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      await this.persistViaBatch(writes);
+      return;
+    }
+    try {
     await runTransaction(this.db, async (transaction) => {
       const existing = new Map<string, DocumentData>();
       for (const write of writes) {
@@ -515,11 +526,54 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
         else transaction.set(target, write.data, { merge: true });
       }
     });
+      reportWriteError(false);
+    } catch (error) {
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        await this.persistViaBatch(writes);
+        return;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Offline / fallback write path: a non-transactional batch that Firestore
+   * queues locally and replays on reconnect (last-write-wins). No optimistic
+   * concurrency reads and no assetCodes uniqueness lock — connection-required
+   * actions are refused in execute() so they never reach here.
+   */
+  private async persistViaBatch(
+    writes: Array<{
+      collection: string;
+      id: string;
+      data: DocumentData;
+      delete?: boolean;
+    }>,
+  ) {
+    const batch = writeBatch(this.db);
+    for (const write of writes) {
+      const target = doc(this.db, write.collection, write.id);
+      if (write.delete) batch.delete(target);
+      else batch.set(target, write.data, { merge: true });
+    }
+    try {
+      await batch.commit();
+      reportWriteError(false);
+    } catch (error) {
+      reportWriteError(true);
+      throw error;
+    }
   }
 
   override async execute(command: WorkflowCommand): Promise<WorkflowResult> {
     if (!this.initialized)
       return { ok: false, message: "AIMS data is still loading. Please wait." };
+    if (
+      typeof navigator !== "undefined" &&
+      !navigator.onLine &&
+      isConnectionRequiredAction(command.action)
+    )
+      return { ok: false, message: OFFLINE_BLOCKED_MESSAGE_EN };
     command = {
       ...command,
       actor:
