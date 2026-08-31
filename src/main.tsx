@@ -38,6 +38,7 @@ import "./styles/emerald-gloss.css";
 import "./styles/aims-midnight.css";
 import "./styles/aims-light.css";
 import "./styles/scrollbars.css";
+import "./styles/big-screen.css";
 
 /*
  * Apply the saved KCS theme before React renders.

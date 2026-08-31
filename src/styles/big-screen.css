@@ -1,0 +1,205 @@
+/*
+ * Big-screen scaling for the public surfaces — branded splash, landing page,
+ * login and sign-up.
+ *
+ * "Detect any screen size and adapt": the base styles already scale fluidly
+ * from phones up with clamp() + viewport units. This layer adds the upper end
+ * — large monitors, TVs and 80" Digibord walls — so those surfaces fill the
+ * display instead of sitting as a small island. Everything here is scoped to
+ * the four public surfaces; the authenticated app is untouched.
+ *
+ * Breakpoints are in CSS pixels (already DPR-adjusted by the browser), so a
+ * 4K wall reporting ~1920 CSS px is treated as a large monitor, and one
+ * reporting ~3840 CSS px gets the largest tier.
+ */
+
+/* ---------- Tier 1: large desktop / 1080p TV (~1600px+) ---------- */
+@media (min-width: 1600px) {
+  .aims-branded-splash .aims-splash-orbit {
+    --splash-orbit-radius: clamp(300px, min(30vw, 30vh), 460px);
+  }
+  .aims-branded-splash .aims-splash-wordmark .brand-wordmark {
+    --wordmark-size: clamp(5rem, 6.5vw, 8rem);
+    --wordmark-subtitle-size: clamp(1rem, 1.1vw, 1.4rem);
+  }
+
+  .aims-public-page .aims-container {
+    width: min(1440px, calc(100% - 96px));
+  }
+  .aims-public-page .aims-hero h1 {
+    font-size: clamp(4rem, 5vw, 6.4rem);
+    max-width: 20ch;
+  }
+  .aims-public-page .aims-lead {
+    font-size: clamp(1.15rem, 1.35vw, 1.6rem);
+    max-width: 62ch;
+  }
+  .aims-public-page .aims-section h2 {
+    font-size: clamp(2.6rem, 3.4vw, 4.4rem);
+  }
+
+  .auth-page:not(.auth-login) .auth-card {
+    width: min(600px, calc(100vw - 48px));
+    padding: 44px 46px 40px;
+  }
+  .auth-page:not(.auth-login) .auth-brand h1 {
+    font-size: clamp(3rem, 3.6vw, 4.2rem);
+  }
+  .auth-page.auth-login .login-card {
+    width: min(720px, calc(100vw - 64px)) !important;
+  }
+  .auth-page.auth-login .auth-brand h1 {
+    font-size: clamp(3.4rem, 4vw, 5.6rem) !important;
+  }
+}
+
+/* ---------- Tier 2: 1440p / 4K-scaled (~2000px+) ---------- */
+@media (min-width: 2000px) {
+  .aims-branded-splash .aims-splash-orbit {
+    --splash-orbit-radius: clamp(380px, min(30vw, 32vh), 620px);
+  }
+  .aims-branded-splash .aims-splash-wordmark .brand-wordmark {
+    --wordmark-size: clamp(7rem, 7vw, 11rem);
+    --wordmark-subtitle-size: clamp(1.3rem, 1.2vw, 1.9rem);
+  }
+  .aims-branded-splash .aims-splash-loading p {
+    font-size: 1.15rem;
+  }
+
+  .aims-public-page .aims-container {
+    width: min(1780px, calc(100% - 140px));
+  }
+  .aims-public-page .aims-hero h1 {
+    font-size: clamp(5.4rem, 5.4vw, 8.2rem);
+  }
+  .aims-public-page .aims-lead {
+    font-size: clamp(1.45rem, 1.5vw, 2rem);
+  }
+  .aims-public-page .aims-section h2 {
+    font-size: clamp(3.4rem, 3.6vw, 5.6rem);
+  }
+  .aims-public-page .aims-section {
+    padding-block: clamp(96px, 8vw, 168px);
+  }
+
+  .auth-page:not(.auth-login) .auth-card {
+    width: min(720px, calc(100vw - 64px));
+    padding: 56px 60px 50px;
+    border-radius: 30px;
+  }
+  .auth-page:not(.auth-login) .auth-card form label > div,
+  .auth-page:not(.auth-login) .auth-card form > .auth-submit,
+  .auth-page:not(.auth-login) .auth-card .google-login {
+    height: 60px;
+  }
+  .auth-page:not(.auth-login) .auth-brand h1 {
+    font-size: clamp(3.8rem, 4.2vw, 5.4rem);
+  }
+
+  .auth-page.auth-login .auth-panel {
+    padding: clamp(48px, 5vw, 120px) !important;
+  }
+  .auth-page.auth-login .login-card {
+    width: min(900px, calc(100vw - 96px)) !important;
+    padding: clamp(44px, 3.4vh, 68px) clamp(56px, 4.5vw, 96px) 48px !important;
+    border-radius: 32px !important;
+  }
+  .auth-page.auth-login .login-card form label > div {
+    height: 62px !important;
+  }
+  .auth-page.auth-login .auth-card form > .auth-submit,
+  .auth-page.auth-login .google-login {
+    height: 62px !important;
+  }
+  .auth-page.auth-login .login-card > .auth-logo-lockup > .mobile-auth-logo {
+    width: 168px !important;
+    height: 168px !important;
+  }
+  .auth-page.auth-login .auth-brand h1 {
+    font-size: clamp(4.4rem, 4.4vw, 7rem) !important;
+    max-width: 22ch !important;
+  }
+  .auth-page.auth-login .auth-brand-copy p {
+    font-size: clamp(1.4rem, 1.4vw, 2rem) !important;
+    max-width: 44ch !important;
+  }
+  .auth-page.auth-login .auth-brand li {
+    font-size: clamp(1.2rem, 1.15vw, 1.6rem) !important;
+  }
+}
+
+/* ---------- Tier 3: native 4K / 80" Digibord wall (~3200px+) ---------- */
+@media (min-width: 3200px) {
+  .aims-branded-splash .aims-splash-orbit {
+    --splash-orbit-radius: clamp(620px, min(28vw, 34vh), 1000px);
+  }
+  .aims-branded-splash .aims-splash-wordmark .brand-wordmark {
+    --wordmark-size: clamp(11rem, 7vw, 18rem);
+    --wordmark-subtitle-size: clamp(2rem, 1.2vw, 3rem);
+  }
+  .aims-branded-splash .aims-splash-loading {
+    gap: 20px;
+    margin-top: 44px;
+  }
+  .aims-branded-splash .aims-splash-loading p {
+    font-size: 1.7rem;
+  }
+  .aims-branded-splash .aims-splash-spinner {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+  }
+
+  .aims-public-page {
+    font-size: 22px;
+  }
+  .aims-public-page .aims-container {
+    width: min(2600px, calc(100% - 220px));
+  }
+  .aims-public-page .aims-hero h1 {
+    font-size: clamp(8rem, 5.6vw, 12rem);
+  }
+  .aims-public-page .aims-lead {
+    font-size: clamp(2rem, 1.6vw, 2.8rem);
+  }
+  .aims-public-page .aims-section h2 {
+    font-size: clamp(4.8rem, 3.8vw, 7.4rem);
+  }
+  .aims-public-page .aims-section {
+    padding-block: clamp(140px, 8vw, 260px);
+  }
+
+  .auth-page:not(.auth-login) .auth-card {
+    width: min(1000px, calc(100vw - 120px));
+    padding: 80px 88px 72px;
+    border-radius: 40px;
+  }
+  .auth-page:not(.auth-login) .auth-card form label > div,
+  .auth-page:not(.auth-login) .auth-card form > .auth-submit,
+  .auth-page:not(.auth-login) .auth-card .google-login {
+    height: 84px;
+    font-size: 1.2rem;
+  }
+
+  .auth-page.auth-login .login-card {
+    width: min(1240px, calc(100vw - 160px)) !important;
+    padding: 88px 120px 80px !important;
+    border-radius: 44px !important;
+  }
+  .auth-page.auth-login .login-card form label > div,
+  .auth-page.auth-login .auth-card form > .auth-submit,
+  .auth-page.auth-login .google-login {
+    height: 88px !important;
+    font-size: 1.25rem !important;
+  }
+  .auth-page.auth-login .login-card > .auth-logo-lockup > .mobile-auth-logo {
+    width: 240px !important;
+    height: 240px !important;
+  }
+  .auth-page.auth-login .auth-brand h1 {
+    font-size: clamp(7rem, 4.6vw, 11rem) !important;
+  }
+  .auth-page.auth-login .auth-brand-copy p {
+    font-size: clamp(2.2rem, 1.5vw, 3.2rem) !important;
+  }
+}

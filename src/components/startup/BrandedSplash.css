@@ -48,9 +48,11 @@
    * "Scannen / Middelen / Veilig" always sit exactly on the largest ring at
    * every screen size and orientation.
    */
-  --splash-orbit-radius: clamp(92px, min(30vw, 26vh), 228px);
+  /* Lower bound for phones, upper bound lifted so 27"+ monitors already fill
+     out; big-screen.css pushes it further for TV / 80" Digibord walls. */
+  --splash-orbit-radius: clamp(92px, min(30vw, 26vh), 360px);
   position: relative;
-  width: calc(var(--splash-orbit-radius) * 2 + clamp(96px, 13vw, 156px));
+  width: calc(var(--splash-orbit-radius) * 2 + clamp(96px, 13vw, 220px));
   max-width: calc(100vw - 28px);
   aspect-ratio: 1;
   margin-inline: auto;
@@ -172,8 +174,8 @@
 .aims-branded-splash .brand-wordmark {
   --brand-wordmark-primary: var(--splash-text);
   --brand-wordmark-secondary: var(--splash-text-muted);
-  --wordmark-size: clamp(3.5rem, 7vw, 6rem);
-  --wordmark-subtitle-size: clamp(0.68rem, 1.05vw, 0.92rem);
+  --wordmark-size: clamp(3.5rem, 7vw, 9rem);
+  --wordmark-subtitle-size: clamp(0.68rem, 1.05vw, 1.5rem);
   --wordmark-subtitle-gap: 10px;
 }
 
