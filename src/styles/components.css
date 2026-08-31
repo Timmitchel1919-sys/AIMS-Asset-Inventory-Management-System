@@ -3812,6 +3812,137 @@ html[data-aims-theme="aimsEmeraldGloss"]
 .sheets-sync-list--error {
   color: var(--danger, #b42318);
 }
+.sheets-sync-list a {
+  font-weight: 600;
+}
+
+/* ---- Sync conflicts page (Phase 6) ---- */
+.sync-conflicts-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.sync-conflicts-summary {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+.sync-conflicts-summary .linklike {
+  margin-left: 0.6rem;
+}
+.linklike {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent, #2563eb);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+.sync-conflicts-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--muted);
+}
+.sync-conflict-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.sync-conflict-group > h2 {
+  margin: 0.5rem 0 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+.sync-conflict-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.sync-conflict-card.is-dismissed {
+  opacity: 0.55;
+}
+.sync-conflict-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.sync-conflict-head code {
+  font-size: 0.78rem;
+}
+.sync-conflict-head code.muted {
+  color: var(--muted);
+}
+.sync-conflict-reason {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--warn, #b45309) 16%, transparent);
+  color: var(--warn, #b45309);
+}
+.sync-conflict-reason.reason-protected-field {
+  background: color-mix(in srgb, var(--warn, #b45309) 16%, transparent);
+  color: var(--warn, #b45309);
+}
+.sync-conflict-reason.reason-stale-version,
+.sync-conflict-reason.reason-contradictory,
+.sync-conflict-reason.reason-record-archived,
+.sync-conflict-reason.reason-unknown-record {
+  background: color-mix(in srgb, var(--danger, #b42318) 14%, transparent);
+  color: var(--danger, #b42318);
+}
+.sync-conflict-detail {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.sync-conflict-changes {
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.sync-conflict-changes th {
+  text-align: left;
+  padding: 0.15rem 0.75rem 0.15rem 0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sync-conflict-changes td {
+  padding: 0.15rem 0.5rem;
+}
+.sync-conflict-changes .from {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.sync-conflict-changes .arrow {
+  color: var(--muted);
+}
+.sync-conflict-changes .to {
+  font-weight: 600;
+}
+.sync-conflict-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.sync-conflict-errorlist {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.83rem;
+}
+.sync-conflict-errorlist code {
+  font-size: 0.76rem;
+}
 .import-steps span {
   position: relative;
 }

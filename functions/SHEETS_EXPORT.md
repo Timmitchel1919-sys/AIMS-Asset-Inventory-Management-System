@@ -146,7 +146,22 @@ back to the sheet so it stays coherent without a full re-export.
 Run from the UI: **Settings → Integrations → "Preview changes"**, review the
 conflicts/errors, then **"Apply N change(s)"** (two-click confirm).
 
+## Conflicts review (Phase 6)
+
+`resolveSyncConflict` (admin `onCall`) force-applies the sheet's value for the
+chosen held fields of ONE `protected-field` conflict. Identifier fields are
+refused; enums are validated; the `Sync Version` guard and sheet write-back are
+the same as a normal apply. `sheetsImport.forcePatch()` builds the patch (pure,
+unit-tested).
+
+UI: **Settings → Integrations → "Review N conflicts →"** opens
+`/admin/sync-conflicts` (`src/pages/SyncConflicts.tsx`). It runs a dry-run
+preview, groups conflicts by tab with per-field from→to, and per
+`protected-field` conflict offers a two-click **"Apply sheet value"**.
+`stale-version` conflicts get an **Export & re-check** shortcut. Dismissals are
+per-browser (`localStorage`), not shared.
+
 ## Not yet built
 
-A Conflicts resolution view (Phase 6), Apps Script live triggers / scheduled
-runs, asset creation from the sheet.
+Apps Script live triggers / scheduled runs, asset creation from the sheet,
+a shared/persisted conflict + Sync Log store.

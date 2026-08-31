@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { ArrowDownToLine, ArrowUpFromLine, RefreshCw } from "lucide-react";
 import { httpsCallable, type FunctionsError } from "firebase/functions";
 import { Button } from "../ui";
@@ -211,23 +212,14 @@ export function GoogleSheetsExport() {
             </small>
           )}
 
-          {plan?.conflicts?.length ? (
-            <ul className="sheets-sync-list">
-              {plan.conflicts.slice(0, 6).map((c, i) => (
-                <li key={i}>
-                  <code>
-                    {c.tab} r{c.row}
-                  </code>{" "}
-                  — {c.reason}
-                  {c.detail ? `: ${c.detail}` : ""}
-                </li>
-              ))}
-              {plan.conflicts.length > 6 && (
-                <li>
-                  …{plan.conflicts.length - 6} {nl ? "meer" : "more"}
-                </li>
-              )}
-            </ul>
+          {plan && (plan.summary.conflicts > 0 || plan.summary.errors > 0) ? (
+            <small className="sheets-sync-list">
+              <Link to="/admin/sync-conflicts">
+                {nl
+                  ? `${plan.summary.conflicts} conflict(en) beoordelen →`
+                  : `Review ${plan.summary.conflicts} conflict(s) →`}
+              </Link>
+            </small>
           ) : null}
           {plan?.errors?.length ? (
             <ul className="sheets-sync-list sheets-sync-list--error">

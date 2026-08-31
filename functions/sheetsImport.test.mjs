@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { planImport, FIELD_SPECS } from "./sheetsImport.js";
+import { planImport, forcePatch, FIELD_SPECS } from "./sheetsImport.js";
 
 // Build a tab grid from a header list + row objects.
 function grid(tab, rows) {
@@ -273,6 +273,58 @@ test("trash on a data tab AND restore on the Trash tab for one record is a confl
   assert.equal(plan.conflicts.some((c) => c.reason === "contradictory"), true);
   assert.equal(plan.summary.trashes, 0);
   assert.equal(plan.summary.restores, 0);
+});
+
+/* -------- Phase 6: forcePatch (conflict resolution) -------- */
+
+const forceArgs = (tab, rowObj, doc, fields) => {
+  const [header, row] = grid(tab, [rowObj]);
+  return { tab, header, row, doc, fields };
+};
+
+test("forcePatch applies a held manual field (asset Status)", () => {
+  const out = forcePatch(
+    forceArgs("Master Inventory",
+      { Name: "L", Status: "Under Repair", "Record ID": "ast-1", "Sync Version": "4" },
+      { id: "ast-1", name: "L", status: "Available", syncVersion: 4 },
+      ["Status"]),
+  );
+  assert.deepEqual(out.errors, []);
+  assert.equal(out.baseVersion, 4);
+  assert.deepEqual(out.patch, { status: "Under Repair" });
+  assert.deepEqual(out.changes.Status, { from: "Available", to: "Under Repair" });
+});
+
+test("forcePatch refuses identifier fields", () => {
+  const out = forcePatch(
+    forceArgs("Master Inventory",
+      { Name: "L", "Serial Number": "NEW123", "Record ID": "ast-1", "Sync Version": "0" },
+      { id: "ast-1", name: "L", serialNumber: "OLD", syncVersion: 0 },
+      ["Serial Number"]),
+  );
+  assert.equal(Object.keys(out.patch).length, 0);
+  assert.match(out.errors[0], /identifier/i);
+});
+
+test("forcePatch validates enums", () => {
+  const out = forcePatch(
+    forceArgs("Master Inventory",
+      { Name: "L", Status: "Sold", "Record ID": "ast-1", "Sync Version": "0" },
+      { id: "ast-1", name: "L", status: "Available", syncVersion: 0 },
+      ["Status"]),
+  );
+  assert.match(out.errors[0], /not a valid asset status/);
+});
+
+test("forcePatch reports a no-op when the sheet already matches", () => {
+  const out = forcePatch(
+    forceArgs("Categories",
+      { Name: "L", Status: "Active", "Record ID": "cat-1", "Sync Version": "0" },
+      { id: "cat-1", name: "L", status: "Active", syncVersion: 0 },
+      ["Status"]),
+  );
+  assert.deepEqual(out.patch, {});
+  assert.deepEqual(out.noop, ["Status"]);
 });
 
 test("nested details.notes edit patches the nested object", () => {

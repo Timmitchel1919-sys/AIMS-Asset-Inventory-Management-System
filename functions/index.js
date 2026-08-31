@@ -4,7 +4,12 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { defineSecret, defineString } from "firebase-functions/params";
 import { buildWorkbook, TAB_HEADERS } from "./sheetsExport.js";
 import { exportWorkbook, readTabs, writeCells } from "./sheetsClient.js";
-import { IMPORT_TABS, planImport } from "./sheetsImport.js";
+import {
+  collectionForTab,
+  forcePatch,
+  IMPORT_TABS,
+  planImport,
+} from "./sheetsImport.js";
 import { applyPlan } from "./applyImport.js";
 
 initializeApp();
@@ -322,5 +327,128 @@ export const importAimsFromSheets = onCall(
       needsAimsCreate: cap(plan.needsAimsCreate),
       errors: cap(plan.errors),
     };
+  },
+);
+
+/**
+ * Phase 6 — resolve one `protected-field` conflict by force-applying the sheet's
+ * value for the chosen fields (identifier fields are refused). Admin-only. Same
+ * `Sync Version` guard and sheet write-back as a normal apply.
+ */
+export const resolveSyncConflict = onCall(
+  { region: "southamerica-east1", timeoutSeconds: 120, memory: "256MiB" },
+  async (request) => {
+    if (!isAdmin(request))
+      throw new HttpsError(
+        "permission-denied",
+        "An AIMS administrator account is required.",
+      );
+
+    const spreadsheetId = String(
+      request.data?.spreadsheetId || syncSpreadsheetId.value() || "",
+    ).trim();
+    const tab = String(request.data?.tab || "").trim();
+    const rowNum = Number(request.data?.row || 0);
+    const recordId = String(request.data?.recordId || "").trim();
+    const fields = Array.isArray(request.data?.fields)
+      ? request.data.fields.map((f) => String(f))
+      : [];
+    if (!spreadsheetId || !tab || !rowNum || !recordId || !fields.length)
+      throw new HttpsError(
+        "invalid-argument",
+        "tab, row, recordId and fields are required.",
+      );
+
+    let grid;
+    try {
+      const wb = await readTabs(spreadsheetId, [tab]);
+      grid = wb[tab];
+    } catch (error) {
+      console.error("Sheets read failed", error?.message);
+      throw new HttpsError("unavailable", "The Google Sheet could not be read.");
+    }
+    if (!grid || grid.length < 2 || !grid[rowNum - 1])
+      throw new HttpsError("failed-precondition", "That sheet row no longer exists.");
+    const header = grid[0].map((h) => String(h ?? ""));
+    const row = grid[rowNum - 1].map((c) => String(c ?? ""));
+    const idCol = header.indexOf("Record ID");
+    if (idCol < 0 || row[idCol].trim() !== recordId)
+      throw new HttpsError(
+        "failed-precondition",
+        "The sheet row's Record ID no longer matches — re-export and re-check.",
+      );
+
+    const db = getFirestore();
+    const { collection, baseVersion, patch, changes, noop, errors } = forcePatch({
+      tab,
+      header,
+      row,
+      doc: await db
+        .collection(collectionForTab(tab) || "__none__")
+        .doc(recordId)
+        .get()
+        .then((s) => (s.exists ? { id: s.id, ...s.data() } : {})),
+      fields,
+    });
+    if (errors.length)
+      throw new HttpsError("failed-precondition", errors.join("; "));
+    if (!Object.keys(patch).length)
+      return { ok: true, applied: false, message: "Nothing to apply — the sheet already matches AIMS.", noop };
+
+    const ref = db.collection(collection).doc(recordId);
+    let newVersion;
+    try {
+      newVersion = await db.runTransaction(async (tx) => {
+        const snap = await tx.get(ref);
+        if (!snap.exists) throw new Error("record vanished");
+        const current = Number(snap.data().syncVersion ?? 0) || 0;
+        if (current !== baseVersion) throw new Error("version-race");
+        const next = current + 1;
+        tx.set(
+          ref,
+          {
+            ...patch,
+            syncVersion: next,
+            syncSource: "SHEETS",
+            updatedBy: "sheets-sync",
+            updatedAt: FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+        return next;
+      });
+    } catch (error) {
+      if (error.message === "version-race")
+        throw new HttpsError(
+          "failed-precondition",
+          "This record changed in AIMS since the sheet was exported. Re-export and re-check.",
+        );
+      throw new HttpsError("internal", "The conflict could not be resolved.");
+    }
+
+    const now = new Date().toISOString();
+    try {
+      await writeCells(
+        spreadsheetId,
+        [
+          {
+            tab,
+            row: rowNum,
+            cells: {
+              "Sync Version": String(newVersion),
+              "Sync Status": "SYNCED",
+              Source: "SHEETS",
+              "Updated At": now,
+              "Last Synced At": now,
+            },
+          },
+        ],
+        TAB_HEADERS,
+      );
+    } catch (error) {
+      console.error("Write-back failed (non-fatal)", error?.message);
+    }
+
+    return { ok: true, applied: true, syncVersion: newVersion, changes };
   },
 );

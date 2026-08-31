@@ -535,4 +535,65 @@ export function planImport({ workbook, current }, opts = {}) {
   return plan;
 }
 
+/**
+ * Phase 6 — build a patch that force-applies specific held fields for ONE row.
+ * Used by `resolveSyncConflict` when an admin decides the sheet's value wins for
+ * a `protected-field` (manual-policy) conflict. Identifier fields are refused.
+ *
+ * @param {{ tab: string, header: string[], row: string[], doc: object, fields: string[] }} args
+ * @returns {{ collection: string, baseVersion: number, patch: object, changes: object, noop: string[], errors: string[] }}
+ */
+export function forcePatch({ tab, header, row, doc, fields }) {
+  const spec = FIELD_SPECS[tab];
+  const errors = [];
+  if (!spec) return { collection: null, baseVersion: 0, patch: {}, changes: {}, noop: [], errors: [`Unknown tab "${tab}"`] };
+
+  const obj = rowObject(header.map(str), row);
+  const verCol = header.map(str).indexOf("Sync Version");
+  const baseVersion = Number(verCol >= 0 ? str(row[verCol]) : "0") || 0;
+
+  const patch = {};
+  const changes = {};
+  const noop = [];
+
+  for (const field of fields || []) {
+    const f = spec.fields[field];
+    if (!f) { errors.push(`Unknown field "${field}"`); continue; }
+    if (f.policy === "identifier") {
+      errors.push(`"${field}" is an identifier field and cannot be force-applied here`);
+      continue;
+    }
+    const c = coerce(f.kind || "text", obj[field]);
+    if (!c.ok) { errors.push(`${field}: ${c.error}`); continue; }
+
+    const v = c.value;
+    if (field === "Status" && tab === "Master Inventory" && v && !ASSET_STATUS.has(v))
+      { errors.push(`Status "${v}" is not a valid asset status`); continue; }
+    if (field === "Condition" && v && !CONDITION.has(v))
+      { errors.push(`Condition "${v}" is not valid`); continue; }
+    if (field === "Status" && tab !== "Master Inventory" && v && !REF_STATUS.has(v))
+      { errors.push(`Status "${v}" is not valid`); continue; }
+
+    const before = currentAsString(f.kind || "text", get(doc, f.path));
+    const after = f.kind === "bool" ? (v ? "true" : "false")
+      : f.kind === "int" || f.kind === "number" ? (v === null ? "" : String(v))
+      : f.kind === "date" ? (v || "")
+      : v;
+    if (before === after) { noop.push(field); continue; }
+
+    if (f.path.includes(".")) {
+      const [p0, p1] = f.path.split(".");
+      patch[p0] = patch[p0] || { ...(doc[p0] || {}) };
+      patch[p0][p1] = v;
+    } else {
+      patch[f.path] = v;
+    }
+    changes[field] = { from: before, to: after };
+  }
+
+  return { collection: spec.collection, baseVersion, patch, changes, noop, errors };
+}
+
+export const collectionForTab = (tab) => FIELD_SPECS[tab]?.collection || null;
+
 export { IMPORT_TABS, ASSET_STATUS, CONDITION, REF_STATUS };
