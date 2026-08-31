@@ -66,6 +66,23 @@ npm test
 firebase deploy --only functions:exportAimsToSheets
 ```
 
+### Deploying from Windows
+
+The project's absolute path contains spaces **and** an `&`
+(`…\Ai Projects New\AIMS Asset & Inventory Management System…`), which breaks
+the Firebase CLI's functions-discovery step on Windows (`'Inventory' is not
+recognized…`). Deploy through a mapped drive and give discovery more time:
+
+```powershell
+subst X: "C:\Users\Administrator\Downloads\Ai Projects New\AIMS Asset & Inventory Management System CodeX + Firebase"
+cd X:\
+$env:FUNCTIONS_DISCOVERY_TIMEOUT = "120"
+firebase deploy --only functions:exportAimsToSheets --project aims-asset-inventory-system
+subst X: /D   # cleanup
+```
+
+Hosting is unaffected — it deploys from GitHub Actions on Linux.
+
 ## Run
 
 From an authenticated AIMS admin session:

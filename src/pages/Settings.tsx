@@ -19,6 +19,7 @@ import { Button, Field, SelectField } from "../components/ui";
 import { MutationFeedback, PageHeader } from "../components/WorkflowUi";
 import { LegalPrivacySettings } from "../components/legal/LegalPrivacySettings";
 import { AppDeviceSettings } from "../components/settings/AppDeviceSettings";
+import { GoogleSheetsExport } from "../components/settings/GoogleSheetsExport";
 import { MasterDataSettings } from "../components/settings/MasterDataSettings";
 import { RecycleBinSettings } from "../components/settings/RecycleBinSettings";
 import { useApp } from "../context/AppContext";
@@ -408,27 +409,31 @@ export default function Settings() {
                   </p>
                 </div>
               )}
-              {tab === "integrations" &&
-                integrations.map((integration) => (
-                  <div
-                    className="switch-row wide integration-status-row"
-                    key={integration.name}
-                  >
-                    <span>
-                      <strong>{integration.name}</strong>
-                      <small>{integration.detail}</small>
-                    </span>
-                    <b
-                      className={
-                        integration.connected
-                          ? "integration-connected"
-                          : "integration-disconnected"
-                      }
+              {tab === "integrations" && (
+                <>
+                  {integrations.map((integration) => (
+                    <div
+                      className="switch-row wide integration-status-row"
+                      key={integration.name}
                     >
-                      {integration.status}
-                    </b>
-                  </div>
-                ))}
+                      <span>
+                        <strong>{integration.name}</strong>
+                        <small>{integration.detail}</small>
+                      </span>
+                      <b
+                        className={
+                          integration.connected
+                            ? "integration-connected"
+                            : "integration-disconnected"
+                        }
+                      >
+                        {integration.status}
+                      </b>
+                    </div>
+                  ))}
+                  <GoogleSheetsExport />
+                </>
+              )}
               <div className="wide">
                 <MutationFeedback {...feedback} />
                 {!["backup", "integrations"].includes(tab) && (
