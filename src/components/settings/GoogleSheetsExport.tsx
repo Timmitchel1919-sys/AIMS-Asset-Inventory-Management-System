@@ -14,6 +14,10 @@ type ImportSummary = {
   updated?: number;
   creates?: number;
   created?: number;
+  trashes?: number;
+  trashed?: number;
+  restores?: number;
+  restored?: number;
   conflicts: number;
   corrections?: number;
   corrected?: number;
@@ -91,7 +95,13 @@ export function GoogleSheetsExport() {
   };
 
   const applicable = (s?: ImportSummary) =>
-    !s ? 0 : (s.updates ?? 0) + (s.creates ?? 0) + (s.corrections ?? 0);
+    !s
+      ? 0
+      : (s.updates ?? 0) +
+        (s.creates ?? 0) +
+        (s.trashes ?? 0) +
+        (s.restores ?? 0) +
+        (s.corrections ?? 0);
 
   const runImport = async (apply: boolean) => {
     setImportFb({
@@ -118,16 +128,16 @@ export function GoogleSheetsExport() {
         setImportFb({
           status: "success",
           message: nl
-            ? `Toegepast — ${s.updated ?? 0} bijgewerkt, ${s.created ?? 0} aangemaakt, ${s.corrected ?? 0} correcties${s.skipped ? `, ${s.skipped} overgeslagen` : ""}.`
-            : `Applied — ${s.updated ?? 0} updated, ${s.created ?? 0} created, ${s.corrected ?? 0} corrections${s.skipped ? `, ${s.skipped} skipped` : ""}.`,
+            ? `Toegepast — ${s.updated ?? 0} bijgewerkt, ${s.created ?? 0} aangemaakt, ${s.trashed ?? 0} verwijderd, ${s.restored ?? 0} hersteld, ${s.corrected ?? 0} correcties${s.skipped ? `, ${s.skipped} overgeslagen` : ""}.`
+            : `Applied — ${s.updated ?? 0} updated, ${s.created ?? 0} created, ${s.trashed ?? 0} trashed, ${s.restored ?? 0} restored, ${s.corrected ?? 0} corrections${s.skipped ? `, ${s.skipped} skipped` : ""}.`,
         });
       } else {
         const n = applicable(s);
         setImportFb({
           status: "success",
           message: nl
-            ? `${n} toepasbare wijziging(en), ${s.conflicts} conflict(en), ${s.needsAimsCreate} nieuw in AIMS, ${s.errors} fout(en).`
-            : `${n} applicable change(s), ${s.conflicts} conflict(s), ${s.needsAimsCreate} new-in-AIMS, ${s.errors} error(s).`,
+            ? `${n} toepasbaar (waarvan ${s.trashes ?? 0} verwijderen / ${s.restores ?? 0} herstellen), ${s.conflicts} conflict(en), ${s.needsAimsCreate} nieuw in AIMS, ${s.errors} fout(en).`
+            : `${n} applicable (${s.trashes ?? 0} trash / ${s.restores ?? 0} restore of them), ${s.conflicts} conflict(s), ${s.needsAimsCreate} new-in-AIMS, ${s.errors} error(s).`,
         });
       }
     } catch (error) {
@@ -184,8 +194,8 @@ export function GoogleSheetsExport() {
           </strong>
           <small>
             {nl
-              ? "Leest bewerkingen in het werkblad terug. Identifier-, status-, locatie- en toewijzingswijzigingen worden als conflict gemeld, niet toegepast. Nieuwe middel-rijen worden gemeld, niet aangemaakt."
-              : "Reads sheet edits back into AIMS. Identifier, status, location and assignment changes are reported as conflicts, not applied. New asset rows are reported, not created."}
+              ? "Leest bewerkingen in het werkblad terug. Identifier-, locatie- en toewijzingswijzigingen worden als conflict gemeld. Status = Archived verwijdert een record; Restore = RESTORE op het Prullenbak-tabblad herstelt het. Nieuwe middel-rijen worden gemeld, niet aangemaakt."
+              : "Reads sheet edits back into AIMS. Identifier, location and assignment changes are reported as conflicts. Status = Archived trashes a record; Restore = RESTORE on the Trash tab brings it back. New asset rows are reported, not created."}
           </small>
 
           {plan && (

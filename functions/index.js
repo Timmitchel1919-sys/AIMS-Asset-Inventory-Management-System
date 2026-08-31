@@ -241,7 +241,11 @@ export const importAimsFromSheets = onCall(
 
     let workbook;
     try {
-      workbook = await readTabs(spreadsheetId, [...IMPORT_TABS, "History Log"]);
+      workbook = await readTabs(spreadsheetId, [
+        ...IMPORT_TABS,
+        "History Log",
+        "Trash",
+      ]);
     } catch (error) {
       console.error("Sheets read failed", error?.message);
       throw new HttpsError(
@@ -262,6 +266,8 @@ export const importAimsFromSheets = onCall(
         summary: plan.summary,
         updates: cap(plan.updates),
         creates: cap(plan.creates),
+        trashes: cap(plan.trashes),
+        restores: cap(plan.restores),
         conflicts: cap(plan.conflicts),
         corrections: cap(plan.corrections),
         needsAimsCreate: cap(plan.needsAimsCreate),
@@ -295,6 +301,8 @@ export const importAimsFromSheets = onCall(
       summary: {
         updated: results.updated.length,
         created: results.created.length,
+        trashed: results.trashed.length,
+        restored: results.restored.length,
         corrected: results.corrected.length,
         skipped: results.skipped.length,
         conflicts: plan.summary.conflicts,
@@ -305,6 +313,8 @@ export const importAimsFromSheets = onCall(
       results: {
         updated: cap(results.updated),
         created: cap(results.created),
+        trashed: cap(results.trashed),
+        restored: cap(results.restored),
         corrected: cap(results.corrected),
         skipped: cap(results.skipped),
       },

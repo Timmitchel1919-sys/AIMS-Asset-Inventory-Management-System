@@ -17,9 +17,18 @@ export async function applyPlan(db, FieldValue, plan) {
   const results = {
     updated: [],
     created: [],
+    trashed: [],
+    restored: [],
     corrected: [],
     skipped: [],
     writeBack: [], // { tab, row, cells: { header: value } }
+  };
+
+  const RESTORE_STATUS = {
+    assets: "Available",
+    locations: "Active",
+    departments: "Active",
+    categories: "Active",
   };
 
   /* ---------------- updates ---------------- */
@@ -120,6 +129,97 @@ export async function applyPlan(db, FieldValue, plan) {
       });
     } catch (error) {
       results.skipped.push({ tab: c.tab, row: c.row, reason: error.message });
+    }
+  }
+
+  /* ---------------- trash (soft archive) ---------------- */
+  for (const t of plan.trashes || []) {
+    const ref = db.collection(t.collection).doc(t.recordId);
+    try {
+      const newVersion = await db.runTransaction(async (tx) => {
+        const snap = await tx.get(ref);
+        if (!snap.exists) throw new Error("record vanished");
+        const current = Number(snap.data().syncVersion ?? 0) || 0;
+        if (current !== t.baseVersion) throw new Error("version-race");
+        const next = current + 1;
+        tx.set(
+          ref,
+          {
+            status: "Archived",
+            isArchived: true,
+            archivedAt: FieldValue.serverTimestamp(),
+            archivedBy: "sheets-sync",
+            syncVersion: next,
+            syncSource: "SHEETS",
+            updatedBy: "sheets-sync",
+            updatedAt: FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+        return next;
+      });
+      results.trashed.push({ tab: t.tab, row: t.row, recordId: t.recordId, syncVersion: newVersion });
+      results.writeBack.push({
+        tab: t.tab, row: t.row,
+        cells: {
+          "Sync Version": String(newVersion),
+          "Sync Status": "TRASHED",
+          Source: "SHEETS",
+          "Deleted At": now,
+          "Updated At": now,
+          "Last Synced At": now,
+        },
+      });
+    } catch (error) {
+      results.skipped.push({
+        tab: t.tab, row: t.row, recordId: t.recordId,
+        reason: error.message === "version-race" ? "changed in AIMS during apply" : error.message,
+      });
+    }
+  }
+
+  /* ---------------- restore (un-archive from the Trash tab) ---------------- */
+  for (const rr of plan.restores || []) {
+    if (rr.alreadyActive) {
+      results.writeBack.push({
+        tab: "Trash", row: rr.row, cells: { Restore: "", "Sync Status": "SYNCED" },
+      });
+      continue;
+    }
+    const ref = db.collection(rr.collection).doc(rr.recordId);
+    try {
+      await db.runTransaction(async (tx) => {
+        const snap = await tx.get(ref);
+        if (!snap.exists) throw new Error("record vanished");
+        const next = (Number(snap.data().syncVersion ?? 0) || 0) + 1;
+        const patch = {
+          isArchived: false,
+          archivedAt: FieldValue.delete(),
+          archivedBy: FieldValue.delete(),
+          syncVersion: next,
+          syncSource: "SHEETS",
+          updatedBy: "sheets-sync",
+          updatedAt: FieldValue.serverTimestamp(),
+        };
+        if (rr.collection === "codeGroups") {
+          patch.archived = false;
+          patch.deletionReason = FieldValue.delete();
+        } else {
+          patch.status = RESTORE_STATUS[rr.collection] || "Active";
+        }
+        if (rr.collection === "inventoryItems") {
+          patch.archived = false;
+          patch.archiveReason = FieldValue.delete();
+          delete patch.status;
+        }
+        tx.set(ref, patch, { merge: true });
+      });
+      results.restored.push({ row: rr.row, recordId: rr.recordId, entity: rr.entity });
+      results.writeBack.push({
+        tab: "Trash", row: rr.row, cells: { Restore: "", "Sync Status": "RESTORED" },
+      });
+    } catch (error) {
+      results.skipped.push({ tab: "Trash", row: rr.row, recordId: rr.recordId, reason: error.message });
     }
   }
 

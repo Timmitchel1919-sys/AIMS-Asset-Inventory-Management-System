@@ -123,6 +123,23 @@ Policy (hybrid):
 - `History Log` `Correction` cell → appends a new `correction` event; the cell
   is then cleared.
 
+### Trash / Restore (Phase 5)
+
+- **Trash from a data tab:** set a row's `Status` cell to `Archived`
+  (Master Inventory, Locations, Departments, Categories). The planner reads this
+  as a soft-delete intent — the record is archived (`status: "Archived"`,
+  `isArchived: true`, `archivedAt/By`), not field-edited. `Sync Version` is still
+  checked. A row for a record already archived in AIMS is a `record-archived`
+  conflict (restore it from the Trash tab instead).
+- **Restore from the Trash tab:** set the `Restore` cell to `RESTORE`. The record
+  is un-archived (`status` back to `Available` / `Active`; code groups clear
+  `archived`), the `Restore` cell is cleared and `Sync Status` set to `RESTORED`.
+  A re-export rebuilds the Trash tab so the row drops off.
+- Trashing the same record on a data tab while restoring it on the Trash tab in
+  one run is a `contradictory` conflict — neither is applied.
+- Archiving is soft only; nothing is hard-deleted, so the AIMS hard-delete guards
+  (location with active assets, etc.) do not apply here.
+
 On `apply`, each affected row's system columns (and new `Record ID`s) are pushed
 back to the sheet so it stays coherent without a full re-export.
 
@@ -131,5 +148,5 @@ conflicts/errors, then **"Apply N change(s)"** (two-click confirm).
 
 ## Not yet built
 
-Trash/Restore round-trip (Phase 5), a Conflicts resolution view (Phase 6),
-Apps Script live triggers / scheduled runs, asset creation from the sheet.
+A Conflicts resolution view (Phase 6), Apps Script live triggers / scheduled
+runs, asset creation from the sheet.

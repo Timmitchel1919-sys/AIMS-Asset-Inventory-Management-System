@@ -214,6 +214,24 @@ export const FIELD_SPECS = {
 
 const IMPORT_TABS = Object.keys(FIELD_SPECS);
 
+// Data tabs whose `Status` = "Archived" cell is read as a soft-delete intent.
+const TRASH_VIA_STATUS = {
+  "Master Inventory": "assets",
+  Locations: "locations",
+  Departments: "departments",
+  Categories: "categories",
+};
+const ENTITY_COLLECTION = {
+  Asset: "assets",
+  "Inventory Item": "inventoryItems",
+  Location: "locations",
+  Department: "departments",
+  Category: "categories",
+  "Code Group": "codeGroups",
+};
+const docArchived = (d) =>
+  !!d && (d.status === "Archived" || d.archived === true || d.isArchived === true);
+
 function rowObject(header, row) {
   const obj = {};
   header.forEach((h, i) => {
@@ -257,6 +275,8 @@ export function planImport({ workbook, current }, opts = {}) {
     syncedAt,
     updates: [],
     creates: [],
+    trashes: [],
+    restores: [],
     conflicts: [],
     corrections: [],
     needsAimsCreate: [],
@@ -337,6 +357,38 @@ export function planImport({ workbook, current }, opts = {}) {
         continue;
       }
 
+      const baseVersion = Number(verCol >= 0 ? str(rawRow[verCol]) : "0") || 0;
+      const docVersion = Number(doc.syncVersion ?? 0) || 0;
+
+      /* ---------- soft-delete intent: Status cell set to "Archived" ---------- */
+      if (TRASH_VIA_STATUS[tab]) {
+        const wantsArchive = str(obj.Status).toLowerCase() === "archived";
+        if (docArchived(doc) && !wantsArchive) {
+          plan.conflicts.push({
+            tab, row: rowNum, recordId,
+            reason: "record-archived",
+            detail: "This record is archived in AIMS. Restore it from the Trash tab; don't edit a re-added row.",
+          });
+          continue;
+        }
+        if (wantsArchive) {
+          if (docArchived(doc)) continue; // already trashed — no-op
+          if (baseVersion !== docVersion) {
+            plan.conflicts.push({
+              tab, row: rowNum, recordId, reason: "stale-version",
+              detail: `Sheet Sync Version ${baseVersion} ≠ AIMS ${docVersion}; re-export before trashing.`,
+              fields: ["Status"],
+            });
+            continue;
+          }
+          plan.trashes.push({
+            tab, row: rowNum, recordId,
+            collection: spec.collection, baseVersion,
+          });
+          continue;
+        }
+      }
+
       const changes = {};
       const conflictFields = [];
       const patch = {};
@@ -367,8 +419,6 @@ export function planImport({ workbook, current }, opts = {}) {
       }
       if (Object.keys(changes).length === 0) continue; // nothing to do
 
-      const baseVersion = Number(verCol >= 0 ? str(rawRow[verCol]) : "0") || 0;
-      const docVersion = Number(doc.syncVersion ?? 0) || 0;
       if (baseVersion !== docVersion) {
         plan.conflicts.push({
           tab, row: rowNum, recordId,
@@ -415,9 +465,68 @@ export function planImport({ workbook, current }, opts = {}) {
     }
   }
 
+  /* ---------- Trash tab: Restore = "RESTORE" ---------- */
+  const trashGrid = workbook["Trash"];
+  if (trashGrid && trashGrid.length > 1) {
+    const header = trashGrid[0].map(str);
+    const eCol = header.indexOf("Entity");
+    const idCol = header.indexOf("Record ID");
+    const rCol = header.indexOf("Restore");
+    for (let r = 1; r < trashGrid.length; r++) {
+      const row = trashGrid[r] || [];
+      if (rCol < 0 || str(row[rCol]).toUpperCase() !== "RESTORE") continue;
+      const rowNum = r + 1;
+      const entity = eCol >= 0 ? str(row[eCol]) : "";
+      const recordId = idCol >= 0 ? str(row[idCol]) : "";
+      const collection = ENTITY_COLLECTION[entity];
+      if (!collection || !recordId) {
+        plan.errors.push({
+          tab: "Trash", row: rowNum,
+          message: `Restore needs a known Entity and Record ID (got "${entity}" / "${recordId}").`,
+        });
+        continue;
+      }
+      const doc = byId[collection]?.get(recordId);
+      if (!doc) {
+        plan.conflicts.push({
+          tab: "Trash", row: rowNum, recordId,
+          reason: "unknown-record",
+          detail: `No ${entity} in AIMS with this Record ID.`,
+        });
+        continue;
+      }
+      plan.restores.push({
+        tab: "Trash", row: rowNum, recordId, collection, entity,
+        alreadyActive: !docArchived(doc),
+      });
+    }
+  }
+
+  /* ---------- a record trashed AND restored in the same run ---------- */
+  const restoreIds = new Set(plan.restores.map((x) => x.recordId));
+  if (restoreIds.size) {
+    plan.trashes = plan.trashes.filter((t) => {
+      if (!restoreIds.has(t.recordId)) return true;
+      plan.conflicts.push({
+        tab: t.tab, row: t.row, recordId: t.recordId,
+        reason: "contradictory",
+        detail: "Same record is set to trash on a data tab and RESTORE on the Trash tab. Resolve one.",
+      });
+      return false;
+    });
+    plan.restores = plan.restores.filter((x) => {
+      const clash = plan.conflicts.some(
+        (c) => c.reason === "contradictory" && c.recordId === x.recordId,
+      );
+      return !clash;
+    });
+  }
+
   plan.summary = {
     updates: plan.updates.length,
     creates: plan.creates.length,
+    trashes: plan.trashes.length,
+    restores: plan.restores.length,
     conflicts: plan.conflicts.length,
     corrections: plan.corrections.length,
     needsAimsCreate: plan.needsAimsCreate.length,

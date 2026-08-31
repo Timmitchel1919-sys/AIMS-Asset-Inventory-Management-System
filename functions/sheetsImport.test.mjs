@@ -174,6 +174,107 @@ test("History Log Correction cell becomes a correction entry", () => {
   assert.match(plan.corrections[0].text, /mistyped/);
 });
 
+const trashGrid = (rows) => [
+  ["Entity", "Record ID", "Business Code", "Name", "Trashed At", "Trashed By", "Reason", "Restore", "Sync Status"],
+  ...rows.map((r) => [
+    r.Entity ?? "", r["Record ID"] ?? "", "", r.Name ?? "", "", "", "",
+    r.Restore ?? "", r["Sync Status"] ?? "TRASHED",
+  ]),
+];
+
+test("Status = Archived on a data tab is a trash intent, not a field conflict", () => {
+  const plan = planImport({
+    workbook: {
+      "Master Inventory": grid("Master Inventory", [
+        { Name: "Old laptop", Status: "Archived", "Record ID": "ast-9", "Sync Version": "2" },
+      ]),
+    },
+    current: { assets: [{ id: "ast-9", name: "Old laptop", status: "Available", syncVersion: 2 }] },
+  });
+  assert.equal(plan.summary.trashes, 1);
+  assert.equal(plan.summary.conflicts, 0);
+  assert.equal(plan.trashes[0].recordId, "ast-9");
+  assert.equal(plan.trashes[0].baseVersion, 2);
+});
+
+test("Status = Archived on an already-archived record is a no-op", () => {
+  const plan = planImport({
+    workbook: {
+      Categories: grid("Categories", [
+        { Name: "Dead", Status: "Archived", "Record ID": "cat-9", "Sync Version": "0" },
+      ]),
+    },
+    current: { categories: [{ id: "cat-9", name: "Dead", status: "Archived", syncVersion: 0 }] },
+  });
+  assert.equal(plan.summary.trashes, 0);
+  assert.equal(plan.summary.conflicts, 0);
+  assert.equal(plan.summary.updates, 0);
+});
+
+test("a data-tab row for a record archived in AIMS is a conflict", () => {
+  const plan = planImport({
+    workbook: {
+      Departments: grid("Departments", [
+        { Name: "Zombie", Status: "Active", "Record ID": "dep-9", "Sync Version": "0" },
+      ]),
+    },
+    current: { departments: [{ id: "dep-9", name: "Zombie", status: "Archived", syncVersion: 0 }] },
+  });
+  assert.equal(plan.conflicts[0].reason, "record-archived");
+});
+
+test("Trash tab Restore = RESTORE on an archived record queues a restore", () => {
+  const plan = planImport({
+    workbook: {
+      Trash: trashGrid([{ Entity: "Asset", "Record ID": "ast-7", Restore: "RESTORE" }]),
+    },
+    current: { assets: [{ id: "ast-7", name: "x", status: "Archived" }] },
+  });
+  assert.equal(plan.summary.restores, 1);
+  assert.equal(plan.restores[0].collection, "assets");
+  assert.equal(plan.restores[0].alreadyActive, false);
+});
+
+test("Restore of a record that is already active only clears the cell", () => {
+  const plan = planImport({
+    workbook: {
+      Trash: trashGrid([{ Entity: "Location", "Record ID": "loc-7", Restore: "RESTORE" }]),
+    },
+    current: { locations: [{ id: "loc-7", name: "Room", status: "Active" }] },
+  });
+  assert.equal(plan.summary.restores, 1);
+  assert.equal(plan.restores[0].alreadyActive, true);
+});
+
+test("Restore with an unknown Record ID is a conflict; unknown Entity is an error", () => {
+  const plan = planImport({
+    workbook: {
+      Trash: trashGrid([
+        { Entity: "Asset", "Record ID": "ast-nope", Restore: "RESTORE" },
+        { Entity: "Widget", "Record ID": "w-1", Restore: "RESTORE" },
+      ]),
+    },
+    current: { assets: [] },
+  });
+  assert.equal(plan.conflicts.filter((c) => c.reason === "unknown-record").length, 1);
+  assert.equal(plan.summary.errors, 1);
+});
+
+test("trash on a data tab AND restore on the Trash tab for one record is a conflict", () => {
+  const plan = planImport({
+    workbook: {
+      "Master Inventory": grid("Master Inventory", [
+        { Name: "Contested", Status: "Archived", "Record ID": "ast-5", "Sync Version": "0" },
+      ]),
+      Trash: trashGrid([{ Entity: "Asset", "Record ID": "ast-5", Restore: "RESTORE" }]),
+    },
+    current: { assets: [{ id: "ast-5", name: "Contested", status: "Available", syncVersion: 0 }] },
+  });
+  assert.equal(plan.conflicts.some((c) => c.reason === "contradictory"), true);
+  assert.equal(plan.summary.trashes, 0);
+  assert.equal(plan.summary.restores, 0);
+});
+
 test("nested details.notes edit patches the nested object", () => {
   const plan = planImport({
     workbook: {
