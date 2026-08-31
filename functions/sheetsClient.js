@@ -20,7 +20,7 @@ const SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 const BASE = "https://sheets.googleapis.com/v4/spreadsheets";
 
 let authClientPromise;
-async function accessToken() {
+async function adcToken() {
   if (!authClientPromise) {
     authClientPromise = new GoogleAuth({ scopes: [SCOPE] }).getClient();
   }
@@ -28,6 +28,14 @@ async function accessToken() {
   const { token } = await client.getAccessToken();
   if (!token) throw new Error("Could not obtain a Google access token.");
   return token;
+}
+
+let tokenProvider = adcToken;
+const accessToken = () => tokenProvider();
+
+/** Test seam — override how an access token is obtained. */
+export function __setTokenProvider(fn) {
+  tokenProvider = fn || adcToken;
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

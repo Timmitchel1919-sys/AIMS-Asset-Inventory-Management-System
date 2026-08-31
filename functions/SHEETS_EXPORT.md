@@ -9,7 +9,25 @@ stored in Firestore, and nothing here can modify or delete AIMS data.
 | Pure transform (Firestore rows → tab matrix) | `sheetsExport.js` |
 | Google Sheets API client (ADC auth, write-only) | `sheetsClient.js` |
 | Callable `exportAimsToSheets` | `index.js` |
-| Unit tests (`node --test`) | `sheetsExport.test.mjs` |
+
+## Tests (`npm test` → `node --test`, CI: `.github/workflows/functions-tests.yml`)
+
+51 tests, no emulator — `functions/testUtils.mjs` provides an in-memory
+Firestore fake (transactions, batches, queries, `FieldValue`) and a fake Google
+Sheets v4 backend (`installFakeSheets` stubs `global.fetch`;
+`sheetsClient.__setTokenProvider` swaps out ADC).
+
+- `sheetsExport.test.mjs` — `buildWorkbook` shape, redaction, archived→Trash
+- `sheetsImport.test.mjs` — `planImport` policy, trash/restore intents,
+  contradictions, `forcePatch`
+- `applyImport.test.mjs` — executor: patch + version bump, version-race skip,
+  idempotency, ref/code-group create, trash/restore, history correction
+- `sheetsClient.test.mjs` / `sheetsClient.integration.test.mjs` — `withRetry`
+  back-off, `exportWorkbook` create-missing-tab + replace, 429 retry through the
+  client, `readTabs`, `writeCells` A1 targeting
+- `roundtrip.test.mjs` — export → import is the identity; a single edit yields
+  exactly one update / conflict / trash
+- `syncRuns.test.mjs` — `recordRun` / `readHealth`
 
 ## What it does
 
