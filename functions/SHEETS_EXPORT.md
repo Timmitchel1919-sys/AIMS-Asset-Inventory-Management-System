@@ -1,5 +1,8 @@
 # AIMS → Google Sheets export (Phase 3)
 
+> **Activated 2026‑08‑31.** Operations, checks and rollback:
+> [`docs/SHEETS_SYNC_RUNBOOK.md`](../docs/SHEETS_SYNC_RUNBOOK.md).
+
 One-way, read-only export of the live Firestore data into the mirror workbook
 described in the Phase 2 scaffold spec. **No write-back**, no sync metadata is
 stored in Firestore, and nothing here can modify or delete AIMS data.
