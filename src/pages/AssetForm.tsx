@@ -136,7 +136,6 @@ export default function AssetForm() {
     handleSubmit,
     formState: { errors, isDirty, isSubmitting },
     setError,
-    setValue,
     watch,
   } = useForm<AssetFormValues>({
     resolver: zodResolver(schema),

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Type } from "lucide-react";
 import { Card, SelectField } from "../ui";
 import { useApp } from "../../context/AppContext";
@@ -27,10 +27,18 @@ export function TypographySettings() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
+  // Re-sync the selects when the stored preference changes elsewhere (another
+  // component / device / a reset). Render-phase adjustment — the guard makes it
+  // converge in one extra render, no effect, no cascading updates.
+  const [syncedFrom, setSyncedFrom] = useState({
+    family: savedFamily,
+    size: savedSize,
+  });
+  if (syncedFrom.family !== savedFamily || syncedFrom.size !== savedSize) {
+    setSyncedFrom({ family: savedFamily, size: savedSize });
     setFontFamily(savedFamily);
     setFontSize(savedSize);
-  }, [savedFamily, savedSize]);
+  }
 
   async function persist(nextFamily: FontFamily, nextSize: FontSize) {
     setBusy(true);
