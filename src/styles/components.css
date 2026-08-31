@@ -2606,7 +2606,7 @@ html[data-aims-theme="aimsEmeraldGloss"]
      a scrollable row of different-width chips. auto-fill keeps every cell the
      same width across every row at any screen size. */
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
   overflow: visible;
   padding: 14px;
@@ -2633,7 +2633,7 @@ html[data-aims-theme="aimsEmeraldGloss"]
 }
 @media (max-width: 560px) {
   .inventory-action-card {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 .inventory-action-card a:hover {
