@@ -30,26 +30,56 @@ async function accessToken() {
   return token;
 }
 
-async function api(token, url, init = {}) {
-  const res = await fetch(url, {
-    ...init,
-    headers: {
-      authorization: `Bearer ${token}`,
-      "content-type": "application/json",
-      ...(init.headers || {}),
-    },
-  });
-  if (!res.ok) {
-    let detail = "";
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
+
+/**
+ * Run `fn`, retrying with exponential back-off + jitter while `isRetryable`
+ * says the failure is transient. Exported for testing.
+ */
+export async function withRetry(fn, { retries = 3, isRetryable, baseMs = 300 } = {}) {
+  let attempt = 0;
+  for (;;) {
     try {
-      const body = await res.json();
-      detail = body?.error?.message || "";
-    } catch {
-      /* ignore */
+      return await fn(attempt);
+    } catch (error) {
+      attempt += 1;
+      if (attempt > retries || (isRetryable && !isRetryable(error))) throw error;
+      const backoff = baseMs * 2 ** (attempt - 1) + Math.floor(Math.random() * baseMs);
+      await sleep(backoff);
     }
-    throw new Error(`Sheets API ${res.status}${detail ? `: ${detail}` : ""}`);
   }
-  return res.status === 204 ? null : res.json();
+}
+
+async function api(token, url, init = {}) {
+  return withRetry(
+    async () => {
+      const res = await fetch(url, {
+        ...init,
+        headers: {
+          authorization: `Bearer ${token}`,
+          "content-type": "application/json",
+          ...(init.headers || {}),
+        },
+      });
+      if (!res.ok) {
+        let detail = "";
+        try {
+          const body = await res.json();
+          detail = body?.error?.message || "";
+        } catch {
+          /* ignore */
+        }
+        const err = new Error(
+          `Sheets API ${res.status}${detail ? `: ${detail}` : ""}`,
+        );
+        err.status = res.status;
+        throw err;
+      }
+      return res.status === 204 ? null : res.json();
+    },
+    { isRetryable: (e) => RETRYABLE_STATUS.has(e?.status) },
+  );
 }
 
 const quote = (title) => `'${String(title).replace(/'/g, "''")}'`;

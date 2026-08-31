@@ -161,7 +161,22 @@ preview, groups conflicts by tab with per-field from→to, and per
 `stale-version` conflicts get an **Export & re-check** shortcut. Dismissals are
 per-browser (`localStorage`), not shared.
 
+## Scheduling & health (Phase 8)
+
+- **`scheduledSheetExport`** (`onSchedule`, `America/Paramaribo`) auto-runs the
+  full export on the `SYNC_EXPORT_SCHEDULE` cron (literal in `index.js`, default
+  `every 24 hours` — change there + redeploy). Full replace = drift repair for
+  AIMS → Sheet. Cloud Scheduler retries (`retryCount: 2`) on failure.
+- **Transient-failure retry:** `sheetsClient.withRetry` wraps every Sheets API
+  call — 3 attempts, exponential back-off + jitter, on `429/500/502/503/504`.
+  A run that still fails is its own dead-letter: the cron retries next tick and
+  a manual run surfaces the error.
+- **`recordRun`** writes every export / import / resolve / scheduled run to
+  `syncRuns` (trimmed to ~120) and overwrites `syncHealth/latest`.
+- **`getSyncHealth`** (admin `onCall`) returns `syncHealth/latest` + the last 20
+  runs. Settings → Integrations shows the latest run's time / status.
+
 ## Not yet built
 
-Apps Script live triggers / scheduled runs, asset creation from the sheet,
-a shared/persisted conflict + Sync Log store.
+Firestore-trigger event sync + a per-record `syncQueue`, Apps Script live
+triggers, asset creation from the sheet.

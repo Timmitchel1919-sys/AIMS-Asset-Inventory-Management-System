@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowDownToLine, ArrowUpFromLine, RefreshCw } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, Clock3, RefreshCw } from "lucide-react";
 import { httpsCallable, type FunctionsError } from "firebase/functions";
 import { Button } from "../ui";
 import { MutationFeedback } from "../WorkflowUi";
@@ -9,6 +9,14 @@ import { can } from "../../auth/permissions";
 import { firebaseFunctions } from "../../lib/firebase";
 
 type ExportResult = { ok: boolean; syncedAt: string; rows: Record<string, number> };
+
+type HealthLatest = {
+  kind: string;
+  trigger: string;
+  ok: boolean;
+  atIso: string;
+  error: string | null;
+};
 
 type ImportSummary = {
   updates?: number;
@@ -68,9 +76,32 @@ export function GoogleSheetsExport() {
   const [importFb, setImportFb] = useState<Feedback>({ status: "idle", message: "" });
   const [plan, setPlan] = useState<ImportResult | null>(null);
   const [armed, setArmed] = useState(false);
+  const [health, setHealth] = useState<HealthLatest | null>(null);
+
+  const role = app.user?.role;
+  useEffect(() => {
+    const fns = firebaseFunctions;
+    if (!fns || !can(role, "admin.system.configure")) return;
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        const { data } = await httpsCallable<
+          Record<string, never>,
+          { latest: HealthLatest | null }
+        >(fns, "getSyncHealth")({});
+        if (!cancelled) setHealth(data.latest);
+      } catch {
+        /* health is best-effort */
+      }
+    }, 0);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [role]);
 
   if (!firebaseFunctions) return null;
-  if (!can(app.user?.role, "admin.system.configure")) return null;
+  if (!can(role, "admin.system.configure")) return null;
   const functions = firebaseFunctions;
 
   const runExport = async () => {
@@ -171,6 +202,21 @@ export function GoogleSheetsExport() {
                 .filter(([, c]) => c > 0)
                 .map(([t, c]) => `${t}: ${c}`)
                 .join(" · ") || (nl ? "geen rijen" : "no rows")}
+            </small>
+          )}
+          {health && (
+            <small
+              className={`sheets-sync-summary sheets-sync-health${health.ok ? "" : " is-error"}`}
+            >
+              <Clock3 size={12} style={{ verticalAlign: "-2px", marginRight: 4 }} />
+              {nl ? "Laatste sync-run" : "Last sync run"} ({health.kind}
+              {health.trigger === "schedule"
+                ? nl
+                  ? ", automatisch"
+                  : ", automatic"
+                : ""}
+              ): {app.formatDateTime(health.atIso)}{" "}
+              {health.ok ? "✓" : `✗ ${health.error ?? ""}`}
             </small>
           )}
           <MutationFeedback {...exportFb} />

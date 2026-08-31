@@ -3815,6 +3815,9 @@ html[data-aims-theme="aimsEmeraldGloss"]
 .sheets-sync-list a {
   font-weight: 600;
 }
+.sheets-sync-health.is-error {
+  color: var(--danger, #b42318);
+}
 
 /* ---- Connectivity pill (Phase 7) ---- */
 .connectivity-pill {

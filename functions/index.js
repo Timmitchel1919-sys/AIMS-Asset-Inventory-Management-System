@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import { defineSecret, defineString } from "firebase-functions/params";
 import { buildWorkbook, TAB_HEADERS } from "./sheetsExport.js";
 import { exportWorkbook, readTabs, writeCells } from "./sheetsClient.js";
@@ -11,6 +12,7 @@ import {
   planImport,
 } from "./sheetsImport.js";
 import { applyPlan } from "./applyImport.js";
+import { readHealth, recordRun } from "./syncRuns.js";
 
 initializeApp();
 const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
@@ -19,6 +21,9 @@ const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
 const syncSpreadsheetId = defineString("AIMS_SYNC_SPREADSHEET_ID", {
   default: "",
 });
+// Cloud Scheduler cron for the automatic sheet refresh. Change here + redeploy
+// to adjust the cadence (App Engine cron syntax or "every N hours").
+const SYNC_EXPORT_SCHEDULE = "every 24 hours";
 const SCHOOL_DOMAIN = "kangoeroeschool.com";
 const BOOTSTRAP_ADMIN_UID = "VogTjC6S1aXHO6ySBbdiQ7LNOYG3";
 
@@ -114,11 +119,38 @@ export const askAimsAssistant = onCall(
   },
 );
 
+const EXPORT_COLLECTIONS = [
+  "assets",
+  "inventoryItems",
+  "assetHistoryEvents",
+  "locations",
+  "departments",
+  "categories",
+  "codeGroups",
+];
+
+/** Read every synced collection and fully rewrite the mirror sheet. */
+async function runFullExport(db, spreadsheetId) {
+  const snapshots = await Promise.all(
+    EXPORT_COLLECTIONS.map((name) => db.collection(name).get()),
+  );
+  const collections = Object.fromEntries(
+    EXPORT_COLLECTIONS.map((name, index) => [
+      name,
+      snapshots[index].docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+    ]),
+  );
+  const syncedAt = new Date().toISOString();
+  const rows = await exportWorkbook(
+    spreadsheetId,
+    buildWorkbook(collections, { syncedAt }),
+  );
+  return { syncedAt, rows };
+}
+
 /**
  * Phase 3 — one-way export: read the live Firestore collections and rewrite
- * the mirror Google Sheet. Read-only against Firestore; no write-back, no sync
- * metadata is stored. Admin-only. Idempotent — each run fully replaces the
- * tab contents.
+ * the mirror Google Sheet. Read-only against Firestore. Admin-only. Idempotent.
  */
 export const exportAimsToSheets = onCall(
   {
@@ -143,47 +175,99 @@ export const exportAimsToSheets = onCall(
       );
 
     const db = getFirestore();
-    const names = [
-      "assets",
-      "inventoryItems",
-      "assetHistoryEvents",
-      "locations",
-      "departments",
-      "categories",
-      "codeGroups",
-    ];
-
-    let collections;
+    const startedAt = Date.now();
     try {
-      const snapshots = await Promise.all(
-        names.map((name) => db.collection(name).get()),
-      );
-      collections = Object.fromEntries(
-        names.map((name, index) => [
-          name,
-          snapshots[index].docs.map((doc) => ({ id: doc.id, ...doc.data() })),
-        ]),
-      );
-    } catch (error) {
-      console.error("Firestore read for export failed", error?.message);
-      throw new HttpsError("internal", "Could not read AIMS data for export.");
-    }
-
-    const syncedAt = new Date().toISOString();
-    const workbook = buildWorkbook(collections, { syncedAt });
-
-    let rows;
-    try {
-      rows = await exportWorkbook(spreadsheetId, workbook);
+      const { syncedAt, rows } = await runFullExport(db, spreadsheetId);
+      await recordRun(db, FieldValue, {
+        kind: "export",
+        trigger: "manual",
+        ok: true,
+        startedAt,
+        summary: { rows },
+      });
+      return { ok: true, syncedAt, rows };
     } catch (error) {
       console.error("Sheets export failed", error?.message);
+      await recordRun(db, FieldValue, {
+        kind: "export",
+        trigger: "manual",
+        ok: false,
+        startedAt,
+        error: error?.message,
+      });
       throw new HttpsError(
         "unavailable",
         "The export to Google Sheets could not be completed.",
       );
     }
+  },
+);
 
-    return { ok: true, syncedAt, rows };
+/**
+ * Phase 8 — automatic sheet refresh on a schedule. Full replace = drift repair
+ * for the AIMS -> Sheet direction. Read-only against Firestore.
+ */
+export const scheduledSheetExport = onSchedule(
+  {
+    schedule: SYNC_EXPORT_SCHEDULE,
+    region: "southamerica-east1",
+    timeZone: "America/Paramaribo",
+    timeoutSeconds: 300,
+    memory: "512MiB",
+    retryCount: 2,
+  },
+  async () => {
+    const spreadsheetId = String(syncSpreadsheetId.value() || "").trim();
+    const db = getFirestore();
+    const startedAt = Date.now();
+    if (!spreadsheetId) {
+      await recordRun(db, FieldValue, {
+        kind: "export",
+        trigger: "schedule",
+        ok: false,
+        startedAt,
+        error: "AIMS_SYNC_SPREADSHEET_ID is not set",
+      });
+      return;
+    }
+    try {
+      const { rows } = await runFullExport(db, spreadsheetId);
+      await recordRun(db, FieldValue, {
+        kind: "export",
+        trigger: "schedule",
+        ok: true,
+        startedAt,
+        summary: { rows },
+      });
+    } catch (error) {
+      console.error("Scheduled export failed", error?.message);
+      await recordRun(db, FieldValue, {
+        kind: "export",
+        trigger: "schedule",
+        ok: false,
+        startedAt,
+        error: error?.message,
+      });
+      throw error; // let Cloud Scheduler retry (retryCount)
+    }
+  },
+);
+
+/** Phase 8 — latest sync-run health for the admin UI. */
+export const getSyncHealth = onCall(
+  { region: "southamerica-east1", timeoutSeconds: 30, memory: "256MiB" },
+  async (request) => {
+    if (!isAdmin(request))
+      throw new HttpsError(
+        "permission-denied",
+        "An AIMS administrator account is required.",
+      );
+    try {
+      return { ok: true, ...(await readHealth(getFirestore())) };
+    } catch (error) {
+      console.error("readHealth failed", error?.message);
+      return { ok: true, latest: null, recent: [] };
+    }
   },
 );
 
@@ -280,13 +364,34 @@ export const importAimsFromSheets = onCall(
       };
     }
 
+    const startedAt = Date.now();
     let results;
     try {
       results = await applyPlan(db, FieldValue, plan);
     } catch (error) {
       console.error("Import apply failed", error?.message);
+      await recordRun(db, FieldValue, {
+        kind: "import",
+        ok: false,
+        startedAt,
+        error: error?.message,
+      });
       throw new HttpsError("internal", "Applying the import failed part-way.");
     }
+    await recordRun(db, FieldValue, {
+      kind: "import",
+      ok: results.skipped.length === 0,
+      startedAt,
+      summary: {
+        updated: results.updated.length,
+        created: results.created.length,
+        trashed: results.trashed.length,
+        restored: results.restored.length,
+        corrected: results.corrected.length,
+        skipped: results.skipped.length,
+        conflicts: plan.summary.conflicts,
+      },
+    });
 
     let cellsWritten = 0;
     try {
@@ -449,6 +554,12 @@ export const resolveSyncConflict = onCall(
       console.error("Write-back failed (non-fatal)", error?.message);
     }
 
+    await recordRun(db, FieldValue, {
+      kind: "resolve",
+      ok: true,
+      startedAt: Date.now(),
+      summary: { tab, recordId, fields, syncVersion: newVersion },
+    });
     return { ok: true, applied: true, syncVersion: newVersion, changes };
   },
 );
