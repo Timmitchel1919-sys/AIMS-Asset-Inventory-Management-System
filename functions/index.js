@@ -1,10 +1,19 @@
 import { initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { defineSecret } from "firebase-functions/params";
+import { defineSecret, defineString } from "firebase-functions/params";
+import { buildWorkbook } from "./sheetsExport.js";
+import { exportWorkbook } from "./sheetsClient.js";
 
 initializeApp();
 const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
+// Not a secret — a spreadsheet id is not sensitive. Set it in functions/.env
+// (or .env.aims-asset-inventory-system), or pass { spreadsheetId } in the call.
+const syncSpreadsheetId = defineString("AIMS_SYNC_SPREADSHEET_ID", {
+  default: "",
+});
 const SCHOOL_DOMAIN = "kangoeroeschool.com";
+const BOOTSTRAP_ADMIN_UID = "VogTjC6S1aXHO6ySBbdiQ7LNOYG3";
 
 function authorized(request) {
   const email = String(request.auth?.token?.email || "")
@@ -13,6 +22,19 @@ function authorized(request) {
   return (
     request.auth?.token?.email_verified === true &&
     email.endsWith(`@${SCHOOL_DOMAIN}`)
+  );
+}
+
+function isAdmin(request) {
+  if (!authorized(request)) return false;
+  const token = request.auth?.token || {};
+  const permissions = Array.isArray(token.permissions) ? token.permissions : [];
+  return (
+    request.auth?.uid === BOOTSTRAP_ADMIN_UID ||
+    token.role === "administrator" ||
+    token.admin === true ||
+    permissions.includes("admin.access") ||
+    permissions.includes("admin.system.configure")
   );
 }
 
@@ -82,5 +104,78 @@ export const askAimsAssistant = onCall(
     } catch {
       return { answer: text, workflowKey: "none", citationIds: [] };
     }
+  },
+);
+
+/**
+ * Phase 3 — one-way export: read the live Firestore collections and rewrite
+ * the mirror Google Sheet. Read-only against Firestore; no write-back, no sync
+ * metadata is stored. Admin-only. Idempotent — each run fully replaces the
+ * tab contents.
+ */
+export const exportAimsToSheets = onCall(
+  {
+    region: "southamerica-east1",
+    timeoutSeconds: 300,
+    memory: "512MiB",
+  },
+  async (request) => {
+    if (!isAdmin(request))
+      throw new HttpsError(
+        "permission-denied",
+        "An AIMS administrator account is required.",
+      );
+
+    const spreadsheetId = String(
+      request.data?.spreadsheetId || syncSpreadsheetId.value() || "",
+    ).trim();
+    if (!spreadsheetId)
+      throw new HttpsError(
+        "failed-precondition",
+        "No target spreadsheet is configured. Set AIMS_SYNC_SPREADSHEET_ID.",
+      );
+
+    const db = getFirestore();
+    const names = [
+      "assets",
+      "inventoryItems",
+      "assetHistoryEvents",
+      "locations",
+      "departments",
+      "categories",
+      "codeGroups",
+    ];
+
+    let collections;
+    try {
+      const snapshots = await Promise.all(
+        names.map((name) => db.collection(name).get()),
+      );
+      collections = Object.fromEntries(
+        names.map((name, index) => [
+          name,
+          snapshots[index].docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+        ]),
+      );
+    } catch (error) {
+      console.error("Firestore read for export failed", error?.message);
+      throw new HttpsError("internal", "Could not read AIMS data for export.");
+    }
+
+    const syncedAt = new Date().toISOString();
+    const workbook = buildWorkbook(collections, { syncedAt });
+
+    let rows;
+    try {
+      rows = await exportWorkbook(spreadsheetId, workbook);
+    } catch (error) {
+      console.error("Sheets export failed", error?.message);
+      throw new HttpsError(
+        "unavailable",
+        "The export to Google Sheets could not be completed.",
+      );
+    }
+
+    return { ok: true, syncedAt, rows };
   },
 );
