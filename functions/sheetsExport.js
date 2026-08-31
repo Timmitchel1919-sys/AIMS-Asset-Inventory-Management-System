@@ -140,6 +140,11 @@ const snippet = (value, max = 500) => {
 const rowHash = (cells) =>
   createHash("sha1").update(cells.map(s).join("␟")).digest("hex").slice(0, 16);
 
+// System columns S3 (Sync Version) and S5 (Source). Phase 3 seeded 0 / "AIMS";
+// once the Phase 4 write-back engine has touched a doc these reflect its state.
+const syncVersionOf = (x) => s(x.syncVersion ?? 0);
+const syncSourceOf = (x) => (x.syncSource === "SHEETS" ? "SHEETS" : "AIMS");
+
 const isArchivedAsset = (a) =>
   a.status === "Archived" || a.isArchived === true || a.archived === true;
 const isArchivedInventory = (i) => i.archived === true || i.isArchived === true;
@@ -167,9 +172,9 @@ function assetRow(a, syncedAt) {
   const system = [
     a.id,
     a.code || "",
-    0,
+    syncVersionOf(a),
     "SYNCED",
-    "AIMS",
+    syncSourceOf(a),
     iso(a.updatedAt || a.lastUpdated),
     s(a.updatedBy || a.lastModifiedBy),
     syncedAt,
@@ -193,9 +198,9 @@ function inventoryRow(i, syncedAt) {
   const system = [
     i.id,
     i.code || "",
-    0,
+    syncVersionOf(i),
     "SYNCED",
-    "AIMS",
+    syncSourceOf(i),
     iso(i.updatedAt || i.lastUpdated),
     s(i.updatedBy || i.modifiedBy),
     syncedAt,
@@ -217,7 +222,7 @@ function historyRow(e, syncedAt) {
   ].map(s);
   const system = [
     e.id,
-    0,
+    syncVersionOf(e),
     "SYNCED",
     iso(e.updatedAt || e.createdAt),
     s(e.updatedBy || e.createdBy),
@@ -236,7 +241,7 @@ function locationRow(r, syncedAt) {
     r.details?.notes || r.notes || "",
   ].map(s);
   const system = [
-    r.id, "", 0, "SYNCED", "AIMS",
+    r.id, "", syncVersionOf(r), "SYNCED", syncSourceOf(r),
     iso(r.updatedAt), s(r.updatedBy), syncedAt, "",
   ];
   const cells = [...editable, ...system];
@@ -250,7 +255,7 @@ function departmentRow(r, syncedAt) {
     r.details?.notes || r.notes || "",
   ].map(s);
   const system = [
-    r.id, "", 0, "SYNCED", "AIMS",
+    r.id, "", syncVersionOf(r), "SYNCED", syncSourceOf(r),
     iso(r.updatedAt), s(r.updatedBy), syncedAt, "",
   ];
   const cells = [...editable, ...system];
@@ -264,7 +269,7 @@ function categoryRow(r, syncedAt) {
     r.details?.notes || r.notes || "",
   ].map(s);
   const system = [
-    r.id, "", 0, "SYNCED", "AIMS",
+    r.id, "", syncVersionOf(r), "SYNCED", syncSourceOf(r),
     iso(r.updatedAt), s(r.updatedBy), syncedAt, "",
   ];
   const cells = [...editable, ...system];
@@ -279,7 +284,7 @@ function codeGroupRow(g, syncedAt) {
     g.sortOrder ?? "",
   ].map(s);
   const system = [
-    g.id, g.prefix || "", 0, "SYNCED", "AIMS",
+    g.id, g.prefix || "", syncVersionOf(g), "SYNCED", syncSourceOf(g),
     iso(g.updatedAt), s(g.updatedBy), syncedAt, "",
   ];
   const cells = [...editable, ...system];

@@ -1,9 +1,11 @@
 import { initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { defineSecret, defineString } from "firebase-functions/params";
-import { buildWorkbook } from "./sheetsExport.js";
-import { exportWorkbook } from "./sheetsClient.js";
+import { buildWorkbook, TAB_HEADERS } from "./sheetsExport.js";
+import { exportWorkbook, readTabs, writeCells } from "./sheetsClient.js";
+import { IMPORT_TABS, planImport } from "./sheetsImport.js";
+import { applyPlan } from "./applyImport.js";
 
 initializeApp();
 const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
@@ -177,5 +179,138 @@ export const exportAimsToSheets = onCall(
     }
 
     return { ok: true, syncedAt, rows };
+  },
+);
+
+/**
+ * Phase 4 — Sheets -> AIMS write-back. Dry-run by default: returns a plan and
+ * writes nothing. Pass { apply: true } (only from an explicit, confirmed admin
+ * action) to execute it. Identifier / status / location / assignment changes are
+ * reported as conflicts and never applied; new asset rows are reported, not
+ * created. On apply, the affected rows' system columns are pushed back so the
+ * sheet stays coherent.
+ */
+export const importAimsFromSheets = onCall(
+  {
+    region: "southamerica-east1",
+    timeoutSeconds: 300,
+    memory: "512MiB",
+  },
+  async (request) => {
+    if (!isAdmin(request))
+      throw new HttpsError(
+        "permission-denied",
+        "An AIMS administrator account is required.",
+      );
+
+    const spreadsheetId = String(
+      request.data?.spreadsheetId || syncSpreadsheetId.value() || "",
+    ).trim();
+    if (!spreadsheetId)
+      throw new HttpsError(
+        "failed-precondition",
+        "No target spreadsheet is configured. Set AIMS_SYNC_SPREADSHEET_ID.",
+      );
+
+    const apply = request.data?.apply === true;
+    const db = getFirestore();
+    const names = [
+      "assets",
+      "inventoryItems",
+      "locations",
+      "departments",
+      "categories",
+      "codeGroups",
+    ];
+
+    let current;
+    try {
+      const snapshots = await Promise.all(
+        names.map((name) => db.collection(name).get()),
+      );
+      current = Object.fromEntries(
+        names.map((name, index) => [
+          name,
+          snapshots[index].docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+        ]),
+      );
+    } catch (error) {
+      console.error("Firestore read for import failed", error?.message);
+      throw new HttpsError("internal", "Could not read AIMS data for import.");
+    }
+
+    let workbook;
+    try {
+      workbook = await readTabs(spreadsheetId, [...IMPORT_TABS, "History Log"]);
+    } catch (error) {
+      console.error("Sheets read failed", error?.message);
+      throw new HttpsError(
+        "unavailable",
+        "The Google Sheet could not be read. Check that it is shared with the service account.",
+      );
+    }
+
+    const syncedAt = new Date().toISOString();
+    const plan = planImport({ workbook, current }, { syncedAt });
+
+    const cap = (arr) => arr.slice(0, 500);
+    if (!apply) {
+      return {
+        ok: true,
+        applied: false,
+        syncedAt,
+        summary: plan.summary,
+        updates: cap(plan.updates),
+        creates: cap(plan.creates),
+        conflicts: cap(plan.conflicts),
+        corrections: cap(plan.corrections),
+        needsAimsCreate: cap(plan.needsAimsCreate),
+        errors: cap(plan.errors),
+      };
+    }
+
+    let results;
+    try {
+      results = await applyPlan(db, FieldValue, plan);
+    } catch (error) {
+      console.error("Import apply failed", error?.message);
+      throw new HttpsError("internal", "Applying the import failed part-way.");
+    }
+
+    let cellsWritten = 0;
+    try {
+      cellsWritten = await writeCells(
+        spreadsheetId,
+        results.writeBack,
+        TAB_HEADERS,
+      );
+    } catch (error) {
+      console.error("Sheet write-back failed (non-fatal)", error?.message);
+    }
+
+    return {
+      ok: true,
+      applied: true,
+      syncedAt,
+      summary: {
+        updated: results.updated.length,
+        created: results.created.length,
+        corrected: results.corrected.length,
+        skipped: results.skipped.length,
+        conflicts: plan.summary.conflicts,
+        needsAimsCreate: plan.summary.needsAimsCreate,
+        errors: plan.summary.errors,
+        cellsWritten,
+      },
+      results: {
+        updated: cap(results.updated),
+        created: cap(results.created),
+        corrected: cap(results.corrected),
+        skipped: cap(results.skipped),
+      },
+      conflicts: cap(plan.conflicts),
+      needsAimsCreate: cap(plan.needsAimsCreate),
+      errors: cap(plan.errors),
+    };
   },
 );

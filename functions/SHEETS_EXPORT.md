@@ -94,8 +94,42 @@ const { data } = await fn({}); // or fn({ spreadsheetId })
 // data => { ok: true, syncedAt, rows: { "Master Inventory": 312, ... } }
 ```
 
-## Not in this phase
+## Import — Sheets → AIMS (Phase 4)
 
-Sheets → AIMS write-back, the `Sync Version` concurrency engine, Trash/Restore
-round-trip, conflict handling, Apps Script triggers, scheduled runs. Those are
-Phase 4+.
+`importAimsFromSheets` (admin-only `onCall`) reads the sheet back into AIMS.
+**Dry-run by default** — it returns a plan and writes nothing unless called with
+`{ apply: true }` (the Settings UI does this only after an explicit confirm).
+
+| File | Role |
+| --- | --- |
+| `sheetsImport.js` | pure planner — diffs sheet rows against Firestore, classifies every change |
+| `applyImport.js` | executes an approved plan (transactions, `syncVersion` guard) |
+| `sheetsImport.test.mjs` | planner unit tests |
+
+Policy (hybrid):
+
+- **identifier** fields (`Serial Number`, `On Hand`, `Reserved`, code-group
+  `Prefix` / ranges / `Next Available Number`) — a change is a **conflict**,
+  never applied.
+- **manual** fields (`Status`, `Condition`, `Location`, `Department`,
+  `Assigned To`, `Category`, reference parent/manager/status) — a change is a
+  **conflict**, held for a human.
+- **apply** fields (names, free text, most numbers, dates) — the sheet wins.
+- A row with *any* conflicting field is held whole.
+- `Sync Version` mismatch (doc changed in AIMS since last export) → **conflict**.
+- Blank `Record ID`: **Locations / Departments / Categories / Code Groups** are
+  created; **Master Inventory / Inventory Stock** rows are only reported
+  (`needsAimsCreate`).
+- `History Log` `Correction` cell → appends a new `correction` event; the cell
+  is then cleared.
+
+On `apply`, each affected row's system columns (and new `Record ID`s) are pushed
+back to the sheet so it stays coherent without a full re-export.
+
+Run from the UI: **Settings → Integrations → "Preview changes"**, review the
+conflicts/errors, then **"Apply N change(s)"** (two-click confirm).
+
+## Not yet built
+
+Trash/Restore round-trip (Phase 5), a Conflicts resolution view (Phase 6),
+Apps Script live triggers / scheduled runs, asset creation from the sheet.

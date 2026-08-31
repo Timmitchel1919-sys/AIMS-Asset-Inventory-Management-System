@@ -105,3 +105,69 @@ export async function exportWorkbook(spreadsheetId, workbook) {
   }
   return summary;
 }
+
+const A1COL = (n) => {
+  let s = "";
+  n += 1;
+  while (n > 0) {
+    const m = (n - 1) % 26;
+    s = String.fromCharCode(65 + m) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s;
+};
+
+/**
+ * Read whole tabs. Phase 4 read side.
+ * @returns {Promise<Record<string, string[][]>>} tab -> raw value grid
+ */
+export async function readTabs(spreadsheetId, tabs) {
+  if (!spreadsheetId) throw new Error("A target spreadsheet id is required.");
+  const token = await accessToken();
+  const params = tabs
+    .map((t) => `ranges=${encodeURIComponent(`${quote(t)}!A1:ZZ`)}`)
+    .join("&");
+  const body = await api(
+    token,
+    `${BASE}/${encodeURIComponent(spreadsheetId)}/values:batchGet?${params}&majorDimension=ROWS`,
+  );
+  const out = {};
+  (body.valueRanges || []).forEach((vr, i) => {
+    // range like 'Master Inventory'!A1:ZZ1000 -> strip the !… and unquote
+    const raw = (vr.range || "").split("!")[0].replace(/^'|'$/g, "").replace(/''/g, "'");
+    out[raw || tabs[i]] = vr.values || [];
+  });
+  return out;
+}
+
+/**
+ * Push individual cell values back to the sheet.
+ * @param {Array<{ tab: string, row: number, cells: Record<string,string> }>} writeBack
+ * @param {Record<string, string[]>} headersByTab  tab -> header row (for column lookup)
+ */
+export async function writeCells(spreadsheetId, writeBack, headersByTab) {
+  if (!writeBack.length) return 0;
+  const token = await accessToken();
+  const data = [];
+  for (const wb of writeBack) {
+    const header = headersByTab[wb.tab] || [];
+    for (const [col, value] of Object.entries(wb.cells)) {
+      const idx = header.indexOf(col);
+      if (idx < 0) continue;
+      data.push({
+        range: `${quote(wb.tab)}!${A1COL(idx)}${wb.row}`,
+        values: [[value]],
+      });
+    }
+  }
+  if (!data.length) return 0;
+  await api(
+    token,
+    `${BASE}/${encodeURIComponent(spreadsheetId)}/values:batchUpdate`,
+    {
+      method: "POST",
+      body: JSON.stringify({ valueInputOption: "RAW", data }),
+    },
+  );
+  return data.length;
+}
