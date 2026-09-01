@@ -2676,3 +2676,37 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
 .aims-public-page--premium .aims-feature-grid article:hover {
   border-color: #9ddcff;
 }
+
+/* Mobile: the sign-in button lives inside the hamburger menu, not the top bar. */
+.aims-public-header > nav > .aims-menu-signin {
+  display: none;
+}
+@media (max-width: 860px) {
+  /* hide the top-bar sign-in; show the one inside the open menu panel */
+  .aims-public-header .aims-header-actions > .aims-signin-button:not(.aims-menu-signin) {
+    display: none !important;
+  }
+  .aims-public-header > nav.is-open > .aims-menu-signin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+  .aims-public-header > nav.is-open > .aims-menu-signin svg {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+  }
+  /* top bar now only carries language + download, so let them size naturally */
+  .aims-public-header .aims-header-actions {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+  }
+}

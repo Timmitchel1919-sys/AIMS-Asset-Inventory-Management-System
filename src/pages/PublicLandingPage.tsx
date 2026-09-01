@@ -228,6 +228,14 @@ export default function PublicLandingPage() {
               ),
             )}
           </span>
+          <Link
+            className="aims-glossy-button aims-signin-button aims-menu-signin"
+            to={action}
+            onClick={() => setMenuOpen(false)}
+          >
+            {app.user ? c.open : c.signIn}
+            <ArrowRight />
+          </Link>
         </nav>
         <span className="aims-header-actions">
           <label className="aims-language">
