@@ -299,6 +299,34 @@ export const routeManifest: AppRoute[] = [
     status: "implemented",
   },
   {
+    id: "asset-transfer",
+    path: "/assets/transfer",
+    component: page(async () => ({
+      default: (await import("../pages/AssetTransfer")).AssetTransfer,
+    })),
+    titleKey: "routes.assetTransfer",
+    permission: "movements.create",
+    navigation: false,
+    breadcrumb: ["routes.assets", "routes.assetTransfer"],
+    mobile: true,
+    lazy: true,
+    status: "implemented",
+  },
+  {
+    id: "asset-return",
+    path: "/assets/return",
+    component: page(async () => ({
+      default: (await import("../pages/AssetTransfer")).AssetReturn,
+    })),
+    titleKey: "routes.assetReturn",
+    permission: "movements.create",
+    navigation: false,
+    breadcrumb: ["routes.assets", "routes.assetReturn"],
+    mobile: true,
+    lazy: true,
+    status: "implemented",
+  },
+  {
     id: "asset-labels",
     path: "/assets/:assetId/labels",
     component: page(async () => ({

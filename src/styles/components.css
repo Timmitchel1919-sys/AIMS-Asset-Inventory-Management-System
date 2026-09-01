@@ -3844,6 +3844,50 @@ html[data-aims-theme="aimsEmeraldGloss"]
 .location-path-picker .field {
   margin: 0;
 }
+
+/* ---- Asset transfer / return (Phase C) ---- */
+.asset-identity-panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-elevated, var(--color-surface));
+  padding: 12px 14px;
+}
+.asset-identity-panel h3 {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.asset-identity-panel dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 6px 18px;
+}
+.asset-identity-panel dl > div.wide {
+  grid-column: 1 / -1;
+}
+.asset-identity-panel dt {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+.asset-identity-panel dd {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.asset-transfer-confirm {
+  display: grid;
+  gap: 10px;
+}
+.asset-transfer-confirm p {
+  margin: 0;
+}
+.asset-transfer-confirm__actions {
+  display: flex;
+  gap: 8px;
+}
 .sheets-sync-health.is-error {
   color: var(--danger, #b42318);
 }

@@ -17,6 +17,11 @@ import {
   transactionRef,
 } from "../domain/transactionTypes";
 import {
+  locationById,
+  locationPath,
+  mainLocationIdOf,
+} from "../domain/locationTree";
+import {
   assets as seedAssets,
   audits as seedAudits,
   borrows as seedBorrows,
@@ -1030,31 +1035,131 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           };
           break;
         }
-        case "asset.move": {
+        case "asset.move":
+        case "asset.return": {
+          // Identity is never recreated: same id / code / serial / master data.
+          // Only current location/sub-location/bin/department/condition change,
+          // plus one immutable transaction record and an automatic history event.
           const a = this.asset(command.entityId);
-          const destination = String(v.destinationLocation || "").trim();
-          if (!destination)
+          const destId = String(v.destinationLocationId || "").trim();
+          const destName = destId
+            ? locationById(this.state.references, destId)?.name || ""
+            : String(v.destinationLocation || "").trim();
+          if (!destName && !destId)
             throw new Error("Destination location is required.");
-          const previousLocation = a.location,
-            previousDepartment = a.department;
-          a.location = destination;
+
+          const destBin =
+            String(v.destinationBin || "").trim() || undefined;
+          const before = {
+            location: a.location,
+            locationId: a.currentLocationId,
+            path: a.currentLocationPath || a.location,
+            bin: a.currentBin,
+            department: a.department,
+            condition: a.condition,
+            assignedTo: a.assignedTo,
+          };
+          const destPath = destId
+            ? locationPath(this.state.references, destId, { bin: destBin })
+            : destName;
+          if (
+            destId &&
+            before.locationId === destId &&
+            (before.bin || "") === (destBin || "")
+          )
+            throw new Error("Source and destination are the same.");
+
+          a.location = destName || destPath;
+          a.currentLocationPath = destPath;
+          if (destId) {
+            a.currentLocationId = destId;
+            a.currentBin = destBin;
+            a.mainLocationId =
+              mainLocationIdOf(this.state.references, destId) ||
+              a.mainLocationId;
+          }
           a.department = String(v.destinationDepartment || a.department);
+
+          const requestedCondition = String(
+            v.conditionAfter || v.condition || "",
+          );
+          if (
+            [
+              "New",
+              "Excellent",
+              "Good",
+              "Fair",
+              "Poor",
+              "Defective",
+              "Beyond Repair",
+            ].includes(requestedCondition)
+          )
+            a.condition = requestedCondition as typeof a.condition;
+
+          const isReturn = command.action === "asset.return";
+          if (isReturn) {
+            a.assignedTo = undefined;
+            a.responsibleEmployee = undefined;
+            if (a.status === "Assigned" || a.status === "Borrowed")
+              a.status = "Available";
+          }
+
           a.lastUpdated = today();
           a.lastModifiedBy = command.actor || "Naomi Williams";
+          a.lastMovementAt = now();
+
+          const accessories = Array.isArray(v.accessories)
+            ? (v.accessories as string[]).filter(Boolean)
+            : String(v.accessories || "")
+                .split(/[,;]/)
+                .map((x) => x.trim())
+                .filter(Boolean);
+
           this.addMovement(
-            "Asset movement",
+            isReturn ? "Return" : "Asset movement",
             a.name,
             a.code,
-            1,
-            String(v.reason || "Location change"),
-            previousLocation,
-            destination,
+            Number(v.quantity || 1),
+            String(v.reason || (isReturn ? "Return to storage" : "Transfer")),
+            isReturn
+              ? String(v.returnFrom || before.path)
+              : before.path,
+            isReturn ? String(v.returnTo || destPath) : destPath,
             String(v.approvedBy || ""),
             (v.attachments || []) as string[],
+            {
+              transactionType: normalizeTransactionType(
+                String(v.transactionType || (isReturn ? "RETURN" : "TRANSFER")),
+              ),
+              assetId: a.id,
+              sourceLocationId: before.locationId,
+              destinationLocationId: destId || undefined,
+              sourceBin: before.bin,
+              destinationBin: destBin,
+              sourceDepartment: before.department,
+              destinationDepartment: a.department,
+              conditionBefore: before.condition,
+              conditionAfter: a.condition,
+              by: command.actor || "Naomi Williams",
+              performedByUserId: String(v.performedByUserId || ""),
+              relatedEmployee: isReturn
+                ? String(v.returnFrom || before.assignedTo || "")
+                : undefined,
+              notes:
+                [
+                  String(v.notes || "").trim(),
+                  accessories.length
+                    ? `Accessories: ${accessories.join(", ")}`
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" | ") || undefined,
+              bulkBatchId: String(v.bulkBatchId || "") || undefined,
+            },
           );
           result = {
             ok: true,
-            message: `${a.code} moved from ${previousLocation} to ${destination}; department ${previousDepartment} to ${a.department}.`,
+            message: `${a.code} ${isReturn ? "returned" : "moved"} from ${before.path} to ${destPath}.`,
             entityId: a.id,
           };
           break;

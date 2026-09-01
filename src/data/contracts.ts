@@ -447,6 +447,7 @@ export type WorkflowAction =
   | "asset.archive"
   | "asset.restore"
   | "asset.move"
+  | "asset.return"
   | "history.manual.saveDraft"
   | "history.manual.finalize"
   | "history.manual.delete"

@@ -26,6 +26,19 @@ describe("workflow authorization", () => {
     ).toBe("departments.manage");
   });
 
+  it("gates asset transfer / return behind movements.create", () => {
+    expect(requiredPermission({ action: "asset.move" })).toBe("movements.create");
+    expect(requiredPermission({ action: "asset.return" })).toBe(
+      "movements.create",
+    );
+    expect(
+      isCommandAllowed({ action: "asset.return" }, ["assets.view"]),
+    ).toBe(false);
+    expect(
+      isCommandAllowed({ action: "asset.return" }, ["movements.create"]),
+    ).toBe(true);
+  });
+
   it("applies explicit denials after grants", () => {
     const command = { action: "asset.edit" as const };
     expect(isCommandAllowed(command, ["assets.edit"])).toBe(true);

@@ -7,6 +7,7 @@ const exactPermissions: Partial<Record<WorkflowAction, Permission>> = {
   "asset.archive": "assets.archive",
   "asset.restore": "assets.archive",
   "asset.move": "movements.create",
+  "asset.return": "movements.create",
   "history.manual.saveDraft": "history.create_manual",
   "history.manual.finalize": "history.edit_manual",
   "history.manual.delete": "history.delete_manual",
