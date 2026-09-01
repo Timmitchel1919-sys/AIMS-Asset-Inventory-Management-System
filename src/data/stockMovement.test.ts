@@ -195,6 +195,44 @@ describe("asset transfer / return — identity preserved, immutable transaction"
     expect(res.message).toMatch(/nothing to move/i);
   });
 
+  it("Test 7 — a bulk move with a bad id moves the valid items and leaves nothing half-done", async () => {
+    const asset = repo.snapshot().assets[0];
+    const dest = otherLocation(asset.currentLocationId);
+    const count = repo.snapshot().assets.length;
+
+    const res = await repo.execute({
+      action: "bulk.move",
+      values: {
+        assetIds: [asset.id, "does-not-exist"],
+        inventoryIds: ["also-bogus"],
+        destinationLocationId: dest.id,
+        reason: "partial batch",
+      },
+    });
+    expect(res.ok).toBe(true); // the one real item moved
+    expect(repo.snapshot().assets).toHaveLength(count); // nothing created/removed
+    expect(
+      repo.snapshot().assets.find((x) => x.id === asset.id)!.currentLocationId,
+    ).toBe(dest.id);
+  });
+
+  it("Test 7b — a bulk move with only bad ids changes nothing and reports it", async () => {
+    const snapBefore = JSON.stringify(repo.snapshot().assets);
+    const dest = otherLocation();
+    const res = await repo.execute({
+      action: "bulk.move",
+      values: {
+        assetIds: ["nope-1", "nope-2"],
+        inventoryIds: [],
+        destinationLocationId: dest.id,
+        reason: "x",
+      },
+    });
+    expect(res.ok).toBe(false);
+    expect(res.message).toMatch(/nothing to move/i);
+    expect(JSON.stringify(repo.snapshot().assets)).toBe(snapBefore);
+  });
+
   it("rejects a no-op move (same location + bin)", async () => {
     const asset = repo.snapshot().assets[0];
     const dest = otherLocation(asset.currentLocationId);
