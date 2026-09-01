@@ -3833,6 +3833,17 @@ html[data-aims-theme="aimsEmeraldGloss"]
 .sheets-sync-list a {
   font-weight: 600;
 }
+
+/* ---- Location path picker (Phase A) ---- */
+.location-path-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+.location-path-picker .field {
+  margin: 0;
+}
 .sheets-sync-health.is-error {
   color: var(--danger, #b42318);
 }

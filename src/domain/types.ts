@@ -59,6 +59,10 @@ export interface Asset {
   barcode?: string;
   location: string;
   currentLocationId?: string;
+  /** Denormalised "Main / Sub / Bin" path for display + Google Sheets. */
+  currentLocationPath?: string;
+  /** Optional free-text bin / storage position under the leaf location. */
+  currentBin?: string;
   homeLocationId?: string;
   mainLocationId?: string;
   lastMovementAt?: string;
