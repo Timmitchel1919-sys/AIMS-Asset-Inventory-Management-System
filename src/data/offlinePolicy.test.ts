@@ -18,6 +18,9 @@ describe("isConnectionRequiredAction", () => {
       "history.legacy.import",
       "inventory.legacy.importBatch",
       "audit.generate",
+      "asset.move",
+      "asset.return",
+      "bulk.move",
     ]) {
       expect(isConnectionRequiredAction(a)).toBe(true);
     }
@@ -26,7 +29,6 @@ describe("isConnectionRequiredAction", () => {
   it("allows edits and state transitions on existing records offline", () => {
     for (const a of [
       "asset.edit",
-      "asset.move",
       "asset.archive",
       "asset.restore",
       "inventory.edit",

@@ -628,6 +628,19 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Stock-movement transaction records are immutable: once written, their
+    // substance (source, destination, quantity, type, id, date, who) can never
+    // change. Only a later approval / completion stamp may be appended.
+    match /assetMovements/{id} {
+      allow read: if hasAnyPermission(['movements.view','movements.manage']);
+      allow create: if hasAnyPermission(['movements.manage','movements.create','movements.approve','movements.complete','movements.correct'])
+        && validOperationalRecord(request.resource.data);
+      allow update: if hasAnyPermission(['movements.approve','movements.complete','movements.manage'])
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['approvedBy','status','completedAt','updatedAt','updatedBy']);
+      allow delete: if false;
+    }
+
     match /{collectionName}/{id} {
       allow read: if isOperationalCollection(collectionName)
         && canReadOperationalCollection(collectionName);
@@ -637,6 +650,7 @@ service cloud.firestore {
       allow update: if isOperationalCollection(collectionName)
         && canWriteOperationalCollection(collectionName)
         && collectionName != 'inventoryTransactions'
+        && collectionName != 'assetMovements'
         && validOperationalRecord(request.resource.data) && immutableAuditFields();
       allow delete: if isOperationalCollection(collectionName)
         && collectionName == 'locations' && hasPermission('locations.manage');

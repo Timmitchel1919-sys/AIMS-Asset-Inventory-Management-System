@@ -16,7 +16,10 @@ export function isConnectionRequiredAction(action: string): boolean {
     action.startsWith("stock.") || // guarded onHand / reserved counters
     action.includes("legacy") ||
     action.includes("import") ||
-    action === "audit.generate" // bulk id allocation
+    action === "audit.generate" || // bulk id allocation
+    action === "asset.move" || // allocates a transaction id; must be atomic
+    action === "asset.return" ||
+    action === "bulk.move"
   );
 }
 
