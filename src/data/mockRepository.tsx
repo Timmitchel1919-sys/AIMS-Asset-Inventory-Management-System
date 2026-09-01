@@ -13,6 +13,10 @@ import type {
 } from "../domain/types";
 import { compareAssetCodes, normalizeAssetCode } from "../domain/assetCode";
 import {
+  normalizeTransactionType,
+  transactionRef,
+} from "../domain/transactionTypes";
+import {
   assets as seedAssets,
   audits as seedAudits,
   borrows as seedBorrows,
@@ -4046,10 +4050,14 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
     to = "Destination",
     approvedBy = "",
     attachments: string[] = [],
+    extra: Partial<Movement> = {},
   ) {
+    const seq = this.state.movements.length + 1;
+    const transactionType =
+      extra.transactionType ?? normalizeTransactionType(type);
     const movement: Movement = {
       id: id("mv", this.state.movements.length),
-      reference: `MOV-${today().replaceAll("-", "")}-${this.state.movements.length + 1}`,
+      reference: `MOV-${today().replaceAll("-", "")}-${seq}`,
       type,
       asset,
       assetCode,
@@ -4061,6 +4069,11 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
       reason,
       approvedBy,
       attachments,
+      invCode: assetCode,
+      transactionType,
+      transactionId: transactionRef(transactionType, seq),
+      immutable: true,
+      ...extra,
     };
     this.state.movements = [movement, ...this.state.movements];
     return movement;

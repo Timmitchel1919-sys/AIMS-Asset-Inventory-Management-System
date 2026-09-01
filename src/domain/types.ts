@@ -1,3 +1,5 @@
+import type { TransactionType } from "./transactionTypes";
+
 export type ThemeId = "aimsAzureGlass" | "aimsMidnight" | "aimsEmeraldGloss" | "aimsLight";
 export type Role =
   | "administrator"
@@ -139,6 +141,19 @@ export interface Movement {
   correctsMovementId?: string;
   correctionType?: string;
   createdBy?: string;
+  /** Phase B — canonical transaction classification + unique reference. */
+  transactionType?: TransactionType;
+  transactionId?: string;
+  invCode?: string;
+  sourceSubLocationId?: string;
+  destinationSubLocationId?: string;
+  sourceBin?: string;
+  destinationBin?: string;
+  performedByUserId?: string;
+  conditionBefore?: string;
+  conditionAfter?: string;
+  /** Set on every leg of a bulk move so they can be reported together. */
+  bulkBatchId?: string;
 }
 export interface BorrowRecord {
   id: string;
