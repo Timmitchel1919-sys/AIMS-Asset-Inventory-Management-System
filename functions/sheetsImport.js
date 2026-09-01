@@ -119,6 +119,8 @@ export const FIELD_SPECS = {
       Supplier: { path: "supplier", policy: "apply" },
       "Technical Specs": { path: "technicalSpecifications", policy: "ignore" },
       Notes: { path: "notes", policy: "apply" },
+      "Location Path": { path: "currentLocationPath", policy: "manual" },
+      Bin: { path: "currentBin", policy: "apply" },
       "Previous Codes": { path: "previousCodes", policy: "ignore" },
       "Source Row": { path: "importMetadata", policy: "ignore" },
     },

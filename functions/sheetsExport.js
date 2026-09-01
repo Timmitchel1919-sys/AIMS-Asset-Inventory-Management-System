@@ -30,7 +30,7 @@ export const TAB_HEADERS = {
     "Serial Number", "MAC Address", "IMEI", "Location", "Department",
     "Assigned To", "Responsible Employee", "Status", "Condition",
     "Purchase Date", "Warranty Expiry", "Supplier", "Technical Specs",
-    "Notes", "Previous Codes", "Source Row",
+    "Notes", "Location Path", "Bin", "Previous Codes", "Source Row",
     "Record ID", "Business Code", "Sync Version", "Sync Status", "Source",
     "Updated At", "Updated By", "Last Synced At", "Deleted At", "Row Hash",
   ],
@@ -160,7 +160,7 @@ function assetRow(a, syncedAt) {
     a.serialNumber, a.barcode, "", a.location, a.department,
     a.assignedTo, a.responsibleEmployee, a.status, a.condition,
     iso(a.purchaseDate), iso(a.warrantyExpiry), a.supplier, flattenSpecs(a.technicalSpecifications),
-    a.notes, list(a.previousCodes),
+    a.notes, a.currentLocationPath || "", a.currentBin || "", list(a.previousCodes),
   ].map(s);
   // MAC / IMEI live in technicalSpecifications for most legacy rows; surface
   // them explicitly when present as first-class fields.
