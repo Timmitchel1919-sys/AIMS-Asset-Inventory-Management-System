@@ -252,6 +252,9 @@ export function InventoryList() {
               }
             </Link>
           ))}
+          <Link to="/inventory/bulk-move">
+            {nl ? "Bulk verplaatsen" : "Bulk move"}
+          </Link>
           <Link to="/inventory/reservations">
             {nl ? "Reserveringen" : "Reservations"}
           </Link>

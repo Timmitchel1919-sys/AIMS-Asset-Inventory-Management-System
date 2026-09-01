@@ -128,6 +128,9 @@ export interface InventoryMovement {
   notes?: string;
   attachments?: string[];
   transactionReference?: string;
+  transactionType?: string;
+  transactionId?: string;
+  bulkBatchId?: string;
 }
 export type AssignmentStatus =
   | "Draft"
@@ -448,6 +451,7 @@ export type WorkflowAction =
   | "asset.restore"
   | "asset.move"
   | "asset.return"
+  | "bulk.move"
   | "history.manual.saveDraft"
   | "history.manual.finalize"
   | "history.manual.delete"

@@ -1035,131 +1035,92 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           };
           break;
         }
+        case "bulk.move": {
+          const assetIds = Array.isArray(v.assetIds)
+            ? (v.assetIds as string[]).filter(Boolean)
+            : [];
+          const inventoryIds = Array.isArray(v.inventoryIds)
+            ? (v.inventoryIds as string[]).filter(Boolean)
+            : [];
+          if (!assetIds.length && !inventoryIds.length)
+            throw new Error("Select at least one item to move.");
+          const destId = String(v.destinationLocationId || "").trim();
+          if (!destId) throw new Error("A destination location is required.");
+          const bulkBatchId = transactionRef(
+            "TRANSFER",
+            this.state.movements.length + this.state.inventoryMovements.length + 1,
+          ).replace(/^TRF/, "BLK");
+          const destLeaf =
+            locationById(this.state.references, destId)?.name || "";
+          const destPath = locationPath(this.state.references, destId, {
+            bin: String(v.destinationBin || "") || undefined,
+          });
+          const actor = command.actor || "Naomi Williams";
+          let moved = 0;
+          for (const assetId of assetIds) {
+            const a = this.state.assets.find((x) => x.id === assetId);
+            if (!a || a.status === "Archived") continue;
+            if (a.currentLocationId === destId) continue; // already there
+            this.moveOneAsset(
+              a,
+              false,
+              {
+                destinationLocationId: destId,
+                destinationBin: v.destinationBin,
+                reason: v.reason,
+                notes: v.notes,
+                bulkBatchId,
+                performedByUserId: v.performedByUserId,
+              },
+              actor,
+            );
+            moved += 1;
+          }
+          for (const invId of inventoryIds) {
+            const item = this.state.inventory.find((x) => x.id === invId);
+            if (!item || item.archived) continue;
+            if (item.location === (destLeaf || destPath)) continue;
+            const source = item.location;
+            item.location = destLeaf || destPath;
+            this.addInventoryMovement(
+              "Transfer",
+              item,
+              Number(item.onHand),
+              item.onHand,
+              item.onHand,
+              String(v.reason || "Bulk transfer"),
+              source,
+              destLeaf || destPath,
+              { transactionType: "TRANSFER", bulkBatchId },
+            );
+            moved += 1;
+          }
+          if (!moved)
+            throw new Error(
+              "Nothing to move — every selected item is already at the destination.",
+            );
+          result = {
+            ok: true,
+            message: `${moved} item${moved === 1 ? "" : "s"} moved to ${destPath} (batch ${bulkBatchId}).`,
+            entityId: bulkBatchId,
+          };
+          break;
+        }
         case "asset.move":
         case "asset.return": {
           // Identity is never recreated: same id / code / serial / master data.
           // Only current location/sub-location/bin/department/condition change,
           // plus one immutable transaction record and an automatic history event.
           const a = this.asset(command.entityId);
-          const destId = String(v.destinationLocationId || "").trim();
-          const destName = destId
-            ? locationById(this.state.references, destId)?.name || ""
-            : String(v.destinationLocation || "").trim();
-          if (!destName && !destId)
-            throw new Error("Destination location is required.");
-
-          const destBin =
-            String(v.destinationBin || "").trim() || undefined;
-          const before = {
-            location: a.location,
-            locationId: a.currentLocationId,
-            path: a.currentLocationPath || a.location,
-            bin: a.currentBin,
-            department: a.department,
-            condition: a.condition,
-            assignedTo: a.assignedTo,
-          };
-          const destPath = destId
-            ? locationPath(this.state.references, destId, { bin: destBin })
-            : destName;
-          if (
-            destId &&
-            before.locationId === destId &&
-            (before.bin || "") === (destBin || "")
-          )
-            throw new Error("Source and destination are the same.");
-
-          a.location = destName || destPath;
-          a.currentLocationPath = destPath;
-          if (destId) {
-            a.currentLocationId = destId;
-            a.currentBin = destBin;
-            a.mainLocationId =
-              mainLocationIdOf(this.state.references, destId) ||
-              a.mainLocationId;
-          }
-          a.department = String(v.destinationDepartment || a.department);
-
-          const requestedCondition = String(
-            v.conditionAfter || v.condition || "",
-          );
-          if (
-            [
-              "New",
-              "Excellent",
-              "Good",
-              "Fair",
-              "Poor",
-              "Defective",
-              "Beyond Repair",
-            ].includes(requestedCondition)
-          )
-            a.condition = requestedCondition as typeof a.condition;
-
-          const isReturn = command.action === "asset.return";
-          if (isReturn) {
-            a.assignedTo = undefined;
-            a.responsibleEmployee = undefined;
-            if (a.status === "Assigned" || a.status === "Borrowed")
-              a.status = "Available";
-          }
-
-          a.lastUpdated = today();
-          a.lastModifiedBy = command.actor || "Naomi Williams";
-          a.lastMovementAt = now();
-
-          const accessories = Array.isArray(v.accessories)
-            ? (v.accessories as string[]).filter(Boolean)
-            : String(v.accessories || "")
-                .split(/[,;]/)
-                .map((x) => x.trim())
-                .filter(Boolean);
-
-          this.addMovement(
-            isReturn ? "Return" : "Asset movement",
-            a.name,
-            a.code,
-            Number(v.quantity || 1),
-            String(v.reason || (isReturn ? "Return to storage" : "Transfer")),
-            isReturn
-              ? String(v.returnFrom || before.path)
-              : before.path,
-            isReturn ? String(v.returnTo || destPath) : destPath,
-            String(v.approvedBy || ""),
-            (v.attachments || []) as string[],
-            {
-              transactionType: normalizeTransactionType(
-                String(v.transactionType || (isReturn ? "RETURN" : "TRANSFER")),
-              ),
-              assetId: a.id,
-              sourceLocationId: before.locationId,
-              destinationLocationId: destId || undefined,
-              sourceBin: before.bin,
-              destinationBin: destBin,
-              sourceDepartment: before.department,
-              destinationDepartment: a.department,
-              conditionBefore: before.condition,
-              conditionAfter: a.condition,
-              by: command.actor || "Naomi Williams",
-              performedByUserId: String(v.performedByUserId || ""),
-              relatedEmployee: isReturn
-                ? String(v.returnFrom || before.assignedTo || "")
-                : undefined,
-              notes:
-                [
-                  String(v.notes || "").trim(),
-                  accessories.length
-                    ? `Accessories: ${accessories.join(", ")}`
-                    : "",
-                ]
-                  .filter(Boolean)
-                  .join(" | ") || undefined,
-              bulkBatchId: String(v.bulkBatchId || "") || undefined,
-            },
+          this.moveOneAsset(
+            a,
+            command.action === "asset.return",
+            v as Record<string, unknown>,
+            command.actor || "Naomi Williams",
           );
           result = {
             ok: true,
-            message: `${a.code} ${isReturn ? "returned" : "moved"} from ${before.path} to ${destPath}.`,
+            message: `${a.code} ${command.action === "asset.return" ? "returned" : "moved"} to ${a.currentLocationPath || a.location}.`,
             entityId: a.id,
           };
           break;
@@ -4145,6 +4106,129 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
       return this.state.disposals.map((item) => ({ ...item }));
     return this.state.assets.map((item) => ({ ...item }));
   }
+
+  /**
+   * Move ONE serialized asset. Identity fields are never touched — only the
+   * current location / sub-location / bin / department / condition change, plus
+   * one immutable transaction record. Used by asset.move, asset.return and
+   * bulk.move. Mutates the asset in place.
+   */
+  private moveOneAsset(
+    a: Asset,
+    isReturn: boolean,
+    v: Record<string, unknown>,
+    actor: string,
+  ) {
+    const destId = String(v.destinationLocationId || "").trim();
+    const destName = destId
+      ? locationById(this.state.references, destId)?.name || ""
+      : String(v.destinationLocation || "").trim();
+    if (!destName && !destId)
+      throw new Error("Destination location is required.");
+
+    const destBin = String(v.destinationBin || "").trim() || undefined;
+    const before = {
+      location: a.location,
+      locationId: a.currentLocationId,
+      path: a.currentLocationPath || a.location,
+      bin: a.currentBin,
+      department: a.department,
+      condition: a.condition,
+      assignedTo: a.assignedTo,
+    };
+    const destPath = destId
+      ? locationPath(this.state.references, destId, { bin: destBin })
+      : destName;
+    if (
+      destId &&
+      before.locationId === destId &&
+      (before.bin || "") === (destBin || "")
+    )
+      throw new Error("Source and destination are the same.");
+
+    a.location = destName || destPath;
+    a.currentLocationPath = destPath;
+    if (destId) {
+      a.currentLocationId = destId;
+      a.currentBin = destBin;
+      a.mainLocationId =
+        mainLocationIdOf(this.state.references, destId) || a.mainLocationId;
+    }
+    a.department = String(v.destinationDepartment || a.department);
+
+    const requestedCondition = String(v.conditionAfter || v.condition || "");
+    if (
+      [
+        "New",
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor",
+        "Defective",
+        "Beyond Repair",
+      ].includes(requestedCondition)
+    )
+      a.condition = requestedCondition as typeof a.condition;
+
+    if (isReturn) {
+      a.assignedTo = undefined;
+      a.responsibleEmployee = undefined;
+      if (a.status === "Assigned" || a.status === "Borrowed")
+        a.status = "Available";
+    }
+
+    a.lastUpdated = today();
+    a.lastModifiedBy = actor;
+    a.lastMovementAt = now();
+
+    const accessories = Array.isArray(v.accessories)
+      ? (v.accessories as string[]).filter(Boolean)
+      : String(v.accessories || "")
+          .split(/[,;]/)
+          .map((x) => x.trim())
+          .filter(Boolean);
+
+    this.addMovement(
+      isReturn ? "Return" : "Asset movement",
+      a.name,
+      a.code,
+      Number(v.quantity || 1),
+      String(v.reason || (isReturn ? "Return to storage" : "Transfer")),
+      isReturn ? String(v.returnFrom || before.path) : before.path,
+      isReturn ? String(v.returnTo || destPath) : destPath,
+      String(v.approvedBy || ""),
+      (v.attachments as string[]) || [],
+      {
+        transactionType: normalizeTransactionType(
+          String(v.transactionType || (isReturn ? "RETURN" : "TRANSFER")),
+        ),
+        assetId: a.id,
+        sourceLocationId: before.locationId,
+        destinationLocationId: destId || undefined,
+        sourceBin: before.bin,
+        destinationBin: destBin,
+        sourceDepartment: before.department,
+        destinationDepartment: a.department,
+        conditionBefore: before.condition,
+        conditionAfter: a.condition,
+        by: actor,
+        performedByUserId: String(v.performedByUserId || ""),
+        relatedEmployee: isReturn
+          ? String(v.returnFrom || before.assignedTo || "")
+          : undefined,
+        notes:
+          [
+            String(v.notes || "").trim(),
+            accessories.length ? `Accessories: ${accessories.join(", ")}` : "",
+          ]
+            .filter(Boolean)
+            .join(" | ") || undefined,
+        bulkBatchId: String(v.bulkBatchId || "") || undefined,
+      },
+    );
+    return { before, destPath };
+  }
+
   private addMovement(
     type: string,
     asset: string,
@@ -4192,11 +4276,18 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
     reason: string,
     source?: string,
     destination?: string,
+    extra: Partial<InventoryMovement> = {},
   ) {
+    const seq = this.state.inventoryMovements.length + 1;
+    const transactionType = normalizeTransactionType(
+      extra.transactionType || type,
+    );
     const movement: InventoryMovement = {
       id: id("imv", this.state.inventoryMovements.length),
-      reference: `IMV-${today().replaceAll("-", "")}-${this.state.inventoryMovements.length + 1}`,
+      reference: `IMV-${today().replaceAll("-", "")}-${seq}`,
       type,
+      transactionType,
+      transactionId: transactionRef(transactionType, seq),
       itemId: item.id,
       itemCode: item.code,
       itemName: item.name,

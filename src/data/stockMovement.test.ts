@@ -123,6 +123,78 @@ describe("asset transfer / return — identity preserved, immutable transaction"
     expect(mv.notes).toContain("charger");
   });
 
+  it("Test 4 — bulk move relocates every selected asset, one immutable TRF each, shared batch id, destination untouched", async () => {
+    const all = repo.snapshot().assets.filter((a) => a.status !== "Archived");
+    const [a, b, c] = all;
+    const dest = otherLocation(a.currentLocationId);
+
+    // park C at the destination first (existing stock there)
+    await repo.execute({
+      action: "asset.move",
+      entityId: c.id,
+      values: { destinationLocationId: dest.id, reason: "seed" },
+    });
+    const cAfterSeed = { ...repo.snapshot().assets.find((x) => x.id === c.id)! };
+    const moves0 = repo.snapshot().movements.length;
+    const assetCount = repo.snapshot().assets.length;
+
+    const res = await repo.execute({
+      action: "bulk.move",
+      actor: "ICT Administrator",
+      values: {
+        assetIds: [a.id, b.id],
+        inventoryIds: [],
+        destinationLocationId: dest.id,
+        reason: "Room reorganisation",
+      },
+    });
+    expect(res.ok).toBe(true);
+    expect(res.entityId).toMatch(/^BLK-\d{4}-\d{6}$/);
+
+    // both moved, none created/removed
+    expect(repo.snapshot().assets).toHaveLength(assetCount);
+    for (const id of [a.id, b.id])
+      expect(
+        repo.snapshot().assets.find((x) => x.id === id)!.currentLocationId,
+      ).toBe(dest.id);
+
+    // one immutable TRF per moved asset, all sharing the batch id
+    const legs = repo
+      .snapshot()
+      .movements.slice(0, repo.snapshot().movements.length - moves0);
+    expect(legs).toHaveLength(2);
+    expect(new Set(legs.map((m) => m.bulkBatchId)).size).toBe(1);
+    expect(legs.every((m) => m.transactionType === "TRANSFER")).toBe(true);
+    expect(legs.every((m) => m.immutable === true)).toBe(true);
+    expect(legs.every((m) => /^TRF-\d{4}-\d{6}$/.test(m.transactionId!))).toBe(
+      true,
+    );
+
+    // the asset already at the destination was not touched
+    expect(repo.snapshot().assets.find((x) => x.id === c.id)).toEqual(cAfterSeed);
+  });
+
+  it("bulk move skips items already at the destination and errors if nothing is left", async () => {
+    const asset = repo.snapshot().assets[0];
+    const dest = otherLocation(asset.currentLocationId);
+    await repo.execute({
+      action: "asset.move",
+      entityId: asset.id,
+      values: { destinationLocationId: dest.id, reason: "first" },
+    });
+    const res = await repo.execute({
+      action: "bulk.move",
+      values: {
+        assetIds: [asset.id],
+        inventoryIds: [],
+        destinationLocationId: dest.id,
+        reason: "again",
+      },
+    });
+    expect(res.ok).toBe(false);
+    expect(res.message).toMatch(/nothing to move/i);
+  });
+
   it("rejects a no-op move (same location + bin)", async () => {
     const asset = repo.snapshot().assets[0];
     const dest = otherLocation(asset.currentLocationId);

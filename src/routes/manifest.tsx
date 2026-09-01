@@ -327,6 +327,18 @@ export const routeManifest: AppRoute[] = [
     status: "implemented",
   },
   {
+    id: "inventory-bulk-move",
+    path: "/inventory/bulk-move",
+    component: page(() => import("../pages/BulkStockMove")),
+    titleKey: "routes.bulkMove",
+    permission: "movements.create",
+    navigation: false,
+    breadcrumb: ["routes.inventory", "routes.bulkMove"],
+    mobile: true,
+    lazy: true,
+    status: "implemented",
+  },
+  {
     id: "asset-labels",
     path: "/assets/:assetId/labels",
     component: page(async () => ({

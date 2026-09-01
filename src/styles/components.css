@@ -3888,6 +3888,42 @@ html[data-aims-theme="aimsEmeraldGloss"]
   display: flex;
   gap: 8px;
 }
+
+/* ---- Bulk move (Phase D) ---- */
+.bulk-move-list {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.bulk-move-list__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.bulk-move-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  max-height: 320px;
+  overflow: auto;
+}
+.bulk-move-list li label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+.bulk-move-list li em {
+  color: var(--color-text-muted);
+  font-style: normal;
+  font-size: 0.78rem;
+}
+.bulk-move-list code {
+  font-size: 0.78rem;
+}
 .sheets-sync-health.is-error {
   color: var(--danger, #b42318);
 }
