@@ -130,7 +130,7 @@ export default function Settings() {
   ];
   const labels: Record<Tab, [string, string]> = {
     masterData: [
-      nl ? "Locaties & codes" : "Location & Codes",
+      nl ? "Master data" : "Master data",
       nl
         ? "Beheer locaties en codegroepen."
         : "Manage locations and code groups.",

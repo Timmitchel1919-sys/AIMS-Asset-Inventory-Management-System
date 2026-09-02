@@ -147,6 +147,15 @@ html[data-theme="kcs-azure-intelligence"]{--global-search-surface:#fff;--global-
   transform:translateY(-50%);
   pointer-events:none;
 }
+/* Desktop only: the sidebar sets `overflow:hidden`, which clips this notch at
+   the sidebar edge so it never joins the module panel. Anchor it to the
+   viewport instead (the sidebar is `position:fixed`, so the JS-measured top is
+   already viewport-relative) and let the flat edge bleed 2px into the panel —
+   now it reads as one continuous shape carved out toward the module panel. */
+@media(min-width:781px){
+  .app-sidebar__active-notch{position:fixed;left:var(--sidebar-expanded-width,248px);right:auto;z-index:31;transform:translate(calc(-100% + 2px),-50%);transition:left var(--sidebar-transition-duration,220ms) ease}
+  .collapsed .app-sidebar__active-notch{left:var(--sidebar-collapsed-width,76px)}
+}
 @media(prefers-reduced-motion:no-preference){
   .app-sidebar nav .navigation-item{transition:background-color 180ms ease,border-color 180ms ease,color 180ms ease,box-shadow 180ms ease}
 }

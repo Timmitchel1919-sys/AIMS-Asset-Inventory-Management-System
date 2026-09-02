@@ -2770,22 +2770,24 @@ html[data-theme] .aims-public-page .aims-hero,
 html[data-theme] .aims-public-header .aims-public-lockup__copy small,
 .aims-public-page--premium .aims-public-header .aims-public-lockup__copy small {
   display: block !important;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  white-space: nowrap;        /* one line — never stack / wrap */
+  overflow: visible;
 }
-@media (max-width: 640px) {
+@media (max-width: 680px) {
+  .aims-public-header .aims-public-lockup__copy strong,
+  .aims-public-page--premium .aims-public-header .aims-public-lockup__copy strong {
+    font-size: 0.82rem;
+  }
   .aims-public-header .aims-public-lockup__copy small,
   .aims-public-page--premium .aims-public-header .aims-public-lockup__copy small {
-    font-size: 0.58rem;
-    line-height: 1.12;
-    max-width: 24ch;
-    letter-spacing: 0.02em;
+    margin-top: 2px;
+    font-size: 0.55rem;
+    letter-spacing: 0.01em;
   }
 }
 @media (max-width: 380px) {
   .aims-public-header .aims-public-lockup__copy small,
   .aims-public-page--premium .aims-public-header .aims-public-lockup__copy small {
-    font-size: 0.52rem;
-    max-width: 20ch;
+    font-size: 0.48rem;
   }
 }
