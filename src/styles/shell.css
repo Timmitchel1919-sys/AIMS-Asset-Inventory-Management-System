@@ -291,7 +291,10 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
 
 /* Collapsed desktop rail: the brand mark is just one more 48px glyph, sharing
    the exact size and vertical centre-line of every navigation icon, for every
-   theme. Authoritative — sits after every earlier logo-button rule. */
+   theme. Authoritative — sits after every earlier logo-button rule.
+   The brand PNG is a 3:2 canvas whose glyph fills ~36% of the width, so the
+   image is over-sized and object-fit:cover crops the transparent margin — that
+   lands the visible glyph at roughly the 22px nav-icon size. */
 @media (min-width: 781px) {
   html[data-theme] .app-sidebar.app-sidebar--collapsed .app-sidebar__logo-button {
     width: 48px;
@@ -304,13 +307,14 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
     padding: 0;
     display: grid;
     place-items: center;
-    overflow: visible;
+    overflow: hidden;
     border-radius: 14px;
   }
   html[data-theme] .app-sidebar.app-sidebar--collapsed .app-sidebar__logo-button img {
-    width: 24px;
-    height: 24px;
+    width: 42px;
+    height: 42px;
     transform: none;
-    object-fit: contain;
+    object-fit: cover;
+    object-position: center;
   }
 }
