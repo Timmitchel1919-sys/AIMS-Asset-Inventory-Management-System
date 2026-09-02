@@ -14,11 +14,12 @@
 
   --orbit-radius: 230px;
 
-  /* Only a single soft frost-blue ring sits on the (white) background. */
-  --orbital-frost-ring: rgba(0, 174, 239, 0.14);
-  --orbital-ring-inner: rgba(44, 126, 244, 0.42);
-  --orbital-ring-middle: rgba(44, 126, 244, 0.3);
-  --orbital-ring-outer: rgba(0, 174, 239, 0.6);
+  /* Only a single soft frost-blue ring sits on the (white) background —
+     kept deliberately light. */
+  --orbital-frost-ring: rgba(0, 174, 239, 0.08);
+  --orbital-ring-inner: rgba(44, 126, 244, 0.26);
+  --orbital-ring-middle: rgba(44, 126, 244, 0.18);
+  --orbital-ring-outer: rgba(0, 174, 239, 0.36);
   --orbital-logo-bg: #ffffff;
   --orbital-logo-border: rgba(44, 126, 244, 0.18);
   --orbital-logo-shadow: 0 14px 36px rgba(7, 31, 61, 0.1);
@@ -161,10 +162,10 @@
    token values that would clash with the white background are pinned back. */
 html[data-theme="aims-midnight"] .aims-orbital-hero,
 html[data-theme="emerald-gloss"] .aims-orbital-hero {
-  --orbital-frost-ring: rgba(0, 174, 239, 0.14);
-  --orbital-ring-inner: rgba(44, 126, 244, 0.42);
-  --orbital-ring-middle: rgba(44, 126, 244, 0.3);
-  --orbital-ring-outer: rgba(0, 174, 239, 0.6);
+  --orbital-frost-ring: rgba(0, 174, 239, 0.08);
+  --orbital-ring-inner: rgba(44, 126, 244, 0.26);
+  --orbital-ring-middle: rgba(44, 126, 244, 0.18);
+  --orbital-ring-outer: rgba(0, 174, 239, 0.36);
   --orbital-logo-bg: #ffffff;
   --orbital-logo-border: rgba(44, 126, 244, 0.18);
   --orbital-logo-shadow: 0 14px 36px rgba(7, 31, 61, 0.1);
