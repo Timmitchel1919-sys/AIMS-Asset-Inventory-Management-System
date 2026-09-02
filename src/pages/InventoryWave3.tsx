@@ -203,7 +203,7 @@ export function InventoryList() {
             <>
               {can(user?.role, "inventory.import") ? (
                 <Link
-                  className="btn btn-secondary page-header-secondary-action"
+                  className="btn btn-secondary page-header-secondary-action page-header-import-action"
                   to="/inventory/import"
                 >
                   {nl ? "Importeren" : "Import"}

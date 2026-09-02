@@ -551,7 +551,7 @@ export default function Assets() {
             actions={
               <>
                 <Button
-                  className="page-header-secondary-action"
+                  className="page-header-secondary-action page-header-scan-action"
                   variant="secondary"
                   onClick={() => navigate("/assets?scan=1")}
                 >

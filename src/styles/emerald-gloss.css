@@ -364,24 +364,33 @@ html[data-aims-theme="aimsEmeraldGloss"] .inventory-status-summary .card {
   border-color: var(--emerald-deep);
 }
 
-/* "Import" (beside "Add asset") and the Asset-history "Print" button —
-   filled with the deep sidebar green. */
-html[data-aims-theme="aimsEmeraldGloss"] .page-header-import-action,
-html[data-aims-theme="aimsEmeraldGloss"] .asset-history-print {
-  background: var(--emerald-deep) !important;
-  border-color: var(--emerald-deep) !important;
+/* Scan / Import (asset + warehouse headers) and the Asset-history Print
+   button all carry the same primary green as the "Add asset" / "Add item"
+   button. */
+html[data-aims-theme="aimsEmeraldGloss"] :is(.page-header-scan-action, .page-header-import-action, .asset-history-print) {
   color: #ffffff !important;
+  background: var(--emerald-gradient-primary) !important;
+  border: 1px solid transparent !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 6px 16px rgba(5, 39, 18, 0.22) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 6px 18px rgba(5, 39, 18, 0.2) !important;
 }
-html[data-aims-theme="aimsEmeraldGloss"] .page-header-import-action:hover:not(:disabled),
-html[data-aims-theme="aimsEmeraldGloss"] .asset-history-print:hover:not(:disabled) {
-  background: #0a3a1c !important;
+html[data-aims-theme="aimsEmeraldGloss"] :is(.page-header-scan-action, .page-header-import-action, .asset-history-print):hover:not(:disabled) {
+  background: var(--emerald-nav) !important;
 }
-html[data-aims-theme="aimsEmeraldGloss"] .page-header-import-action svg,
-html[data-aims-theme="aimsEmeraldGloss"] .asset-history-print svg {
+html[data-aims-theme="aimsEmeraldGloss"] :is(.page-header-scan-action, .page-header-import-action, .asset-history-print) svg {
   color: #ffffff;
+}
+
+/* Settings list rows (Master data locations, code groups, Recycle bin) sit
+   as white cards on the pale-green settings panel. */
+html[data-aims-theme="aimsEmeraldGloss"] .location-type-list article {
+  background: #ffffff;
+}
+
+/* "IT policy management" card — drop the green accent stripe on its left. */
+html[data-aims-theme="aimsEmeraldGloss"] .legal-admin-summary {
+  border-left: 1px solid var(--emerald-border);
 }
 
 /* Record panels: the panel is filled with the existing pale green and each
