@@ -1074,7 +1074,7 @@ export function AssetDisposal() {
         >
           <Card>
             <form
-              className="workflow-form"
+              className="workflow-form disposal-request-form"
               onSubmit={(event) => {
                 event.preventDefault();
                 setValues(

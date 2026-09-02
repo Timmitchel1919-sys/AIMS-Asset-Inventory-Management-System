@@ -384,32 +384,33 @@ html[data-aims-theme="aimsEmeraldGloss"] .asset-history-print svg {
   color: #ffffff;
 }
 
-/* Record panels (Start disposal request, every Settings tab, Add history
-   note, workflow forms): the panel is filled with the existing pale green
-   and each field sits on its own solid white card. */
-html[data-aims-theme="aimsEmeraldGloss"] .card:has(> .workflow-form),
-html[data-aims-theme="aimsEmeraldGloss"] .settings-layout > .card {
+/* Record panels: the panel is filled with the existing pale green and each
+   field sits on its own solid white card. Scoped to exactly two places —
+   the Settings module and the Start disposal request panel. Every other
+   workflow form is untouched. */
+html[data-aims-theme="aimsEmeraldGloss"] .settings-layout > .card,
+html[data-aims-theme="aimsEmeraldGloss"] .card:has(> .disposal-request-form) {
   background-color: #eaf7ef;
 }
-html[data-aims-theme="aimsEmeraldGloss"] .workflow-form > .field,
-html[data-aims-theme="aimsEmeraldGloss"] .workflow-form > .switch-row,
-html[data-aims-theme="aimsEmeraldGloss"] .inventory-settings-row > .field,
-html[data-aims-theme="aimsEmeraldGloss"] .inventory-settings-row > .switch-row {
+html[data-aims-theme="aimsEmeraldGloss"] :is(.settings-layout .workflow-form, .disposal-request-form) > .field,
+html[data-aims-theme="aimsEmeraldGloss"] :is(.settings-layout .workflow-form, .disposal-request-form) > .switch-row,
+html[data-aims-theme="aimsEmeraldGloss"] .settings-layout .inventory-settings-row > .field,
+html[data-aims-theme="aimsEmeraldGloss"] .settings-layout .inventory-settings-row > .switch-row {
   padding: 12px 14px;
   border: 1px solid var(--emerald-border);
   border-radius: 12px;
   background: #ffffff;
 }
-html[data-aims-theme="aimsEmeraldGloss"] .workflow-form > .field :is(input, select, textarea) {
+html[data-aims-theme="aimsEmeraldGloss"] :is(.settings-layout .workflow-form, .disposal-request-form) .field :is(input, select, textarea) {
   background: #ffffff !important;
   border-color: var(--emerald-border);
 }
 
 /* "Confirm high-risk actions" sits white and level beside "Default minimum
    stock" — equal-height white cards on one row. */
-html[data-aims-theme="aimsEmeraldGloss"] .inventory-settings-row {
+html[data-aims-theme="aimsEmeraldGloss"] .settings-layout .inventory-settings-row {
   align-items: stretch;
 }
-html[data-aims-theme="aimsEmeraldGloss"] .inventory-settings-row > .switch-row {
+html[data-aims-theme="aimsEmeraldGloss"] .settings-layout .inventory-settings-row > .switch-row {
   justify-content: space-between;
 }
