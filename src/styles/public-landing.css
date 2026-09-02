@@ -2791,3 +2791,24 @@ html[data-theme] .aims-public-header .aims-public-lockup__copy small,
     font-size: 0.48rem;
   }
 }
+
+/* ============================================================
+   The landing page always wears the Azure-blue accent set, no
+   matter which in-app theme the visitor last selected. Surfaces
+   stay as designed; only accent tokens are pinned to blue so no
+   Emerald green or Midnight tint can leak through shared tokens.
+   ============================================================ */
+.aims-public-page,
+html[data-theme] .aims-public-page,
+html[data-aims-theme] .aims-public-page {
+  --color-primary: #155eef;
+  --color-primary-hover: #0b4fc3;
+  --color-primary-active: #0a3f9c;
+  --color-primary-soft: rgba(44, 126, 244, 0.12);
+  --color-accent: #00aeef;
+  --color-accent-hover: #0092c7;
+  --color-focus-ring: rgba(44, 126, 244, 0.28);
+  --color-info: #155eef;
+  --legal-accent: #1268f4;
+  --legal-link: #1268f4;
+}

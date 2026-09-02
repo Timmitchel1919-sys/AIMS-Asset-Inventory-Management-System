@@ -1,6 +1,14 @@
-import { Bot, Bookmark, Clock3, Send, Settings2, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Bot,
+  Bookmark,
+  Clock3,
+  Send,
+  Settings2,
+  Sparkles,
+} from "lucide-react";
 import { useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button, Card } from "../components/ui";
 import { rolePermissions } from "../auth/permissions";
 import { useApp } from "../context/AppContext";
@@ -31,6 +39,7 @@ export default function Assistant() {
     nl = app.language === "nl",
     snapshot = useMockSnapshot(),
     location = useLocation(),
+    navigate = useNavigate(),
     params = useParams(),
     [query, setQuery] = useState(""),
     [sending, setSending] = useState(false);
@@ -74,6 +83,16 @@ export default function Assistant() {
   if (section !== "chat")
     return (
       <div className="page">
+        <button
+          type="button"
+          className="back"
+          onClick={() =>
+            navigate(section === "detail" ? "/assistant/history" : "/assistant")
+          }
+        >
+          <ArrowLeft />
+          {nl ? "Terug" : "Back"}
+        </button>
         <header className="page-title">
           <div>
             <h1>

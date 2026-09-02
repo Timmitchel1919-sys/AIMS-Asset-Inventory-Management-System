@@ -1172,3 +1172,42 @@ html[data-theme] .auth-page form input:autofill {
   background-color: #fff !important;
   box-shadow: inset 0 0 0 100px #fff !important;
 }
+
+/* ============================================================
+   The sign-in / auth screens always wear the Azure-blue accent
+   set. Surfaces stay white/neutral as designed; only accents are
+   pinned to blue so Emerald green or Midnight tint never leaks
+   through shared tokens or theme button gradients.
+   ============================================================ */
+.auth-page,
+html[data-theme] .auth-page,
+html[data-aims-theme] .auth-page {
+  --color-primary: #155eef;
+  --color-primary-hover: #0b4fc3;
+  --color-primary-active: #0a3f9c;
+  --color-primary-soft: rgba(44, 126, 244, 0.12);
+  --color-accent: #00aeef;
+  --color-focus-ring: rgba(44, 126, 244, 0.28);
+  --legal-accent: #1268f4;
+  --legal-link: #1268f4;
+}
+/* Plain auth pages (e.g. forgot password) — neutral white ground, never the
+   Emerald ivory or Midnight dark canvas. Login / signup keep their own azure
+   gradient treatment defined above. */
+html[data-aims-theme="aimsEmeraldGloss"] .auth-page:not(.auth-login):not(.auth-signup),
+html[data-theme="aims-midnight"] .auth-page:not(.auth-login):not(.auth-signup) {
+  background-color: #ffffff !important;
+  color: #0f172a;
+}
+/* Any themed primary / submit button on an auth screen renders AIMS-blue. */
+html[data-aims-theme] .auth-page :is(.btn-primary, .auth-submit, button[type="submit"]) {
+  background: linear-gradient(135deg, #155eef, #2c7ef4 58%, #00aeef) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+html[data-aims-theme] .auth-page :is(.btn-primary, .auth-submit, button[type="submit"]):hover:not(:disabled) {
+  filter: brightness(1.04);
+}
+html[data-aims-theme] .auth-page a:not(.btn) {
+  color: #1268f4;
+}

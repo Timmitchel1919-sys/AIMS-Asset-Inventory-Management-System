@@ -551,7 +551,11 @@ export function AssetHistory() {
                       : "Add History Note"}
                   </Button>
                 )}
-                <Button variant="secondary" onClick={() => window.print()}>
+                <Button
+                  variant="secondary"
+                  className="asset-history-print"
+                  onClick={() => window.print()}
+                >
                   <Printer />
                   {a("print")}
                 </Button>

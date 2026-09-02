@@ -1874,6 +1874,18 @@ html[data-aims-theme="aimsEmeraldGloss"]
 .legal-admin-summary b {
   color: var(--color-success);
 }
+
+/* Terms & Conditions / Privacy Notice / ICT Support / Privacy & Security
+   cards: white body in every theme, keeping each card's own accent
+   (border, heading, chevron, left rule). */
+html .legal-settings__documents > a,
+html .legal-contact-card,
+html .policy-information,
+html .legal-admin-summary,
+html .system-information {
+  background: #ffffff;
+}
+
 @media (max-width: 780px) {
   .legal-settings__documents > a {
     min-height: 68px;

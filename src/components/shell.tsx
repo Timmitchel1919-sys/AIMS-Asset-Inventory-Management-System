@@ -622,7 +622,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="main" id="main-content" tabIndex={-1}>
+      <main
+        className="main"
+        id="main-content"
+        data-route={current?.id}
+        tabIndex={-1}
+      >
         <PrintAuditHeader />
         {presentationMode && (
           <section

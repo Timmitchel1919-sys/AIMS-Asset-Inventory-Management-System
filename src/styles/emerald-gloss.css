@@ -352,3 +352,64 @@ html[data-aims-theme="aimsEmeraldGloss"] .inventory-status-summary .card b {
     scroll-behavior: auto;
   }
 }
+
+/* =====================================================================
+   Warehouse + record-panel refinements.
+   ===================================================================== */
+
+/* Warehouse module: the deep sidebar green becomes the card outline. */
+html[data-aims-theme="aimsEmeraldGloss"] .main[data-route^="inventory"] :is(.card, .data-card),
+html[data-aims-theme="aimsEmeraldGloss"] .inventory-action-card,
+html[data-aims-theme="aimsEmeraldGloss"] .inventory-status-summary .card {
+  border-color: var(--emerald-deep);
+}
+
+/* "Import" (beside "Add asset") and the Asset-history "Print" button —
+   filled with the deep sidebar green. */
+html[data-aims-theme="aimsEmeraldGloss"] .page-header-import-action,
+html[data-aims-theme="aimsEmeraldGloss"] .asset-history-print {
+  background: var(--emerald-deep) !important;
+  border-color: var(--emerald-deep) !important;
+  color: #ffffff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 6px 16px rgba(5, 39, 18, 0.22) !important;
+}
+html[data-aims-theme="aimsEmeraldGloss"] .page-header-import-action:hover:not(:disabled),
+html[data-aims-theme="aimsEmeraldGloss"] .asset-history-print:hover:not(:disabled) {
+  background: #0a3a1c !important;
+}
+html[data-aims-theme="aimsEmeraldGloss"] .page-header-import-action svg,
+html[data-aims-theme="aimsEmeraldGloss"] .asset-history-print svg {
+  color: #ffffff;
+}
+
+/* Record panels (Start disposal request, every Settings tab, Add history
+   note, workflow forms): the panel is filled with the existing pale green
+   and each field sits on its own solid white card. */
+html[data-aims-theme="aimsEmeraldGloss"] .card:has(> .workflow-form),
+html[data-aims-theme="aimsEmeraldGloss"] .settings-layout > .card {
+  background-color: #eaf7ef;
+}
+html[data-aims-theme="aimsEmeraldGloss"] .workflow-form > .field,
+html[data-aims-theme="aimsEmeraldGloss"] .workflow-form > .switch-row,
+html[data-aims-theme="aimsEmeraldGloss"] .inventory-settings-row > .field,
+html[data-aims-theme="aimsEmeraldGloss"] .inventory-settings-row > .switch-row {
+  padding: 12px 14px;
+  border: 1px solid var(--emerald-border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+html[data-aims-theme="aimsEmeraldGloss"] .workflow-form > .field :is(input, select, textarea) {
+  background: #ffffff !important;
+  border-color: var(--emerald-border);
+}
+
+/* "Confirm high-risk actions" sits white and level beside "Default minimum
+   stock" — equal-height white cards on one row. */
+html[data-aims-theme="aimsEmeraldGloss"] .inventory-settings-row {
+  align-items: stretch;
+}
+html[data-aims-theme="aimsEmeraldGloss"] .inventory-settings-row > .switch-row {
+  justify-content: space-between;
+}
