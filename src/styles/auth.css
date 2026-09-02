@@ -1211,3 +1211,33 @@ html[data-aims-theme] .auth-page :is(.btn-primary, .auth-submit, button[type="su
 html[data-aims-theme] .auth-page a:not(.btn) {
   color: #1268f4;
 }
+
+/* ============================================================
+   Login card readability tweaks.
+   ============================================================ */
+/* The brand description reads pure black on the sign-in screen, every theme. */
+html .auth-page.auth-login .auth-brand-copy p,
+html[data-theme] .auth-page.auth-login .auth-brand-copy p,
+html[data-aims-theme] .auth-page.auth-login .auth-brand-copy p {
+  color: #000000 !important;
+}
+
+/* One step larger for the supporting links + credits under the login form. */
+html[data-theme] .auth-page.auth-login .auth-links,
+html[data-theme] .auth-page.auth-login .auth-links span,
+html[data-theme] .auth-page.auth-login .auth-links a {
+  font-size: 1rem !important;
+}
+html[data-theme] .auth-page.auth-login .ict-support-trigger {
+  font-size: 0.95rem !important;
+}
+html[data-theme] .auth-page.auth-login .login-public-links,
+html[data-theme] .auth-page.auth-login .login-public-links a {
+  font-size: 0.88rem !important;
+}
+html[data-theme] .auth-page.auth-login .login-copyright {
+  font-size: 0.9rem !important;
+}
+html[data-theme] .auth-page.auth-login .login-developer-credit {
+  font-size: 0.86rem !important;
+}

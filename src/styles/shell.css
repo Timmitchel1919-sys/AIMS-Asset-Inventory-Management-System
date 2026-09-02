@@ -288,3 +288,29 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
 .authenticated-app .desktop-table table{font-size:clamp(12px,calc(var(--font-size-base) - 1px),15px)}
 .authenticated-app .desktop-table th{font-size:clamp(11px,calc(var(--font-size-base) - 2px),14px)}
 .authenticated-app .page>header h1{font-size:clamp(28px,calc(var(--font-size-base) + 16px),32px)}
+
+/* Collapsed desktop rail: the brand mark is just one more 48px glyph, sharing
+   the exact size and vertical centre-line of every navigation icon, for every
+   theme. Authoritative — sits after every earlier logo-button rule. */
+@media (min-width: 781px) {
+  html[data-theme] .app-sidebar.app-sidebar--collapsed .app-sidebar__logo-button {
+    width: 48px;
+    min-width: 48px;
+    max-width: 48px;
+    height: 48px;
+    min-height: 48px;
+    max-height: 48px;
+    margin: 2px auto;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    overflow: visible;
+    border-radius: 14px;
+  }
+  html[data-theme] .app-sidebar.app-sidebar--collapsed .app-sidebar__logo-button img {
+    width: 24px;
+    height: 24px;
+    transform: none;
+    object-fit: contain;
+  }
+}
