@@ -228,14 +228,34 @@ export default function PublicLandingPage() {
               ),
             )}
           </span>
-          <Link
-            className="aims-glossy-button aims-signin-button aims-menu-signin"
-            to={action}
-            onClick={() => setMenuOpen(false)}
-          >
-            {app.user ? c.open : c.signIn}
-            <ArrowRight />
-          </Link>
+          <div className="aims-menu-actions">
+            <label className="aims-language aims-menu-language">
+              <Languages />
+              <span className="sr-only">{c.language}</span>
+              <select
+                aria-label={c.language}
+                value={language}
+                onChange={(e) => app.setLanguage(e.target.value as Language)}
+              >
+                <option value="en">EN</option>
+                <option value="nl">NL</option>
+              </select>
+            </label>
+            <DownloadAppLink
+              className="aims-header-download aims-menu-download"
+              onClick={() => setMenuOpen(false)}
+            >
+              Download App
+            </DownloadAppLink>
+            <Link
+              className="aims-glossy-button aims-signin-button aims-menu-signin"
+              to={action}
+              onClick={() => setMenuOpen(false)}
+            >
+              {app.user ? c.open : c.signIn}
+              <ArrowRight />
+            </Link>
+          </div>
         </nav>
         <span className="aims-header-actions">
           <label className="aims-language">

@@ -2677,36 +2677,80 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
   border-color: #9ddcff;
 }
 
-/* Mobile: the sign-in button lives inside the hamburger menu, not the top bar. */
-.aims-public-header > nav > .aims-menu-signin {
+/* Mobile (all themes): language toggle, Download App and Sign in all live
+   inside the hamburger menu, not the top bar. */
+.aims-public-header > nav > .aims-menu-actions {
   display: none;
 }
 @media (max-width: 860px) {
-  /* hide the top-bar sign-in; show the one inside the open menu panel */
-  .aims-public-header .aims-header-actions > .aims-signin-button:not(.aims-menu-signin) {
+  /* top bar carries only the brand + hamburger */
+  .aims-public-header .aims-header-actions {
     display: none !important;
   }
-  .aims-public-header > nav.is-open > .aims-menu-signin {
+  .aims-public-header .aims-menu-button {
+    margin-left: auto;
+  }
+  .aims-public-header > nav.is-open > .aims-menu-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(44, 126, 244, 0.16);
+  }
+  .aims-menu-actions .aims-menu-language {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 44px;
+    padding: 4px 10px;
+    border: 1px solid rgba(44, 126, 244, 0.24);
+    border-radius: 10px;
+  }
+  .aims-menu-actions .aims-menu-language svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+  .aims-menu-actions .aims-menu-language select {
+    flex: 1;
+    min-height: 36px;
+    border: 0;
+    background: transparent;
+    font-size: 0.9rem;
+  }
+  .aims-menu-actions .aims-menu-download {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     width: 100%;
-    margin-top: 8px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+  }
+  .aims-menu-actions .aims-menu-download svg {
+    width: 16px;
+    height: 16px;
+  }
+  .aims-menu-actions > .aims-menu-signin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 44px;
     padding: 12px 14px;
     border-radius: 10px;
     font-size: 0.9rem;
     white-space: nowrap;
   }
-  .aims-public-header > nav.is-open > .aims-menu-signin svg {
+  .aims-menu-actions > .aims-menu-signin svg {
     display: inline-block;
     width: 16px;
     height: 16px;
-  }
-  /* top bar now only carries language + download, so let them size naturally */
-  .aims-public-header .aims-header-actions {
-    display: flex !important;
-    align-items: center;
-    gap: 8px;
   }
 }
