@@ -155,6 +155,10 @@ const isPublicThemePath = (pathname: string) =>
   /^\/(?:$|login\/?$|signup\/?$|register\/?$|verify-email\/?$|forgot-password\/?$|reset-password\/?$|terms\/?$|privacy\/?$|support\/?$|download\/?$)/.test(
     pathname,
   );
+/* The landing, sign-in and sign-up pages always render in the fixed Azure
+   blue look — the user's in-app theme choice (Emerald, Midnight, Light)
+   only applies once signed in. */
+const PUBLIC_PAGE_THEME: ThemeId = "aimsAzureGlass";
 export function AppProvider({ children }: { children: ReactNode }) {
   const presentationMode = import.meta.env.VITE_APP_MODE === "presentation";
   const [user, setUser] = useState<User | null>(() => {
@@ -172,7 +176,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     !presentationMode && Boolean(firebaseAuth),
   );
   const [theme, setThemeState] = useState<ThemeId>(() => getStoredKcsTheme());
-  const [, setPublicPath] = useState(() =>
+  const [publicPath, setPublicPath] = useState(() =>
     isPublicThemePath(
       typeof window === "undefined" ? "/" : window.location.pathname,
     ),
@@ -320,7 +324,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     });
   }, [presentationMode, mapFirebaseUser]);
-  const effectiveTheme = theme;
+  const effectiveTheme = publicPath ? PUBLIC_PAGE_THEME : theme;
   useEffect(() => applyKcsTheme(effectiveTheme, false), [effectiveTheme]);
   useEffect(() => {
     document.documentElement.lang = language === "nl" ? "nl" : "en";

@@ -152,7 +152,10 @@ export default function Auth({
           ? "Voer uw e-mailadres in; we sturen u een herstellink."
           : "Enter your email address and we'll send you a reset link.";
   return (
-    <div className={`auth-page auth-${mode}`} data-auth-theme={app.theme}>
+    <div
+      className={`auth-page auth-${mode}`}
+      data-auth-theme={app.effectiveTheme}
+    >
       <section className="auth-brand">
         <div className="auth-brand-content">
           <div className="auth-brand-header">
