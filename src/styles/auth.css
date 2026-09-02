@@ -1149,3 +1149,26 @@ html[data-theme] .auth-page:is(.auth-login, .auth-signup) .auth-brand-copy p {
     min-height: 46px !important;
   }
 }
+
+/* Kill the browser autofill tint: Chrome / Edge paint a saved email or
+   password field pale blue and Firefox pale yellow. Force the same flat white
+   fill as an untouched field, for every theme and every auth screen. */
+.auth-page form input:-webkit-autofill,
+.auth-page form input:-webkit-autofill:hover,
+.auth-page form input:-webkit-autofill:focus,
+.auth-page form input:-webkit-autofill:active,
+html[data-theme] .auth-page form input:-webkit-autofill,
+html[data-theme] .auth-page form input:-webkit-autofill:hover,
+html[data-theme] .auth-page form input:-webkit-autofill:focus,
+html[data-theme] .auth-page form input:-webkit-autofill:active {
+  -webkit-text-fill-color: #071f3d;
+  -webkit-box-shadow: inset 0 0 0 100px #fff !important;
+  box-shadow: inset 0 0 0 100px #fff !important;
+  caret-color: #071f3d;
+  transition: background-color 6000s ease-in-out 0s;
+}
+.auth-page form input:autofill,
+html[data-theme] .auth-page form input:autofill {
+  background-color: #fff !important;
+  box-shadow: inset 0 0 0 100px #fff !important;
+}
