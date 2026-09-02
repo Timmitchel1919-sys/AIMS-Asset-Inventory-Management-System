@@ -2754,3 +2754,38 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
     height: 16px;
   }
 }
+
+/* ============================================================
+   Landing hero — white ground for every theme, and always show
+   "Asset & Inventory Management System" next to the AIMS logo
+   in the top bar (every theme, every screen size).
+   ============================================================ */
+html .aims-public-page .aims-hero,
+html[data-theme] .aims-public-page .aims-hero,
+.aims-public-page--premium .aims-hero {
+  background: #ffffff !important;
+}
+
+.aims-public-header .aims-public-lockup__copy small,
+html[data-theme] .aims-public-header .aims-public-lockup__copy small,
+.aims-public-page--premium .aims-public-header .aims-public-lockup__copy small {
+  display: block !important;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 640px) {
+  .aims-public-header .aims-public-lockup__copy small,
+  .aims-public-page--premium .aims-public-header .aims-public-lockup__copy small {
+    font-size: 0.58rem;
+    line-height: 1.12;
+    max-width: 24ch;
+    letter-spacing: 0.02em;
+  }
+}
+@media (max-width: 380px) {
+  .aims-public-header .aims-public-lockup__copy small,
+  .aims-public-page--premium .aims-public-header .aims-public-lockup__copy small {
+    font-size: 0.52rem;
+    max-width: 20ch;
+  }
+}
