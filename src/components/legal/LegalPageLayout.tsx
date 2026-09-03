@@ -2,6 +2,7 @@ import type {ReactNode} from 'react';
 import {ArrowLeft,Printer} from 'lucide-react';
 import {Link,useNavigate} from 'react-router-dom';
 import {legalConfig} from '../../config/legal';
+import {AIMS_LOGO_ALT,AIMS_LOGO_SRC} from '../../branding/aimsLogo';
 import type {LegalSection} from '../../types/legal.types';
 import {useApp} from '../../context/AppContext';
 import '../../styles/legal.css';
@@ -12,7 +13,7 @@ export function LegalPageLayout({title,version,sections,children}:{title:string;
   return <div className="legal-page"><PrintAuditHeader/><div className="legal-page__container">
     <header className="legal-page__header">
       <div className="legal-page__actions"><button onClick={()=>navigate(-1)}><ArrowLeft/>{nl?'Terug':'Back'}</button><button onClick={()=>window.print()}><Printer/>{nl?'Afdrukken / opslaan als PDF':'Print / Save PDF'}</button></div>
-      <img className="legal-page__logo" src="/aims-logo.png" alt="AIMS"/>
+      <img className="legal-page__logo" src={AIMS_LOGO_SRC.blue} alt={AIMS_LOGO_ALT}/>
       <p className="legal-page__eyebrow">{legalConfig.systemName}</p><h1>{title}</h1><p>{legalConfig.organizationName}</p>
       <div className="legal-page__meta"><span>{nl?'Versie':'Version'} {version}</span><span>{nl?'Ingangsdatum':'Effective date'}: {legalConfig.effectiveDate}</span><span>{nl?'Laatst bijgewerkt':'Last updated'}: {legalConfig.lastUpdated}</span></div>
     </header>

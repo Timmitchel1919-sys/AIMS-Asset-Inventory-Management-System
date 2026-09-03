@@ -375,7 +375,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               if (app.sidebarCollapsed) app.setSidebarCollapsed(false);
             }}
           >
-            <AimsLogo context="authenticated" surface="dark" alt="" />
+            <AimsLogo placement="sidebar" decorative />
           </button>
           <div className="brand-copy app-sidebar__brand-text">
             <strong>AIMS</strong>

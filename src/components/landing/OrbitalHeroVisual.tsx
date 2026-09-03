@@ -8,6 +8,7 @@ import {
   type AnimationPlaybackControls,
 } from "framer-motion";
 import { ScanLine, ShieldCheck, Boxes } from "lucide-react";
+import { AIMS_LOGO_ALT, AIMS_LOGO_SRC } from "../../branding/aimsLogo";
 import { aimsLandingCopy } from "../../content/aimsLanding";
 import { OrbitItem } from "./OrbitItem";
 import "./OrbitalHeroVisual.css";
@@ -75,10 +76,7 @@ export function OrbitalHeroVisual({ language }: { language: Language }) {
       <div className="aims-orbital-ring aims-orbital-ring--middle" aria-hidden="true" />
       <div className="aims-orbital-ring aims-orbital-ring--outer" aria-hidden="true" />
       <div className="aims-orbital-logo">
-        <img
-          src="/aims-logo-transparent.png"
-          alt="AIMS Asset & Inventory Management System"
-        />
+        <img src={AIMS_LOGO_SRC.blue} alt={AIMS_LOGO_ALT} draggable={false} />
       </div>
       <motion.div className="aims-orbital-layer" style={{ rotate }}>
         {items.map((item) => (

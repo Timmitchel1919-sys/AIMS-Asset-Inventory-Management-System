@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from "framer-motion";
+import { AIMS_LOGO_SRC } from "../../branding/aimsLogo";
 import { AimsWordmark } from "../branding/AimsWordmark";
 import { SplashOrbit } from "./SplashOrbit";
 import "./BrandedSplash.css";
@@ -53,7 +54,7 @@ export function BrandedSplash({ language }: BrandedSplashProps) {
         <div className="aims-splash-checking-content">
           <motion.div className="aims-splash-orbit-entrance" {...enter(0.15)}>
             <SplashOrbit
-              logoSrc="/aims-logo-transparent.png"
+              logoSrc={AIMS_LOGO_SRC.blue}
               itemsDelay={reducedMotion ? 0 : 0.65}
             />
           </motion.div>

@@ -1,3 +1,4 @@
+import { AIMS_LOGO_SRC } from "../../branding/aimsLogo";
 import "./AimsPublicLockup.css";
 
 export function AimsPublicLockup({ inverse = false }: { inverse?: boolean }) {
@@ -7,7 +8,7 @@ export function AimsPublicLockup({ inverse = false }: { inverse?: boolean }) {
       role="img"
       aria-label="AIMS Asset & Inventory Management System"
     >
-      <img src="/aims-logo-transparent.png" alt="" />
+      <img src={AIMS_LOGO_SRC.blue} alt="" draggable={false} />
       <span className="aims-public-lockup__copy" aria-hidden="true">
         <strong>AIMS</strong>
           <small>Asset &amp; Inventory Management System</small>

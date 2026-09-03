@@ -1,6 +1,7 @@
 import {Apple,Download,ExternalLink,Globe2,Mail,MonitorSmartphone,Smartphone} from 'lucide-react';
 import {Link} from 'react-router-dom';
 import {appDownloadConfig} from '../config/appDownload.config';
+import {AIMS_LOGO_SRC} from '../branding/aimsLogo';
 import {usePwaInstall} from '../components/PwaStatus';
 import {useApp} from '../context/AppContext';
 import '../styles/download-page.css';
@@ -9,7 +10,7 @@ export default function DownloadPage(){
   const pwa=usePwaInstall(),{language}=useApp(),nl=language==='nl';
   const installLabel=pwa.isStandalone?(nl?'App is al geïnstalleerd':'App already installed'):pwa.canInstall?(nl?'Webapp installeren':'Install Web App'):(nl?'Installatie niet beschikbaar':'Install unavailable');
   return <main className="download-page"><div className="download-page__shell">
-    <header><Link to="/" aria-label={nl?'Terug naar startpagina':'Back to home'}><img src="/aims-logo.png" alt=""/><span>AIMS</span></Link><Link to="/login">{nl?'Aanmelden':'Sign In'}</Link></header>
+    <header><Link to="/" aria-label={nl?'Terug naar startpagina':'Back to home'}><img src={AIMS_LOGO_SRC.blue} alt=""/><span>AIMS</span></Link><Link to="/login">{nl?'Aanmelden':'Sign In'}</Link></header>
     <section className="download-page__intro"><div><h1>{nl?'Download de AIMS-app':'Download the AIMS App'}</h1><p>{nl?'Installeer het Asset & Inventory Management System op een ondersteund apparaat voor snelle, responsieve toegang.':'Install the Asset & Inventory Management System on a supported device for fast, responsive access.'}</p><small>{nl?'Huidige versie':'Current version'} {appDownloadConfig.currentVersion}</small></div><MonitorSmartphone aria-hidden="true"/></section>
     <section className="download-options" aria-label={nl?'Downloadopties':'Download options'}>
       <article><Globe2/><h2>{nl?'Webapp':'Web App'}</h2><p>{nl?'Werkt in moderne browsers op desktop, tablet en mobiel.':'Works in modern browsers on desktop, tablet, and mobile.'}</p><button className="btn btn-primary" disabled={pwa.isStandalone||!pwa.canInstall} onClick={()=>pwa.install()}><Download/>{installLabel}</button></article>

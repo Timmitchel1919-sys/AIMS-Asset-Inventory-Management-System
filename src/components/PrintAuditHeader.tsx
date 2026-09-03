@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AIMS_LOGO_SRC } from "../branding/aimsLogo";
 import { useApp } from "../context/AppContext";
 
 /** Shared audit header for every browser print and Save as PDF operation. */
@@ -16,7 +17,7 @@ export function PrintAuditHeader() {
   return (
     <header className="print-audit-header" aria-hidden="true">
       <div className="print-audit-brand print-audit-brand--aims">
-        <img src="/aims-logo-blue.png" alt="" />
+        <img src={AIMS_LOGO_SRC.blue} alt="" />
         <span><strong>AIMS</strong><small>Asset &amp; Inventory System</small></span>
       </div>
       <div className="print-audit-brand print-audit-brand--school">
