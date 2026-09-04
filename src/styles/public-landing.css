@@ -2550,9 +2550,9 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
 
 .aims-public-page--premium .aims-public-header .aims-public-lockup > img {
   display: block;
-  width: 54px;
-  height: 54px;
-  flex: 0 0 54px;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
   margin-left: 12px;
   order: 0;
 }
@@ -2591,9 +2591,9 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
   }
 
   .aims-public-page--premium .aims-public-header .aims-public-lockup > img {
-    width: 46px;
-    height: 46px;
-    flex-basis: 46px;
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
   }
 
   .aims-public-page--premium .aims-public-header .aims-public-lockup__copy strong {
@@ -2615,9 +2615,9 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
   }
 
   .aims-public-page--premium .aims-public-header .aims-public-lockup > img {
-    width: 34px;
-    height: 34px;
-    flex-basis: 34px;
+    width: 26px;
+    height: 26px;
+    flex-basis: 26px;
     margin-left: 6px;
   }
 
