@@ -6,7 +6,7 @@
 
 .aims-orbital-hero {
   position: relative;
-  width: clamp(340px, 44vw, 680px);
+  width: clamp(360px, 47vw, 715px);
   aspect-ratio: 1 / 1;
   margin: 0 auto;
   display: grid;
@@ -16,7 +16,7 @@
   /* Radius of the outer ring / chip orbit. Scales with the viewport and is
      capped near half the container width so 2 x radius (the outer diameter,
      which the chips ride) always fits, container and rings growing together. */
-  --orbit-radius: clamp(150px, 19vw, 290px);
+  --orbit-radius: clamp(165px, 21vw, 320px);
 
   /* Only a single soft frost-blue ring sits on the (white) background —
      kept deliberately light. */
@@ -88,8 +88,8 @@
   top: 50%;
   left: 50%;
   z-index: 2;
-  width: clamp(100px, 14vw, 132px);
-  height: clamp(100px, 14vw, 132px);
+  width: clamp(112px, 15vw, 148px);
+  height: clamp(112px, 15vw, 148px);
   display: grid;
   place-items: center;
   border: 0;
