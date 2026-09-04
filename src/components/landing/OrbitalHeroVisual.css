@@ -6,13 +6,17 @@
 
 .aims-orbital-hero {
   position: relative;
-  width: clamp(320px, 42vw, 620px);
+  width: clamp(340px, 54vw, 800px);
   aspect-ratio: 1 / 1;
   margin: 0 auto;
   display: grid;
   place-items: center;
+  overflow: visible;
 
-  --orbit-radius: 230px;
+  /* Radius of the outer ring / chip orbit. Scales with the viewport and is
+     capped near half the container width so 2 x radius (the outer diameter,
+     which the chips ride) always fits, container and rings growing together. */
+  --orbit-radius: clamp(150px, 25vw, 375px);
 
   /* Only a single soft frost-blue ring sits on the (white) background —
      kept deliberately light. */
@@ -30,15 +34,6 @@
   --orbital-chip-shadow: 0 8px 24px rgba(7, 31, 61, 0.1);
 }
 
-@media (min-width: 1440px) {
-  .aims-orbital-hero { --orbit-radius: 250px; }
-}
-@media (max-width: 1024px) {
-  .aims-orbital-hero { --orbit-radius: 180px; }
-}
-@media (max-width: 480px) {
-  .aims-orbital-hero { --orbit-radius: 138px; }
-}
 
 /* One soft frost-blue ring on the (white) background — nothing else. */
 .aims-orbital-arcs {
@@ -93,8 +88,8 @@
   top: 50%;
   left: 50%;
   z-index: 2;
-  width: clamp(105px, 20vw, 150px);
-  height: clamp(105px, 20vw, 150px);
+  width: clamp(128px, 21vw, 182px);
+  height: clamp(128px, 21vw, 182px);
   display: grid;
   place-items: center;
   border: 0;
