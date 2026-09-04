@@ -1215,11 +1215,11 @@ html[data-aims-theme] .auth-page a:not(.btn) {
 /* ============================================================
    Login card readability tweaks.
    ============================================================ */
-/* The brand description reads pure black on the sign-in screen, every theme. */
+/* The brand description reads near-black on the sign-in screen, every theme. */
 html .auth-page.auth-login .auth-brand-copy p,
 html[data-theme] .auth-page.auth-login .auth-brand-copy p,
 html[data-aims-theme] .auth-page.auth-login .auth-brand-copy p {
-  color: #000000 !important;
+  color: #111111 !important;
 }
 
 /* One step larger for the supporting links + credits under the login form. */
