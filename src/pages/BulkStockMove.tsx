@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Boxes, PackageCheck } from "lucide-react";
-import { Button, Card, TextAreaField } from "../components/ui";
+import { Button, Card, SelectField, TextAreaField } from "../components/ui";
 import { MutationFeedback, PageHeader } from "../components/WorkflowUi";
 import { LocationPathPicker } from "../components/LocationPathPicker";
 import { useApp } from "../context/AppContext";
@@ -18,6 +18,7 @@ export default function BulkStockMove() {
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [destId, setDestId] = useState<string | null>(null);
   const [destBin, setDestBin] = useState("");
+  const [destDepartment, setDestDepartment] = useState("");
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
@@ -30,6 +31,14 @@ export default function BulkStockMove() {
   const sourceName = sourceId
     ? locationById(snapshot.references, sourceId)?.name || ""
     : "";
+  const departments = useMemo(
+    () =>
+      snapshot.references
+        .filter((r) => r.kind === "department" && r.status === "Active")
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [snapshot.references],
+  );
 
   const atSource = useMemo(() => {
     if (!sourceId) return { assets: [], inventory: [] };
@@ -81,6 +90,7 @@ export default function BulkStockMove() {
         inventoryIds: pickedInvIds,
         destinationLocationId: destId,
         destinationBin: destBin || undefined,
+        destinationDepartment: destDepartment || undefined,
         reason: reason.trim(),
         notes: notes.trim() || undefined,
         performedByUserId: app.user?.id,
@@ -218,6 +228,25 @@ export default function BulkStockMove() {
                 label={nl ? "Bestemming" : "Destination"}
               />
             </div>
+            <SelectField
+              className="wide"
+              label={
+                nl
+                  ? "Bestemmingsafdeling (optioneel, alleen middelen)"
+                  : "Destination department (optional, assets only)"
+              }
+              value={destDepartment}
+              onChange={(e) => setDestDepartment(e.target.value)}
+            >
+              <option value="">
+                {nl ? "Ongewijzigd" : "Unchanged"}
+              </option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.name}>
+                  {d.name}
+                </option>
+              ))}
+            </SelectField>
             <TextAreaField
               className="wide"
               label={nl ? "Reden" : "Reason"}

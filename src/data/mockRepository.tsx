@@ -1067,6 +1067,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               {
                 destinationLocationId: destId,
                 destinationBin: v.destinationBin,
+                destinationDepartment: v.destinationDepartment,
                 reason: v.reason,
                 notes: v.notes,
                 bulkBatchId,

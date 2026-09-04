@@ -1,4 +1,4 @@
-import { ArchiveRestore, Edit3, Plus, Trash2 } from "lucide-react";
+import { ArchiveRestore, Edit3, Plus, Trash2, Sparkles } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -20,6 +20,7 @@ import { useApp } from "../context/AppContext";
 import type { ReferenceKind, ReferenceRecord } from "../data/contracts";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { LocationTypeForm } from "../components/settings/LocationTypesSettings";
+import { DepartmentIntelligencePanel } from "../components/departments/DepartmentIntelligencePanel";
 
 function ParentLocationForm({
   onSaved,
@@ -217,6 +218,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     [typeDialog, setTypeDialog] = useState(false),
     [parentDialog, setParentDialog] = useState(false),
     [mainLocationDialog, setMainLocationDialog] = useState(false),
+    [deptPanel, setDeptPanel] = useState<ReferenceRecord | null>(null),
     [insight, setInsight] = useState<{
       title: string;
       kind: "assets" | "children" | "tasks";
@@ -629,7 +631,30 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       text: (item) => statusLabel(item.status),
     },
   ];
-  const columns = kind === "location" ? locationColumns : legacyColumns;
+  const departmentOverviewColumn: DataColumn<ReferenceRecord> = {
+    id: "overview",
+    label: "",
+    render: (item) => (
+      <button
+        type="button"
+        className="linklike department-overview-trigger"
+        onClick={(event) => {
+          event.stopPropagation();
+          setDeptPanel(item);
+        }}
+      >
+        <Sparkles size={14} />
+        {nl ? "Overzicht" : "Overview"}
+      </button>
+    ),
+    text: () => "",
+  };
+  const columns =
+    kind === "location"
+      ? locationColumns
+      : kind === "department"
+        ? [...legacyColumns, departmentOverviewColumn]
+        : legacyColumns;
   const displayRows = rows
     .filter(
       (item) =>
@@ -1392,6 +1417,12 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
           onClose={() => setDeleteConfirm(false)}
           onConfirm={moveToRecycleBin}
         />
+        {kind === "department" && (
+          <DepartmentIntelligencePanel
+            department={deptPanel}
+            onClose={() => setDeptPanel(null)}
+          />
+        )}
       </div>
     </OfflineGate>
   );

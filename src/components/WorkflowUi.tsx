@@ -14,11 +14,11 @@ export function AccountBackButton(){
   return <button type="button" className="back account-back" onClick={()=>{requestAccountMenuOpen();navigate(-1)}}><ArrowLeft/>{language==='nl'?'Terug':'Back'}</button>;
 }
 
-export function Dialog({open,title,description,children,onClose,footer}:{open:boolean;title:string;description?:string;children:ReactNode;onClose:()=>void;footer?:ReactNode}){
+export function Dialog({open,title,description,children,onClose,footer,className=''}:{open:boolean;title:string;description?:string;children:ReactNode;onClose:()=>void;footer?:ReactNode;className?:string}){
   const ref=useRef<HTMLDialogElement>(null);
   const titleId=useId();
   useEffect(()=>{const dialog=ref.current;if(!dialog)return;if(open&&!dialog.open)dialog.showModal();if(!open&&dialog.open)dialog.close()},[open]);
-  return <dialog ref={ref} className="dialog" aria-labelledby={titleId} onCancel={event=>{event.preventDefault();onClose()}} onClose={()=>{if(open)onClose()}}>
+  return <dialog ref={ref} className={`dialog ${className}`.trim()} aria-labelledby={titleId} onCancel={event=>{event.preventDefault();onClose()}} onClose={()=>{if(open)onClose()}}>
     <header><div><h2 id={titleId}>{title}</h2>{description&&<p>{description}</p>}</div><button className="icon-button" aria-label="Close" onClick={onClose}><X/></button></header>
     <div className="dialog-body">{children}</div>
     {footer&&<footer>{footer}</footer>}

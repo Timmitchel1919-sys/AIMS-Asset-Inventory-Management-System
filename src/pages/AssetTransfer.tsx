@@ -33,6 +33,7 @@ function AssetMove({ mode }: { mode: Mode }) {
   const [assetId, setAssetId] = useState(params.get("asset") || "");
   const [destId, setDestId] = useState<string | null>(null);
   const [destBin, setDestBin] = useState("");
+  const [destDepartment, setDestDepartment] = useState("");
   const [returnFrom, setReturnFrom] = useState("");
   const [condition, setCondition] = useState<string>("");
   const [accessories, setAccessories] = useState("");
@@ -53,6 +54,14 @@ function AssetMove({ mode }: { mode: Mode }) {
     [snapshot.assets],
   );
   const asset = assets.find((a) => a.id === assetId);
+  const departments = useMemo(
+    () =>
+      snapshot.references
+        .filter((r) => r.kind === "department" && r.status === "Active")
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [snapshot.references],
+  );
   const currentPath = asset
     ? asset.currentLocationPath ||
       locationPath(snapshot.references, asset.currentLocationId, {
@@ -81,6 +90,7 @@ function AssetMove({ mode }: { mode: Mode }) {
         transactionType: isReturn ? "RETURN" : "TRANSFER",
         destinationLocationId: destId || undefined,
         destinationBin: destBin || undefined,
+        destinationDepartment: destDepartment || undefined,
         conditionAfter: condition || undefined,
         reason: reason.trim(),
         notes: notes.trim() || undefined,
@@ -140,6 +150,7 @@ function AssetMove({ mode }: { mode: Mode }) {
           required
           onChange={(e) => {
             setAssetId(e.target.value);
+            setDestDepartment("");
             setReview(false);
           }}
         >
@@ -199,6 +210,24 @@ function AssetMove({ mode }: { mode: Mode }) {
                 }
               />
             </div>
+            <SelectField
+              label={
+                nl
+                  ? "Bestemmingsafdeling (optioneel)"
+                  : "Destination department (optional)"
+              }
+              value={destDepartment}
+              onChange={(e) => setDestDepartment(e.target.value)}
+            >
+              <option value="">
+                {nl ? "Ongewijzigd" : "Unchanged"} ({asset.department || "—"})
+              </option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.name}>
+                  {d.name}
+                </option>
+              ))}
+            </SelectField>
             <SelectField
               label={
                 isReturn
@@ -264,6 +293,9 @@ function AssetMove({ mode }: { mode: Mode }) {
                 {isReturn ? returnFrom + " → " : ""}
                 {destPath}
                 {condition ? ` · ${asset?.condition} → ${condition}` : ""}
+                {destDepartment && destDepartment !== asset?.department
+                  ? ` · ${asset?.department || "—"} → ${destDepartment}`
+                  : ""}
               </p>
               <div className="asset-transfer-confirm__actions">
                 <Button type="button" variant="ghost" onClick={() => setReview(false)}>
