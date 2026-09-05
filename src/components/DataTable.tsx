@@ -9,10 +9,6 @@ import {
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Button, Loader, State } from "./ui";
 import { useApp } from "../context/AppContext";
-import {
-  COLLAPSED_ROW_LIMIT,
-  DataCollapseBar,
-} from "./data-list/DataCollapseBar";
 
 export interface DataColumn<T> {
   id: string;
@@ -100,9 +96,6 @@ export function DataTable<T>({
     direction: "asc" | "desc";
   } | null>(null);
   const [showColumns, setShowColumns] = useState(false);
-  // Every module table shows the full data set by default; the text "collapse"
-  // control under the table folds it down to a 30-row preview and back.
-  const [collapsed, setCollapsed] = useState(false);
   const [savedViews, setSavedViews] = useState<string[]>(() =>
     JSON.parse(localStorage.getItem(`kcs-views-${id}`) || "[]"),
   );
@@ -137,10 +130,11 @@ export function DataTable<T>({
       return sort.direction === "asc" ? result : -result;
     });
   }, [columns, searchable, sort]);
+  // Every module table renders its full result set — scroll to reach the last
+  // row. No fold-down preview.
   const totalCount = sorted.length;
-  const collapsible = totalCount > COLLAPSED_ROW_LIMIT;
-  const pageRows =
-    collapsible && collapsed ? sorted.slice(0, COLLAPSED_ROW_LIMIT) : sorted;
+  const pageRows = sorted;
+  const locale = nl ? "nl-NL" : "en-US";
   const visibleColumns = columns.filter((column) =>
     visible.includes(column.id),
   );
@@ -249,6 +243,10 @@ export function DataTable<T>({
             placeholder={searchPlaceholder}
           />
         </label>
+        <span className="data-toolbar__count" aria-live="polite">
+          <b>{totalCount.toLocaleString(locale)}</b>
+          {nl ? "totaal records" : "total records"}
+        </span>
         {filters}
         <div className="table-actions">
           <Button variant="secondary" onClick={saveView}>
@@ -444,11 +442,6 @@ export function DataTable<T>({
           </div>
         </>
       )}
-      <DataCollapseBar
-        total={totalCount}
-        collapsed={collapsed}
-        onToggle={() => setCollapsed((value) => !value)}
-      />
     </div>
   );
 }

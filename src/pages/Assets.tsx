@@ -595,6 +595,7 @@ export default function Assets() {
               setSelected([]);
             }}
             searchLabel={t("assets.search")}
+            count={result.totalCount}
             filterCount={activeFilters.length}
             onToggleFilters={toggleFilters}
             savedViews={

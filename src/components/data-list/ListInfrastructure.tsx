@@ -9,11 +9,10 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useId, useState, type ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { Button, Loader, State } from "../ui";
 import { useT } from "../../i18n";
 import { useApp } from "../../context/AppContext";
-import { COLLAPSED_ROW_LIMIT, DataCollapseBar } from "./DataCollapseBar";
 
 export interface ListColumn<T> {
   id: string;
@@ -51,6 +50,7 @@ export function DataToolbar({
   savedViews,
   columnSelector,
   exportMenu,
+  count,
 }: {
   search: string;
   onSearch: (value: string) => void;
@@ -60,8 +60,11 @@ export function DataToolbar({
   savedViews: ReactNode;
   columnSelector: ReactNode;
   exportMenu: ReactNode;
+  count?: number;
 }) {
   const t = useT();
+  const { language } = useApp();
+  const nl = language === "nl";
   return (
     <div className="data-toolbar list-toolbar">
       <label className="search">
@@ -73,6 +76,12 @@ export function DataToolbar({
           placeholder={searchLabel}
         />
       </label>
+      {typeof count === "number" && (
+        <span className="data-toolbar__count" aria-live="polite">
+          <b>{count.toLocaleString(nl ? "nl-NL" : "en-US")}</b>
+          {nl ? "totaal records" : "total records"}
+        </span>
+      )}
       <div className="table-actions">
         <Button
           variant="secondary"
@@ -451,13 +460,8 @@ export function ResponsiveDataList<T>({
     visibleSet = new Set(visible),
     selectedSet = new Set(selected),
     shown = columns.filter((column) => visibleSet.has(column.id));
-  // Full data set by default; the collapse control under the panel folds it to
-  // a 30-row preview and back.
-  const [collapsed, setCollapsed] = useState(false);
-  const displayRows =
-    collapsed && rows.length > COLLAPSED_ROW_LIMIT
-      ? rows.slice(0, COLLAPSED_ROW_LIMIT)
-      : rows;
+  // Renders the full result set — scroll to reach the last row.
+  const displayRows = rows;
   // Any cell that renders as an ISO date/date-time string (e.g. the
   // "last updated" column) follows the user's date & time preference.
   const cell = (column: ListColumn<T>, row: T) => formatAuto(column.render(row));
@@ -574,11 +578,6 @@ export function ResponsiveDataList<T>({
           );
         })}
       </div>
-      <DataCollapseBar
-        total={rows.length}
-        collapsed={collapsed}
-        onToggle={() => setCollapsed((value) => !value)}
-      />
     </div>
   );
 }

@@ -806,65 +806,33 @@ td small {
   gap: 8px;
   border-bottom: 1px solid var(--color-border-subtle);
 }
-/* Summary strip beneath every module data panel: total-count box + label on
-   the left, text collapse toggle on the right. */
-.data-collapse-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 14px 16px;
-  border-top: 1px solid var(--color-border-subtle);
-  background: var(--color-background-secondary, transparent);
-}
-.data-collapse-total {
+/* Total-record count shown next to the search field in every module toolbar. */
+.data-toolbar__count {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-}
-.data-collapse-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  height: 34px;
-  padding: 0 12px;
-  border: 1px solid var(--color-input-border, var(--color-border));
-  border-radius: 10px;
-  background: var(--color-surface, var(--color-surface-elevated));
-  color: var(--color-text-primary);
-  font-size: 0.95rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-.data-collapse-label {
+  gap: 7px;
+  flex: none;
+  padding: 0 10px;
+  height: 40px;
   color: var(--color-text-secondary);
   font-size: 0.82rem;
   font-weight: 600;
+  white-space: nowrap;
 }
-.data-collapse-toggle {
-  margin-left: auto;
+.data-toolbar__count b {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 16px;
+  justify-content: center;
+  min-width: 34px;
+  height: 26px;
+  padding: 0 8px;
   border: 1px solid var(--color-input-border, var(--color-border));
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--color-surface, var(--color-surface-elevated));
-  color: var(--color-primary, #155eef);
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 750;
-  cursor: pointer;
-}
-.data-collapse-toggle:hover {
-  background: var(--color-surface-hover, var(--color-background-secondary));
-}
-.data-collapse-toggle:focus-visible {
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px;
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 .search {
   height: 40px;
