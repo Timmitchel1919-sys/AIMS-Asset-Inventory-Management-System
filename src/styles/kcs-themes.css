@@ -2383,3 +2383,19 @@ html[data-theme="kcs-forest-gold"] {
   --auth-submit-shadow: 0 8px 20px rgba(36,137,73,.24);
   --auth-submit-hover-shadow: 0 12px 27px rgba(36,137,73,.29);
 }
+
+/* Blue (Azure) theme: Scan / Import header buttons match the primary
+   "Add asset" button — same solid blue — in the ICT Assets and Warehouse
+   modules. */
+html[data-theme="kcs-azure-intelligence"] :is(.page-header-scan-action, .page-header-import-action) {
+  background: var(--color-primary) !important;
+  border: 1px solid transparent !important;
+  color: var(--color-on-primary) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+html[data-theme="kcs-azure-intelligence"] :is(.page-header-scan-action, .page-header-import-action):hover:not(:disabled) {
+  background: var(--color-primary-hover) !important;
+}
+html[data-theme="kcs-azure-intelligence"] :is(.page-header-scan-action, .page-header-import-action) svg {
+  color: var(--color-on-primary);
+}

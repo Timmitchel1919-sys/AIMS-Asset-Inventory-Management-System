@@ -35,6 +35,7 @@ export interface DataTableProps<T> {
     reason?: string,
   ) => Promise<void> | void;
   filters?: ReactNode;
+  totalLabel?: string;
 }
 
 const quote = (value: string) => `"${value.replaceAll('"', '""')}"`;
@@ -56,6 +57,7 @@ export function DataTable<T>({
   onRowClick,
   onBulkAction,
   filters,
+  totalLabel,
 }: DataTableProps<T>) {
   const { language, formatDate, formatDateTime } = useApp();
   const nl = language === "nl";
@@ -245,7 +247,7 @@ export function DataTable<T>({
         </label>
         <span className="data-toolbar__count" aria-live="polite">
           <b>{totalCount.toLocaleString(locale)}</b>
-          {nl ? "totaal records" : "total records"}
+          {totalLabel ?? (nl ? "totaal records" : "total records")}
         </span>
         {filters}
         <div className="table-actions">

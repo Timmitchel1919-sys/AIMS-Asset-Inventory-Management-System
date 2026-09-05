@@ -590,7 +590,8 @@
 }
 .metric small {
   font-size: 11px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
+  font-weight: 600;
 }
 .metric strong {
   font-size: 25px;
@@ -600,7 +601,8 @@
 .metric em {
   font-style: normal;
   font-size: 10px;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
+  font-weight: 600;
 }
 .metric-icon {
   position: absolute;
@@ -2640,7 +2642,8 @@ html .system-information {
   font-size: 22px;
 }
 .status-summary .card small {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
+  font-weight: 600;
 }
 .print-preview {
   background: #fff !important;

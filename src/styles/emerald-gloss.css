@@ -357,11 +357,15 @@ html[data-aims-theme="aimsEmeraldGloss"] .inventory-status-summary .card b {
    Warehouse + record-panel refinements.
    ===================================================================== */
 
-/* Warehouse module: the deep sidebar green becomes the card outline. */
-html[data-aims-theme="aimsEmeraldGloss"] .main[data-route^="inventory"] :is(.card, .data-card),
-html[data-aims-theme="aimsEmeraldGloss"] .inventory-action-card,
-html[data-aims-theme="aimsEmeraldGloss"] .inventory-status-summary .card {
-  border-color: var(--emerald-deep);
+/* Warehouse module: a clean, medium-weight green outline on the action-pill
+   strip (same look as the reference, in green). */
+html[data-aims-theme="aimsEmeraldGloss"] .inventory-action-card {
+  border-color: rgba(41, 101, 65, 0.42);
+}
+/* Every other warehouse card keeps a light, subtle border — the KPI glass
+   tiles fall back to their own hairline (nothing overridden here). */
+html[data-aims-theme="aimsEmeraldGloss"] .main[data-route^="inventory"] :is(.card, .data-card) {
+  border-color: var(--emerald-border);
 }
 
 /* Scan / Import (asset + warehouse headers) and the Asset-history Print
