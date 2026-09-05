@@ -2384,18 +2384,36 @@ html[data-theme="kcs-forest-gold"] {
   --auth-submit-hover-shadow: 0 12px 27px rgba(36,137,73,.29);
 }
 
-/* Blue (Azure) theme: Scan / Import header buttons match the primary
-   "Add asset" button — same solid blue — in the ICT Assets and Warehouse
-   modules. */
+/* Blue (Azure) theme: Scan / Import header buttons (ICT Assets + Warehouse)
+   carry the exact glossy primary treatment of the "Add asset" button —
+   same gradient surface, inset highlight and top-edge shine. */
 html[data-theme="kcs-azure-intelligence"] :is(.page-header-scan-action, .page-header-import-action) {
-  background: var(--color-primary) !important;
-  border: 1px solid transparent !important;
-  color: var(--color-on-primary) !important;
-  box-shadow: var(--shadow-sm) !important;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--kcs-premium-action-border) !important;
+  border-radius: 14px !important;
+  background: linear-gradient(180deg, var(--kcs-premium-surface-start) 0%, var(--kcs-premium-surface-mid) 52%, var(--kcs-premium-surface-end) 100%) !important;
+  color: var(--kcs-premium-text) !important;
+  box-shadow: inset 0 1px 0 var(--kcs-premium-highlight), inset 0 -1px 0 var(--kcs-premium-depth) !important;
 }
-html[data-theme="kcs-azure-intelligence"] :is(.page-header-scan-action, .page-header-import-action):hover:not(:disabled) {
-  background: var(--color-primary-hover) !important;
+html[data-theme="kcs-azure-intelligence"] :is(.page-header-scan-action, .page-header-import-action)::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 1px 1px auto;
+  height: 45%;
+  border-radius: 13px 13px 10px 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05) 55%, transparent);
+  pointer-events: none;
 }
 html[data-theme="kcs-azure-intelligence"] :is(.page-header-scan-action, .page-header-import-action) svg {
-  color: var(--color-on-primary);
+  color: var(--kcs-premium-icon);
+}
+html[data-theme="kcs-azure-intelligence"] :is(.page-header-scan-action, .page-header-import-action):hover:not(:disabled) {
+  filter: brightness(1.06);
+  border-color: var(--kcs-premium-action-hover-border) !important;
+}
+html[data-theme="kcs-azure-intelligence"] :is(.page-header-scan-action, .page-header-import-action):active:not(:disabled) {
+  filter: brightness(0.96);
 }
