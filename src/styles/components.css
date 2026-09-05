@@ -703,7 +703,10 @@
   margin-top: 12px;
 }
 .table-scroll {
-  overflow: auto;
+  /* Horizontal scroll only for wide tables — the list itself is never
+     height-capped, so a module panel grows to its full record count and the
+     page scrolls; the card's bottom edge only shows past the last row. */
+  overflow-x: auto;
 }
 table {
   width: 100%;
@@ -783,37 +786,25 @@ td small {
   padding: 0;
   overflow: hidden;
 }
-@media (min-width: 781px) {
-  .desktop-table {
-    max-height: clamp(320px, 58vh, 720px);
-    overflow: auto;
-    overscroll-behavior: contain;
-  }
-  .desktop-table thead th {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    background: var(--color-surface-elevated);
-    box-shadow: 0 1px 0 var(--color-border);
-  }
-  .desktop-table thead th:first-child {
-    z-index: 4;
-  }
-}
 .data-toolbar {
   padding: 13px;
   display: flex;
   gap: 8px;
   border-bottom: 1px solid var(--color-border-subtle);
 }
-/* Total-record count shown next to the search field in every module toolbar. */
+/* Total-record count shown as a small card next to the search field in
+   every module toolbar. */
 .data-toolbar__count {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   flex: none;
-  padding: 0 10px;
   height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface-elevated, var(--color-surface));
+  box-shadow: var(--shadow-sm);
   color: var(--color-text-secondary);
   font-size: 0.82rem;
   font-weight: 600;
@@ -823,13 +814,12 @@ td small {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 34px;
-  height: 26px;
+  min-width: 32px;
+  height: 24px;
   padding: 0 8px;
-  border: 1px solid var(--color-input-border, var(--color-border));
-  border-radius: 8px;
-  background: var(--color-surface, var(--color-surface-elevated));
-  color: var(--color-text-primary);
+  border-radius: 7px;
+  background: var(--color-primary-soft, var(--color-background-secondary));
+  color: var(--color-primary, var(--color-text-primary));
   font-size: 0.9rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
