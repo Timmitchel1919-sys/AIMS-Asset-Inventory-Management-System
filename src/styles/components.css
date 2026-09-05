@@ -705,10 +705,26 @@
   margin-top: 12px;
 }
 .table-scroll {
-  /* Horizontal scroll only for wide tables — the list itself is never
-     height-capped, so a module panel grows to its full record count and the
-     page scrolls; the card's bottom edge only shows past the last row. */
+  /* Horizontal scroll for wide tables. Desktop additionally caps the height
+     and pins the column-header row (see the min-width: 781px block below). */
   overflow-x: auto;
+}
+@media (min-width: 781px) {
+  /* Freeze the column-header row — and, in practice, the page header and
+     toolbar above it — while only the records move. The list gets its own
+     vertical scroll region that reaches down toward the viewport bottom, and
+     the header row stays pinned to the top of that region. */
+  .desktop-table {
+    max-height: calc(100vh - 264px);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .desktop-table > table > thead > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    box-shadow: inset 0 -1px 0 var(--color-border);
+  }
 }
 table {
   width: 100%;
