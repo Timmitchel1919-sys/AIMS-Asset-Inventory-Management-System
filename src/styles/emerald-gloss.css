@@ -259,12 +259,12 @@ html[data-aims-theme="aimsEmeraldGloss"] .app-sidebar__logo-button img {
 /* Warehouse inventory action bar: pill links from "Voorraad ontvangen" to "Lage voorraad". */
 html[data-aims-theme="aimsEmeraldGloss"] .inventory-action-card a {
   background: #EAF7EF;
-  border-color: #EAF7EF;
+  border-color: var(--emerald-deep);
   color: #102018;
 }
 html[data-aims-theme="aimsEmeraldGloss"] .inventory-action-card a:hover {
   background: #D6F0DE;
-  border-color: #D6F0DE;
+  border-color: var(--emerald-deep);
   color: #102018;
 }
 
@@ -357,10 +357,10 @@ html[data-aims-theme="aimsEmeraldGloss"] .inventory-status-summary .card b {
    Warehouse + record-panel refinements.
    ===================================================================== */
 
-/* Warehouse module: a clean, medium-weight green outline on the action-pill
-   strip (same look as the reference, in green). */
+/* Warehouse module: the action-pill strip cards carry a clean outline in the
+   exact deep green of the sidebar. */
 html[data-aims-theme="aimsEmeraldGloss"] .inventory-action-card {
-  border-color: rgba(41, 101, 65, 0.42);
+  border-color: var(--emerald-deep);
 }
 /* Every other warehouse card keeps a light, subtle border — the KPI glass
    tiles fall back to their own hairline (nothing overridden here). */
