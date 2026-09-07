@@ -2523,7 +2523,7 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
 .aims-public-header .brand-wordmark__a path{stroke-width:8}
 .aims-public-header .brand-wordmark__subtitle{font-weight:700}
 .aims-public-header .brand-wordmark--header .brand-wordmark__subtitle{transform:translateX(-8px)}
-.aims-primary-navigation{left:44%}
+.aims-primary-navigation{left:44%;transform:translateX(-50%) translateX(2.5rem)}
 .aims-public-header .aims-language{height:46px;min-height:46px;padding:4px 8px 4px 1px;gap:1px;border-radius:11px}
 .aims-public-header .aims-language svg{width:13px;height:13px}
 .aims-public-header .aims-language select{min-height:36px;padding:2px 16px 2px 0;font-size:.72rem}
