@@ -8,7 +8,6 @@ import { useApp } from "./context/AppContext";
 import { DEMO_AUTH_MODE } from "./auth/aimsEmailPolicy";
 import { PwaInstallProvider } from "./components/PwaStatus";
 import { RouteLoader } from "./components/RouteBoundary";
-import { AppStartupGate } from "./components/startup/AppStartupGate";
 import { initializeKcsTheme } from "./lib/kcs-theme";
 import { initializeAutoHidingScrollbars } from "./lib/scrollbars";
 
@@ -78,7 +77,7 @@ createRoot(rootElement).render(
     <BrowserRouter>
       <AppProvider>
         <PwaInstallProvider>
-          <AppStartupGate><RepositoryProvider><App /></RepositoryProvider></AppStartupGate>
+          <RepositoryProvider><App /></RepositoryProvider>
         </PwaInstallProvider>
       </AppProvider>
     </BrowserRouter>

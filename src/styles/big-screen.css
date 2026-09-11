@@ -1,6 +1,6 @@
 /*
- * Big-screen scaling for the public surfaces — branded splash, landing page,
- * login and sign-up.
+ * Big-screen scaling for the public surfaces — landing page, login and
+ * sign-up.
  *
  * "Detect any screen size and adapt": the base styles already scale fluidly
  * from phones up with clamp() + viewport units. This layer adds the upper end
@@ -15,14 +15,6 @@
 
 /* ---------- Tier 1: large desktop / 1080p TV (~1600px+) ---------- */
 @media (min-width: 1600px) {
-  .aims-branded-splash .aims-splash-orbit {
-    --splash-orbit-radius: clamp(300px, min(30vw, 30vh), 460px);
-  }
-  .aims-branded-splash .aims-splash-wordmark .brand-wordmark {
-    --wordmark-size: clamp(5rem, 6.5vw, 8rem);
-    --wordmark-subtitle-size: clamp(1rem, 1.1vw, 1.4rem);
-  }
-
   .aims-public-page .aims-container {
     width: min(1440px, calc(100% - 96px));
   }
@@ -55,17 +47,6 @@
 
 /* ---------- Tier 2: 1440p / 4K-scaled (~2000px+) ---------- */
 @media (min-width: 2000px) {
-  .aims-branded-splash .aims-splash-orbit {
-    --splash-orbit-radius: clamp(380px, min(30vw, 32vh), 620px);
-  }
-  .aims-branded-splash .aims-splash-wordmark .brand-wordmark {
-    --wordmark-size: clamp(7rem, 7vw, 11rem);
-    --wordmark-subtitle-size: clamp(1.3rem, 1.2vw, 1.9rem);
-  }
-  .aims-branded-splash .aims-splash-loading p {
-    font-size: 1.15rem;
-  }
-
   .aims-public-page .aims-container {
     width: min(1780px, calc(100% - 140px));
   }
@@ -130,26 +111,6 @@
 
 /* ---------- Tier 3: native 4K / 80" Digibord wall (~3200px+) ---------- */
 @media (min-width: 3200px) {
-  .aims-branded-splash .aims-splash-orbit {
-    --splash-orbit-radius: clamp(620px, min(28vw, 34vh), 1000px);
-  }
-  .aims-branded-splash .aims-splash-wordmark .brand-wordmark {
-    --wordmark-size: clamp(11rem, 7vw, 18rem);
-    --wordmark-subtitle-size: clamp(2rem, 1.2vw, 3rem);
-  }
-  .aims-branded-splash .aims-splash-loading {
-    gap: 20px;
-    margin-top: 44px;
-  }
-  .aims-branded-splash .aims-splash-loading p {
-    font-size: 1.7rem;
-  }
-  .aims-branded-splash .aims-splash-spinner {
-    width: 32px;
-    height: 32px;
-    border-width: 3px;
-  }
-
   .aims-public-page {
     font-size: 22px;
   }
