@@ -1,4 +1,4 @@
-import { ArchiveRestore, Edit3, Plus, Trash2, Sparkles } from "lucide-react";
+import { ArchiveRestore, Edit3, Plus, Trash2, Sparkles, Filter } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -231,6 +231,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     [mainFilter, setMainFilter] = useState("all"),
     [typeFilter, setTypeFilter] = useState("all"),
     [statusFilter, setStatusFilter] = useState("all"),
+    [deptFilterDialog, setDeptFilterDialog] = useState(false),
+    [deptSort, setDeptSort] = useState("name-asc"),
+    [deptManagerFilter, setDeptManagerFilter] = useState("all"),
     [selectedParentId, setSelectedParentId] = useState(
       initialRecord?.parentLocationId || initialRecord?.parentId || "",
     ),
@@ -617,6 +620,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
             <button
               type="button"
               className="linklike"
+              style={{ color: item.relatedCount === 0 ? "var(--color-danger)" : "var(--color-success)", fontWeight: "bold" }}
               onClick={(event) => {
                 event.stopPropagation();
                 setDeptPanel(item);
@@ -679,7 +683,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       : kind === "department"
         ? [...legacyColumns, departmentOverviewColumn]
         : legacyColumns;
-  const displayRows = rows
+  let displayRows = rows
     .filter(
       (item) =>
         kind !== "location" ||
@@ -698,7 +702,25 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         kind !== "location" ||
         statusFilter === "all" ||
         item.status === statusFilter,
-    );
+    )
+    .filter((item) => {
+      if (kind === "department" && deptManagerFilter !== "all") {
+        const itemManager = String(item.details.manager || "").trim();
+        if (deptManagerFilter === "unassigned") return !itemManager;
+        return itemManager === deptManagerFilter;
+      }
+      return true;
+    });
+
+  if (kind === "department") {
+    displayRows.sort((a, b) => {
+      if (deptSort === "name-asc") return a.name.localeCompare(b.name);
+      if (deptSort === "name-desc") return b.name.localeCompare(a.name);
+      if (deptSort === "assets-desc") return (b.relatedCount || 0) - (a.relatedCount || 0);
+      if (deptSort === "assets-asc") return (a.relatedCount || 0) - (b.relatedCount || 0);
+      return 0;
+    });
+  }
   function edit(value: ReferenceRecord | null) {
     setRecord(value);
     setSelectedTypeId(
@@ -930,6 +952,13 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                       {nl ? "Gearchiveerd" : "Archived"}
                     </option>
                   </select>
+                </div>
+              ) : kind === "department" ? (
+                <div className="location-filters">
+                  <Button variant="secondary" onClick={() => setDeptFilterDialog(true)}>
+                    <Filter />
+                    {nl ? "Filteren" : "Filter"}
+                  </Button>
                 </div>
               ) : undefined
             }
@@ -1432,6 +1461,42 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
             }}
           />
         </Dialog>
+        {kind === "department" && (
+          <Dialog
+            open={deptFilterDialog}
+            title={nl ? "Filteren & Sorteren" : "Filter & Sort"}
+            onClose={() => setDeptFilterDialog(false)}
+            footer={
+              <Button onClick={() => setDeptFilterDialog(false)}>
+                {nl ? "Toepassen" : "Apply"}
+              </Button>
+            }
+          >
+            <div className="workflow-form">
+              <label>
+                <span>{nl ? "Sorteren op" : "Sort by"}</span>
+                <select value={deptSort} onChange={(e) => setDeptSort(e.target.value)}>
+                  <option value="name-asc">{nl ? "Alfabetisch (A-Z)" : "Alphabetical (A-Z)"}</option>
+                  <option value="name-desc">{nl ? "Alfabetisch (Z-A)" : "Alphabetical (Z-A)"}</option>
+                  <option value="assets-desc">{nl ? "Meeste actieve middelen" : "Most active assets"}</option>
+                  <option value="assets-asc">{nl ? "Minste actieve middelen" : "Least active assets"}</option>
+                </select>
+              </label>
+              <label>
+                <span>{nl ? "Beheerder" : "Manager"}</span>
+                <select value={deptManagerFilter} onChange={(e) => setDeptManagerFilter(e.target.value)}>
+                  <option value="all">{nl ? "Alle beheerders" : "All managers"}</option>
+                  <option value="unassigned">{nl ? "Geen beheerder" : "Unassigned"}</option>
+                  {Array.from(new Set(rows.map((r) => String(r.details.manager || "").trim()).filter(Boolean))).sort().map((manager) => (
+                    <option key={manager} value={manager}>
+                      {manager}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </Dialog>
+        )}
         <ConfirmDialog
           open={confirm}
           title={nl ? "Status wijzigen" : "Change status"}
