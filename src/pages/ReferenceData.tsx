@@ -611,7 +611,23 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     {
       id: "related",
       label: kind === "category" || kind === "department" ? (nl ? "Actieve middelen" : "Active assets") : (nl ? "Actieve koppelingen" : "Active links"),
-      render: (item) => item.relatedCount,
+      render: (item) => {
+        if (kind === "department") {
+          return (
+            <button
+              type="button"
+              className="linklike"
+              onClick={(event) => {
+                event.stopPropagation();
+                setDeptPanel(item);
+              }}
+            >
+              {item.relatedCount}
+            </button>
+          );
+        }
+        return item.relatedCount;
+      },
       text: (item) => item.relatedCount,
       sortable: true,
     },

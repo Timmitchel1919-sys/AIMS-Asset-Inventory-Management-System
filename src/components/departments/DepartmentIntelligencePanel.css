@@ -1,41 +1,5 @@
-/* Department Intelligence Panel — a wide right-side drawer built on the
-   shared <dialog>-based `.dialog` component (native top-layer modal), not a
-   new modal system. Desktop: fixed-width drawer pinned to the right edge.
-   Narrower viewports fall back to a full-width sheet. */
-.dialog.department-panel {
-  position: fixed;
-  inset: 0 0 0 auto;
-  margin: 0;
-  width: min(760px, 100vw);
-  max-width: 100vw;
-  height: 100vh;
-  max-height: 100vh;
-  border-radius: 0;
-  border-width: 0 0 0 1px;
-}
-.dialog.department-panel .dialog-body {
-  height: calc(100vh - 73px);
-}
-@media (max-width: 780px) {
-  .dialog.department-panel {
-    width: 100vw;
-  }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .dialog.department-panel {
-    animation: dept-panel-slide-in 220ms ease;
-  }
-}
-@keyframes dept-panel-slide-in {
-  from {
-    transform: translateX(24px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
+/* Department Intelligence Panel uses the standard <dialog>-based `.dialog` component
+   as a centered modal. */
 
 .dept-panel {
   display: grid;
