@@ -1,5 +1,9 @@
 /* Department Intelligence Panel uses the standard <dialog>-based `.dialog` component
-   as a centered modal. */
+   as a centered modal, but overrides width to accommodate the extra data. */
+.dialog.department-panel {
+  width: min(940px, calc(100vw - 28px));
+  max-width: 940px;
+}
 
 .dept-panel {
   display: grid;

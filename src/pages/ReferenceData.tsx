@@ -607,9 +607,21 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     },
     {
       id: "parent",
-      label: nl ? "Bovenliggende locatie" : "Parent",
-      render: (item) => item.parent || "—",
-      text: (item) => item.parent || "",
+      label: kind === "department" ? (nl ? "Hoofdlocatie" : "Main location") : (nl ? "Bovenliggende locatie" : "Parent"),
+      render: (item) => {
+        if (kind === "department" && item.mainLocationId) {
+          const mainLoc = snapshot.references.find(r => r.id === item.mainLocationId);
+          return mainLoc?.name || item.parent || "—";
+        }
+        return item.parent || "—";
+      },
+      text: (item) => {
+        if (kind === "department" && item.mainLocationId) {
+          const mainLoc = snapshot.references.find(r => r.id === item.mainLocationId);
+          return mainLoc?.name || item.parent || "";
+        }
+        return item.parent || "";
+      },
     },
     {
       id: "related",
