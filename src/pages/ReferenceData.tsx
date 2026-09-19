@@ -1057,10 +1057,6 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                   label={nl ? "Hoofdlocatie" : "Main location"}
                   value={selectedMainLocationId}
                   onChange={(event) => {
-                    if (event.target.value === "__add_main__") {
-                      setMainLocationDialog(true);
-                      return;
-                    }
                     setSelectedMainLocationId(event.target.value);
                     setSelectedParentId("");
                   }}
@@ -1075,9 +1071,6 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                       {main.name}
                     </option>
                   ))}
-                  <option value="__add_main__">
-                    {nl ? "+ Nieuwe hoofdlocatie" : "+ New Main location"}
-                  </option>
                 </SelectField>
                 <SelectField
                   name="parentId"
@@ -1125,18 +1118,11 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 name="mainLocationId"
                 label={nl ? "Hoofdlocatie" : "Main location"}
                 value={selectedMainLocationId}
-                onChange={(event) => {
-                  if(event.target.value==="__add_main__"){
-                    setMainLocationDialog(true);
-                    return;
-                  }
-                  setSelectedMainLocationId(event.target.value);
-                }}
+                onChange={(event) => setSelectedMainLocationId(event.target.value)}
                 required
               >
                 <option value="">{nl ? "Selecteer een hoofdlocatie" : "Select Main location"}</option>
                 {mainLocations.filter(main=>main.status==="Active"||main.id===selectedMainLocationId).map(main=><option key={main.id} value={main.id}>{main.name}</option>)}
-                <option value="__add_main__">{nl ? "+ Hoofdlocatie toevoegen" : "+ Add Main location"}</option>
               </SelectField>
             ) : (
               <Field
