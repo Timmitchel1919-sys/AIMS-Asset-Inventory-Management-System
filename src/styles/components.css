@@ -2454,6 +2454,13 @@ html .system-information {
   background: var(--color-surface-elevated);
   color: var(--color-text-primary);
   box-shadow: var(--shadow-lg);
+  
+  /* Enforce centering */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
 }
 .dialog::backdrop {
   background: var(--color-overlay);

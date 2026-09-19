@@ -607,7 +607,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     },
     {
       id: "parent",
-      label: kind === "department" ? (nl ? "Hoofdlocatie" : "Main location") : (nl ? "Bovenliggende locatie" : "Parent"),
+      label: kind === "department" ? (nl ? "Hoofdlocatie" : "Main location") : (nl ? "Hoofd locatie" : "Parent"),
       render: (item) => {
         if (kind === "department" && item.mainLocationId) {
           const mainLoc = snapshot.references.find(r => r.id === item.mainLocationId);
@@ -888,7 +888,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
   }
   return (
     <OfflineGate>
-      <div className={`page reference-data-page reference-data-${kind}`}>
+      <div className={`page data-page reference-data-page reference-data-${kind}`}>
         <PageHeader
           title={labels[0]}
           description={labels[1]}
