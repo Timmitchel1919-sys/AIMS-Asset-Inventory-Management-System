@@ -1063,9 +1063,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                   required={selectedTypeId !== "main-location"}
                   disabled={selectedTypeId === "main-location"}
                 >
-                  <option value="">
-                    {nl ? "Selecteer een hoofdlocatie" : "Select a Main location"}
-                  </option>
+
                   {mainLocations.map((main) => (
                     <option key={main.id} value={main.id}>
                       {main.name}
@@ -1121,7 +1119,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 onChange={(event) => setSelectedMainLocationId(event.target.value)}
                 required
               >
-                <option value="">{nl ? "Selecteer een hoofdlocatie" : "Select Main location"}</option>
+
                 {mainLocations.filter(main=>main.status==="Active"||main.id===selectedMainLocationId).map(main=><option key={main.id} value={main.id}>{main.name}</option>)}
               </SelectField>
             ) : (
