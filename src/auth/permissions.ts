@@ -436,3 +436,15 @@ export const rolePermissions: Record<Role, Permission[]> = {
 
 export const can = (role: Role | undefined, permission?: Permission) =>
   !permission || (!!role && rolePermissions[role].includes(permission));
+
+export const APPROVED_MASTER_DATA_MANAGERS = [
+  "sastropawiroe@kangoeroeschool.com",
+  "aliendas@kangoeroeschool.com",
+  "manager-ict@kangoeroeschool.com",
+];
+
+export const isAuthorizedAimsUser = (
+  role: Role | undefined,
+  granted: readonly Permission[],
+) => !!role || granted.includes("dashboard.view");
+

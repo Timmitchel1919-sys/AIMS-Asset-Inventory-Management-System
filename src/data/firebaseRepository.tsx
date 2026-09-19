@@ -578,6 +578,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       ...command,
       actor:
         command.actor || this.actorName() || this.actorUid() || "Unknown user",
+      actorEmail: command.actorEmail || firebaseAuth?.currentUser?.email || undefined,
     };
     const before = structuredClone(this.snapshot());
     try {

@@ -607,6 +607,7 @@ export interface WorkflowCommand {
   entityId?: string;
   values?: Record<string, unknown>;
   actor?: string;
+  actorEmail?: string;
 }
 export interface WorkflowResult {
   ok: boolean;

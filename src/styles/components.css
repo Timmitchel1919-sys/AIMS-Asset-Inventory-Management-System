@@ -464,6 +464,27 @@
   margin: auto;
 }
 
+.page:has(> .data-card) {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 120px);
+}
+.page > .data-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.data-card > .data-table {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.data-card .desktop-table {
+  flex: 1;
+  max-height: none;
+}
+
 /* Align protected module panels with the topbar search and user controls. */
 .main > .page {
   width: 100%;

@@ -166,12 +166,18 @@ export function requiredPermission(command: WorkflowCommand): Permission {
   const permission = exactPermissions[command.action];
   if (!permission)
     throw new Error(`No permission mapping exists for ${command.action}.`);
+
   if (command.action.startsWith("reference.")) {
     const kind = String(command.values?.kind || "");
     if (kind === "category") return "categories.manage";
     if (kind === "department") return "departments.manage";
-    if (kind === "location") return "locations.manage";
+    if (kind === "location") return "dashboard.view"; // All authorized users can manage locations
   }
+  
+  if (command.action.startsWith("codeGroup.")) {
+    return "dashboard.view"; // All authorized users can manage code groups
+  }
+
   return permission;
 }
 

@@ -3174,22 +3174,49 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               String(
                 v.containerLocationId || v.parentLocationId || v.parentId || "",
               ) || null;
-          if (
-            kind === "location" &&
-            this.state.references.some(
-              (x) =>
-                x.kind === "location" &&
-                x.status === "Active" &&
-                x.name.trim().toLowerCase() === name.toLowerCase() &&
-                (x.containerLocationId ||
-                  x.parentLocationId ||
-                  x.parentId ||
-                  null) === parentLocationId,
-            )
-          )
-            throw new Error(
-              "An active location with this name and parent already exists.",
-            );
+          if (kind === "location") {
+            const isMainLocation = String(v.type || "") === "Main location" || String(v.typeId || "") === "main-location";
+            const newPrefix = String((v.details as any)?.prefix || "").trim().toLowerCase();
+
+            if (isMainLocation) {
+              if (
+                this.state.references.some(
+                  (x) =>
+                    x.kind === "location" &&
+                    x.type === "Main location" &&
+                    x.name.trim().toLowerCase() === name.toLowerCase(),
+                )
+              )
+                throw new Error("This main location already exists.");
+              
+              if (
+                newPrefix &&
+                this.state.references.some(
+                  (x) =>
+                    x.kind === "location" &&
+                    x.type === "Main location" &&
+                    String(x.details?.prefix || "").trim().toLowerCase() === newPrefix,
+                )
+              )
+                throw new Error("This location code is already in use.");
+            } else {
+              if (
+                this.state.references.some(
+                  (x) =>
+                    x.kind === "location" &&
+                    x.type !== "Main location" &&
+                    x.name.trim().toLowerCase() === name.toLowerCase() &&
+                    (x.containerLocationId ||
+                      x.parentLocationId ||
+                      x.parentId ||
+                      null) === parentLocationId,
+                )
+              )
+                throw new Error(
+                  "This sub-location already exists within this location.",
+                );
+            }
+          }
           const record: ReferenceRecord = {
             id: id(String(kind).slice(0, 3), this.state.references.length),
             kind,
@@ -3253,26 +3280,53 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             throw new Error(
               "A location cannot be its own parent or be moved beneath a descendant.",
             );
-          if (
-            record.kind === "location" &&
-            this.state.references.some(
-              (x) =>
-                x.id !== record.id &&
-                x.kind === "location" &&
-                x.status === "Active" &&
-                x.name.trim().toLowerCase() ===
-                  String(v.name ?? record.name)
-                    .trim()
-                    .toLowerCase() &&
-                (x.containerLocationId ||
-                  x.parentLocationId ||
-                  x.parentId ||
-                  null) === parentLocationId,
-            )
-          )
-            throw new Error(
-              "An active location with this name and parent already exists.",
-            );
+          if (record.kind === "location") {
+            const isMainLocation = record.type === "Main location" || record.typeId === "main-location";
+            const newName = String(v.name ?? record.name).trim().toLowerCase();
+            const newPrefix = String((v.details as any)?.prefix ?? record.details?.prefix ?? "").trim().toLowerCase();
+
+            if (isMainLocation) {
+              if (
+                this.state.references.some(
+                  (x) =>
+                    x.id !== record.id &&
+                    x.kind === "location" &&
+                    x.type === "Main location" &&
+                    x.name.trim().toLowerCase() === newName,
+                )
+              )
+                throw new Error("This main location already exists.");
+              
+              if (
+                newPrefix &&
+                this.state.references.some(
+                  (x) =>
+                    x.id !== record.id &&
+                    x.kind === "location" &&
+                    x.type === "Main location" &&
+                    String(x.details?.prefix || "").trim().toLowerCase() === newPrefix,
+                )
+              )
+                throw new Error("This location code is already in use.");
+            } else {
+              if (
+                this.state.references.some(
+                  (x) =>
+                    x.id !== record.id &&
+                    x.kind === "location" &&
+                    x.type !== "Main location" &&
+                    x.name.trim().toLowerCase() === newName &&
+                    (x.containerLocationId ||
+                      x.parentLocationId ||
+                      x.parentId ||
+                      null) === parentLocationId,
+                )
+              )
+                throw new Error(
+                  "This sub-location already exists within this location.",
+                );
+            }
+          }
           Object.assign(record, v, {
             parentId: parentLocationId || undefined,
             parentLocationId,
@@ -3334,6 +3388,18 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           )
             throw new Error("Resolve active related records before archiving.");
           if (command.action === "reference.delete") {
+            const isManager =
+              command.actorEmail &&
+              [
+                "sastropawiroe@kangoeroeschool.com",
+                "aliendas@kangoeroeschool.com",
+                "manager-ict@kangoeroeschool.com",
+              ].includes(command.actorEmail.toLowerCase());
+            
+            if (!isManager) {
+              throw new Error("Je hebt geen toestemming om deze locatie permanent te verwijderen.");
+            }
+
             this.state.references = this.state.references.filter(
               (item) => item.id !== record.id,
             );
@@ -3483,12 +3549,15 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             );
           if (
             this.state.codeGroups.some(
-              (x) =>
-                x.prefix === prefix ||
-                x.name.toLowerCase() === name.toLowerCase(),
+              (x) => x.name.toLowerCase() === name.toLowerCase(),
             )
           )
-            throw new Error("Code group name and prefix must be unique.");
+            throw new Error("This code group already exists.");
+          
+          if (
+            this.state.codeGroups.some((x) => x.prefix === prefix)
+          )
+            throw new Error("This code prefix is already used by a code group.");
           const group: CodeGroup = {
             id: id("cg", this.state.codeGroups.length),
             name,
@@ -3531,13 +3600,17 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             );
           if (
             this.state.codeGroups.some(
-              (x) =>
-                x.id !== group.id &&
-                (x.prefix === prefix ||
-                  x.name.toLowerCase() === name.toLowerCase()),
+              (x) => x.id !== group.id && x.name.toLowerCase() === name.toLowerCase(),
             )
           )
-            throw new Error("Code group name and prefix must be unique.");
+            throw new Error("This code group already exists.");
+
+          if (
+            this.state.codeGroups.some(
+              (x) => x.id !== group.id && x.prefix === prefix,
+            )
+          )
+            throw new Error("This code prefix is already used by a code group.");
           Object.assign(group, {
             name,
             prefix,
@@ -3590,6 +3663,24 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
         }
         case "codeGroup.delete": {
           const group = this.codeGroup(command.entityId);
+          const isManager =
+            command.actorEmail &&
+            [
+              "sastropawiroe@kangoeroeschool.com",
+              "aliendas@kangoeroeschool.com",
+              "manager-ict@kangoeroeschool.com",
+            ].includes(command.actorEmail.toLowerCase());
+          
+          if (!isManager) {
+            throw new Error("Je hebt geen toestemming om deze codegroep te verwijderen.");
+          }
+
+          const hasAssets = this.state.assets.some(a => a.code.startsWith(group.prefix));
+          const hasCategories = this.state.references.some(r => r.kind === "category" && r.details?.prefix === group.prefix);
+          if (hasAssets || hasCategories) {
+            throw new Error("Deze codegroep kan niet worden verwijderd omdat er nog middelen of categorieën aan gekoppeld zijn.");
+          }
+
           group.archived = true;
           group.isActive = false;
           group.deletionReason = String(v.reason || "").trim();

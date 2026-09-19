@@ -450,7 +450,7 @@ service cloud.firestore {
       return (name == 'inventoryTransactions' && hasAnyPermission(['inventory.receive','inventory.issue','inventory.transfer','inventory.return','inventory.correct']))
         || (name == 'inventoryReservations' && hasAnyPermission(['inventory.reserve','inventory.reservations.approve']))
         || (name == 'categories' && hasPermission('categories.manage'))
-        || (name == 'locations' && hasPermission('locations.manage'))
+        || (name == 'locations' && hasPermission('dashboard.view'))
         || (name == 'locationTypes' && hasPermission('locationTypes.manage'))
         || (name == 'departments' && hasPermission('departments.manage'))
         || (name == 'assignments' && hasAnyPermission(['assignments.manage','assignments.create','assignments.edit','assignments.approve','assignments.return','assignments.reassign']))
@@ -523,15 +523,15 @@ service cloud.firestore {
       allow delete: if false;
     }
     match /codeGroups/{id} {
-      allow read: if hasAnyPermission(['assets.view','assets.create','admin.system.configure']);
-      allow create: if hasPermission('admin.system.configure') && validCodeGroup(request.resource.data);
+      allow read: if hasPermission('dashboard.view');
+      allow create: if hasPermission('dashboard.view') && validCodeGroup(request.resource.data);
       allow update: if validCodeGroup(request.resource.data) && immutableAuditFields() && (
-        hasPermission('admin.system.configure')
+        hasPermission('dashboard.view')
         || (hasPermission('assets.create')
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nextAvailableNumber','updatedAt','updatedBy'])
           && request.resource.data.nextAvailableNumber > resource.data.nextAvailableNumber)
       );
-      allow delete: if false;
+      allow delete: if request.auth.token.email in ['sastropawiroe@kangoeroeschool.com', 'aliendas@kangoeroeschool.com', 'manager-ict@kangoeroeschool.com', 'Manager-ICT@kangoeroeschool.com'];
     }
     match /assetCodes/{code} {
       allow read: if hasAnyPermission(['assets.view','assets.create']);
@@ -653,7 +653,7 @@ service cloud.firestore {
         && collectionName != 'assetMovements'
         && validOperationalRecord(request.resource.data) && immutableAuditFields();
       allow delete: if isOperationalCollection(collectionName)
-        && collectionName == 'locations' && hasPermission('locations.manage');
+        && collectionName == 'locations' && request.auth.token.email in ['sastropawiroe@kangoeroeschool.com', 'aliendas@kangoeroeschool.com', 'manager-ict@kangoeroeschool.com', 'Manager-ICT@kangoeroeschool.com'];
     }
 
     match /{document=**} { allow read, write: if false; }
