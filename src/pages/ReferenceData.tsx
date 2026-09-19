@@ -21,6 +21,9 @@ import type { ReferenceKind, ReferenceRecord } from "../data/contracts";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { LocationTypeForm } from "../components/settings/LocationTypesSettings";
 import { DepartmentIntelligencePanel } from "../components/departments/DepartmentIntelligencePanel";
+import { MainLocationForm } from "../components/settings/MainLocationForm";
+import { CodeGroupForm } from "../components/settings/CodeGroupForm";
+
 
 function ParentLocationForm({
   onSaved,
@@ -218,6 +221,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     [typeDialog, setTypeDialog] = useState(false),
     [parentDialog, setParentDialog] = useState(false),
     [mainLocationDialog, setMainLocationDialog] = useState(false),
+    [codeGroupDialog, setCodeGroupDialog] = useState(false),
     [deptPanel, setDeptPanel] = useState<ReferenceRecord | null>(null),
     [insight, setInsight] = useState<{
       title: string;
@@ -238,7 +242,11 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         snapshot.locationTypes.find((x) => x.name === initialRecord?.type)
           ?.id ||
         "",
+    ),
+    [selectedCodeGroup, setSelectedCodeGroup] = useState(
+      String(initialRecord?.details?.codeGroup || "")
     );
+
   const [feedback, setFeedback] = useState<{
     status: "idle" | "loading" | "success" | "error";
     message: string;
@@ -685,6 +693,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     setFeedback({ status: "idle", message: "" });
     setSelectedParentId(value?.parentLocationId || value?.parentId || "");
     setSelectedMainLocationId(value?.mainLocationId || "");
+    setSelectedCodeGroup(String(value?.details?.codeGroup || ""));
     setDialog(true);
   }
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -1048,6 +1057,10 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                   label={nl ? "Hoofdlocatie" : "Main location"}
                   value={selectedMainLocationId}
                   onChange={(event) => {
+                    if (event.target.value === "__add_main__") {
+                      setMainLocationDialog(true);
+                      return;
+                    }
                     setSelectedMainLocationId(event.target.value);
                     setSelectedParentId("");
                   }}
@@ -1062,6 +1075,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                       {main.name}
                     </option>
                   ))}
+                  <option value="__add_main__">
+                    {nl ? "+ Nieuwe hoofdlocatie" : "+ New Main location"}
+                  </option>
                 </SelectField>
                 <SelectField
                   name="parentId"
@@ -1182,10 +1198,18 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 <SelectField
                   name="codeGroup"
                   label={nl ? "Codegroep" : "Code group"}
-                  defaultValue={String(record?.details.codeGroup || "")}
+                  value={selectedCodeGroup}
+                  onChange={(event) => {
+                    if (event.target.value === "__add_codeGroup__") {
+                      setCodeGroupDialog(true);
+                      return;
+                    }
+                    setSelectedCodeGroup(event.target.value);
+                  }}
                 >
                   <option value="">{nl ? "Selecteer een codegroep" : "Select a code group"}</option>
-                  {snapshot.codeGroups.filter(group=>group.isActive||group.prefix===record?.details.codeGroup).sort((a,b)=>a.sortOrder-b.sortOrder).map(group=><option key={group.id} value={group.prefix}>{group.prefix} — {group.name}</option>)}
+                  {snapshot.codeGroups.filter(group=>group.isActive||group.prefix===selectedCodeGroup).sort((a,b)=>a.sortOrder-b.sortOrder).map(group=><option key={group.id} value={group.prefix}>{group.prefix} — {group.name}</option>)}
+                  <option value="__add_codeGroup__">{nl ? "+ Nieuwe codegroep" : "+ New Code Group"}</option>
                 </SelectField>
                 <Field
                   name="minimumStock"
@@ -1378,6 +1402,33 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                   ? "Omvattende locatie aangemaakt en geselecteerd."
                   : "Containing location created and selected.",
               });
+            }}
+          />
+        </Dialog>
+        <Dialog
+          open={mainLocationDialog}
+          title={nl ? "Nieuwe hoofdlocatie" : "New Main Location"}
+          onClose={() => setMainLocationDialog(false)}
+        >
+          <MainLocationForm
+            onCancel={() => setMainLocationDialog(false)}
+            onSaved={(id) => {
+              setSelectedMainLocationId(id);
+              setMainLocationDialog(false);
+            }}
+          />
+        </Dialog>
+        <Dialog
+          open={codeGroupDialog}
+          title={nl ? "Nieuwe codegroep" : "New Code Group"}
+          onClose={() => setCodeGroupDialog(false)}
+        >
+          <CodeGroupForm
+            onCancel={() => setCodeGroupDialog(false)}
+            onSaved={(id) => {
+              const newGroup = snapshot.codeGroups.find(g => g.id === id);
+              if (newGroup) setSelectedCodeGroup(newGroup.prefix);
+              setCodeGroupDialog(false);
             }}
           />
         </Dialog>

@@ -1,4 +1,4 @@
-﻿.btn {
+.btn {
   height: 40px;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
@@ -1187,11 +1187,14 @@ html[data-aims-theme="aimsEmeraldGloss"]
   display: grid;
   grid-template-columns: 220px 1fr;
   gap: 12px;
+  align-items: start;
 }
 .settings-nav {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  position: sticky;
+  top: 88px;
 }
 .settings-nav button {
   border: 0;

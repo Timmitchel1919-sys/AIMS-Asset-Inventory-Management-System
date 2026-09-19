@@ -1,214 +1,66 @@
-import { Pencil, Plus, Power, Trash2 } from "lucide-react";
-import { useMemo, useState, type FormEvent } from "react";
-import { Badge, Button, Field } from "../ui";
+import { Pencil, Plus, Power, Trash2, Search } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Badge, Button } from "../ui";
 import { ConfirmDialog, Dialog, MutationFeedback } from "../WorkflowUi";
 import { useApp } from "../../context/AppContext";
 import type { CodeGroup, ReferenceRecord } from "../../data/contracts";
 import { useMockSnapshot, useRepository } from "../../data/repositoryContext";
+import { MainLocationForm } from "./MainLocationForm";
+import { CodeGroupForm } from "./CodeGroupForm";
 
 type Feedback = {
   status: "idle" | "loading" | "success" | "error";
   message: string;
 };
-export const approvedMainLocations = [
-  "Kangoeroe High",
-  "KCS Onderbouw",
-  "KCS Bovenbouw",
-] as const;
-export const approvedCodeGroups = [
-  ["KCSL", "KCSL"],
-  ["KCSMD", "KCSMD"],
-  ["KCSDESK", "KCSDESK"],
-  ["KCSPW", "KCSPW"],
-  ["KCSRT", "KCSRT"],
-  ["KCSMOB", "KCSMOB"],
-  ["TAB", "TAB"],
-  ["KCSMON", "KCSMON"],
-  ["KCSLT", "KCSLT"],
-  ["KCSAP", "KCSAP"],
-  ["KCSPR", "KCSPR"],
-  ["KCSSW", "KCSSW"],
-  ["KCSUPS", "KCSUPS"],
-  ["KBW", "KBW"],
-  ["KBWS", "KBWS"],
-  ["KBWC", "KBWC"],
-  ["UPS", "UPS"],
-  ["PR", "PR"],
-  ["MON", "MON"],
-  ["KB", "KB"],
-  ["Mouse wired", "MW"],
-  ["Mouse wireless", "MWS"],
-  ["KHL", "KHL"],
-  ["KCSDB", "KCSDB"],
-  ["TL", "TL"],
-  ["PRO", "PRO"],
-  ["FINAD", "FINAD"],
-] as const;
-export const approvedDepartments = [
-  ...[
-    "ICT",
-    "Storage",
-    "KO/NSO",
-    "Finance",
-    "HRM",
-    "ADMIN/SECR",
-    "FACILITAIR",
-    "Finance Administratie",
-    "Dependance Administratie",
-    "Secretariaat",
-    "ICT kantoor",
-    "Conference Room",
-    "KO-Kantoor",
-    "FIN-Manager",
-    "BB-Admin",
-    "ICT STORAGE",
-  ].map((name) => [name, "KCS Onderbouw"] as const),
-  ...[
-    "KH Administratie",
-    "KO ADMINISTRATIE",
-    "C1",
-    "ICT Camera",
-    "OD-KH",
-    "KH-Admin",
-    "KH DIRECTEUR OFFICE",
-  ].map((name) => [name, "Kangoeroe High"] as const),
-] as const;
 
-function ApprovedStructureInstaller() {
-  const repository = useRepository(),
-    snapshot = useMockSnapshot();
-  const [busy, setBusy] = useState(false),
-    [feedback, setFeedback] = useState<Feedback>({
-      status: "idle",
-      message: "",
-    });
-  async function install() {
-    setBusy(true);
-    setFeedback({
-      status: "loading",
-      message: "Goedgekeurde structuur toevoegen…",
-    });
-    let created = 0;
-    const names = new Set(
-      snapshot.references
-        .filter((x) => x.kind === "location" && x.status === "Active")
-        .map((x) => x.name.trim().toUpperCase()),
-    );
-    for (const name of approvedMainLocations)
-      if (!names.has(name.toUpperCase())) {
-        const r = await repository.execute({
-          action: "reference.create",
-          values: {
-            kind: "location",
-            name,
-            type: "Main location",
-            status: "Active",
-            details: { approvedStructure: true },
-          },
-        });
-        if (!r.ok) {
-          setBusy(false);
-          return setFeedback({ status: "error", message: r.message });
-        }
-        names.add(name.toUpperCase());
-        created++;
-      }
-    const current = repository.snapshot();
-    const departments = new Set(
-      current.references
-        .filter((x) => x.kind === "department" && x.status === "Active")
-        .map((x) => x.name.trim().toUpperCase()),
-    );
-    for (const [name, mainName] of approvedDepartments)
-      if (!departments.has(name.toUpperCase())) {
-        const main = current.references.find(
-          (x) =>
-            x.kind === "location" &&
-            x.name === mainName &&
-            x.status === "Active",
-        );
-        const r = await repository.execute({
-          action: "reference.create",
-          values: {
-            kind: "department",
-            name,
-            type: "Department",
-            status: "Active",
-            mainLocationId: main?.id || null,
-            details: { mainLocation: mainName },
-          },
-        });
-        if (!r.ok) {
-          setBusy(false);
-          return setFeedback({ status: "error", message: r.message });
-        }
-        departments.add(name.toUpperCase());
-        created++;
-      }
-    const prefixes = new Set(
-      snapshot.codeGroups.map((x) => x.prefix.trim().toUpperCase()),
-    );
-    for (const [name, prefix] of approvedCodeGroups)
-      if (!prefixes.has(prefix)) {
-        const r = await repository.execute({
-          action: "codeGroup.create",
-          values: {
-            name,
-            prefix,
-            minimumNumber: 1,
-            maximumNumber: 5000,
-            nextAvailableNumber: 1,
-          },
-        });
-        if (!r.ok) {
-          setBusy(false);
-          return setFeedback({ status: "error", message: r.message });
-        }
-        prefixes.add(prefix);
-        created++;
-      }
-    setBusy(false);
-    setFeedback({
-      status: "success",
-      message: `Structuur gereed: ${created} nieuwe records toegevoegd; bestaande records behouden.`,
-    });
-  }
-  return (
-    <div className="approved-structure-installer">
-      <div>
-        <strong>Goedgekeurde AIMS-structuur</strong>
-        <p>
-          Voegt alleen ontbrekende, vooraf goedgekeurde hoofdlocaties,
-          afdelingen en codegroepen toe. Bestaande gegevens worden niet
-          overschreven en de actie kan veilig opnieuw worden uitgevoerd.
-        </p>
-      </div>
-      <Button onClick={install} disabled={busy}>
-        Goedgekeurde structuur toevoegen
-      </Button>
-      <MutationFeedback {...feedback} />
-    </div>
-  );
-}
-
-function ParentLocationsSettings() {
+function MainLocationsSettings() {
   const repository = useRepository(),
     snapshot = useMockSnapshot();
   const [adding, setAdding] = useState(false),
     [editing, setEditing] = useState<ReferenceRecord | null>(null),
     [deleting, setDeleting] = useState<ReferenceRecord | null>(null),
+    [search, setSearch] = useState(""),
+    [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all"),
     [feedback, setFeedback] = useState<Feedback>({
       status: "idle",
       message: "",
     });
-  const locations = snapshot.references
-    .filter(
-      (x) =>
-        x.kind === "location" &&
-        x.type === "Main location" &&
-        x.status !== "Archived",
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const locations = useMemo(() => {
+    return snapshot.references
+      .filter((x) => x.kind === "location" && x.type === "Main location" && x.status !== "Archived")
+      .filter((x) => {
+        if (statusFilter === "active" && x.status !== "Active") return false;
+        if (statusFilter === "inactive" && x.status === "Active") return false;
+        if (search) {
+          const q = search.toLowerCase();
+          return (
+            x.name.toLowerCase().includes(q) ||
+            String(x.details.prefix || "").toLowerCase().includes(q)
+          );
+        }
+        return true;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [snapshot.references, search, statusFilter]);
+
+  const directAssetsCount = (item: ReferenceRecord) =>
+    snapshot.assets.filter(
+      (asset) =>
+        (asset.currentLocationId === item.id ||
+          (!asset.currentLocationId && asset.location === item.name)) &&
+        !["Disposed", "Archived"].includes(asset.status),
+    ).length;
+
+  const directChildrenCount = (item: ReferenceRecord) =>
+    snapshot.references.filter(
+      (child) =>
+        child.kind === "location" &&
+        child.status === "Active" &&
+        child.mainLocationId === item.id &&
+        child.id !== item.id
+    ).length;
+
   async function change(
     location: ReferenceRecord,
     action: "reference.delete" | "reference.archive" | "reference.restore",
@@ -217,34 +69,7 @@ function ParentLocationsSettings() {
     setFeedback({ status: r.ok ? "success" : "error", message: r.message });
     if (r.ok) setDeleting(null);
   }
-  async function saveMainLocation(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const result = await repository.execute({
-      action: editing ? "reference.edit" : "reference.create",
-      entityId: editing?.id,
-      values: {
-        kind: "location",
-        name: data.get("name"),
-        type: "Main location",
-        typeId: editing?.typeId || "main-location",
-        status: "Active",
-        details: {
-          ...(editing?.details || {}),
-          manuallyCreated: true,
-          prefix: String(data.get("prefix") || "").trim().toUpperCase(),
-        },
-      },
-    });
-    setFeedback({
-      status: result.ok ? "success" : "error",
-      message: result.message,
-    });
-    if (result.ok) {
-      setAdding(false);
-      setEditing(null);
-    }
-  }
+
   return (
     <div>
       <div className="section-toolbar">
@@ -268,6 +93,30 @@ function ParentLocationsSettings() {
           Toevoegen
         </Button>
       </div>
+
+      <div className="code-group-controls" aria-label="Hoofdlocatiesweergave">
+        <label className="search-field">
+          <Search size={16} />
+          <input
+            type="search"
+            placeholder="Zoeken op naam of code..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </label>
+        <label>
+          <span>Status</span>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+          >
+            <option value="all">Alle</option>
+            <option value="active">Actief</option>
+            <option value="inactive">Inactief</option>
+          </select>
+        </label>
+      </div>
+
       <MutationFeedback {...feedback} />
       <div className="location-type-list">
         {locations.map((location, index) => (
@@ -276,7 +125,7 @@ function ParentLocationsSettings() {
             <div>
               <strong>{location.name}</strong>
               <small>
-                Hoofdlocatie · Prefix {String(location.details.prefix || "—")}
+                Locatiecode <code>{String(location.details.prefix || "—")}</code> · Locaties {directChildrenCount(location)} · Assets {directAssetsCount(location)}
               </small>
             </div>
             <Badge tone={location.status === "Active" ? "success" : "neutral"}>
@@ -334,36 +183,17 @@ function ParentLocationsSettings() {
           setEditing(null);
         }}
       >
-        <form className="workflow-form" onSubmit={saveMainLocation}>
-          <Field
-            name="name"
-            label="Naam parent-/hoofdlocatie"
-            defaultValue={editing?.name}
-            required
-          />
-          <Field
-            name="prefix"
-            label="Prefix / afkorting"
-            defaultValue={String(editing?.details.prefix || "")}
-            maxLength={20}
-            required
-          />
-          <div className="wide actions">
-            <Button type="submit">
-              {editing ? "Wijzigingen opslaan" : "Hoofdlocatie opslaan"}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                setAdding(false);
-                setEditing(null);
-              }}
-            >
-              Annuleren
-            </Button>
-          </div>
-        </form>
+        <MainLocationForm
+          editing={editing}
+          onSaved={() => {
+            setAdding(false);
+            setEditing(null);
+          }}
+          onCancel={() => {
+            setAdding(false);
+            setEditing(null);
+          }}
+        />
       </Dialog>
       <ConfirmDialog
         open={!!deleting}
@@ -394,65 +224,6 @@ function ParentLocationsSettings() {
   );
 }
 
-function CodeGroupForm({ onClose, group }: { onClose: () => void; group?: CodeGroup | null }) {
-  const repository = useRepository();
-  const [feedback, setFeedback] = useState<Feedback>({
-    status: "idle",
-    message: "",
-  });
-  async function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const d = new FormData(event.currentTarget),
-      r = await repository.execute({
-        action: group ? "codeGroup.edit" : "codeGroup.create",
-        entityId: group?.id,
-        values: {
-          name: d.get("name"),
-          prefix: d.get("prefix"),
-          minimumNumber: Number(d.get("minimumNumber")),
-          maximumNumber: Number(d.get("maximumNumber")),
-          nextAvailableNumber: Number(d.get("nextAvailableNumber")),
-        },
-      });
-    setFeedback({ status: r.ok ? "success" : "error", message: r.message });
-    if (r.ok) onClose();
-  }
-  return (
-    <form className="workflow-form" onSubmit={save}>
-      <Field name="name" label="Naam" defaultValue={group?.name} required />
-      <Field name="prefix" label="Prefix" defaultValue={group?.prefix} required />
-      <Field
-        name="minimumNumber"
-        type="number"
-        min="1"
-        label="Minimum"
-        defaultValue={String(group?.minimumNumber ?? 1)}
-        required
-      />
-      <Field
-        name="maximumNumber"
-        type="number"
-        min="1"
-        label="Maximum"
-        defaultValue={String(group?.maximumNumber ?? 5000)}
-        required
-      />
-      <Field
-        name="nextAvailableNumber"
-        type="number"
-        min="1"
-        label="Volgend nummer"
-        defaultValue={String(group?.nextAvailableNumber ?? 1)}
-        required
-      />
-      <div className="wide">
-        <MutationFeedback {...feedback} />
-        <Button type="submit">Opslaan</Button>
-      </div>
-    </form>
-  );
-}
-
 function CodeGroupsSettings() {
   const repository = useRepository(),
     snapshot = useMockSnapshot();
@@ -464,12 +235,24 @@ function CodeGroupsSettings() {
     [sortBy, setSortBy] = useState<
       "alphabetical" | "created-new" | "created-old"
     >("alphabetical"),
+    [search, setSearch] = useState(""),
+    [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all"),
     [feedback, setFeedback] = useState<Feedback>({
       status: "idle",
       message: "",
     });
+
   const sortedGroups = useMemo(() => {
-    const groups = snapshot.codeGroups.filter((group) => !group.archived);
+    let groups = snapshot.codeGroups.filter((group) => !group.archived);
+    if (statusFilter === "active") groups = groups.filter((g) => g.isActive);
+    if (statusFilter === "inactive") groups = groups.filter((g) => !g.isActive);
+    if (search) {
+      const q = search.toLowerCase();
+      groups = groups.filter(
+        (g) =>
+          g.name.toLowerCase().includes(q) || g.prefix.toLowerCase().includes(q)
+      );
+    }
     if (sortBy === "alphabetical")
       return groups.sort((a, b) =>
         a.name.localeCompare(b.name, "nl", { sensitivity: "base" }),
@@ -479,13 +262,15 @@ function CodeGroupsSettings() {
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       return sortBy === "created-new" ? -difference : difference;
     });
-  }, [snapshot.codeGroups, sortBy]);
+  }, [snapshot.codeGroups, sortBy, search, statusFilter]);
+
   const pageCount = Math.max(1, Math.ceil(sortedGroups.length / pageSize));
   const currentPage = Math.min(page, pageCount);
   const visibleGroups = sortedGroups.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
+
   async function run(
     group: CodeGroup,
     action: "codeGroup.activate" | "codeGroup.deactivate" | "codeGroup.delete",
@@ -494,6 +279,7 @@ function CodeGroupsSettings() {
     setFeedback({ status: r.ok ? "success" : "error", message: r.message });
     if (r.ok) setDeleting(null);
   }
+
   return (
     <div>
       <div className="section-toolbar">
@@ -508,6 +294,32 @@ function CodeGroupsSettings() {
       </div>
       <MutationFeedback {...feedback} />
       <div className="code-group-controls" aria-label="Codegroepenweergave">
+        <label className="search-field">
+          <Search size={16} />
+          <input
+            type="search"
+            placeholder="Zoeken op naam of code..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </label>
+        <label>
+          <span>Status</span>
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value as any);
+              setPage(1);
+            }}
+          >
+            <option value="all">Alle</option>
+            <option value="active">Actief</option>
+            <option value="inactive">Inactief</option>
+          </select>
+        </label>
         <label>
           <span>Sorteren op</span>
           <select
@@ -551,7 +363,7 @@ function CodeGroupsSettings() {
               </strong>
               <small>
                 Reeks {group.minimumNumber}–{group.maximumNumber} · Volgend{" "}
-                {group.nextAvailableNumber}
+                {group.prefix}{group.nextAvailableNumber}
               </small>
             </div>
             <Badge tone={group.isActive ? "success" : "neutral"}>
@@ -618,7 +430,11 @@ function CodeGroupsSettings() {
       >
         <CodeGroupForm
           group={editing}
-          onClose={() => {
+          onSaved={() => {
+            setAdding(false);
+            setEditing(null);
+          }}
+          onCancel={() => {
             setAdding(false);
             setEditing(null);
           }}
@@ -659,14 +475,13 @@ export function MasterDataSettings() {
   if (!user) return null;
   return (
     <div className="master-data-settings">
-      <ApprovedStructureInstaller />
       <div className="subnav" role="tablist">
         <button
           type="button"
           className={tab === "locations" ? "active" : ""}
           onClick={() => setTab("locations")}
         >
-          Locaties
+          Hoofdlocaties
         </button>
         <button
           type="button"
@@ -677,7 +492,7 @@ export function MasterDataSettings() {
         </button>
       </div>
       {tab === "locations" ? (
-        <ParentLocationsSettings />
+        <MainLocationsSettings />
       ) : (
         <CodeGroupsSettings />
       )}
