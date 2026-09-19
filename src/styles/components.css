@@ -472,22 +472,28 @@
 }
 .page-title {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 14px 0 20px;
+  padding: 4px 0 20px;
+}
+.page-title > div {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 .page-title h1 {
   font-size: 26px;
   line-height: 1.15;
-  margin: 0 0 6px;
+  margin: 0;
   letter-spacing: -0.025em;
+  white-space: nowrap;
 }
 .page-title p {
   width: fit-content;
   max-width: min(100%, 880px);
-  margin: 8px 0 0;
-  padding: 9px 12px;
+  margin: 0;
+  padding: 6px 12px;
   border: 1px solid #8eb3e5;
   border-radius: 10px;
   background: #e2edfc;
@@ -1980,6 +1986,13 @@ html .system-information {
   .page-title {
     align-items: flex-start;
     padding: 15px 0;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .page-title > div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
   .page-title h1 {
     font-size: 22px;
