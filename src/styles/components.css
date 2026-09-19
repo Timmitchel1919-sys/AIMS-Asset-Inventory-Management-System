@@ -3085,13 +3085,15 @@ html .system-information {
   font-size: 12px;
   font-weight: 700;
 }
-.code-group-controls select {
+.code-group-controls select,
+.code-group-controls input[type="search"] {
   height: 40px;
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius-sm);
   background: var(--color-input-background);
   padding: 0 10px;
   color: var(--color-text);
+  width: 100%;
 }
 .code-group-pagination {
   justify-content: flex-end;

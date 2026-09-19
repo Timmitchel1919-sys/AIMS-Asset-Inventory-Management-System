@@ -1,4 +1,4 @@
-import { Pencil, Plus, Power, Trash2, Search } from "lucide-react";
+import { Pencil, Plus, Power, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge, Button } from "../ui";
 import { ConfirmDialog, Dialog, MutationFeedback } from "../WorkflowUi";
@@ -95,8 +95,8 @@ function MainLocationsSettings() {
       </div>
 
       <div className="code-group-controls" aria-label="Hoofdlocatiesweergave">
-        <label className="search-field">
-          <Search size={16} />
+        <label>
+          <span>Zoeken</span>
           <input
             type="search"
             placeholder="Zoeken op naam of code..."
@@ -294,8 +294,8 @@ function CodeGroupsSettings() {
       </div>
       <MutationFeedback {...feedback} />
       <div className="code-group-controls" aria-label="Codegroepenweergave">
-        <label className="search-field">
-          <Search size={16} />
+        <label>
+          <span>Zoeken</span>
           <input
             type="search"
             placeholder="Zoeken op naam of code..."
