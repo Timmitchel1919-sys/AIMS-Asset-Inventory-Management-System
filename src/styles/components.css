@@ -467,7 +467,7 @@
 .page:has(> .data-card) {
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 120px);
+  height: calc(100vh - 75px);
 }
 .page > .data-card {
   flex: 1;
@@ -496,7 +496,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 4px 0 20px;
+  padding: 0 0 10px;
 }
 .page-title > div {
   display: flex;
@@ -832,7 +832,7 @@ td small {
   overflow: hidden;
 }
 .data-toolbar {
-  padding: 13px;
+  padding: 8px 12px;
   display: flex;
   gap: 8px;
   border-bottom: 1px solid var(--color-border-subtle);
