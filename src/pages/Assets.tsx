@@ -51,14 +51,16 @@ import { useT } from "../i18n";
 
 const columnIds = [
   "code",
-  "category",
+  "brand",
   "name",
+  "codeGroup",
+  "model",
   "serial",
   "location",
   "department",
-  "status",
+  "assignee",
   "condition",
-  "updated",
+  "status",
 ];
 const preferenceKey = "kcs-assets-list-preferences:v1";
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -267,30 +269,38 @@ export default function Assets() {
         value: (asset) => asset.code,
       },
       {
-        id: "category",
-        label: t("assets.category"),
+        id: "brand",
+        label: t("assets.brand"),
         sortable: true,
-        render: (asset) => asset.category,
-        value: (asset) => asset.category,
+        render: (asset) => asset.brand,
+        value: (asset) => asset.brand,
       },
       {
         id: "name",
         label: t("assets.asset"),
         required: true,
         sortable: true,
-        render: (asset) => (
-          <span>
-            <strong>{asset.name}</strong>
-            <small>
-              {asset.brand} · {asset.model}
-            </small>
-          </span>
-        ),
+        render: (asset) => <strong>{asset.name}</strong>,
         value: (asset) => asset.name,
+      },
+      {
+        id: "codeGroup",
+        label: t("assets.codeGroup"),
+        sortable: true,
+        render: (asset) => asset.codePrefix,
+        value: (asset) => asset.codePrefix,
+      },
+      {
+        id: "model",
+        label: t("assets.model"),
+        sortable: true,
+        render: (asset) => asset.model,
+        value: (asset) => asset.model,
       },
       {
         id: "serial",
         label: t("assets.serial"),
+        sortable: true,
         render: (asset) => asset.serialNumber || "—",
         value: (asset) => asset.serialNumber,
       },
@@ -309,6 +319,20 @@ export default function Assets() {
         value: (asset) => asset.department,
       },
       {
+        id: "assignee",
+        label: t("assets.assignee"),
+        sortable: true,
+        render: (asset) => asset.assignedTo || asset.responsibleEmployee,
+        value: (asset) => asset.assignedTo || asset.responsibleEmployee,
+      },
+      {
+        id: "condition",
+        label: t("assets.condition"),
+        sortable: true,
+        render: (asset) => <ConditionBadge condition={asset.condition} size="compact" variant="table" />,
+        value: (asset) => t(`condition.${asset.condition}`),
+      },
+      {
         id: "status",
         label: t("assets.status"),
         sortable: true,
@@ -320,20 +344,6 @@ export default function Assets() {
           />
         ),
         value: (asset) => t(`status.${asset.status}`),
-      },
-      {
-        id: "condition",
-        label: t("assets.condition"),
-        sortable: true,
-        render: (asset) => <ConditionBadge condition={asset.condition} size="compact" variant="table" />,
-        value: (asset) => t(`condition.${asset.condition}`),
-      },
-      {
-        id: "updated",
-        label: t("assets.updated"),
-        sortable: true,
-        render: (asset) => asset.lastUpdated,
-        value: (asset) => asset.lastUpdated,
       },
     ],
     [t],

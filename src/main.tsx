@@ -34,7 +34,7 @@ import "./styles/assets.css";
 import "./styles/asset-status.css";
 import "./components/download/AnimatedDownloadButton.css";
 import "./styles/emerald-gloss.css";
-import "./styles/aims-midnight.css";
+import "./styles/dark.css";
 import "./styles/aims-light.css";
 import "./styles/scrollbars.css";
 import "./styles/big-screen.css";

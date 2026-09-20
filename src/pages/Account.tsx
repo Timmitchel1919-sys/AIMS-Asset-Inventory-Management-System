@@ -24,7 +24,7 @@ import { TypographySettings } from "../components/settings/TypographySettings";
 
 const themes: [ThemeId, string][] = [
   ["aimsAzureGlass", "AIMS Azure Blue"],
-  ["aimsMidnight", "AIMS Midnight"],
+  ["dark", "AIMS Dark"],
   ["aimsEmeraldGloss", "AIMS Emerald Green"],
 ];
 const DATE_TIME_FORMAT_EXAMPLE = new Date(2026, 7, 27, 13, 5);

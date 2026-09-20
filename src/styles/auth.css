@@ -281,7 +281,7 @@ html[data-theme="kcs-azure-intelligence"] .login-page__video-vignette{background
 .login-legal-text{margin:0;color:var(--login-muted);font-size:.76rem;line-height:1.55}
 .login-footer__credits{margin-top:12px}
 .login-copyright{margin:0;color:var(--login-muted);font-size:.72rem;line-height:1.5;text-align:center;letter-spacing:.01em}
-.login-developer-credit{margin:4px 0 0;color:#000;font-size:.68rem;font-weight:700;line-height:1.45;text-align:center;opacity:1}
+.login-developer-credit{margin:4px 0 0;color:var(--color-text-primary);font-size:.68rem;font-weight:700;line-height:1.45;text-align:center;opacity:1}
 .login-legal-text a{color:var(--login-primary);font-weight:650;text-underline-offset:3px}
 .login-legal-text a:focus-visible{outline:3px solid var(--login-focus-ring);outline-offset:2px;border-radius:3px}
 .login-public-links{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 18px;margin:0 auto;font-size:.7rem;text-align:center}.login-public-links a{color:var(--login-primary);font-weight:650}
@@ -1134,7 +1134,7 @@ html[data-theme] .auth-page:is(.auth-login, .auth-signup) .login-card {
 /* Brand lockup subtitle + description paragraph in black (requested). */
 html[data-theme] .auth-page:is(.auth-login, .auth-signup) .auth-brand-header .aims-public-lockup__copy small,
 html[data-theme] .auth-page:is(.auth-login, .auth-signup) .auth-brand-copy p {
-  color: #000000 !important;
+  color: var(--color-text-primary) !important;
 }
 
 /* Sign-in controls: compact 46px vertical height on desktop / tablet.

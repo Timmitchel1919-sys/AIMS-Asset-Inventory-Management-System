@@ -12,7 +12,7 @@ const viewports = [
   { width: 1920, height: 1080 },
 ];
 
-for (const theme of ['aimsAzureGlass', 'aimsMidnight', 'aimsEmeraldGloss'] as const) {
+for (const theme of ['aimsAzureGlass', 'dark', 'aimsEmeraldGloss'] as const) {
   test(`shared wordmark remains responsive in ${theme}`, async ({ page }) => {
     test.setTimeout(120_000);
     const errors: string[] = [];

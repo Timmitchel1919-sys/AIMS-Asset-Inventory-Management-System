@@ -1,6 +1,6 @@
 import type { TransactionType } from "./transactionTypes";
 
-export type ThemeId = "aimsAzureGlass" | "aimsMidnight" | "aimsEmeraldGloss" | "aimsLight";
+export type ThemeId = "aimsAzureGlass" | "dark" | "aimsEmeraldGloss" | "aimsLight";
 export type Role =
   | "administrator"
   | "ict-manager"

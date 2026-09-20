@@ -1,12 +1,12 @@
 import{expect,test}from'@playwright/test';
 
-test.beforeEach(async({page})=>{await page.addInitScript(()=>{localStorage.setItem('kcs-auth','out');localStorage.setItem('kcs-language','en');localStorage.setItem('authenticatedThemePreference','aimsMidnight')})});
+test.beforeEach(async({page})=>{await page.addInitScript(()=>{localStorage.setItem('kcs-auth','out');localStorage.setItem('kcs-language','en');localStorage.setItem('authenticatedThemePreference','dark')})});
 
 test.describe('theme-responsive AIMS authentication',()=>{
   test('desktop login is accessible, validates input and preserves authentication',async({page})=>{
     await page.setViewportSize({width:1440,height:900});
     await page.goto('/login');
-    await expect(page.locator('.auth-page')).toHaveAttribute('data-auth-theme','aimsMidnight');
+    await expect(page.locator('.auth-page')).toHaveAttribute('data-auth-theme','dark');
     await expect(page.getByAltText('AIMS logo')).toHaveCount(1);
     await expect(page.getByRole('img',{name:'AIMS Asset & Inventory Management System'})).toBeVisible();
     await expect(page.getByLabel('Choose language')).toHaveCount(0);
@@ -14,7 +14,7 @@ test.describe('theme-responsive AIMS authentication',()=>{
     await expect(page.locator('.auth-logo-lockup strong')).toHaveCount(0);
     await expect(page.locator('.auth-logo-lockup img')).toHaveCount(0);
     await expect(page.locator('.auth-card')).toBeVisible();
-    await expect(page.locator('html')).toHaveAttribute('data-theme','aims-midnight');
+    await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(1440);
 
     const email=page.getByLabel('Email address'),password=page.getByLabel('Password',{exact:true});

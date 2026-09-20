@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 for (const [name, theme, cssTheme] of [
   ['light', 'aimsAzureGlass', 'kcs-azure-intelligence'],
-  ['dark', 'aimsMidnight', 'aims-midnight'],
+  ['dark', 'dark', 'dark'],
 ] as const) {
   test(`reference landing first viewport in ${name} theme`, async ({ page }) => {
     await page.setViewportSize({ width: 1680, height: 945 });

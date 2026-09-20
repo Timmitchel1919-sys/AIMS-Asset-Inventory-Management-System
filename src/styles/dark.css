@@ -1,0 +1,170 @@
+[data-theme="dark"] {
+  --bg-primary: #061426;
+  --bg-secondary: #0A1D35;
+  --bg-elevated: #102A49;
+  --bg-sidebar: #081A30;
+
+  --surface-glass: rgba(18, 52, 86, 0.68);
+  --surface-glass-hover: rgba(24, 67, 108, 0.78);
+
+  --brand-primary: #2F80ED;
+  --brand-primary-hover: #4A97FF;
+  --brand-secondary: #58B9F5;
+  --brand-highlight: #7DD3FC;
+
+  --text-primary: #F7FBFF;
+  --text-secondary: #B9CDE2;
+  --text-muted: #819BB5;
+
+  --border-subtle: rgba(125, 211, 252, 0.16);
+  --border-strong: rgba(88, 185, 245, 0.30);
+
+  --input-bg: #0B2038;
+  --focus-ring: #58B9F5;
+
+  --success: #34D399;
+  --warning: #FBBF24;
+  --danger: #F87171;
+  --info: #38BDF8;
+
+  /* Aliasing to AIMS existing token architecture so we don't break the whole app */
+  color-scheme: dark;
+  --color-background: var(--bg-primary);
+  --color-background-secondary: var(--bg-secondary);
+  --color-surface: var(--bg-elevated);
+  --color-surface-secondary: var(--bg-secondary);
+  --color-surface-elevated: var(--surface-glass);
+  --color-surface-hover: var(--surface-glass-hover);
+
+  --color-primary: var(--brand-primary);
+  --color-primary-hover: var(--brand-primary-hover);
+  --color-primary-active: var(--brand-primary-hover);
+  --color-primary-soft: rgba(47, 128, 237, 0.16);
+  --color-on-primary: #fff;
+
+  --color-secondary: var(--bg-elevated);
+  --color-secondary-hover: var(--surface-glass-hover);
+  --color-secondary-soft: rgba(185, 205, 226, 0.12);
+  --color-on-secondary: var(--text-primary);
+
+  --color-accent: var(--brand-secondary);
+  --color-accent-hover: var(--brand-highlight);
+  --color-accent-soft: rgba(88, 185, 245, 0.14);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-disabled: #6f879f;
+  --color-text-inverse: #fff;
+
+  --color-border: var(--border-strong);
+  --color-border-subtle: var(--border-subtle);
+  --color-focus-ring: rgba(88, 185, 245, 0.25);
+
+  --color-success: var(--success);
+  --color-success-soft: rgba(52, 211, 153, 0.14);
+  --color-warning: var(--warning);
+  --color-warning-soft: rgba(251, 191, 36, 0.14);
+  --color-danger: var(--danger);
+  --color-danger-soft: rgba(248, 113, 113, 0.14);
+  --color-info: var(--info);
+  --color-info-soft: rgba(56, 189, 248, 0.14);
+}
+
+[data-theme="dark"] body,
+[data-theme="dark"] #root,
+[data-theme="dark"] .app,
+[data-theme="dark"] .main,
+[data-theme="dark"] .page,
+[data-theme="dark"] .dashboard-grid,
+[data-theme="dark"] .dashboard-bottom {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .app-sidebar,
+[data-theme="dark"] .app-sidebar__header,
+[data-theme="dark"] .app-sidebar > .sidebar-foot,
+[data-theme="dark"] .topbar,
+[data-theme="dark"] .bottom-nav {
+  background: var(--bg-sidebar);
+  border-color: var(--border-strong);
+}
+
+[data-theme="dark"] .app-sidebar nav .navigation-item:is(:hover,:focus-visible,.active,[aria-current="page"]) {
+  color: var(--text-primary);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--border-subtle);
+  background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--surface-glass-hover) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.2);
+}
+
+[data-theme="dark"] .app-sidebar nav .navigation-item:is(:hover,:focus-visible,.active,[aria-current="page"]) .navigation-item__icon {
+  color: var(--brand-primary);
+}
+[data-theme="dark"] .app-sidebar__active-notch {
+  background-color: var(--bg-sidebar);
+}
+
+[data-theme="dark"] :is(.card,.panel,.modal,.dialog,[role="dialog"],.dropdown-menu,.profile-menu,.profile-menu-panel,.menu,.popover) {
+  background-color: var(--surface-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] :is(input,select,textarea,.global-search__input-wrapper > input) {
+  color: var(--text-primary);
+  background-color: var(--input-bg);
+  border-color: var(--border-strong);
+}
+
+[data-theme="dark"] :is(.data-toolbar,.table-filters,.filter-bar,.search) {
+  background-color: var(--surface-glass);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .badge-success { background: rgba(52, 211, 153, 0.15); color: var(--success); border-color: var(--success); }
+[data-theme="dark"] .badge-warning { background: rgba(251, 191, 36, 0.15); color: var(--warning); border-color: var(--warning); }
+[data-theme="dark"] .badge-danger { background: rgba(248, 113, 113, 0.15); color: var(--danger); border-color: var(--danger); }
+[data-theme="dark"] .badge-info { background: rgba(56, 189, 248, 0.15); color: var(--info); border-color: var(--info); }
+[data-theme="dark"] .badge-neutral { background: rgba(185, 205, 226, 0.15); color: var(--text-secondary); border-color: var(--text-muted); }
+
+[data-theme="dark"] :is(input,textarea)::placeholder { color: var(--text-muted); opacity: 1; }
+[data-theme="dark"] :is(input,select,textarea):focus-visible { border-color: var(--focus-ring); box-shadow: 0 0 0 3px rgba(88, 185, 245, 0.16); outline: none; }
+
+[data-theme="dark"] .btn.primary,
+[data-theme="dark"] .btn:not(.secondary):not(.danger) {
+  color: #fff;
+  border-color: var(--brand-primary);
+  background: var(--brand-primary);
+}
+[data-theme="dark"] .btn.primary:hover,
+[data-theme="dark"] .btn:not(.secondary):not(.danger):hover {
+  background: var(--brand-primary-hover);
+  border-color: var(--brand-primary-hover);
+}
+
+[data-theme="dark"] .btn.secondary { color: var(--text-primary); background: var(--surface-glass); border-color: var(--border-strong); box-shadow: none; }
+[data-theme="dark"] .btn.secondary:hover { background: var(--surface-glass-hover); }
+
+[data-theme="dark"] table { color: var(--text-primary); background: transparent; }
+[data-theme="dark"] :is(thead,thead th) { color: var(--text-secondary); background: var(--bg-elevated); border-color: var(--border-strong); }
+[data-theme="dark"] :is(tbody td,tbody th) { border-color: var(--border-subtle); }
+[data-theme="dark"] tbody tr:hover { background: var(--surface-glass); }
+[data-theme="dark"] tbody tr:is(.selected,[aria-selected="true"]) { background: rgba(47, 128, 237, 0.14); }
+
+[data-theme="dark"] :is(.dropdown-menu,.profile-menu-panel,.menu,.popover) :is(a,button):hover { background: var(--surface-glass-hover); }
+[data-theme="dark"] :is(.profile-menu-panel,.account-menu) .danger { color: var(--danger); }
+[data-theme="dark"] .bottom-nav a { color: var(--text-muted); }
+[data-theme="dark"] .bottom-nav a:is(.active,[aria-current="page"]) { color: var(--text-primary); background: rgba(47, 128, 237, 0.12); }
+[data-theme="dark"] .bottom-nav a:is(.active,[aria-current="page"]) svg { color: var(--brand-primary); }
+
+[data-theme="dark"] :is(.auth-page,.auth-shell,.login-page,.signup-page) { background-color: var(--bg-primary); color: var(--text-primary); }
+[data-theme="dark"] :is(.auth-card,.auth-panel,.auth-form) { background-color: var(--surface-glass); border-color: var(--border-strong); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+[data-theme="dark"] :is(.auth-card,.auth-panel,.auth-form) :is(input,select,textarea) { background-color: var(--input-bg); }
+

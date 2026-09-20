@@ -4,7 +4,7 @@ import { AIMS_LOGO_SRC, resolveAimsLogoSrc } from "./aimsLogo";
 
 const THEMES: ThemeId[] = [
   "aimsAzureGlass",
-  "aimsMidnight",
+  "dark",
   "aimsEmeraldGloss",
   "aimsLight",
 ];

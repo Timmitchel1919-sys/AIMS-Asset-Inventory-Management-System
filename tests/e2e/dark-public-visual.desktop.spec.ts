@@ -4,7 +4,7 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('kcs-auth', 'out');
     localStorage.setItem('kcs-language', 'en');
-    localStorage.setItem('authenticatedThemePreference', 'aimsMidnight');
+    localStorage.setItem('authenticatedThemePreference', 'dark');
   });
 });
 
@@ -12,9 +12,9 @@ test('captures the final dark login first viewport', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/login');
   await expect(page.locator('.login-card')).toBeVisible();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'aims-midnight');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1440);
-  await page.screenshot({ path: 'docs/design/aims-midnight-login.png' });
+  await page.screenshot({ path: 'docs/design/dark-login.png' });
 });
 
 test('captures the final dark login mobile first viewport', async ({ page }) => {
@@ -22,7 +22,7 @@ test('captures the final dark login mobile first viewport', async ({ page }) => 
   await page.goto('/login');
   await expect(page.locator('.login-card')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
-  await page.screenshot({ path: 'docs/design/aims-midnight-login-mobile.png' });
+  await page.screenshot({ path: 'docs/design/dark-login-mobile.png' });
 });
 
 test('captures the complete light login first viewport', async ({ page }) => {

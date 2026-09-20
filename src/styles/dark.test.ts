@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {describe,expect,it} from 'vitest';
 
-const css=readFileSync(new URL('./aims-midnight.css',import.meta.url),'utf8').toLowerCase();
+const css=readFileSync(new URL('./dark.css',import.meta.url),'utf8').toLowerCase();
 
 describe('AIMS Midnight theme contract',()=>{
   it('centralizes the approved surface and text palette',()=>{

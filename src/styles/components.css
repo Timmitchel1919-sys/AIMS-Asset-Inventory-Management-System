@@ -518,7 +518,7 @@
   border: 1px solid #8eb3e5;
   border-radius: 10px;
   background: #e2edfc;
-  color: #111827;
+  color: var(--color-text-primary);
   font-size: 11px;
   font-weight: 600;
   line-height: 1.4;
@@ -1139,7 +1139,7 @@ td small {
   border-radius: 8px;
   padding: 10px 11px;
   outline: none;
-  color: #111827;
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 
@@ -2553,14 +2553,14 @@ html .system-information {
 .inventory-form h2,
 .inventory-workflow-form h2,
 .inventory-import-panel h2 {
-  color: #111827;
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 
 .inventory-form :is(input, select, textarea),
 .inventory-workflow-form :is(input, select, textarea),
 .inventory-import-panel :is(input, select, textarea) {
-  color: #111827;
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 
@@ -2589,7 +2589,7 @@ html .system-information {
 }
 .laptop-import-metrics span {
   margin-top: 3px;
-  color: #111827;
+  color: var(--color-text-primary);
   font-size: 11px;
   font-weight: 600;
 }
@@ -2597,7 +2597,7 @@ html .system-information {
   display: flex;
   align-items: flex-start;
   gap: 9px;
-  color: #111827;
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 .laptop-import-confirm input {

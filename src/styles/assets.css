@@ -63,8 +63,8 @@
   justify-items: center;
   gap: 5px;
   padding: 12px;
-  background: #fff;
-  color: #151515;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
   border-radius: var(--radius-md);
 }
 .asset-qr small {
@@ -86,7 +86,7 @@
     var(--color-primary-soft),
     var(--color-surface) 30%
   );
-  color: #111827;
+  color: var(--color-text-primary);
   padding: 8px 11px;
   font-size: 11px;
   font-weight: 650;
@@ -119,7 +119,7 @@
 .asset-tab-help p {
   display: block;
   margin: 0;
-  color: #111827;
+  color: var(--color-text-primary);
 }
 .asset-tab-help p {
   margin-top: 4px;
@@ -248,8 +248,8 @@
   gap: 12px;
   border: 1px dashed var(--color-text-primary);
   padding: 14px;
-  background: #fff;
-  color: #151515;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
 }
 .asset-label.compact {
   transform: scale(0.94);

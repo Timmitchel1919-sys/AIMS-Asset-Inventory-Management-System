@@ -40,6 +40,11 @@ const themes: [ThemeId, string, string][] = [
     "The official blue enterprise workspace",
   ],
   [
+    "dark",
+    "AIMS Dark",
+    "The official dark theme.",
+  ],
+  [
     "aimsEmeraldGloss",
     "AIMS Emerald Green",
     "A premium enterprise theme with a deep emerald sidebar, warm ivory surfaces, and restrained gold accents.",
