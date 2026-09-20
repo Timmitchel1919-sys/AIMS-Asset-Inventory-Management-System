@@ -48,9 +48,9 @@ describe("mock workflow repository", () => {
     const created = await repo.execute({
       action: "codeGroup.create",
       values: {
-        name: "Temporary group",
-        prefix: "TMP",
-        minimumNumber: 1,
+        name: "To Be Deleted",
+        prefix: "XYZ999",
+        minNumber: 1,
         maximumNumber: 100,
         nextAvailableNumber: 1,
       },
