@@ -695,7 +695,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       : kind === "department"
         ? [...legacyColumns, departmentOverviewColumn]
         : legacyColumns;
-  let displayRows = rows
+  const displayRows = rows
     .filter(
       (item) =>
         kind !== "location" ||

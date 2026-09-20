@@ -1,5 +1,5 @@
 import type { WorkflowAction, WorkflowCommand } from "../data/contracts";
-import type { Permission } from "./permissions";
+import { Permission, can, isAuthorizedAimsUser, canManageMasterData, canDeleteMasterData } from "./permissions";
 
 const exactPermissions: Partial<Record<WorkflowAction, Permission>> = {
   "asset.create": "assets.create",
@@ -189,3 +189,4 @@ export function isCommandAllowed(
   const permission = requiredPermission(command);
   return granted.includes(permission) && !denied.includes(permission);
 }
+

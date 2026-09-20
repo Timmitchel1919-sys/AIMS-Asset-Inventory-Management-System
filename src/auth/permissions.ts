@@ -448,3 +448,15 @@ export const isAuthorizedAimsUser = (
   granted: readonly Permission[],
 ) => !!role || granted.includes("dashboard.view");
 
+export const canManageMasterData = (
+  role: Role | undefined,
+  granted: readonly Permission[],
+) => {
+  return isAuthorizedAimsUser(role, granted);
+};
+
+export const canDeleteMasterData = (email: string | null | undefined) => {
+  if (!email) return false;
+  return APPROVED_MASTER_DATA_MANAGERS.includes(email.toLowerCase());
+};
+
