@@ -275,15 +275,29 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       }),
     );
     const referenceCollections = await Promise.all(
-      (["categories", "locations", "departments"] as const).map((name) =>
-        getDocs(collection(this.db, name)),
+      (["categories", "locations", "departments"] as const).map(
+        async (name) => {
+          try {
+            return await getDocs(collection(this.db, name));
+          } catch (error) {
+            if (!isPermissionDenied(error)) throw error;
+            return null;
+          }
+        },
       ),
     );
     next.references = referenceCollections.flatMap((result) =>
-      result.docs.map((item) => deserialize({ id: item.id, ...item.data() })),
+      (result?.docs ?? []).map((item) =>
+        deserialize({ id: item.id, ...item.data() }),
+      ),
     ) as MockSnapshot["references"];
-    const settings = await getDocs(collection(this.db, "systemSettings"));
-    next.systemSettings = settings.docs[0]
+    let settings: Awaited<ReturnType<typeof getDocs>> | null = null;
+    try {
+      settings = await getDocs(collection(this.db, "systemSettings"));
+    } catch (error) {
+      if (!isPermissionDenied(error)) throw error;
+    }
+    next.systemSettings = settings?.docs[0]
       ? (deserialize(settings.docs[0].data()) as MockSnapshot["systemSettings"])
       : { hierarchyValidationMode: "warning" };
     this.replaceState(next);
