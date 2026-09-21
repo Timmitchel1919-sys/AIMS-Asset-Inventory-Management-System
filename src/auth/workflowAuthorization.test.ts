@@ -17,13 +17,86 @@ describe("workflow authorization", () => {
     );
   });
 
-  it("uses the reference kind instead of a generic settings permission", () => {
+  it("authorizes master data create/update semantically, not by feature permission", () => {
+    const codeGroup = { action: "codeGroup.create" as const };
+    expect(requiredPermission(codeGroup)).toBe("masterData.manage");
+    expect(
+      requiredPermission({ action: "reference.edit", values: { kind: "location" } }),
+    ).toBe("masterData.manage");
     expect(
       requiredPermission({
         action: "reference.edit",
         values: { kind: "department" },
       }),
-    ).toBe("departments.manage");
+    ).toBe("masterData.manage");
+    // Category references stay behind categories.manage.
+    expect(
+      requiredPermission({
+        action: "reference.create",
+        values: { kind: "category" },
+      }),
+    ).toBe("categories.manage");
+
+    // Any authenticated, active AIMS role may manage master data.
+    expect(
+      isCommandAllowed(codeGroup, [], [], { role: "warehouse-staff" }),
+    ).toBe(true);
+    expect(
+      isCommandAllowed(
+        { action: "reference.create", values: { kind: "location" } },
+        [],
+        [],
+        { role: "ict-staff" },
+      ),
+    ).toBe(true);
+    expect(
+      isCommandAllowed(
+        { action: "reference.create", values: { kind: "department" } },
+        [],
+        [],
+        { role: "warehouse-staff" },
+      ),
+    ).toBe(true);
+    // A user authorized through the dashboard permission is also allowed.
+    expect(isCommandAllowed(codeGroup, ["dashboard.view"])).toBe(true);
+    // Unrelated feature permissions never grant master data access.
+    expect(isCommandAllowed(codeGroup, ["admin.system.configure"])).toBe(false);
+    expect(
+      isCommandAllowed(
+        { action: "reference.create", values: { kind: "department" } },
+        ["departments.manage"],
+      ),
+    ).toBe(false);
+    // Unauthenticated / unauthorized actors are denied.
+    expect(isCommandAllowed(codeGroup, [])).toBe(false);
+  });
+
+  it("restricts master data deletion to the designated managers", () => {
+    const deleteCodeGroup = { action: "codeGroup.delete" as const };
+    expect(
+      isCommandAllowed(deleteCodeGroup, [], [], {
+        role: "administrator",
+        email: "normal@kangoeroeschool.com",
+      }),
+    ).toBe(false);
+    expect(
+      isCommandAllowed(deleteCodeGroup, [], [], {
+        email: "aliendas@kangoeroeschool.com",
+      }),
+    ).toBe(true);
+    expect(
+      isCommandAllowed(deleteCodeGroup, [], [], {
+        email: "Manager-ICT@kangoeroeschool.com",
+      }),
+    ).toBe(true);
+    expect(
+      isCommandAllowed({ action: "reference.delete" }, [], [], {
+        email: "sastropawiroe@kangoeroeschool.com",
+      }),
+    ).toBe(true);
+    expect(isCommandAllowed({ action: "reference.delete" }, [], [], {})).toBe(
+      false,
+    );
   });
 
   it("gates asset transfer / return behind movements.create", () => {

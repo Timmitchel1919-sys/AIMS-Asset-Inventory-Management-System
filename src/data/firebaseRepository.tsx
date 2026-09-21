@@ -22,6 +22,7 @@ import {
   OFFLINE_BLOCKED_MESSAGE_EN,
 } from "./offlinePolicy";
 import { rolePermissions, type Permission } from "../auth/permissions";
+import type { Role } from "../domain/types";
 import { AIMS_BOOTSTRAP_ADMIN_UID } from "../auth/accessBootstrap";
 import {
   isCommandAllowed,
@@ -78,6 +79,8 @@ export interface ActorAccess {
   permissions: string[];
   denials: string[];
   active: boolean;
+  role?: Role;
+  email?: string | null;
 }
 
 export class FirebaseRepositoryError extends Error {
@@ -195,12 +198,21 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
   private async resolveActorAccess(): Promise<ActorAccess> {
     if (this.actorAccess) return this.actorAccess();
     const user = firebaseAuth?.currentUser;
-    if (!user) return { permissions: [], denials: [], active: false };
+    if (!user)
+      return {
+        permissions: [],
+        denials: [],
+        active: false,
+        role: undefined,
+        email: null,
+      };
     if (user.uid === AIMS_BOOTSTRAP_ADMIN_UID)
       return {
         permissions: rolePermissions.administrator,
         denials: [],
         active: true,
+        role: "administrator",
+        email: user.email ?? null,
       };
     const token = await user.getIdTokenResult();
     const tokenPermissions = Array.isArray(token.claims.permissions)
@@ -241,6 +253,8 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       ],
       denials: [...new Set([...tokenDenials, ...denials])],
       active: data?.active !== false,
+      role: role in rolePermissions ? (role as Role) : undefined,
+      email: user.email ?? null,
     };
   }
 
@@ -261,15 +275,29 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       }),
     );
     const referenceCollections = await Promise.all(
-      (["categories", "locations", "departments"] as const).map((name) =>
-        getDocs(collection(this.db, name)),
+      (["categories", "locations", "departments"] as const).map(
+        async (name) => {
+          try {
+            return await getDocs(collection(this.db, name));
+          } catch (error) {
+            if (!isPermissionDenied(error)) throw error;
+            return null;
+          }
+        },
       ),
     );
     next.references = referenceCollections.flatMap((result) =>
-      result.docs.map((item) => deserialize({ id: item.id, ...item.data() })),
+      (result?.docs ?? []).map((item) =>
+        deserialize({ id: item.id, ...item.data() }),
+      ),
     ) as MockSnapshot["references"];
-    const settings = await getDocs(collection(this.db, "systemSettings"));
-    next.systemSettings = settings.docs[0]
+    let settings: Awaited<ReturnType<typeof getDocs>> | null = null;
+    try {
+      settings = await getDocs(collection(this.db, "systemSettings"));
+    } catch (error) {
+      if (!isPermissionDenied(error)) throw error;
+    }
+    next.systemSettings = settings?.docs[0]
       ? (deserialize(settings.docs[0].data()) as MockSnapshot["systemSettings"])
       : { hierarchyValidationMode: "warning" };
     this.replaceState(next);
@@ -585,7 +613,10 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       const access = await this.resolveActorAccess();
       if (
         !access.active ||
-        !isCommandAllowed(command, access.permissions, access.denials)
+        !isCommandAllowed(command, access.permissions, access.denials, {
+          role: access.role,
+          email: access.email,
+        })
       )
         return {
           ok: false,

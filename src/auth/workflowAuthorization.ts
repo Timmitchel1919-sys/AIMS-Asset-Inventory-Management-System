@@ -1,5 +1,10 @@
 import type { WorkflowAction, WorkflowCommand } from "../data/contracts";
-import { Permission, can, isAuthorizedAimsUser, canManageMasterData, canDeleteMasterData } from "./permissions";
+import type { Role } from "../domain/types";
+import {
+  canDeleteMasterData,
+  isAuthorizedAimsUser,
+  type Permission,
+} from "./permissions";
 
 const exactPermissions: Partial<Record<WorkflowAction, Permission>> = {
   "asset.create": "assets.create",
@@ -160,9 +165,51 @@ const exactPermissions: Partial<Record<WorkflowAction, Permission>> = {
   "notification.resolve": "notifications.resolve",
 };
 
-export function requiredPermission(command: WorkflowCommand): Permission {
+/**
+ * Master Data create/update is authorized semantically (any authenticated,
+ * verified, active AIMS user) and must never be blocked by unrelated UI feature
+ * permissions such as dashboard.view, settings.manage or departments.manage.
+ */
+export type MasterDataPermission = "masterData.manage";
+
+const masterDataMutations: readonly WorkflowAction[] = [
+  "codeGroup.create",
+  "codeGroup.edit",
+  "codeGroup.activate",
+  "codeGroup.deactivate",
+  "codeGroup.reorder",
+];
+
+const masterDataDeletes: readonly WorkflowAction[] = [
+  "codeGroup.delete",
+  "codeGroup.restore",
+  "reference.delete",
+];
+
+export function isMasterDataMutation(command: WorkflowCommand): boolean {
+  if (masterDataMutations.includes(command.action)) return true;
+  if (
+    command.action === "reference.create" ||
+    command.action === "reference.edit"
+  ) {
+    const kind = String(command.values?.kind || "");
+    return kind === "location" || kind === "department";
+  }
+  return false;
+}
+
+export function isMasterDataDelete(command: WorkflowCommand): boolean {
+  return masterDataDeletes.includes(command.action);
+}
+
+export function requiredPermission(
+  command: WorkflowCommand,
+): Permission | MasterDataPermission {
   if (command.action === "history.manual.saveDraft" && command.entityId)
     return "history.edit_manual";
+  if (isMasterDataMutation(command) || isMasterDataDelete(command))
+    return "masterData.manage";
+
   const permission = exactPermissions[command.action];
   if (!permission)
     throw new Error(`No permission mapping exists for ${command.action}.`);
@@ -170,22 +217,26 @@ export function requiredPermission(command: WorkflowCommand): Permission {
   if (command.action.startsWith("reference.")) {
     const kind = String(command.values?.kind || "");
     if (kind === "category") return "categories.manage";
-    if (kind === "department") return "departments.manage";
-    if (kind === "location") return "dashboard.view"; // All authorized users can manage locations
-  }
-  
-  if (command.action.startsWith("codeGroup.")) {
-    return "dashboard.view"; // All authorized users can manage code groups
   }
 
   return permission;
+}
+
+export interface CommandActor {
+  role?: Role;
+  email?: string | null;
 }
 
 export function isCommandAllowed(
   command: WorkflowCommand,
   granted: readonly string[],
   denied: readonly string[] = [],
+  actor: CommandActor = {},
 ) {
+  if (isMasterDataMutation(command))
+    return isAuthorizedAimsUser(actor.role, granted);
+  if (isMasterDataDelete(command)) return canDeleteMasterData(actor.email);
+
   const permission = requiredPermission(command);
   return granted.includes(permission) && !denied.includes(permission);
 }

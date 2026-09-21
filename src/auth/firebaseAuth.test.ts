@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { authErrorMessage, validateRegistration } from "./firebaseAuth";
+import {
+  authErrorMessage,
+  unverifiedAimsUserProfile,
+  validateRegistration,
+} from "./firebaseAuth";
 
 describe("registration validation", () => {
   it("requires a strong matching password and valid profile", () => {
@@ -52,4 +56,26 @@ describe("Firebase failure messages", () => {
   ])("maps %s", (code, message) =>
     expect(authErrorMessage({ code })).toContain(message),
   );
+});
+describe("unverifiedAimsUserProfile", () => {
+  it("keeps an unverified school user on the verification flow without Firestore data", () => {
+    const profile = unverifiedAimsUserProfile({
+      uid: "pending-user",
+      displayName: "Pending User",
+      email: "Pending.User@Kangoeroeschool.com",
+      photoURL: null,
+      providerData: [{ providerId: "password" }] as never,
+    });
+
+    expect(profile).toMatchObject({
+      uid: "pending-user",
+      fullName: "Pending User",
+      email: "Pending.User@Kangoeroeschool.com",
+      emailVerified: false,
+      accountType: "school-user",
+      organizationDomain: "kangoeroeschool.com",
+      authProvider: "password",
+    });
+    expect(profile.createdAt).toBeUndefined();
+  });
 });

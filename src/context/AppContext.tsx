@@ -21,11 +21,11 @@ import {
   demoLogin as firebaseDemoLogin,
   ensureAimsUserProfile,
   ensureDemoUserProfile,
-  loadProfile,
   login as firebaseLogin,
   logout as firebaseLogout,
   savePreferences,
   type UserPreferences,
+  unverifiedAimsUserProfile,
 } from "../auth/firebaseAuth";
 import {
   DEMO_AUTH_MODE,
@@ -242,7 +242,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ? await ensureDemoUserProfile(firebaseUser)
         : canProvision
           ? await ensureAimsUserProfile(firebaseUser)
-          : await loadProfile(firebaseUser);
+          : unverifiedAimsUserProfile(firebaseUser);
       const tokenRole = demoUser
         ? undefined
         : (await firebaseUser.getIdTokenResult(true)).claims.role;

@@ -445,12 +445,12 @@ export const APPROVED_MASTER_DATA_MANAGERS = [
 
 export const isAuthorizedAimsUser = (
   role: Role | undefined,
-  granted: readonly Permission[],
+  granted: readonly string[],
 ) => !!role || granted.includes("dashboard.view");
 
 export const canManageMasterData = (
   role: Role | undefined,
-  granted: readonly Permission[],
+  granted: readonly string[],
 ) => {
   return isAuthorizedAimsUser(role, granted);
 };
