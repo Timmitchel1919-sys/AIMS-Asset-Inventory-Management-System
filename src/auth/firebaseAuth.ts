@@ -24,7 +24,8 @@ import {
   updateProfile,
   type User as FirebaseUser,
 } from "firebase/auth";
-import { requireFirebase } from "../lib/firebase";
+import { httpsCallable } from "firebase/functions";
+import { firebaseFunctions, requireFirebase } from "../lib/firebase";
 import type { FontFamily, FontSize } from "../domain/typographyPreferences";
 import {
   AIMS_ACCESS_MESSAGE,
@@ -205,6 +206,22 @@ function clearPending(uid: string) {
     /* Storage may be unavailable. */
   }
 }
+async function ensureDefaultAccessAssignment(user: FirebaseUser) {
+  if (DEMO_AUTH_MODE || !firebaseFunctions || !user.emailVerified) return;
+  try {
+    const { db } = requireFirebase();
+    const snapshot = await getDoc(doc(db, "accessAssignments", user.uid));
+    if (snapshot.exists()) return;
+    await httpsCallable<Record<string, never>, { ok: boolean }>(
+      firebaseFunctions,
+      "provisionUserAccess",
+    )({});
+  } catch (error) {
+    // Provisioning runs once server-side. A transient failure must never
+    // block sign-in; the access assignment is created on a later login.
+    logDevelopmentError("default access provisioning", error);
+  }
+}
 async function syncPublicDirectoryProfile(
   user: FirebaseUser,
   profile: {
@@ -260,6 +277,29 @@ export async function loadProfile(user: FirebaseUser): Promise<UserProfile> {
   };
 }
 const demoProfileRequests = new Map<string, Promise<UserProfile>>();
+/**
+ * Builds the temporary application identity used only on the email-verification
+ * route. It deliberately performs no Firestore read: Rules correctly deny an
+ * unverified user access to `users/{uid}`. Once verification completes,
+ * `ensureAimsUserProfile` creates and loads the persisted profile instead.
+ */
+export function unverifiedAimsUserProfile(
+  user: Pick<FirebaseUser, "uid" | "displayName" | "email" | "photoURL" | "providerData">,
+): UserProfile {
+  const email = normalizeEmail(user.email || "");
+  return {
+    uid: user.uid,
+    fullName: user.displayName?.trim() || email.split("@")[0] || "AIMS user",
+    email: user.email ?? null,
+    photoURL: user.photoURL || null,
+    emailVerified: false,
+    accountType: AIMS_ACCOUNT_TYPE,
+    organizationDomain: AIMS_ORGANIZATION_DOMAIN,
+    authProvider: user.providerData.some((item) => item.providerId === "google.com")
+      ? "google"
+      : "password",
+  };
+}
 async function provisionDemoUserProfile(
   user: FirebaseUser,
 ): Promise<UserProfile> {
@@ -374,6 +414,7 @@ export async function ensureAimsUserProfile(
     accountType: DEMO_AUTH_MODE ? "demo-user" : AIMS_ACCOUNT_TYPE,
     authProvider: provider,
   });
+  await ensureDefaultAccessAssignment(user);
   clearPending(user.uid);
   return loadProfile(user);
 }

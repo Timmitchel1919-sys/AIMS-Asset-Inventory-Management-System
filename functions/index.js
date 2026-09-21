@@ -3,6 +3,10 @@ import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { defineSecret, defineString } from "firebase-functions/params";
+import {
+  DEFAULT_ACCESS_PERMISSIONS,
+  DEFAULT_ACCESS_ROLE,
+} from "./accessDefaults.js";
 import { buildWorkbook, TAB_HEADERS } from "./sheetsExport.js";
 import { exportWorkbook, readTabs, writeCells } from "./sheetsClient.js";
 import {
@@ -49,6 +53,64 @@ function isAdmin(request) {
     permissions.includes("admin.system.configure")
   );
 }
+
+/**
+ * Provision the baseline access assignment for a verified school account.
+ *
+ * A newly registered, email-verified user has no Auth custom claims yet, so
+ * Firestore Rules would deny every operational read/write. This trusted
+ * function creates the first `accessAssignments/{uid}` document with the
+ * default role, matching the application's fallback role. It is idempotent and
+ * never overwrites an assignment that already exists (for example one an
+ * administrator customized or suspended).
+ */
+export const provisionUserAccess = onCall(
+  { region: "southamerica-east1", timeoutSeconds: 60, memory: "256MiB" },
+  async (request) => {
+    if (!authorized(request))
+      throw new HttpsError(
+        "permission-denied",
+        "A verified school account is required.",
+      );
+    const db = getFirestore();
+    const uid = String(request.auth?.uid || "");
+    if (!uid)
+      throw new HttpsError("unauthenticated", "Sign in to provision access.");
+    const ref = db.collection("accessAssignments").doc(uid);
+    try {
+      const existing = await ref.get();
+      if (existing.exists) {
+        const data = existing.data();
+        if (data?.active === false)
+          return { ok: true, active: false, reason: "suspended" };
+        return { ok: true, active: true, reason: "existing" };
+      }
+      await ref.create({
+        uid,
+        role: DEFAULT_ACCESS_ROLE,
+        permissions: DEFAULT_ACCESS_PERMISSIONS,
+        denials: [],
+        active: true,
+        allRecords: true,
+        departmentIds: [],
+        locationIds: [],
+        createdAt: FieldValue.serverTimestamp(),
+        createdBy: uid,
+        updatedAt: FieldValue.serverTimestamp(),
+        updatedBy: uid,
+      });
+      return { ok: true, active: true, reason: "created" };
+    } catch (error) {
+      if (error?.code === 6 || error?.code === "already-exists")
+        return { ok: true, active: true, reason: "existing" };
+      console.error("Access provisioning failed", error?.message);
+      throw new HttpsError(
+        "internal",
+        "Default access could not be provisioned. Notify ICT Support.",
+      );
+    }
+  },
+);
 
 export const askAimsAssistant = onCall(
   {
