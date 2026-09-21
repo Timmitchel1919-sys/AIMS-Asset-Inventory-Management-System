@@ -25,6 +25,13 @@ import {
 const projectId = "aims-rules-test";
 let environment: RulesTestEnvironment;
 
+if (typeof navigator !== "undefined") {
+  Object.defineProperty(navigator, "onLine", {
+    value: true,
+    configurable: true,
+  });
+}
+
 const verified = (
   email = "verified@kangoeroeschool.com",
   permissions: string[] = [],
@@ -649,8 +656,8 @@ describe("Firebase repository persistence and concurrency", () => {
       denials: [],
       active: true,
     });
-    const first = new FirebaseInventoryRepository(db, () => uid, access);
-    const second = new FirebaseInventoryRepository(db, () => uid, access);
+    const first = new FirebaseInventoryRepository(db, () => uid, undefined, access);
+    const second = new FirebaseInventoryRepository(db, () => uid, undefined, access);
     await Promise.all([first.initialize(), second.initialize()]);
     const results = await Promise.all([
       first.execute({
@@ -674,7 +681,7 @@ describe("Firebase repository persistence and concurrency", () => {
       results.filter((result) => result.ok),
       JSON.stringify(results),
     ).toHaveLength(1);
-    const refreshed = new FirebaseInventoryRepository(db, () => uid, access);
+    const refreshed = new FirebaseInventoryRepository(db, () => uid, undefined, access);
     await refreshed.initialize();
     expect(refreshed.snapshot().assets).toHaveLength(1);
     expect(refreshed.snapshot().assets[0].code).toBe("KCSMD-01");
@@ -697,8 +704,8 @@ describe("Firebase repository persistence and concurrency", () => {
       denials: [],
       active: true,
     });
-    const first = new FirebaseInventoryRepository(db, () => uid, access);
-    const second = new FirebaseInventoryRepository(db, () => uid, access);
+    const first = new FirebaseInventoryRepository(db, () => uid, undefined, access);
+    const second = new FirebaseInventoryRepository(db, () => uid, undefined, access);
     await Promise.all([first.initialize(), second.initialize()]);
     const results = await Promise.all([
       first.execute({
@@ -716,7 +723,7 @@ describe("Firebase repository persistence and concurrency", () => {
       results.filter((result) => result.ok),
       JSON.stringify(results),
     ).toHaveLength(1);
-    const refreshed = new FirebaseInventoryRepository(db, () => uid, access);
+    const refreshed = new FirebaseInventoryRepository(db, () => uid, undefined, access);
     await refreshed.initialize();
     expect(refreshed.snapshot().inventory[0].onHand).toBe(3);
     expect(refreshed.snapshot().inventoryMovements).toHaveLength(1);
@@ -753,7 +760,7 @@ describe("Firebase repository persistence and concurrency", () => {
       denials: [],
       active: true,
     });
-    const repository = new FirebaseInventoryRepository(db, () => importUid, access);
+    const repository = new FirebaseInventoryRepository(db, () => importUid, undefined, access);
     await repository.initialize();
     const result = await repository.execute({
       action: "inventory.legacy.importBatch",
@@ -790,5 +797,282 @@ describe("Firebase repository persistence and concurrency", () => {
     await assertSucceeds(getDoc(doc(db, "assets/legacy-kcsmd01-asset")));
     await assertSucceeds(getDoc(doc(db, "assetHistoryEvents/legacy-kcsmd01-history")));
     repository.dispose();
+  });
+});
+
+describe("AIMS Master Data authorization", () => {
+  const audit = (uid: string) => ({
+    createdAt: serverTimestamp(),
+    createdBy: uid,
+    updatedAt: serverTimestamp(),
+    updatedBy: uid,
+  });
+
+  const laptopCodeGroup = (uid: string) => ({
+    name: "Laptop",
+    prefix: "KCSL",
+    minimumNumber: 1,
+    maximumNumber: 500,
+    nextAvailableNumber: 1,
+    isActive: true,
+    sortOrder: 1,
+    ...audit(uid),
+  });
+
+  const normalUser = () =>
+    environment.authenticatedContext("normal-user", {
+      ...verified("normal-user@kangoeroeschool.com"),
+      role: "warehouse-staff",
+    }).firestore();
+
+  const deleteManager = (email: string) =>
+    environment.authenticatedContext(
+      "delete-manager",
+      verified(email, ["dashboard.view"]),
+    ).firestore();
+
+  it("accepts the Laptop / KCSL / 1-500 / next 1 master data record", async () => {
+    const db = normalUser();
+    await assertSucceeds(
+      setDoc(doc(db, "codeGroups/kcsl"), laptopCodeGroup("normal-user")),
+    );
+    const stored = await getDoc(doc(db, "codeGroups/kcsl"));
+    expect(stored.data()).toMatchObject({
+      name: "Laptop",
+      prefix: "KCSL",
+      minimumNumber: 1,
+      maximumNumber: 500,
+      nextAvailableNumber: 1,
+      isActive: true,
+    });
+  });
+
+  it("lets an authorized normal user create and update code groups, locations and departments", async () => {
+    const db = normalUser();
+    await assertSucceeds(
+      setDoc(doc(db, "codeGroups/kcsl"), laptopCodeGroup("normal-user")),
+    );
+    await assertSucceeds(getDoc(doc(db, "codeGroups/kcsl")));
+    await assertSucceeds(
+      updateDoc(doc(db, "codeGroups/kcsl"), {
+        maximumNumber: 600,
+        updatedAt: serverTimestamp(),
+        updatedBy: "normal-user",
+      }),
+    );
+
+    await assertSucceeds(
+      setDoc(doc(db, "locations/main-kh"), {
+        name: "KH",
+        kind: "location",
+        ...audit("normal-user"),
+      }),
+    );
+    await assertSucceeds(
+      updateDoc(doc(db, "locations/main-kh"), {
+        name: "KH Main",
+        updatedAt: serverTimestamp(),
+        updatedBy: "normal-user",
+      }),
+    );
+
+    await assertSucceeds(
+      setDoc(doc(db, "departments/ict"), {
+        name: "ICT",
+        kind: "department",
+        ...audit("normal-user"),
+      }),
+    );
+    await assertSucceeds(
+      updateDoc(doc(db, "departments/ict"), {
+        name: "ICT Department",
+        updatedAt: serverTimestamp(),
+        updatedBy: "normal-user",
+      }),
+    );
+  });
+
+  it("forbids a normal user from deleting master data", async () => {
+    const db = normalUser();
+    await assertSucceeds(
+      setDoc(doc(db, "codeGroups/kcsl"), laptopCodeGroup("normal-user")),
+    );
+    await assertSucceeds(
+      setDoc(doc(db, "locations/main-kh"), {
+        name: "KH",
+        kind: "location",
+        ...audit("normal-user"),
+      }),
+    );
+    await assertSucceeds(
+      setDoc(doc(db, "departments/ict"), {
+        name: "ICT",
+        kind: "department",
+        ...audit("normal-user"),
+      }),
+    );
+    await assertFails(deleteDoc(doc(db, "codeGroups/kcsl")));
+    await assertFails(deleteDoc(doc(db, "locations/main-kh")));
+    await assertFails(deleteDoc(doc(db, "departments/ict")));
+  });
+
+  it("lets the designated delete managers soft-delete and restore code groups", async () => {
+    const db = deleteManager("aliendas@kangoeroeschool.com");
+    await assertSucceeds(
+      setDoc(doc(db, "codeGroups/kcsl"), laptopCodeGroup("delete-manager")),
+    );
+    await assertSucceeds(
+      updateDoc(doc(db, "codeGroups/kcsl"), {
+        isActive: false,
+        archived: true,
+        deletionReason: "Retired",
+        updatedAt: serverTimestamp(),
+        updatedBy: "delete-manager",
+      }),
+    );
+    const deletedGroup = await getDoc(doc(db, "codeGroups/kcsl"));
+    expect(deletedGroup.data()).toMatchObject({
+      archived: true,
+      deletionReason: "Retired",
+      isActive: false,
+    });
+    await assertSucceeds(
+      updateDoc(doc(db, "codeGroups/kcsl"), {
+        isActive: true,
+        archived: false,
+        deletionReason: "",
+        updatedAt: serverTimestamp(),
+        updatedBy: "delete-manager",
+      }),
+    );
+    const restoredGroup = await getDoc(doc(db, "codeGroups/kcsl"));
+    expect(restoredGroup.data()).toMatchObject({
+      archived: false,
+      isActive: true,
+    });
+  });
+
+  it("forbids a normal user from soft-deleting a code group", async () => {
+    const db = normalUser();
+    await assertSucceeds(
+      setDoc(doc(db, "codeGroups/kcsl"), laptopCodeGroup("normal-user")),
+    );
+    await assertFails(
+      updateDoc(doc(db, "codeGroups/kcsl"), {
+        isActive: false,
+        archived: true,
+        deletionReason: "Retired",
+        updatedAt: serverTimestamp(),
+        updatedBy: "normal-user",
+      }),
+    );
+  });
+
+  it("lets the designated delete managers create, update and delete master data", async () => {
+    for (const email of [
+      "sastropawiroe@kangoeroeschool.com",
+      "aliendas@kangoeroeschool.com",
+      "Manager-ICT@kangoeroeschool.com",
+    ]) {
+      const db = deleteManager(email);
+      await assertSucceeds(
+        setDoc(doc(db, "codeGroups/kcsl"), laptopCodeGroup("delete-manager")),
+      );
+      await assertSucceeds(
+        updateDoc(doc(db, "codeGroups/kcsl"), {
+          nextAvailableNumber: 2,
+          updatedAt: serverTimestamp(),
+          updatedBy: "delete-manager",
+        }),
+      );
+      await assertSucceeds(deleteDoc(doc(db, "codeGroups/kcsl")));
+
+      await assertSucceeds(
+        setDoc(doc(db, "locations/main-kh"), {
+          name: "KH",
+          kind: "location",
+          ...audit("delete-manager"),
+        }),
+      );
+      await assertSucceeds(deleteDoc(doc(db, "locations/main-kh")));
+
+      await assertSucceeds(
+        setDoc(doc(db, "departments/ict"), {
+          name: "ICT",
+          kind: "department",
+          ...audit("delete-manager"),
+        }),
+      );
+      await assertSucceeds(deleteDoc(doc(db, "departments/ict")));
+    }
+  });
+
+  it("denies unauthenticated master data create, update and delete", async () => {
+    const db = environment.unauthenticatedContext().firestore();
+    await assertFails(
+      setDoc(doc(db, "codeGroups/kcsl"), laptopCodeGroup("anon")),
+    );
+    await assertFails(
+      setDoc(doc(db, "locations/main-kh"), {
+        name: "KH",
+        kind: "location",
+        ...audit("anon"),
+      }),
+    );
+    await assertFails(
+      setDoc(doc(db, "departments/ict"), {
+        name: "ICT",
+        kind: "department",
+        ...audit("anon"),
+      }),
+    );
+    await environment.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), "codeGroups/seed"),
+        laptopCodeGroup("seed"),
+      );
+    });
+    await assertFails(updateDoc(doc(db, "codeGroups/seed"), { maximumNumber: 1 }));
+    await assertFails(deleteDoc(doc(db, "codeGroups/seed")));
+  });
+
+  it("denies a verified user without a role, permissions or assignment", async () => {
+    const db = environment
+      .authenticatedContext(
+        "unassigned",
+        verified("unassigned@kangoeroeschool.com"),
+      )
+      .firestore();
+    await assertFails(
+      setDoc(doc(db, "codeGroups/kcsl"), laptopCodeGroup("unassigned")),
+    );
+  });
+
+  it("denies a user whose access assignment is suspended", async () => {
+    await environment.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), "accessAssignments/suspended"), {
+        uid: "suspended",
+        role: "warehouse-staff",
+        permissions: ["dashboard.view"],
+        denials: [],
+        active: false,
+        allRecords: true,
+        departmentIds: [],
+        locationIds: [],
+        createdAt: serverTimestamp(),
+        createdBy: "bootstrap-admin",
+        updatedAt: serverTimestamp(),
+        updatedBy: "bootstrap-admin",
+      });
+    });
+    const db = environment
+      .authenticatedContext("suspended", {
+        ...verified("suspended@kangoeroeschool.com"),
+        role: "warehouse-staff",
+      })
+      .firestore();
+    await assertFails(
+      setDoc(doc(db, "codeGroups/kcsl"), laptopCodeGroup("suspended")),
+    );
   });
 });

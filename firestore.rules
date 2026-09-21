@@ -23,6 +23,37 @@ service cloud.firestore {
     function hasAccessAssignment() {
       return isVerified() && exists(accessAssignmentPath());
     }
+    // A verified school account whose access assignment has not been suspended.
+    function isActiveAssignment() {
+      return !hasAccessAssignment() || get(accessAssignmentPath()).data.active == true;
+    }
+    // Central Master Data authorization: any authenticated, verified, active
+    // AIMS user. It intentionally does not require unrelated UI feature
+    // permissions such as dashboard.view, settings.manage or departments.manage.
+    function isAuthorizedAimsUser() {
+      return isVerified()
+        && isActiveAssignment()
+        && (
+          isBootstrapAdministrator()
+          || (('role' in request.auth.token)
+            && request.auth.token.role is string
+            && request.auth.token.role.size() > 0)
+          || (('permissions' in request.auth.token)
+            && request.auth.token.permissions is list
+            && request.auth.token.permissions.size() > 0)
+          || hasAccessAssignment()
+        );
+    }
+    // Only the three approved Master Data managers may delete Master Data.
+    function isMasterDataDeleteManager() {
+      return isVerified()
+        && request.auth.token.email is string
+        && request.auth.token.email.lower() in [
+          'sastropawiroe@kangoeroeschool.com',
+          'aliendas@kangoeroeschool.com',
+          'manager-ict@kangoeroeschool.com'
+        ];
+    }
     function isExplicitlyDenied(value) {
       return (('denials' in request.auth.token) && request.auth.token.denials is list && value in request.auth.token.denials)
         || (hasAccessAssignment()
@@ -287,7 +318,7 @@ service cloud.firestore {
     }
 
     function validCodeGroup(data) {
-      return data.keys().hasOnly(['name','prefix','minimumNumber','maximumNumber','nextAvailableNumber','isActive','sortOrder','createdAt','createdBy','updatedAt','updatedBy','isArchived','archivedAt','archivedBy'])
+      return data.keys().hasOnly(['name','prefix','minimumNumber','maximumNumber','nextAvailableNumber','isActive','sortOrder','createdAt','createdBy','updatedAt','updatedBy','isArchived','archivedAt','archivedBy','archived','deletionReason'])
         && data.keys().hasAll(['name','prefix','minimumNumber','maximumNumber','nextAvailableNumber','isActive','sortOrder','createdAt','updatedAt','updatedBy'])
         && data.name is string && data.name.size() > 0 && data.name.size() <= 100
         && data.prefix is string && data.prefix.matches('^[A-Z0-9]{1,16}$')
@@ -295,6 +326,8 @@ service cloud.firestore {
         && data.maximumNumber is int && data.maximumNumber >= data.minimumNumber && data.maximumNumber <= 5000
         && data.nextAvailableNumber is int && data.nextAvailableNumber >= data.minimumNumber && data.nextAvailableNumber <= data.maximumNumber + 1
         && data.isActive is bool && data.sortOrder is int
+        && (!('archived' in data) || data.archived is bool)
+        && (!('deletionReason' in data) || (data.deletionReason is string && data.deletionReason.size() <= 500))
         && auditMetadataValid(data);
     }
 
@@ -419,9 +452,9 @@ service cloud.firestore {
     function canReadOperationalCollection(name) {
       return (name in ['inventoryTransactions','inventoryReservations'] && hasPermission('inventory.view'))
         || (name == 'categories' && hasAnyPermission(['assets.view','inventory.view']))
-        || (name == 'locations' && hasAnyPermission(['assets.view','inventory.view','movements.view']))
+        || (name == 'locations' && isAuthorizedAimsUser())
         || (name == 'locationTypes' && hasAnyPermission(['assets.view','inventory.view','locationTypes.manage']))
-        || (name == 'departments' && hasAnyPermission(['assets.view','inventory.view','assignments.view']))
+        || (name == 'departments' && isAuthorizedAimsUser())
         || (name == 'assignments' && hasAnyPermission(['assignments.view','assignments.manage']))
         || (name == 'borrows' && hasAnyPermission(['borrows.view','borrow.manage']))
         || (name == 'repairs' && hasAnyPermission(['repairs.view','repairs.manage']))
@@ -450,9 +483,9 @@ service cloud.firestore {
       return (name == 'inventoryTransactions' && hasAnyPermission(['inventory.receive','inventory.issue','inventory.transfer','inventory.return','inventory.correct']))
         || (name == 'inventoryReservations' && hasAnyPermission(['inventory.reserve','inventory.reservations.approve']))
         || (name == 'categories' && hasPermission('categories.manage'))
-        || (name == 'locations' && hasPermission('dashboard.view'))
+        || (name == 'locations' && isAuthorizedAimsUser())
         || (name == 'locationTypes' && hasPermission('locationTypes.manage'))
-        || (name == 'departments' && hasPermission('departments.manage'))
+        || (name == 'departments' && isAuthorizedAimsUser())
         || (name == 'assignments' && hasAnyPermission(['assignments.manage','assignments.create','assignments.edit','assignments.approve','assignments.return','assignments.reassign']))
         || (name == 'borrows' && hasAnyPermission(['borrow.manage','borrows.create','borrows.edit','borrows.approve','borrows.reject','borrows.issue','borrows.return']))
         || (name == 'repairs' && hasAnyPermission(['repairs.manage','repairs.create','repairs.edit','repairs.diagnose','repairs.approve','repairs.parts','repairs.perform','repairs.test','repairs.complete','repairs.unrepairable','repairs.return']))
@@ -525,13 +558,11 @@ service cloud.firestore {
     match /codeGroups/{id} {
       allow read: if isAuthorizedAimsUser();
       allow create: if isAuthorizedAimsUser() && validCodeGroup(request.resource.data);
-      allow update: if validCodeGroup(request.resource.data) && immutableAuditFields() && (
-        isAuthorizedAimsUser()
-        || (hasPermission('assets.create')
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nextAvailableNumber','updatedAt','updatedBy'])
-          && request.resource.data.nextAvailableNumber > resource.data.nextAvailableNumber)
-      );
-      allow delete: if canDeleteMasterData();
+      allow update: if isAuthorizedAimsUser()
+        && validCodeGroup(request.resource.data)
+        && immutableAuditFields()
+        && (!request.resource.data.keys().hasAny(['archived', 'deletionReason']) || isMasterDataDeleteManager());
+      allow delete: if isMasterDataDeleteManager();
     }
     match /assetCodes/{code} {
       allow read: if hasAnyPermission(['assets.view','assets.create']);
@@ -593,12 +624,9 @@ service cloud.firestore {
       allow update: if hasPermission('admin.users.manage') && validDirectoryUser(request.resource.data) && immutableAuditFields();
       allow delete: if false;
     }
-    match /references/{id} {
-      allow read: if isAuthorizedAimsUser();
-      allow create: if isAuthorizedAimsUser() && validReference(request.resource.data);
-      allow update: if isAuthorizedAimsUser() && validReference(request.resource.data) && immutableAuditFields();
-      allow delete: if canDeleteMasterData();
-    }
+    // Master Data references (ReferenceData page) are persisted to the
+    // dedicated `categories`, `locations` and `departments` collections above.
+    // There is no separate `references` collection, so no rule is opened for it.
     match /roles/{id} {
       allow read: if hasAnyPermission(['roles.manage','admin.roles.manage']);
       allow create: if hasPermission('admin.roles.manage') && validRole(request.resource.data);
@@ -659,7 +687,8 @@ service cloud.firestore {
         && collectionName != 'assetMovements'
         && validOperationalRecord(request.resource.data) && immutableAuditFields();
       allow delete: if isOperationalCollection(collectionName)
-        && collectionName == 'locations' && canDeleteMasterData();
+        && collectionName in ['locations','departments']
+        && isMasterDataDeleteManager();
     }
 
     match /{document=**} { allow read, write: if false; }
