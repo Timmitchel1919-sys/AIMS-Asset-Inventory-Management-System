@@ -3663,18 +3663,6 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
         }
         case "codeGroup.delete": {
           const group = this.codeGroup(command.entityId);
-          const isManager =
-            command.actorEmail &&
-            [
-              "sastropawiroe@kangoeroeschool.com",
-              "aliendas@kangoeroeschool.com",
-              "manager-ict@kangoeroeschool.com",
-            ].includes(command.actorEmail.toLowerCase());
-          
-          if (!isManager) {
-            throw new Error("Je hebt geen toestemming om deze codegroep te verwijderen.");
-          }
-
           const hasAssets = this.state.assets.some(a => a.code.startsWith(group.prefix));
           const hasCategories = this.state.references.some(r => r.kind === "category" && r.details?.prefix === group.prefix);
           if (hasAssets || hasCategories) {
