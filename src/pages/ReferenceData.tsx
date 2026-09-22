@@ -234,6 +234,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     [deptFilterDialog, setDeptFilterDialog] = useState(false),
     [deptSort, setDeptSort] = useState("name-asc"),
     [deptManagerFilter, setDeptManagerFilter] = useState("all"),
+    [deptLocationFilter, setDeptLocationFilter] = useState("all"),
     [selectedParentId, setSelectedParentId] = useState(
       initialRecord?.parentLocationId || initialRecord?.parentId || "",
     ),
@@ -722,7 +723,35 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         return itemManager === deptManagerFilter;
       }
       return true;
+    })
+    .filter((item) => {
+      if (kind !== "department" || deptLocationFilter === "all") return true;
+      return (
+        item.mainLocationId === deptLocationFilter ||
+        item.parentLocationId === deptLocationFilter ||
+        item.containerLocationId === deptLocationFilter
+      );
     });
+
+  // Live active/inactive asset counts for the departments currently in
+  // view (respects the location/manager filters above), shown next to the
+  // total-records count so picking a location immediately answers "how many
+  // assets are active there".
+  const departmentAssetCounts =
+    kind === "department"
+      ? displayRows.reduce(
+          (totals, department) => {
+            for (const asset of snapshot.assets) {
+              if (asset.department !== department.name) continue;
+              if (["Disposed", "Archived"].includes(asset.status))
+                totals.inactive += 1;
+              else totals.active += 1;
+            }
+            return totals;
+          },
+          { active: 0, inactive: 0 },
+        )
+      : null;
 
   if (kind === "department") {
     displayRows.sort((a, b) => {
@@ -967,6 +996,28 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 </div>
               ) : kind === "department" ? (
                 <div className="location-filters">
+                  <span
+                    className="data-toolbar__count data-toolbar__count--success"
+                    title={
+                      nl
+                        ? "Actieve middelen in de gefilterde afdelingen"
+                        : "Active assets in the filtered departments"
+                    }
+                  >
+                    <b>{departmentAssetCounts?.active ?? 0}</b>
+                    {nl ? "actieve middelen" : "active assets"}
+                  </span>
+                  <span
+                    className="data-toolbar__count data-toolbar__count--danger"
+                    title={
+                      nl
+                        ? "Niet-actieve (afgevoerd/gearchiveerd) middelen in de gefilterde afdelingen"
+                        : "Inactive (disposed/archived) assets in the filtered departments"
+                    }
+                  >
+                    <b>{departmentAssetCounts?.inactive ?? 0}</b>
+                    {nl ? "niet-actieve middelen" : "inactive assets"}
+                  </span>
                   <Button variant="secondary" onClick={() => setDeptFilterDialog(true)}>
                     <Filter />
                     {nl ? "Filteren" : "Filter"}
@@ -1504,6 +1555,43 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                       {manager}
                     </option>
                   ))}
+                </select>
+              </label>
+              <label>
+                <span>{nl ? "Locatie" : "Location"}</span>
+                <select
+                  value={deptLocationFilter}
+                  onChange={(e) => setDeptLocationFilter(e.target.value)}
+                >
+                  <option value="all">{nl ? "Alle locaties" : "All locations"}</option>
+                  <optgroup label={nl ? "Hoofdlocaties" : "Main locations"}>
+                    {snapshot.references
+                      .filter(
+                        (item) =>
+                          item.kind === "location" &&
+                          item.type === "Main location",
+                      )
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                  </optgroup>
+                  <optgroup label={nl ? "Sub-locaties" : "Sub-locations"}>
+                    {snapshot.references
+                      .filter(
+                        (item) =>
+                          item.kind === "location" &&
+                          item.type !== "Main location",
+                      )
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                  </optgroup>
                 </select>
               </label>
             </div>

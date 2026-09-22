@@ -51,7 +51,10 @@ service cloud.firestore {
         && request.auth.token.email.lower() in [
           'sastropawiroe@kangoeroeschool.com',
           'aliendas@kangoeroeschool.com',
-          'manager-ict@kangoeroeschool.com'
+          'manager-ict@kangoeroeschool.com',
+          'sanoesij@kangoeroeschool.com',
+          'despercev@kangoeroeschool.com',
+          'macleanj@kangoeroeschool.com'
         ];
     }
     function isExplicitlyDenied(value) {
@@ -262,7 +265,7 @@ service cloud.firestore {
           'purchasePrice','warrantyStart','warrantyExpiry','dateAdded','createdBy',
           'lastUpdated','lastModifiedBy','maintenanceRequired','usefulLifeEnd',
           'technicalSpecifications','remoteAccess','attachments','photos','notes',
-          'sourceData','importMetadata','qr',
+          'sourceData','importMetadata','qr','qrToken','qrUpdatedAt',
           'createdAt','updatedAt','updatedBy','isArchived','archivedAt','archivedBy'
         ])
         && data.keys().hasAll(['code','codePrefix','codeNumber','name','category','type','brand','model','serialNumber','location','department','status','condition','purchaseDate','warrantyExpiry','lastUpdated','qr','createdAt','createdBy','updatedAt','updatedBy'])
@@ -279,6 +282,8 @@ service cloud.firestore {
         && validLegacyInventorySourceData(data)
         && validLegacyInventoryImportMetadata(data)
         && data.qr is bool
+        && (!('qrToken' in data) || (data.qrToken is string && data.qrToken.size() >= 16 && data.qrToken.size() <= 64))
+        && (!('qrUpdatedAt' in data) || data.qrUpdatedAt is timestamp)
         && auditMetadataValid(data)
         && noPrivilegeFields(data);
     }
@@ -396,7 +401,7 @@ service cloud.firestore {
         && noPrivilegeFields(data);
     }
     function validPublicDirectoryUser(data, uid) {
-      return data.keys().hasOnly(['uid','displayName','photoURL','department','jobTitle','accountType','authProvider','emailVerified','status','updatedAt'])
+      return data.keys().hasOnly(['uid','displayName','photoURL','department','jobTitle','accountType','authProvider','emailVerified','status','updatedAt','lastLoginAt'])
         && data.keys().hasAll(['uid','displayName','photoURL','department','jobTitle','accountType','authProvider','emailVerified','status','updatedAt'])
         && data.uid is string && data.uid == uid && uid == request.auth.uid
         && data.displayName is string && data.displayName.size() > 0 && data.displayName.size() <= 100
@@ -407,7 +412,15 @@ service cloud.firestore {
         && data.authProvider in ['password','google','anonymous']
         && data.emailVerified is bool
         && data.status == 'active'
-        && data.updatedAt is timestamp;
+        && data.updatedAt is timestamp
+        && (!('lastLoginAt' in data) || data.lastLoginAt is timestamp);
+    }
+    function validPresence(data, uid) {
+      return data.keys().hasOnly(['uid','online','lastSeenAt'])
+        && data.keys().hasAll(['uid','online','lastSeenAt'])
+        && data.uid is string && data.uid == uid && uid == request.auth.uid
+        && data.online is bool
+        && data.lastSeenAt is timestamp;
     }
     function validRole(data) {
       return data.keys().hasOnly(['name','description','permissions','system','createdAt','createdBy','updatedAt','updatedBy','isArchived','archivedAt','archivedBy'])
@@ -447,6 +460,29 @@ service cloud.firestore {
         && data.departmentIds is list && data.departmentIds.size() <= 50
         && data.locationIds is list && data.locationIds.size() <= 100
         && auditMetadataValid(data);
+    }
+
+    function validQrIdentity(data) {
+      return data.keys().hasOnly([
+          'assetId','status','source','createdAt','createdBy',
+          'revokedAt','revokedBy','replacedByToken','updatedAt','updatedBy'
+        ])
+        && data.keys().hasAll(['assetId','status','source'])
+        && data.assetId is string && data.assetId.size() > 0 && data.assetId.size() <= 80
+        && data.status in ['ACTIVE','REVOKED']
+        && data.source in ['created','backfilled','rotated']
+        && (!('createdAt' in data) || data.createdAt is timestamp)
+        && (!('revokedAt' in data) || data.revokedAt is timestamp)
+        && (!('revokedBy' in data) || data.revokedBy is string)
+        && (!('replacedByToken' in data) || (data.replacedByToken is string && data.replacedByToken.size() >= 16 && data.replacedByToken.size() <= 64));
+    }
+
+    function canProvisionQrIdentity() {
+      return hasAnyPermission(['admin.system.configure','assets.create','inventory.import']);
+    }
+
+    function canManageQrIdentity() {
+      return hasAnyPermission(['admin.system.configure','assets.edit','assets.archive']);
     }
 
     function canReadOperationalCollection(name) {
@@ -532,8 +568,19 @@ service cloud.firestore {
       allow create: if isOwnUser(uid) && validPublicDirectoryUser(request.resource.data, uid)
         && request.resource.data.updatedAt == request.time;
       allow update: if isOwnUser(uid) && validPublicDirectoryUser(request.resource.data, uid)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','authProvider','emailVerified','status','updatedAt'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','authProvider','emailVerified','status','updatedAt','lastLoginAt'])
         && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    // Lightweight session-presence heartbeat for the Users module's
+    // Online/Offline indicator. Owner-write-only, so a user can only ever
+    // misrepresent their OWN presence (no account-status/role/permission
+    // bypass); every other verified user may read it, matching userDirectory.
+    match /presence/{uid} {
+      allow read: if isVerified();
+      allow create, update: if isOwnUser(uid) && validPresence(request.resource.data, uid)
+        && request.resource.data.lastSeenAt == request.time;
       allow delete: if false;
     }
 
@@ -545,6 +592,17 @@ service cloud.firestore {
         && request.resource.data.code == resource.data.code
         && request.resource.data.codePrefix == resource.data.codePrefix
         && request.resource.data.codeNumber == resource.data.codeNumber;
+      allow delete: if false;
+    }
+    match /qrIdentities/{token} {
+      allow read: if hasPermission('assets.view');
+      allow create: if canProvisionQrIdentity() && validQrIdentity(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if canManageQrIdentity() && validQrIdentity(request.resource.data) && immutableAuditFields()
+        && request.resource.data.assetId == resource.data.assetId
+        && resource.data.status == 'ACTIVE' && request.resource.data.status == 'REVOKED'
+        && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }
     match /inventoryItems/{id} {

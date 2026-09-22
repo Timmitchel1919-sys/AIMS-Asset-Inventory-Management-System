@@ -230,21 +230,27 @@ async function syncPublicDirectoryProfile(
     jobTitle?: string | null;
     accountType: "school-user" | "demo-user";
     authProvider: "password" | "google" | "anonymous";
+    recordLogin?: boolean;
   },
 ) {
   const { db } = requireFirebase();
-  await setDoc(doc(db, "userDirectory", user.uid), {
-    uid: user.uid,
-    displayName: profile.displayName,
-    photoURL: user.photoURL || null,
-    department: profile.department || null,
-    jobTitle: profile.jobTitle || null,
-    accountType: profile.accountType,
-    authProvider: profile.authProvider,
-    emailVerified: user.emailVerified,
-    status: "active",
-    updatedAt: serverTimestamp(),
-  });
+  await setDoc(
+    doc(db, "userDirectory", user.uid),
+    {
+      uid: user.uid,
+      displayName: profile.displayName,
+      photoURL: user.photoURL || null,
+      department: profile.department || null,
+      jobTitle: profile.jobTitle || null,
+      accountType: profile.accountType,
+      authProvider: profile.authProvider,
+      emailVerified: user.emailVerified,
+      status: "active",
+      updatedAt: serverTimestamp(),
+      ...(profile.recordLogin ? { lastLoginAt: serverTimestamp() } : {}),
+    },
+    { merge: true },
+  );
 }
 export async function loadProfile(user: FirebaseUser): Promise<UserProfile> {
   const { db } = requireFirebase();
@@ -354,7 +360,12 @@ export function ensureDemoUserProfile(
 export async function ensureAimsUserProfile(
   user: FirebaseUser,
   signupData?: Partial<RegistrationInput>,
+  options?: { recordLogin?: boolean },
 ): Promise<UserProfile> {
+  // "Laatste aanmelding" must reflect a genuine sign-in, not every time this
+  // function runs — it also runs on session restore (page load/refresh) via
+  // onAuthStateChanged, which must NOT bump the timestamp.
+  const recordLogin = options?.recordLogin === true;
   if (!isEmailAllowedForCurrentMode(user.email))
     throw new Error(AIMS_ACCESS_MESSAGE);
   if (isVerificationRequired() && !user.emailVerified)
@@ -405,7 +416,7 @@ export async function ensureAimsUserProfile(
       authProvider: provider,
       emailVerified: user.emailVerified,
       updatedAt: serverTimestamp(),
-      lastLoginAt: serverTimestamp(),
+      ...(recordLogin ? { lastLoginAt: serverTimestamp() } : {}),
     });
   await syncPublicDirectoryProfile(user, {
     displayName,
@@ -413,6 +424,9 @@ export async function ensureAimsUserProfile(
     jobTitle: pending?.jobTitle?.trim() || existing?.jobTitle || null,
     accountType: DEMO_AUTH_MODE ? "demo-user" : AIMS_ACCOUNT_TYPE,
     authProvider: provider,
+    // A brand-new account's first directory write should also carry its
+    // first login moment, same as the users/{uid} document above.
+    recordLogin: recordLogin || !snapshot.exists(),
   });
   await ensureDefaultAccessAssignment(user);
   clearPending(user.uid);
@@ -475,7 +489,9 @@ export async function login(
     throw new Error(AIMS_ACCESS_MESSAGE);
   }
   if (!isVerificationRequired() || credential.user.emailVerified)
-    await ensureAimsUserProfile(credential.user);
+    await ensureAimsUserProfile(credential.user, undefined, {
+      recordLogin: true,
+    });
   return credential;
 }
 export async function demoLogin() {
@@ -519,7 +535,7 @@ export async function googleLogin(remember: boolean) {
     await signOut(auth);
     throw new Error(AIMS_ACCESS_MESSAGE);
   }
-  await ensureAimsUserProfile(result.user);
+  await ensureAimsUserProfile(result.user, undefined, { recordLogin: true });
   return result;
 }
 export async function logout() {

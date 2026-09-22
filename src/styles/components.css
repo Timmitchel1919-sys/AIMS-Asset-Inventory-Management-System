@@ -491,6 +491,38 @@
   max-width: none;
   margin-inline: 0;
 }
+.qr-resolver-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 75px);
+  padding: 24px;
+}
+.qr-resolver-card {
+  width: min(520px, 100%);
+  text-align: center;
+  padding: 40px 32px;
+}
+.resolver-state > svg {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 16px;
+  color: var(--color-accent, var(--accent));
+}
+.resolver-state h2 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+.resolver-state p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted, var(--muted-color));
+}
+.resolver-state a {
+  color: inherit;
+  text-underline-offset: 4px;
+}
 .page-title {
   display: flex;
   align-items: center;
@@ -868,6 +900,14 @@ td small {
   font-size: 0.9rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+}
+.data-toolbar__count--success b {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+.data-toolbar__count--danger b {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
 }
 .search {
   height: 40px;
@@ -3686,6 +3726,11 @@ html .system-information {
 }
 .directory-cards {
   display: none;
+}
+.directory-status-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .directory-cards .card header {
   display: flex;

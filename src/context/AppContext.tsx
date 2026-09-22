@@ -18,6 +18,11 @@ import {
 } from "../lib/kcs-theme";
 import { firebaseAuth } from "../lib/firebase";
 import {
+  markPresenceOffline,
+  startPresenceHeartbeat,
+  stopPresenceHeartbeat,
+} from "../lib/presence";
+import {
   demoLogin as firebaseDemoLogin,
   ensureAimsUserProfile,
   ensureDemoUserProfile,
@@ -210,6 +215,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const mapFirebaseUser = useCallback(
     async (firebaseUser: NonNullable<typeof firebaseAuth>["currentUser"]) => {
       if (!firebaseUser) {
+        // No explicit offline write here: request.auth is already null, so
+        // the owner-only presence rule would reject it. This path (session
+        // expiry, token revoked, ...) relies on the heartbeat going stale.
+        stopPresenceHeartbeat();
         setUser(null);
         setEmailVerified(false);
         setPreferences((current) => ({
@@ -236,6 +245,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return;
       }
       setAccessDenied(false);
+      startPresenceHeartbeat(firebaseUser.uid);
       const canProvision =
         demoUser || !isVerificationRequired() || firebaseUser.emailVerified;
       const profile = demoUser
@@ -407,6 +417,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
           localStorage.setItem("kcs-auth", "out");
           return;
         }
+        // Mark presence offline while still authenticated — the security
+        // rule is owner-write-only, so this must happen before sign-out.
+        const uid = firebaseAuth?.currentUser?.uid;
+        if (uid) await markPresenceOffline(uid);
         await firebaseLogout();
       },
       refreshUser: async () => {
