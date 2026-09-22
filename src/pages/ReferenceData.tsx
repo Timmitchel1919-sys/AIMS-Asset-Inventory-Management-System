@@ -234,7 +234,6 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     [deptFilterDialog, setDeptFilterDialog] = useState(false),
     [deptSort, setDeptSort] = useState("name-asc"),
     [deptManagerFilter, setDeptManagerFilter] = useState("all"),
-    [deptLocationFilter, setDeptLocationFilter] = useState("all"),
     [selectedParentId, setSelectedParentId] = useState(
       initialRecord?.parentLocationId || initialRecord?.parentId || "",
     ),
@@ -694,7 +693,12 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     kind === "location"
       ? locationColumns
       : kind === "department"
-        ? [...legacyColumns, departmentOverviewColumn]
+        ? // The Locations module was removed; departments no longer show a
+          // main-location column in this table.
+          [
+            ...legacyColumns.filter((column) => column.id !== "parent"),
+            departmentOverviewColumn,
+          ]
         : legacyColumns;
   const displayRows = rows
     .filter(
@@ -723,20 +727,11 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         return itemManager === deptManagerFilter;
       }
       return true;
-    })
-    .filter((item) => {
-      if (kind !== "department" || deptLocationFilter === "all") return true;
-      return (
-        item.mainLocationId === deptLocationFilter ||
-        item.parentLocationId === deptLocationFilter ||
-        item.containerLocationId === deptLocationFilter
-      );
     });
 
   // Live active/inactive asset counts for the departments currently in
-  // view (respects the location/manager filters above), shown next to the
-  // total-records count so picking a location immediately answers "how many
-  // assets are active there".
+  // view (respects the manager filter above), shown next to the
+  // total-records count.
   const departmentAssetCounts =
     kind === "department"
       ? displayRows.reduce(
@@ -1557,43 +1552,6 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                   ))}
                 </select>
               </label>
-              <label>
-                <span>{nl ? "Locatie" : "Location"}</span>
-                <select
-                  value={deptLocationFilter}
-                  onChange={(e) => setDeptLocationFilter(e.target.value)}
-                >
-                  <option value="all">{nl ? "Alle locaties" : "All locations"}</option>
-                  <optgroup label={nl ? "Hoofdlocaties" : "Main locations"}>
-                    {snapshot.references
-                      .filter(
-                        (item) =>
-                          item.kind === "location" &&
-                          item.type === "Main location",
-                      )
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.name}
-                        </option>
-                      ))}
-                  </optgroup>
-                  <optgroup label={nl ? "Sub-locaties" : "Sub-locations"}>
-                    {snapshot.references
-                      .filter(
-                        (item) =>
-                          item.kind === "location" &&
-                          item.type !== "Main location",
-                      )
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.name}
-                        </option>
-                      ))}
-                  </optgroup>
-                </select>
-              </label>
             </div>
           </Dialog>
         )}
@@ -1645,5 +1603,4 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
 }
 
 export const CategoriesPage = () => <ReferenceDataPage kind="category" />;
-export const LocationsPage = () => <ReferenceDataPage kind="location" />;
 export const DepartmentsPage = () => <ReferenceDataPage kind="department" />;

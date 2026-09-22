@@ -925,6 +925,13 @@ td small {
 .search svg {
   color: var(--color-text-muted);
 }
+/* Departments toolbar also carries the active/inactive counters and the
+   Filter button, so its search field stays compact instead of stretching. */
+.data-table-departments .search {
+  flex: 0 1 220px;
+  min-width: 160px;
+  max-width: 220px;
+}
 .search input {
   border: 0;
   outline: 0;
