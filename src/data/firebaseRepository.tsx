@@ -16,7 +16,7 @@ import {
   where,
 } from "firebase/firestore";
 import { firebaseAuth, requireFirebase } from "../lib/firebase";
-import { reportWriteError } from "../lib/connectivity";
+import { isConnectivityError, reportWriteError } from "../lib/connectivity";
 import {
   isConnectionRequiredAction,
   OFFLINE_BLOCKED_MESSAGE_EN,
@@ -560,6 +560,11 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
         await this.persistViaBatch(writes);
         return;
       }
+      // Only a real service-unreachable error should turn the header
+      // "Limited" — an expected rejection (permission-denied, a conflict
+      // check throwing above, ...) means the server is reachable and
+      // answered correctly.
+      if (isConnectivityError(error)) reportWriteError(true);
       throw error;
     }
   }
@@ -588,7 +593,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       await batch.commit();
       reportWriteError(false);
     } catch (error) {
-      reportWriteError(true);
+      if (isConnectivityError(error)) reportWriteError(true);
       throw error;
     }
   }

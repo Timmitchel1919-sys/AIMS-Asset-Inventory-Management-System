@@ -48,6 +48,36 @@ export function reportWriteError(failed: boolean) {
   recompute();
 }
 
+// Firestore error codes that indicate the service itself is unreachable or
+// struggling — the only cases that should ever turn the badge "Limited".
+// Codes like permission-denied, not-found or failed-precondition are the
+// server correctly answering a request; they prove connectivity is fine and
+// must never be reported as a connectivity problem.
+const CONNECTIVITY_ERROR_CODES = new Set([
+  "unavailable",
+  "deadline-exceeded",
+  "internal",
+  "resource-exhausted",
+  "unknown",
+  "cancelled",
+  "aborted",
+]);
+
+/** Whether a caught error reflects real service unreachability, as opposed
+ * to an expected rejection (authorization, validation, conflict) from a
+ * server that is clearly reachable and responding. */
+export function isConnectivityError(error: unknown): boolean {
+  const code = String((error as { code?: unknown })?.code || "").replace(
+    "firestore/",
+    "",
+  );
+  if (code) return CONNECTIVITY_ERROR_CODES.has(code);
+  // A plain Error with no Firestore error code (e.g. a thrown business-rule
+  // message such as "This code group already exists.") is an application
+  // decision, not a connectivity failure.
+  return false;
+}
+
 const store = {
   subscribe(l: () => void) {
     listeners.add(l);
