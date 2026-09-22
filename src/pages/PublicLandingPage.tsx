@@ -1,5 +1,5 @@
-import { useState, type ComponentType } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, type ComponentType } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
   ArrowRight,
   BarChart3,
@@ -142,6 +142,13 @@ export default function PublicLandingPage() {
     p = pageCopy(language),
     action = app.user ? "/dashboard" : "/login";
   const [menuOpen, setMenuOpen] = useState(false);
+  const { hash } = useLocation();
+  // In-app links like "/#features" arrive via client routing, which does not
+  // scroll to the anchor on its own.
+  useEffect(() => {
+    if (!hash) return;
+    document.getElementById(hash.slice(1))?.scrollIntoView();
+  }, [hash]);
   const nav = [
     [c.nav.home, "#home"],
     [c.nav.features, "#features"],

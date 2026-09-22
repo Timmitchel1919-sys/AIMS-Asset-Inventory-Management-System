@@ -5,6 +5,10 @@ import {
   Bell,
   Bot,
   Boxes,
+  CircleHelp,
+  Home,
+  ListChecks,
+  Sparkles,
   Building2,
   ChevronLeft,
   ChevronRight,
@@ -434,6 +438,32 @@ export function AppShell({ children }: { children: ReactNode }) {
               </span>
             );
           })}
+        </nav>
+        <nav
+          className="sidebar-public-links"
+          aria-label={app.language === "nl" ? "Website" : "Website"}
+        >
+          {(
+            [
+              [Home, "Home", "/"],
+              [Sparkles, app.language === "nl" ? "Functies" : "Features", "/#features"],
+              [ListChecks, app.language === "nl" ? "Hoe het werkt" : "How it works", "/#workflow"],
+              [Shield, app.language === "nl" ? "Beveiliging" : "Security", "/#security"],
+              [CircleHelp, "Help", "/help"],
+            ] as const
+          ).map(([Icon, label, to]) => (
+            <Link
+              key={label}
+              className="navigation-item"
+              to={to}
+              onClick={() => app.setMobileOpen(false)}
+            >
+              <span className="navigation-item__icon" aria-hidden="true">
+                <Icon />
+              </span>
+              <span className="navigation-item__label">{label}</span>
+            </Link>
+          ))}
         </nav>
         {activeNotchTop !== null && (
           <span
