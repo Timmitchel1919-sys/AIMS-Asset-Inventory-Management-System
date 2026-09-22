@@ -202,7 +202,11 @@ export default function AssetForm() {
         result.message.toLowerCase().includes("serial")
           ? "serialNumber"
           : "root",
-        { message: result.message },
+        {
+          message: result.message.includes("connected to Firebase")
+            ? a("correctionUnavailable")
+            : result.message,
+        },
       );
       return;
     }
@@ -242,28 +246,34 @@ export default function AssetForm() {
             <Card title={a("identity")}>
               <div className="form-grid">
                 {existing ? (
-                  <Field
-                    label={a("officialCode")}
-                    value={existing.code}
-                    readOnly
-                  />
+                  <div className="field-with-hint">
+                    <Field
+                      label={a("officialCode")}
+                      value={existing.code}
+                      readOnly
+                    />
+                    <p className="field-hint">{a("permanentNotice")}</p>
+                  </div>
                 ) : (
-                  <SelectField
-                    label={a("codeGroup")}
-                    required
-                    error={errors.codePrefix?.message}
-                    {...register("codePrefix")}
-                  >
-                    <option value="">Select a code group</option>
-                    {[...snapshot.codeGroups]
-                      .filter((group) => group.isActive)
-                      .sort((a, b) => a.sortOrder - b.sortOrder)
-                      .map((group) => (
-                        <option key={group.id} value={group.prefix}>
-                          {group.name} ({group.prefix})
-                        </option>
-                      ))}
-                  </SelectField>
+                  <div className="field-with-hint">
+                    <SelectField
+                      label={a("codeGroup")}
+                      required
+                      error={errors.codePrefix?.message}
+                      {...register("codePrefix")}
+                    >
+                      <option value="">Select a code group</option>
+                      {[...snapshot.codeGroups]
+                        .filter((group) => group.isActive)
+                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .map((group) => (
+                          <option key={group.id} value={group.prefix}>
+                            {group.name} ({group.prefix})
+                          </option>
+                        ))}
+                    </SelectField>
+                    <p className="field-hint">{a("permanentNotice")}</p>
+                  </div>
                 )}
                 <Field
                   label={a("name")}

@@ -931,11 +931,22 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           const code = `${prefix}-${number < 100 ? String(number).padStart(2, "0") : number}`;
           const serial = String(v.serialNumber || "").trim();
           if (!serial) throw new Error("A serial number is required.");
+          // Inv.codes are permanent: a number that any asset currently holds
+          // OR ever held (previousCodes, from an administrative correction)
+          // can never be assigned to a different asset.
           if (
             this.state.assets.some(
               (asset) =>
                 asset.code === code ||
-                asset.serialNumber.toLowerCase() === serial.toLowerCase(),
+                (asset.previousCodes || []).includes(code),
+            )
+          )
+            throw new Error(
+              "This inventory code has already been used and cannot be reassigned.",
+            );
+          if (
+            this.state.assets.some(
+              (asset) => asset.serialNumber.toLowerCase() === serial.toLowerCase(),
             )
           )
             throw new Error("Asset code and serial number must be unique.");
@@ -1011,10 +1022,16 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             if (
               this.state.assets.some(
                 (asset) =>
-                  asset.id !== a.id && asset.code === normalized.fullAssetCode,
+                  asset.id !== a.id &&
+                  (asset.code === normalized.fullAssetCode ||
+                    (asset.previousCodes || []).includes(
+                      normalized.fullAssetCode,
+                    )),
               )
             )
-              throw new Error("The corrected KCS code already exists.");
+              throw new Error(
+                "This inventory code has already been used and cannot be reassigned.",
+              );
             a.previousCodes = [...(a.previousCodes || []), a.code];
             a.code = normalized.fullAssetCode;
             a.codePrefix = normalized.codePrefix;
@@ -3162,7 +3179,10 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             this.asset(d.assetId).status = "Archived";
           result = {
             ok: true,
-            message: `Disposal ${d.id} changed to ${status}.`,
+            message:
+              status === "Completed"
+                ? "Asset successfully disposed. The inventory code remains permanently reserved for historical records."
+                : `Disposal ${d.id} changed to ${status}.`,
             entityId: d.id,
           };
           break;

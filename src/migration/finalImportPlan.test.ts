@@ -181,4 +181,60 @@ describe("final import plan", () => {
       }).allowed,
     ).toBe(false);
   });
+  it("never lets an import reassign an Inv.code that already belongs to another asset", () => {
+    const { snapshot, dryRun, manifest } = fixture();
+    // KCSDB-15 already exists on a different asset — e.g. a disposed one —
+    // even though it's still the code the import is about to try to reuse.
+    const collidingSnapshot = {
+      ...snapshot,
+      assets: [
+        ...snapshot.assets,
+        {
+          id: "ast-existing-disposed",
+          code: "KCSDB-15",
+          codePrefix: "KCSDB",
+          codeNumber: 15,
+          name: "Old Digibord",
+          category: "DIGIBORD",
+          type: "Device",
+          brand: "",
+          model: "",
+          serialNumber: "OLD-1",
+          location: "ICT Store",
+          department: "ICT",
+          status: "Disposed",
+          condition: "Beyond Repair",
+          purchaseDate: "2020-01-01",
+          warrantyExpiry: "2021-01-01",
+          lastUpdated: "2024-01-01",
+          qr: false,
+        },
+      ],
+    } as typeof snapshot;
+    const plan = buildFinalImportPlan({
+      dryRun,
+      manifest,
+      snapshot: collidingSnapshot,
+      actor: "Admin",
+      importBatchId: "batch",
+      fileFingerprint: "files",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    });
+    expect(
+      plan.writes.some(
+        (w) =>
+          w.collection === "assets" &&
+          (w.data as { code?: string }).code === "KCSDB-15" &&
+          w.documentId !== "ast-existing-disposed",
+      ),
+    ).toBe(false);
+    expect(plan.skips).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          source: "KCSDB-15",
+          reason: expect.stringContaining("al eerder gebruikt"),
+        }),
+      ]),
+    );
+  });
 });

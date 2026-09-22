@@ -14,7 +14,7 @@ const en={
   overview:'Overview',technicalDetails:'Technical details',assignmentHistory:'Assignment history',locationHistory:'Location history',borrowHistory:'Borrow history',
   repairHistory:'Repair history',maintenanceHistory:'Maintenance history',movementHistory:'Movement history',auditHistory:'Audit history',statusHistory:'Status history',
   documents:'Documents',accessories:'Accessories',lifecycle:'Lifecycle and disposal',internalId:'Internal asset ID',createdBy:'Created by',createdDate:'Created date',
-  modifiedBy:'Last modified by',modifiedDate:'Last modified date',edit:'Edit',editAsset:'Edit asset',returnRecord:'Return to asset record',secureQrLabel:'Secure QR label',assign:'Assign',move:'Move',labels:'Labels',archive:'Archive',restore:'Restore',disposal:'Request disposal',history:'History',
+  modifiedBy:'Last modified by',modifiedDate:'Last modified date',edit:'Edit',editAsset:'Edit asset',returnRecord:'Return to asset record',secureQrLabel:'Secure QR label',scanWithAims:'Scan with AIMS',assign:'Assign',move:'Move',labels:'Labels',archive:'Archive',restore:'Restore',disposal:'Request disposal',history:'History',
   noRecords:'No records are available for this section.',historyTitle:'Asset history',eventType:'Event type',dateFrom:'Date from',dateTo:'Date to',user:'User',all:'All',print:'Print',details:'Details',
   assignmentTitle:'Assign asset',person:'Person',assignmentDate:'Assignment date',expectedEnd:'Expected end date',assignedBy:'Assigned by',signature:'Mock signature',assignmentBlocked:'This asset status does not allow assignment.',
   movementTitle:'Move asset',currentLocation:'Current location',destinationLocation:'Destination location',currentDepartment:'Current department',destinationDepartment:'Destination department',
@@ -28,7 +28,9 @@ const en={
   missingRequired:'A required value is missing.',missingRequiredFix:'Provide the required value.',invalidCode:'The KCS code is invalid.',invalidCodeFix:'Use a valid KCS prefix and sequence from 01 to 5000.',
   duplicateCode:'The normalized KCS code already exists.',duplicateCodeFix:'Choose the next unused official sequence.',duplicateSerial:'The serial number already exists.',duplicateSerialFix:'Verify the source record.',
   invalidCategory:'The category is not recognized.',invalidCategoryFix:'Use an active category.',invalidLocation:'The location is not recognized.',invalidLocationFix:'Use an active location.',
-  invalidDepartment:'The department is not recognized.',invalidDepartmentFix:'Use an active department.'
+  invalidDepartment:'The department is not recognized.',invalidDepartmentFix:'Use an active department.',
+  permanentNotice:'Inventory codes are permanent and cannot be reused.',
+  correctionUnavailable:'Inventory-code corrections are not yet available for AIMS accounts connected to Firebase. Contact ICT Support.'
 } as const;
 const nl:Record<keyof typeof en,string>={
   assets:'Middelen',back:'Terug naar middelen',save:'Middel opslaan',saving:'Opslaan…',cancel:'Annuleren',confirm:'Bevestigen',retry:'Opnieuw proberen',
@@ -45,7 +47,7 @@ const nl:Record<keyof typeof en,string>={
   overview:'Overzicht',technicalDetails:'Technische details',assignmentHistory:'Toewijzingshistorie',locationHistory:'Locatiehistorie',borrowHistory:'Uitleenhistorie',
   repairHistory:'Reparatiehistorie',maintenanceHistory:'Onderhoudshistorie',movementHistory:'Mutatiehistorie',auditHistory:'Controlehistorie',statusHistory:'Statushistorie',
   documents:'Documenten',accessories:'Accessoires',lifecycle:'Levenscyclus en afvoer',internalId:'Interne middel-ID',createdBy:'Aangemaakt door',createdDate:'Aanmaakdatum',
-  modifiedBy:'Laatst gewijzigd door',modifiedDate:'Laatste wijziging',edit:'Bewerken',editAsset:'Middel bewerken',returnRecord:'Terug naar middelrecord',secureQrLabel:'Beveiligd QR-label',assign:'Toewijzen',move:'Verplaatsen',labels:'Labels',archive:'Archiveren',restore:'Herstellen',disposal:'Afvoer aanvragen',history:'Historie',
+  modifiedBy:'Laatst gewijzigd door',modifiedDate:'Laatste wijziging',edit:'Bewerken',editAsset:'Middel bewerken',returnRecord:'Terug naar middelrecord',secureQrLabel:'Beveiligd QR-label',scanWithAims:'Scan met AIMS',assign:'Toewijzen',move:'Verplaatsen',labels:'Labels',archive:'Archiveren',restore:'Herstellen',disposal:'Afvoer aanvragen',history:'Historie',
   noRecords:'Voor dit onderdeel zijn geen records beschikbaar.',historyTitle:'Middelhistorie',eventType:'Gebeurtenistype',dateFrom:'Datum vanaf',dateTo:'Datum tot',user:'Gebruiker',all:'Alle',print:'Afdrukken',details:'Details',
   assignmentTitle:'Middel toewijzen',person:'Persoon',assignmentDate:'Toewijzingsdatum',expectedEnd:'Verwachte einddatum',assignedBy:'Toegewezen door',signature:'Mockhandtekening',assignmentBlocked:'Deze middelstatus staat toewijzing niet toe.',
   movementTitle:'Middel verplaatsen',currentLocation:'Huidige locatie',destinationLocation:'Bestemmingslocatie',currentDepartment:'Huidige afdeling',destinationDepartment:'Bestemmingsafdeling',
@@ -59,7 +61,9 @@ const nl:Record<keyof typeof en,string>={
   missingRequired:'Een verplichte waarde ontbreekt.',missingRequiredFix:'Vul de verplichte waarde in.',invalidCode:'De KCS-code is ongeldig.',invalidCodeFix:'Gebruik een geldige KCS-prefix en volgnummer van 01 tot 5000.',
   duplicateCode:'De genormaliseerde KCS-code bestaat al.',duplicateCodeFix:'Kies het volgende ongebruikte officiële volgnummer.',duplicateSerial:'Het serienummer bestaat al.',duplicateSerialFix:'Controleer het bronrecord.',
   invalidCategory:'De categorie wordt niet herkend.',invalidCategoryFix:'Gebruik een actieve categorie.',invalidLocation:'De locatie wordt niet herkend.',invalidLocationFix:'Gebruik een actieve locatie.',
-  invalidDepartment:'De afdeling wordt niet herkend.',invalidDepartmentFix:'Gebruik een actieve afdeling.'
+  invalidDepartment:'De afdeling wordt niet herkend.',invalidDepartmentFix:'Gebruik een actieve afdeling.',
+  permanentNotice:'Inv.code is permanent en kan niet opnieuw worden gebruikt.',
+  correctionUnavailable:'Correcties op de Inv.code zijn nog niet beschikbaar voor AIMS-accounts die met Firebase zijn verbonden. Neem contact op met ICT-ondersteuning.'
 };
 export type AssetCopyKey=keyof typeof en;
 export const assetCopy={en,nl};

@@ -258,12 +258,36 @@ export function buildFinalImportPlan(args: {
         !duplicateIds.has(asset.fingerprint) && asset.status !== "ERROR",
     )
     .forEach((asset) => selected.push(asset));
+  // Permanent Inv.code policy: a code already carried by any asset already
+  // in AIMS — active, borrowed, damaged, archived, disposed, it makes no
+  // difference — can never be assigned to a different asset record. Only
+  // re-writing the SAME asset document (a re-run of this exact import) is
+  // allowed through.
+  const historicalCodes = new Map<string, string>(); // canonical code -> owning asset id
+  args.snapshot.assets.forEach((asset) => {
+    if (asset.code) historicalCodes.set(canonical(asset.code), asset.id);
+    (asset.previousCodes || []).forEach((code) =>
+      historicalCodes.set(canonical(code), asset.id),
+    );
+  });
+  const codeAlreadyUsedByAnother = (code: string, documentId: string) => {
+    const owner = historicalCodes.get(canonical(code));
+    return owner !== undefined && owner !== documentId;
+  };
   const assetsByCode = new Map<string, NormalizedLegacyAsset>();
   selected
     .filter((asset) => asset.code)
     .forEach((asset) => assetsByCode.set(asset.code!, asset));
   const assetDocumentIds = new Map<string, string>();
   assetsByCode.forEach((asset) => {
+    if (codeAlreadyUsedByAnother(asset.code!, asset.id)) {
+      skips.push({
+        reason:
+          "Deze Inv.code is al eerder gebruikt en kan niet opnieuw worden toegewezen.",
+        source: asset.code!,
+      });
+      return;
+    }
     assetDocumentIds.set(canonical(asset.code!), asset.id);
     writes.push(
       write(
@@ -282,6 +306,14 @@ export function buildFinalImportPlan(args: {
     if (!parsed)
       throw new Error(`Nieuwe assetcode is ongeldig: ${asset.assetCode}`);
     const documentId = `legacy-${hash(asset.assetCode)}`;
+    if (codeAlreadyUsedByAnother(asset.assetCode, documentId)) {
+      skips.push({
+        reason:
+          "Deze Inv.code is al eerder gebruikt en kan niet opnieuw worden toegewezen.",
+        source: asset.assetCode,
+      });
+      return;
+    }
     assetDocumentIds.set(canonical(asset.assetCode), documentId);
     writes.push(
       write("assets", "assets", documentId, {

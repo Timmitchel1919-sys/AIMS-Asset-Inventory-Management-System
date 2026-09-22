@@ -34,6 +34,7 @@ import type {
   WorkflowResult,
 } from "./contracts";
 import { WorkflowRepositoryEngine } from "./mockRepository";
+import { allocateAssetCodeNumber } from "../domain/assetCode";
 import { RepositoryProvider } from "./repositoryContext";
 import { useApp } from "../context/AppContext";
 
@@ -351,20 +352,30 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     );
     if (!group) throw new Error(`No active code group exists for ${prefix}.`);
     const requested = Number(command.values?.codeNumber || 0);
-    const number =
-      requested || Math.max(group.minimumNumber, group.nextAvailableNumber);
-    if (
-      number < group.minimumNumber ||
-      number > group.maximumNumber ||
-      number > 5000
-    )
-      throw new Error("The asset-code range has been exhausted.");
+    // Inv.codes are permanent: once assigned, a number is reserved forever,
+    // even after the asset is disposed or archived. allocateAssetCodeNumber
+    // treats every codeNumber ever seen on this prefix — active, borrowed,
+    // repaired, damaged, archived, disposed, it doesn't matter — as
+    // permanently used, so "next available" always means "never used
+    // before," never "the lowest number currently free."
+    const allocation = allocateAssetCodeNumber(
+      group,
+      this.state.assets,
+      prefix,
+      requested || undefined,
+    );
+    if ("error" in allocation)
+      throw new Error(
+        allocation.error === "already-used"
+          ? "This inventory code has already been used and cannot be reassigned."
+          : "The asset-code range has been exhausted.",
+      );
     command.values = {
       ...command.values,
       codePrefix: prefix,
-      codeNumber: number,
+      codeNumber: allocation.number,
     };
-    return { group, number };
+    return { group, number: allocation.number };
   }
 
   private async persist(
@@ -613,6 +624,16 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
         command.actor || this.actorName() || this.actorUid() || "Unknown user",
       actorEmail: command.actorEmail || firebaseAuth?.currentUser?.email || undefined,
     };
+    // Inv.codes are permanently immutable at the database layer (Firestore
+    // rules pin code/codePrefix/codeNumber on every `assets` update), so a
+    // codeCorrection here would always fail with a raw permission-denied.
+    // Fail fast with an honest explanation instead of a confusing write.
+    if (command.action === "asset.edit" && command.values?.codeCorrection)
+      return {
+        ok: false,
+        message:
+          "Inventory-code corrections are not yet available for AIMS accounts connected to Firebase. Contact ICT Support.",
+      };
     const before = structuredClone(this.snapshot());
     try {
       const access = await this.resolveActorAccess();

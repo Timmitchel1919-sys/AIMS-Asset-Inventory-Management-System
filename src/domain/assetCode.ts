@@ -26,3 +26,45 @@ export function compareAssetCodes(left:AssetCodeLike,right:AssetCodeLike,mode:As
  if(mode==='sequence')return a.codeNumber-b.codeNumber||a.codePrefix.localeCompare(b.codePrefix);
  return a.codePrefix.localeCompare(b.codePrefix)||a.codeNumber-b.codeNumber;
 }
+
+/**
+ * Permanent inventory-code allocation for one code group/prefix.
+ *
+ * An Inv.code, once assigned, is reserved forever — disposing, archiving or
+ * otherwise retiring the asset it belongs to never frees the number for
+ * reuse. The next number is always one past the highest number this prefix
+ * has EVER used, not the lowest number that happens to be free right now.
+ *
+ * `nextAvailableNumber` (the code group's own persisted counter) is the
+ * primary source of truth, but this also folds in every codeNumber already
+ * present on `existingAssets` for the same prefix — active, borrowed,
+ * repaired, damaged, archived or disposed, it doesn't matter — as a
+ * self-healing floor. That protects against the counter ever having drifted
+ * behind reality (for example a legacy-imported asset that predates this
+ * counter), without needing a separate migration pass.
+ */
+export function allocateAssetCodeNumber(
+  group: { minimumNumber: number; maximumNumber: number; nextAvailableNumber: number },
+  existingAssets: readonly { codePrefix: string; codeNumber: number }[],
+  prefix: string,
+  requested?: number,
+): { number: number } | { error: "already-used" | "range-exhausted" } {
+  const normalizedPrefix = prefix.toUpperCase();
+  const highestEverUsed = existingAssets.reduce(
+    (max, asset) =>
+      asset.codePrefix.toUpperCase() === normalizedPrefix
+        ? Math.max(max, asset.codeNumber)
+        : max,
+    group.nextAvailableNumber - 1,
+  );
+  const floor = Math.max(group.minimumNumber, highestEverUsed + 1);
+  if (requested) {
+    if (requested < floor) return { error: "already-used" };
+    if (requested < group.minimumNumber || requested > group.maximumNumber)
+      return { error: "range-exhausted" };
+    return { number: requested };
+  }
+  if (floor > group.maximumNumber || floor > 5000)
+    return { error: "range-exhausted" };
+  return { number: floor };
+}

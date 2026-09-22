@@ -102,7 +102,11 @@ export default function Dashboard() {
   const metrics = [
     [
       nl ? "Totaal middelen" : "Total assets",
-      filtered.assets.length,
+      // Disposed/archived assets keep their permanent Inv.code and history,
+      // but must not inflate the active-inventory total.
+      filtered.assets.filter(
+        (asset) => !["Disposed", "Archived"].includes(asset.status),
+      ).length,
       nl ? "Geserialiseerde records" : "Serialized records",
       Boxes,
       "success",

@@ -174,7 +174,12 @@ export default function Disposals() {
     });
     setFeedback({
       status: result.ok ? "success" : "error",
-      message: result.message,
+      message:
+        nl &&
+        result.message ===
+          "Asset successfully disposed. The inventory code remains permanently reserved for historical records."
+          ? "Asset succesvol afgevoerd. De Inv.code blijft permanent gereserveerd voor historische registratie."
+          : result.message,
     });
     if (result.ok) {
       setAction(null);
