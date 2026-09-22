@@ -2297,7 +2297,13 @@ html[data-theme="emerald-gloss"] .aims-step-number { border-color:#f5f7f2; backg
 .aims-public-header .aims-mark{width:72px;height:72px;transform:scale(1.25)}
 .aims-brand b{font-size:1.75rem;font-weight:800;letter-spacing:.16em}
 .aims-brand small{font-size:.74rem}
+/* Desktop-only: unguarded before, these `left`/`transform` tweaks came
+   after the @media(max-width:860px) mobile reset in source order and so
+   overrode it everywhere (media queries don't add specificity), shifting
+   the mobile drawer's nav links off to the side on top of the hero text. */
+@media(min-width:861px){
 .aims-primary-navigation{left:48%;gap:30px}
+}
 .aims-primary-navigation>a{font-size:.87rem}
 .aims-header-actions{width:420px;gap:16px}
 .aims-header-actions>.aims-glossy-button{white-space:nowrap}
@@ -2523,7 +2529,9 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
 .aims-public-header .brand-wordmark__a path{stroke-width:8}
 .aims-public-header .brand-wordmark__subtitle{font-weight:700}
 .aims-public-header .brand-wordmark--header .brand-wordmark__subtitle{transform:translateX(-8px)}
+@media(min-width:861px){
 .aims-primary-navigation{left:44%;transform:translateX(-50%) translateX(2.5rem)}
+}
 .aims-public-header .aims-language{height:46px;min-height:46px;padding:4px 8px 4px 1px;gap:1px;border-radius:11px}
 .aims-public-header .aims-language svg{width:13px;height:13px}
 .aims-public-header .aims-language select{min-height:36px;padding:2px 16px 2px 0;font-size:.72rem}
