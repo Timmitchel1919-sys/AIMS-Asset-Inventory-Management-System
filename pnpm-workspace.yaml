@@ -1,4 +1,13 @@
 allowBuilds:
-  '@firebase/util': set this to true or false
+  '@firebase/util': true
   esbuild: true
-  protobufjs: set this to true or false
+  protobufjs: true
+
+supportedArchitectures:
+  os:
+    - linux
+    - win32
+  cpu:
+    - x64
+  libc:
+    - glibc

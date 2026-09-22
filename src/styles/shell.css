@@ -264,7 +264,18 @@ html[data-theme="kcs-azure-intelligence"]{--global-search-surface:#fff;--global-
   color:#b90f17;
   background:transparent;
 }
-.profile-menu .account-signout svg{color:currentColor}
+/* .profile-menu button svg:last-child sets margin-left:auto to push a
+   chevron to the right; account-signout has only the leading icon, which
+   that rule also matches (it is both first- and last-child), so undo it
+   here to keep the icon and label pinned to the left. */
+.profile-menu .account-signout svg:last-child{width:18px;margin-left:0;color:currentColor}
+.profile-menu .account-signout{width:100%;color:var(--color-danger,#d71920)}
+
+/* Website links appear only in the mobile hamburger drawer. */
+.sidebar-public-links{display:none}
+@media(max-width:780px){
+  .sidebar-public-links{display:block;margin-top:8px;padding-top:8px;border-top:1px solid var(--color-sidebar-border,var(--color-border-subtle))}
+}
 
 /* Collapsed desktop logo follows the same centered 48px rail as module icons. */
 @media(min-width:781px){
