@@ -199,7 +199,7 @@ const copy = {
   },
 } as const;
 export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
-  const { language, user } = useApp(),
+  const { language, user, formatDateTime } = useApp(),
     nl = language === "nl",
     repository = useRepository(),
     snapshot = useMockSnapshot(),
@@ -1032,6 +1032,24 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
           description={record ? record.name : labels[1]}
           onClose={() => setDialog(false)}
         >
+          {record && (
+            <p className="record-audit">
+              <small>
+                {nl ? "Toegevoegd" : "Added"}:{" "}
+                {record.createdBy || "—"} ·{" "}
+                {record.createdAt ? formatDateTime(record.createdAt) : "—"}
+                {record.status === "Archived" && record.archivedBy
+                  ? ` · ${nl ? "Verwijderd" : "Deleted"}: ${
+                      record.archivedBy
+                    } · ${formatDateTime(record.archivedAt || record.updatedAt || "")}`
+                  : record.updatedBy
+                    ? ` · ${nl ? "Gewijzigd" : "Updated"}: ${
+                        record.updatedBy
+                      } · ${formatDateTime(record.updatedAt || "")}`
+                    : ""}
+              </small>
+            </p>
+          )}
           {kind === "location" && record && (
             <div className="location-detail-summary">
               <div>

@@ -114,28 +114,25 @@ describe("workflow authorization", () => {
     ).toBe(false);
   });
 
-  it("restricts master data deletion to the designated managers", () => {
+  it("lets any authorized AIMS user delete master data", () => {
     const deleteCodeGroup = { action: "codeGroup.delete" as const };
     expect(
-      isCommandAllowed(deleteCodeGroup, [], [], {
-        role: "administrator",
+      isCommandAllowed(deleteCodeGroup, ["dashboard.view"], [], {
+        role: "warehouse-staff",
+      }),
+    ).toBe(true);
+    expect(
+      isCommandAllowed(deleteCodeGroup, ["dashboard.view"], [], {
         email: "normal@kangoeroeschool.com",
       }),
-    ).toBe(false);
-    expect(
-      isCommandAllowed(deleteCodeGroup, [], [], {
-        email: "aliendas@kangoeroeschool.com",
-      }),
     ).toBe(true);
     expect(
-      isCommandAllowed(deleteCodeGroup, [], [], {
-        email: "Manager-ICT@kangoeroeschool.com",
-      }),
-    ).toBe(true);
-    expect(
-      isCommandAllowed({ action: "reference.delete" }, [], [], {
-        email: "sastropawiroe@kangoeroeschool.com",
-      }),
+      isCommandAllowed(
+        { action: "reference.delete", values: { kind: "location" } },
+        ["dashboard.view"],
+        [],
+        { role: "warehouse-staff" },
+      ),
     ).toBe(true);
     expect(isCommandAllowed({ action: "reference.delete" }, [], [], {})).toBe(
       false,

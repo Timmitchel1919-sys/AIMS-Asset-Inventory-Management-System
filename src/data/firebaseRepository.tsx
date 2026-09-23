@@ -147,6 +147,22 @@ function deserialize(value: unknown): unknown {
 const changed = (before: unknown, after: unknown) =>
   JSON.stringify(before) !== JSON.stringify(after);
 
+function withMasterDataAudit(
+  data: DocumentData,
+  exists: boolean,
+  actorName?: string,
+) {
+  if (!actorName) return data;
+  if (
+    typeof data.archivedAt === "string" ||
+    typeof data.archivedAt === "number"
+  )
+    data.archivedAt = serverTimestamp();
+  data.updatedBy = actorName;
+  if (!exists) data.createdBy = actorName;
+  return data;
+}
+
 function writeData(
   item: {
     id?: string;
@@ -387,6 +403,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     assetCode?: { groupId: string; code: string },
   ) {
     const actorUid = this.actorUid();
+    const actorName = this.actorName() || actorUid;
     const writes: Array<{
       collection: string;
       id: string;
@@ -410,7 +427,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
         collection: name,
         id: item.id,
         old,
-        data: writeData(item, Boolean(old), actorUid),
+        data: withMasterDataAudit(writeData(item, Boolean(old), actorUid), Boolean(old), actorName),
       });
     }
     for (const [id, item] of oldReferences) {
@@ -432,6 +449,8 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
         const old = oldItems.get(item.id);
         if (!changed(old, item)) continue;
         const data = writeData(item, Boolean(old), actorUid);
+        if (key === "codeGroups")
+          withMasterDataAudit(data, Boolean(old), actorName);
         const oldAsset = old as { qrToken?: string } | undefined;
         const itemAsset = item as { qrToken?: string };
         if (key === "assets" && oldAsset?.qrToken && !itemAsset.qrToken) {
@@ -458,9 +477,9 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
             data: {
               isArchived: true,
               archivedAt: serverTimestamp(),
-              archivedBy: actorUid,
+              archivedBy: actorName,
               updatedAt: serverTimestamp(),
-              updatedBy: actorUid,
+              updatedBy: actorName,
             },
           });
         }

@@ -1,7 +1,6 @@
 import type { WorkflowAction, WorkflowCommand } from "../data/contracts";
 import type { Role } from "../domain/types";
 import {
-  canDeleteMasterData,
   isAuthorizedAimsUser,
   type Permission,
 } from "./permissions";
@@ -241,7 +240,8 @@ export function isCommandAllowed(
 ) {
   if (isMasterDataMutation(command))
     return isAuthorizedAimsUser(actor.role, granted);
-  if (isMasterDataDelete(command)) return canDeleteMasterData(actor.email);
+  if (isMasterDataDelete(command))
+    return isAuthorizedAimsUser(actor.role, granted);
 
   const permission = requiredPermission(command);
   return granted.includes(permission) && !denied.includes(permission);

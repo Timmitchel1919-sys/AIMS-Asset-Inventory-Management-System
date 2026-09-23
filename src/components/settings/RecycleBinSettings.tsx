@@ -2,6 +2,7 @@ import { History, RotateCcw, ShieldCheck, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Badge, Button } from "../ui";
 import { ConfirmDialog, MutationFeedback } from "../WorkflowUi";
+import { useApp } from "../../context/AppContext";
 import { useMockSnapshot, useRepository } from "../../data/repositoryContext";
 
 type BinItem = {
@@ -12,13 +13,21 @@ type BinItem = {
   refKind?: "category" | "location" | "department";
 };
 export function RecycleBinSettings() {
-  const repository = useRepository(),
+  const { formatDateTime, language } = useApp(),
+    nl = language === "nl",
+    repository = useRepository(),
     snapshot = useMockSnapshot();
   const [purging, setPurging] = useState<BinItem | null>(null),
     [feedback, setFeedback] = useState({
       status: "idle" as "idle" | "success" | "error",
       message: "",
     });
+  const auditDetail = (base: string, by?: string, at?: string | number | Date) =>
+    by
+      ? `${base} · ${nl ? "Verwijderd" : "Deleted"}: ${by} · ${
+          at ? formatDateTime(at) : "—"
+        }`
+      : base;
   const items: BinItem[] = [
     ...snapshot.assets
       .filter((x) => x.status === "Archived")
@@ -26,7 +35,11 @@ export function RecycleBinSettings() {
         id: x.id,
         name: x.name,
         kind: "asset" as const,
-        detail: x.code,
+        detail: auditDetail(
+          x.code,
+          (x as { archivedBy?: string }).archivedBy,
+          (x as { archivedAt?: string }).archivedAt,
+        ),
       })),
     ...snapshot.inventory
       .filter((x) => x.archived)
@@ -34,7 +47,7 @@ export function RecycleBinSettings() {
         id: x.id,
         name: x.name,
         kind: "inventory" as const,
-        detail: x.code,
+        detail: auditDetail(x.code, (x as { archivedBy?: string }).archivedBy, (x as { archivedAt?: string }).archivedAt),
       })),
     ...snapshot.references
       .filter((x) => x.status === "Archived")
@@ -42,7 +55,11 @@ export function RecycleBinSettings() {
         id: x.id,
         name: x.name,
         kind: "reference" as const,
-        detail: x.kind === "location" ? "Locatie" : x.kind,
+        detail: auditDetail(
+          x.kind === "location" ? "Locatie" : x.kind,
+          x.archivedBy,
+          x.archivedAt || "",
+        ),
         refKind: x.kind,
       })),
     ...snapshot.codeGroups
@@ -51,7 +68,11 @@ export function RecycleBinSettings() {
         id: x.id,
         name: x.name,
         kind: "codeGroup" as const,
-        detail: `Codegroep ${x.prefix}${x.deletionReason ? ` · ${x.deletionReason}` : ""}`,
+        detail: auditDetail(
+          `Codegroep ${x.prefix}${x.deletionReason ? ` · ${x.deletionReason}` : ""}`,
+          x.archivedBy,
+          x.archivedAt || "",
+        ),
       })),
   ];
   async function restore(item: BinItem) {

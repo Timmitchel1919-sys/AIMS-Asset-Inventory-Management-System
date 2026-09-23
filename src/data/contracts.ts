@@ -256,6 +256,11 @@ export interface ReferenceRecord {
   updatedAt?: string;
   createdBy?: string;
   updatedBy?: string;
+  archivedAt?: string;
+  archivedBy?: string;
+  restoredAt?: string;
+  restoredBy?: string;
+  deletionReason?: string;
 }
 export interface LocationType {
   id: string;
@@ -279,7 +284,11 @@ export interface CodeGroup {
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
+  createdBy?: string;
+  updatedBy?: string;
   archived?: boolean;
+  archivedAt?: string;
+  archivedBy?: string;
   deletionReason?: string;
 }
 export interface SystemUser {

@@ -17,7 +17,7 @@ export function CodeGroupForm({
   onCancel: () => void;
   group?: CodeGroup | null;
 }) {
-  const { language } = useApp();
+  const { language, formatDateTime } = useApp();
   const nl = language === "nl";
   const repository = useRepository();
   const snapshot = useMockSnapshot();
@@ -144,6 +144,24 @@ export function CodeGroupForm({
           </div>
         </div>
       </div>
+
+      {group && (
+        <p className="record-audit" style={{ marginTop: "1rem" }}>
+          <small>
+            {nl ? "Toegevoegd" : "Added"}: {group.createdBy || "—"} ·{" "}
+            {group.createdAt ? formatDateTime(group.createdAt) : "—"}
+            {group.archivedBy
+              ? ` · ${nl ? "Verwijderd" : "Deleted"}: ${
+                  group.archivedBy
+                } · ${formatDateTime(group.archivedAt || group.updatedAt)}`
+              : group.updatedBy
+                ? ` · ${nl ? "Gewijzigd" : "Updated"}: ${
+                    group.updatedBy
+                  } · ${formatDateTime(group.updatedAt)}`
+                : ""}
+          </small>
+        </p>
+      )}
 
       <div className="wide">
         <MutationFeedback {...feedback} />

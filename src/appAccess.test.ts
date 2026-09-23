@@ -1,6 +1,6 @@
 import {readFileSync} from 'node:fs';
 import {describe,expect,it} from 'vitest';
-import {can} from './auth/permissions';
+import {can, rolePermissions} from './auth/permissions';
 import {appDownloadConfig} from './config/appDownload.config';
 import {routeManifest} from './routes/manifest';
 
@@ -48,6 +48,36 @@ describe('app download and admin access integration',()=>{
     expect(rules).toContain('request.auth.token.email_verified == true');
     expect(rules).toContain("match /users/{uid}");
     expect(rules).toContain("match /{document=**} { allow read, write: if false; }");
+  });
+
+  it('keeps the provisioned default grant in sync with the fallback role', () => {
+    const source = readFileSync('functions/accessDefaults.js', 'utf8');
+    const match = source.match(
+      /DEFAULT_ACCESS_PERMISSIONS = \[([\s\S]*?)\];/,
+    );
+    expect(match).toBeTruthy();
+    const provisioned = match![1]
+      .match(/"[^"]+"/g)
+      ?.map((value) => value.slice(1, -1)) ?? [];
+    expect([...provisioned].sort()).toEqual(
+      [...rolePermissions['warehouse-staff']].sort(),
+    );
+  });
+
+  it('grants every fallback-role user add/delete across module data', () => {
+    const staff = rolePermissions['warehouse-staff'];
+    expect(staff).toContain('assets.create');
+    expect(staff).toContain('assets.archive');
+    expect(staff).toContain('inventory.create');
+    expect(staff).toContain('inventory.edit');
+    expect(staff).toContain('borrows.create');
+    expect(staff).toContain('maintenance.create');
+    expect(staff).toContain('repairs.create');
+    expect(staff).not.toContain('admin.access');
+    expect(staff).not.toContain('users.manage');
+    expect(staff).not.toContain('roles.manage');
+    expect(staff).not.toContain('settings.manage');
+    expect(staff.length).toBeLessThanOrEqual(200);
   });
 
   it('uses Firebase anonymous authentication for one-click demo access',()=>{

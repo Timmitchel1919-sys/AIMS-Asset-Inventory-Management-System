@@ -3262,6 +3262,14 @@ html .system-information {
 .location-type-list code {
   margin-left: 5px;
 }
+.record-audit {
+  margin: 0 0 8px;
+  color: var(--color-text-muted);
+  font-size: 0.85em;
+}
+.record-audit + .location-detail-summary {
+  margin-top: 4px;
+}
 .location-type-order {
   display: grid;
   place-items: center;

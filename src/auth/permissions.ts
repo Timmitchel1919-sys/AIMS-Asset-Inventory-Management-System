@@ -388,29 +388,23 @@ export const rolePermissions: Record<Role, Permission[]> = {
       ].includes(p) && !p.startsWith("admin."),
   ),
   "ict-staff": all.filter((p) => p !== "inventory.import"),
-  "warehouse-staff": [
-    "dashboard.view",
-    "assets.view",
-    "inventory.view",
-    "inventory.manage",
-    "inventory.create",
-    "inventory.edit",
-    "inventory.receive",
-    "inventory.issue",
-    "inventory.transfer",
-    "inventory.return",
-    "inventory.reserve",
-    "inventory.export",
-    "inventory.movements.view",
-    "assignments.manage",
-    "borrow.manage",
-    "movements.manage",
-    "audits.view",
-    "audits.perform",
-    "notifications.view",
-    "disposals.view",
-    "disposals.request",
-  ],
+  // Default role for a newly registered, verified school account. Every
+  // registered user may add and delete data across all modules, so this role
+  // mirrors the full permission set minus only administration/legal/import
+  // boundaries. Keep in sync with DEFAULT_ACCESS_PERMISSIONS in
+  // functions/accessDefaults.js.
+  "warehouse-staff": all.filter(
+    (p) =>
+      !p.startsWith("admin.") &&
+      !p.startsWith("legal.") &&
+      ![
+        "users.manage",
+        "roles.manage",
+        "settings.manage",
+        "assets.import",
+        "inventory.import",
+      ].includes(p),
+  ),
   management: [
     "dashboard.view",
     "assets.view",
@@ -437,17 +431,7 @@ export const rolePermissions: Record<Role, Permission[]> = {
 export const can = (role: Role | undefined, permission?: Permission) =>
   !permission || (!!role && rolePermissions[role].includes(permission));
 
-// Must stay in sync with `isMasterDataDeleteManager` in firestore.rules and
-// with the reference.delete manager list in src/data/mockRepository.tsx.
-export const APPROVED_MASTER_DATA_MANAGERS = [
-  "sastropawiroe@kangoeroeschool.com",
-  "aliendas@kangoeroeschool.com",
-  "manager-ict@kangoeroeschool.com",
-  "sanoesij@kangoeroeschool.com",
-  "despercev@kangoeroeschool.com",
-  "macleanj@kangoeroeschool.com",
-];
-
+// Must stay in sync with `rolePermissions['warehouse-staff']` below.
 export const isAuthorizedAimsUser = (
   role: Role | undefined,
   granted: readonly string[],
@@ -458,10 +442,5 @@ export const canManageMasterData = (
   granted: readonly string[],
 ) => {
   return isAuthorizedAimsUser(role, granted);
-};
-
-export const canDeleteMasterData = (email: string | null | undefined) => {
-  if (!email) return false;
-  return APPROVED_MASTER_DATA_MANAGERS.includes(email.toLowerCase());
 };
 

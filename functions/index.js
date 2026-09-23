@@ -61,8 +61,10 @@ function isAdmin(request) {
  * Firestore Rules would deny every operational read/write. This trusted
  * function creates the first `accessAssignments/{uid}` document with the
  * default role, matching the application's fallback role. It is idempotent and
- * never overwrites an assignment that already exists (for example one an
- * administrator customized or suspended).
+ * never overwrites an administrator-customized or suspended assignment. An
+ * untouched "pristine" assignment (default role, no denials, all-records, no
+ * scope restrictions) is refreshed to the latest default permission set so
+ * baseline rights follow product updates automatically.
  */
 export const provisionUserAccess = onCall(
   { region: "southamerica-east1", timeoutSeconds: 60, memory: "256MiB" },
@@ -83,6 +85,27 @@ export const provisionUserAccess = onCall(
         const data = existing.data();
         if (data?.active === false)
           return { ok: true, active: false, reason: "suspended" };
+        const isPristine =
+          data?.role === DEFAULT_ACCESS_ROLE &&
+          Array.isArray(data?.denials) &&
+          data.denials.length === 0 &&
+          data?.allRecords === true &&
+          Array.isArray(data?.departmentIds) &&
+          data.departmentIds.length === 0 &&
+          Array.isArray(data?.locationIds) &&
+          data.locationIds.length === 0;
+        const permissionsMatch =
+          Array.isArray(data?.permissions) &&
+          data.permissions.length === DEFAULT_ACCESS_PERMISSIONS.length &&
+          data.permissions.every((p, i) => p === DEFAULT_ACCESS_PERMISSIONS[i]);
+        if (isPristine && !permissionsMatch) {
+          await ref.update({
+            permissions: DEFAULT_ACCESS_PERMISSIONS,
+            updatedAt: FieldValue.serverTimestamp(),
+            updatedBy: uid,
+          });
+          return { ok: true, active: true, reason: "upgraded" };
+        }
         return { ok: true, active: true, reason: "existing" };
       }
       await ref.create({

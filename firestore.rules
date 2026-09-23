@@ -44,19 +44,9 @@ service cloud.firestore {
           || hasAccessAssignment()
         );
     }
-    // Only the three approved Master Data managers may delete Master Data.
-    function isMasterDataDeleteManager() {
-      return isVerified()
-        && request.auth.token.email is string
-        && request.auth.token.email.lower() in [
-          'sastropawiroe@kangoeroeschool.com',
-          'aliendas@kangoeroeschool.com',
-          'manager-ict@kangoeroeschool.com',
-          'sanoesij@kangoeroeschool.com',
-          'despercev@kangoeroeschool.com',
-          'macleanj@kangoeroeschool.com'
-        ];
-    }
+    // Every authorized AIMS user may add and delete Master Data. Deletion is
+    // still business-safe client-side (records move to the recycle bin first;
+    // permanent delete requires resolving active related data).
     function isExplicitlyDenied(value) {
       return (('denials' in request.auth.token) && request.auth.token.denials is list && value in request.auth.token.denials)
         || (hasAccessAssignment()
@@ -459,7 +449,7 @@ service cloud.firestore {
         ])
         && data.uid == uid
         && data.role is string && data.role.size() > 0 && data.role.size() <= 80
-        && data.permissions is list && data.permissions.size() <= 160
+        && data.permissions is list && data.permissions.size() <= 200
         && data.denials is list && data.denials.size() <= 160
         && data.active is bool && data.allRecords is bool
         && data.departmentIds is list && data.departmentIds.size() <= 50
@@ -623,9 +613,8 @@ service cloud.firestore {
       allow create: if isAuthorizedAimsUser() && validCodeGroup(request.resource.data);
       allow update: if isAuthorizedAimsUser()
         && validCodeGroup(request.resource.data)
-        && immutableAuditFields()
-        && (!request.resource.data.keys().hasAny(['archived', 'deletionReason']) || isMasterDataDeleteManager());
-      allow delete: if isMasterDataDeleteManager();
+        && immutableAuditFields();
+      allow delete: if isAuthorizedAimsUser();
     }
     match /assetCodes/{code} {
       allow read: if hasAnyPermission(['assets.view','assets.create']);
@@ -751,7 +740,7 @@ service cloud.firestore {
         && validOperationalRecord(request.resource.data) && immutableAuditFields();
       allow delete: if isOperationalCollection(collectionName)
         && collectionName in ['locations','departments']
-        && isMasterDataDeleteManager();
+        && isAuthorizedAimsUser();
     }
 
     match /{document=**} { allow read, write: if false; }

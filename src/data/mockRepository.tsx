@@ -3601,21 +3601,6 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           )
             throw new Error("Resolve active related records before archiving.");
           if (command.action === "reference.delete") {
-            const isManager =
-              command.actorEmail &&
-              [
-                "sastropawiroe@kangoeroeschool.com",
-                "aliendas@kangoeroeschool.com",
-                "manager-ict@kangoeroeschool.com",
-                "sanoesij@kangoeroeschool.com",
-                "despercev@kangoeroeschool.com",
-                "macleanj@kangoeroeschool.com",
-              ].includes(command.actorEmail.toLowerCase());
-            
-            if (!isManager) {
-              throw new Error("Je hebt geen toestemming om deze locatie permanent te verwijderen.");
-            }
-
             this.state.references = this.state.references.filter(
               (item) => item.id !== record.id,
             );
@@ -3626,8 +3611,23 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             };
             break;
           }
+          if (command.action === "reference.archive") {
+            record.archivedAt = now();
+            record.archivedBy = command.actor || "Naomi Williams";
+            record.deletionReason = String(v.reason || "").trim() || undefined;
+            record.restoredAt = undefined;
+            record.restoredBy = undefined;
+          } else {
+            record.archivedAt = undefined;
+            record.archivedBy = undefined;
+            record.deletionReason = undefined;
+            record.restoredAt = now();
+            record.restoredBy = command.actor || "Naomi Williams";
+          }
           record.status =
             command.action === "reference.archive" ? "Archived" : "Active";
+          record.updatedAt = now();
+          record.updatedBy = command.actor || "Naomi Williams";
           result = {
             ok: true,
             message: `${record.name} was ${record.status.toLowerCase()}.`,
@@ -3777,6 +3777,8 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             sortOrder: this.state.codeGroups.length + 1,
             createdAt: now(),
             updatedAt: now(),
+            createdBy: command.actor || "Naomi Williams",
+            updatedBy: command.actor || "Naomi Williams",
           };
           this.state.codeGroups = [...this.state.codeGroups, group];
           result = {
@@ -3820,6 +3822,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             maximumNumber,
             nextAvailableNumber,
             updatedAt: now(),
+            updatedBy: command.actor || "Naomi Williams",
           });
           result = {
             ok: true,
@@ -3833,6 +3836,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           const group = this.codeGroup(command.entityId);
           group.isActive = command.action === "codeGroup.activate";
           group.updatedAt = now();
+          group.updatedBy = command.actor || "Naomi Williams";
           result = {
             ok: true,
             message: `${group.name} was ${group.isActive ? "activated" : "deactivated"}.`,
@@ -3855,6 +3859,8 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             ];
             group.updatedAt = now();
             swap.updatedAt = now();
+            group.updatedBy = command.actor || "Naomi Williams";
+            swap.updatedBy = command.actor || "Naomi Williams";
           }
           result = {
             ok: true,
@@ -3874,7 +3880,10 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           group.archived = true;
           group.isActive = false;
           group.deletionReason = String(v.reason || "").trim();
+          group.archivedAt = now();
+          group.archivedBy = command.actor || "Naomi Williams";
           group.updatedAt = now();
+          group.updatedBy = command.actor || "Naomi Williams";
           result = {
             ok: true,
             message: `${group.name} was moved to the recycle bin.`,
@@ -3887,7 +3896,10 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           group.archived = false;
           group.isActive = true;
           group.deletionReason = undefined;
+          group.archivedAt = undefined;
+          group.archivedBy = undefined;
           group.updatedAt = now();
+          group.updatedBy = command.actor || "Naomi Williams";
           result = {
             ok: true,
             message: `${group.name} was restored.`,

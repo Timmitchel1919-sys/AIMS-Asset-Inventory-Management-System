@@ -14,7 +14,9 @@ type Feedback = {
 };
 
 function MainLocationsSettings() {
-  const repository = useRepository(),
+  const { formatDateTime, language } = useApp(),
+    nl = language === "nl",
+    repository = useRepository(),
     snapshot = useMockSnapshot();
   const [adding, setAdding] = useState(false),
     [editing, setEditing] = useState<ReferenceRecord | null>(null),
@@ -131,6 +133,18 @@ function MainLocationsSettings() {
               <small>
                 Locatiecode <code>{String(location.details.prefix || "—")}</code> · Locaties {directChildrenCount(location)} · Assets {directAssetsCount(location)}
               </small>
+              <small className="record-audit">
+                {nl ? "Toegevoegd" : "Added"}:{" "}
+                {location.createdBy || "—"} ·{" "}
+                {location.createdAt
+                  ? formatDateTime(location.createdAt)
+                  : "—"}
+                {location.updatedBy
+                  ? ` · ${nl ? "Gewijzigd" : "Updated"}: ${
+                      location.updatedBy
+                    } · ${formatDateTime(location.updatedAt || "")}`
+                  : ""}
+              </small>
             </div>
             <Badge tone={location.status === "Active" ? "success" : "neutral"}>
               {location.status === "Active" ? "Actief" : "Inactief"}
@@ -229,7 +243,9 @@ function MainLocationsSettings() {
 }
 
 function CodeGroupsSettings() {
-  const repository = useRepository(),
+  const { formatDateTime, language } = useApp(),
+    nl = language === "nl",
+    repository = useRepository(),
     snapshot = useMockSnapshot();
   const [adding, setAdding] = useState(false),
     [editing, setEditing] = useState<CodeGroup | null>(null),
@@ -367,6 +383,15 @@ function CodeGroupsSettings() {
               </strong>
               <small>
                 Volgende {group.prefix}{group.nextAvailableNumber}
+              </small>
+              <small className="record-audit">
+                {nl ? "Toegevoegd" : "Added"}: {group.createdBy || "—"} ·{" "}
+                {group.createdAt ? formatDateTime(group.createdAt) : "—"}
+                {group.updatedBy
+                  ? ` · ${nl ? "Gewijzigd" : "Updated"}: ${
+                      group.updatedBy
+                    } · ${formatDateTime(group.updatedAt)}`
+                  : ""}
               </small>
             </div>
             <Badge tone={group.isActive ? "success" : "neutral"}>
