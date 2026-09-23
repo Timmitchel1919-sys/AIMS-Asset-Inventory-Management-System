@@ -600,9 +600,15 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     },
     {
       id: "type",
-      label: "Type",
-      render: (item) => item.type,
-      text: (item) => item.type,
+      label: kind === "department" ? (nl ? "Locatie" : "Location") : "Type",
+      render: (item) =>
+        kind === "department"
+          ? resolveMain(item)?.name || item.parent || "—"
+          : item.type,
+      text: (item) =>
+        kind === "department"
+          ? resolveMain(item)?.name || item.parent || ""
+          : item.type,
       sortable: true,
     },
     {
