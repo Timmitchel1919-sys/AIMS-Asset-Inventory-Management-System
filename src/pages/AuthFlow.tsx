@@ -6,7 +6,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { safeTargetFromState, type ReturnPathParts } from "../lib/navigation";
 import { Button, Card } from "../components/ui";
 import { AccountBackButton, PageHeader } from "../components/WorkflowUi";
 import {
@@ -23,11 +24,12 @@ import {
   KCS_ICT_SUPPORT_LINE,
 } from "../config/ictSupport";
 import { legalConfig } from "../config/legal";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export function VerifyEmailPage() {
   const app = useApp(),
     navigate = useNavigate(),
+    location = useLocation(),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
     [remaining, setRemaining] = useState(0);
@@ -45,7 +47,8 @@ export function VerifyEmailPage() {
     try {
       if (await refreshVerification()) {
         await app.refreshUser();
-        navigate("/dashboard", { replace: true });
+        const from = (location.state as { from?: ReturnPathParts } | null)?.from;
+        navigate(safeTargetFromState(from) || "/dashboard", { replace: true });
       } else
         setMessage(
           "Your email is not verified yet. Open the verification link, then check again.",

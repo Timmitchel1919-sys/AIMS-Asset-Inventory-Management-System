@@ -103,6 +103,21 @@ export interface Asset {
     migrationVersion: string;
   };
   qr: boolean;
+  qrToken?: string;
+  qrUpdatedAt?: string;
+}
+export type QrIdentityStatus = "ACTIVE" | "REVOKED";
+export type QrIdentitySource = "created" | "backfilled" | "rotated";
+export interface QrIdentity {
+  id: string;
+  assetId: string;
+  status: QrIdentityStatus;
+  source: QrIdentitySource;
+  createdAt?: string;
+  createdBy?: string;
+  revokedAt?: string;
+  revokedBy?: string;
+  replacedByToken?: string;
 }
 export interface Movement {
   id: string;

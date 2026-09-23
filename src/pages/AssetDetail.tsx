@@ -31,7 +31,7 @@ import { AssetStatusBadge } from "../components/AssetStatusBadge";
 import { ConditionBadge } from "../components/ConditionBadge";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
-import { labelPayload } from "../domain/assetManagement";
+import { qrResolverPayload } from "../domain/assetManagement";
 import { useT } from "../i18n";
 
 const tabs: AssetCopyKey[] = [
@@ -341,11 +341,13 @@ export default function AssetDetail() {
             <div className="asset-qr">
               <QRCodeSVG
                 aria-label={`${a("labels")}: ${asset.code}`}
-                value={labelPayload(asset)}
+                value={qrResolverPayload(asset, window.location.origin)}
                 size={112}
+                fgColor="#000000"
+                bgColor="#ffffff"
               />
               <b>{asset.code}</b>
-              <small>{a("secureQrLabel")}</small>
+              <small>{a("scanWithAims")}</small>
             </div>
           </div>
         </Card>

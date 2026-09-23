@@ -1,5 +1,5 @@
 import{describe,expect,it}from'vitest';
-import{assetFormDefaults,assetFormSchema,canCorrectOfficialCode,isAssignmentEligible,labelPayload,parseAssetImport,validateAssetMovement}from'./assetManagement';
+import{assetFormDefaults,assetFormSchema,canCorrectOfficialCode,isAssignmentEligible,labelPayload,qrResolverPayload,parseAssetImport,validateAssetMovement}from'./assetManagement';
 
 const messages={required:'required',serial:'serial',prefix:'prefix',correctionReason:'reason',price:'price'};
 describe('asset-management frontend rules',()=>{
@@ -10,6 +10,11 @@ describe('asset-management frontend rules',()=>{
   it('allows assignment only for eligible lifecycle states',()=>{expect(isAssignmentEligible({status:'Available'})).toBe(true);expect(isAssignmentEligible({status:'Reserved'})).toBe(true);expect(isAssignmentEligible({status:'Borrowed'})).toBe(false)});
   it('requires a real movement destination',()=>{expect(validateAssetMovement({location:'Store',department:'ICT'},'','ICT').ok).toBe(false);expect(validateAssetMovement({location:'Store',department:'ICT'},'Store','ICT').ok).toBe(false);expect(validateAssetMovement({location:'Store',department:'ICT'},'Server room','ICT').ok).toBe(true)});
   it('generates a secure internal detail-route label payload',()=>expect(labelPayload({id:'ast 1'},'https://inventory.test/')).toBe('https://inventory.test/assets/ast%201'));
+  it('prefers the opaque resolver token and falls back to the legacy deep link',()=>{
+    const token = 'abcdefghijklmnopqrstuvwx';
+    expect(qrResolverPayload({id:'ast 1',qrToken:token},'https://inventory.test/')).toBe(`https://inventory.test/q/${token}`);
+    expect(qrResolverPayload({id:'ast 1'},'https://inventory.test/')).toBe('https://inventory.test/assets/ast%201');
+  });
   it('normalizes import codes and reports duplicate records',()=>{const rows=parseAssetImport('code,name,serialnumber,category,location,department\nkcsmd 147,Existing,SER-X,Laptops,ICT Store,ICT', [{code:'KCSMD-147',serialNumber:'OLD'}],{categories:['Laptops'],locations:['ICT Store'],departments:['ICT']});expect(rows[0].normalized).toBe('KCSMD-147');expect(rows[0].errors.map(error=>error.type)).toContain('DUPLICATE_CODE')});
   it('reports invalid import references with correction advice',()=>{const [row]=parseAssetImport('code,name,serialnumber,category,location,department\nBAD,,S-1,Unknown,Nowhere,None',[],{categories:['Laptops'],locations:['ICT Store'],departments:['ICT']});expect(row.errors.map(error=>error.type)).toEqual(expect.arrayContaining(['MISSING_REQUIRED','INVALID_CODE','INVALID_CATEGORY','INVALID_LOCATION','INVALID_DEPARTMENT']));expect(row.errors.every(error=>error.recommendation.length>0)).toBe(true)});
   it('detects duplicates within a single import file',()=>{const rows=parseAssetImport('code,name,serialnumber\nKCSL-200,A,S-1\nKCSL-200,B,S-1',[],{categories:[],locations:[],departments:[]});expect(rows[0].errors).toHaveLength(0);expect(rows[1].errors.map(error=>error.type)).toEqual(expect.arrayContaining(['DUPLICATE_CODE','DUPLICATE_SERIAL']))});

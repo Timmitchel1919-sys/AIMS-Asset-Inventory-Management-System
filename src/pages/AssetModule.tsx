@@ -36,7 +36,7 @@ import { SignaturePad } from "../components/SignaturePad";
 import { uploadAimsFiles } from "../services/firebaseStorageUploads";
 import {
   isAssignmentEligible,
-  labelPayload,
+  qrResolverPayload,
   parseAssetImport,
   validateAssetMovement,
   type ImportRow,
@@ -957,7 +957,7 @@ export function AssetLabels() {
   const [size, setSize] = useState("standard"),
     [copies, setCopies] = useState(1);
   const download = (current: Asset) => {
-    const content = `KCS ASSET LABEL\n${current.code}\n${current.name}\n${current.serialNumber}\n${labelPayload(current)}`;
+    const content = `KCS ASSET LABEL\n${current.code}\n${current.name}\n${current.serialNumber}\n${qrResolverPayload(current, window.location.origin)}`;
     const url = URL.createObjectURL(
         new Blob([content], { type: "text/plain" }),
       ),
@@ -1010,8 +1010,10 @@ export function AssetLabels() {
                   <div className="brand-placeholder">KCS</div>
                   <QRCodeSVG
                     aria-label={`${a("labels")}: ${current.code}`}
-                    value={labelPayload(current)}
+                    value={qrResolverPayload(current, window.location.origin)}
                     size={96}
+                    fgColor="#000000"
+                    bgColor="#ffffff"
                   />
                   <div>
                     <b>{current.code}</b>
@@ -1019,6 +1021,7 @@ export function AssetLabels() {
                     <small>
                       {a("serial")}: {current.serialNumber}
                     </small>
+                    <small className="qr-scan-hint">{a("scanWithAims")}</small>
                     <div
                       className="barcode-preview"
                       role="img"

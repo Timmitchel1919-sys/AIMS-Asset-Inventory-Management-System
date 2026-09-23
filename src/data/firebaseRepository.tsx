@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   collection,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -35,6 +36,7 @@ import type {
 } from "./contracts";
 import { WorkflowRepositoryEngine } from "./mockRepository";
 import { allocateAssetCodeNumber } from "../domain/assetCode";
+import { generateQrToken } from "../domain/qrIdentity";
 import { RepositoryProvider } from "./repositoryContext";
 import { useApp } from "../context/AppContext";
 
@@ -53,6 +55,7 @@ const collections = {
   notifications: "notifications",
   activity: "activityLogs",
   assetHistoryEvents: "assetHistoryEvents",
+  qrIdentities: "qrIdentities",
   locationTypes: "locationTypes",
   codeGroups: "codeGroups",
   users: "directoryUsers",
@@ -428,11 +431,22 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       for (const item of newItems) {
         const old = oldItems.get(item.id);
         if (!changed(old, item)) continue;
+        const data = writeData(item, Boolean(old), actorUid);
+        const oldAsset = old as { qrToken?: string } | undefined;
+        const itemAsset = item as { qrToken?: string };
+        if (key === "assets" && oldAsset?.qrToken && !itemAsset.qrToken) {
+          data.qrToken = deleteField();
+          data.qrUpdatedAt = deleteField();
+        }
+        if (key === "assets" && data.qrUpdatedAt)
+          data.qrUpdatedAt = serverTimestamp();
+        if (key === "qrIdentities" && (data as Record<string, unknown>).revokedAt)
+          (data as Record<string, unknown>).revokedAt = serverTimestamp();
         writes.push({
           collection: collections[key],
           id: item.id,
           old,
-          data: writeData(item, Boolean(old), actorUid),
+          data,
         });
       }
       for (const [id, old] of oldItems) {
@@ -475,14 +489,39 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       // persisting a large import as one transaction exceeds its expression
       // budget. Stable document IDs keep these individually validated writes
       // retry-safe while preserving the same schema and authorization rules.
+      const withQr: Array<(typeof writes)[number]> = [];
       for (const write of writes) {
+        withQr.push(write);
+        if (write.collection !== "assets") continue;
+        const data = write.data as { qrToken?: string; qrUpdatedAt?: unknown };
+        if (data.qrToken) continue;
+        let token = generateQrToken();
+        data.qrToken = token;
+        data.qrUpdatedAt = serverTimestamp();
+        withQr.push({
+          collection: "qrIdentities",
+          id: token,
+          old: undefined,
+          data: {
+            assetId: write.id,
+            status: "ACTIVE",
+            source: "backfilled",
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            createdBy: actorUid,
+            updatedBy: actorUid,
+          },
+        });
+      }
+      for (const write of withQr) {
         await runTransaction(this.db, async (transaction) => {
           const target = doc(this.db, write.collection, write.id);
           const current = await transaction.get(target);
           const importedRecord =
             write.collection === "assets" ||
             write.collection === "inventoryItems" ||
-            write.collection === "assetHistoryEvents";
+            write.collection === "assetHistoryEvents" ||
+            write.collection === "qrIdentities";
           if (current.exists() && importedRecord) return;
           if (write.delete) transaction.delete(target);
           else transaction.set(target, write.data, { merge: true });

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { safeTargetFromState, type ReturnPathParts } from "../lib/navigation";
 import { Button } from "../components/ui";
 import { IctSupportDialog } from "../components/auth/IctSupportDialog";
 import { AimsPublicLockup } from "../components/branding/AimsPublicLockup";
@@ -101,10 +102,8 @@ export default function Auth({
         setDone(true);
       } else {
         await app.login(email, data.get("remember") === "on", password);
-        const from = (location.state as { from?: { pathname?: string; search?: string; hash?: string } } | null)?.from;
-        const target = from?.pathname
-          ? `${from.pathname}${from.search || ""}${from.hash || ""}`
-          : "/dashboard";
+        const from = (location.state as { from?: ReturnPathParts } | null)?.from;
+        const target = safeTargetFromState(from) || "/dashboard";
         if (import.meta.env.DEV && DEMO_AUTH_MODE)
           console.info("Redirecting to dashboard");
         navigate(target, { replace: true });
@@ -122,10 +121,8 @@ export default function Auth({
       if (import.meta.env.VITE_APP_MODE === "presentation")
         await app.login("ict-staff", true);
       else await googleLogin(true);
-      const from = (location.state as { from?: { pathname?: string; search?: string; hash?: string } } | null)?.from;
-      const target = from?.pathname
-        ? `${from.pathname}${from.search || ""}${from.hash || ""}`
-        : "/dashboard";
+      const from = (location.state as { from?: ReturnPathParts } | null)?.from;
+      const target = safeTargetFromState(from) || "/dashboard";
       navigate(target, { replace: true });
     } catch (reason) {
       setError(authErrorMessage(reason));

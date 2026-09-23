@@ -17,6 +17,10 @@ import {
   transactionRef,
 } from "../domain/transactionTypes";
 import {
+  generateQrToken,
+  isValidQrToken,
+} from "../domain/qrIdentity";
+import {
   locationById,
   locationPath,
   mainLocationIdOf,
@@ -641,6 +645,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
       notifications: clone(seedNotifications),
       activity: [],
       assetHistoryEvents: [],
+      qrIdentities: [],
       references: clone(migratedReferenceSeeds),
       locationTypes: clone(locationTypeSeeds),
       codeGroups: clone(codeGroupSeeds),
@@ -804,7 +809,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
     return candidate;
   }
   private historyAsset(command: WorkflowCommand, result: WorkflowResult) {
-    if (command.action.startsWith("asset."))
+    if (command.action.startsWith("asset.") || command.action.startsWith("qr."))
       return this.state.assets.find(
         (asset) => asset.id === (result.entityId || command.entityId),
       );
@@ -840,6 +845,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
         "movement",
         "audit",
         "disposal",
+        "qr",
       ]).has(category)
     )
       return;
@@ -904,6 +910,22 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           category: "condition",
           title: "Condition changed",
           description: `${previousAsset?.condition || "Unknown"} → ${asset.condition}`,
+        },
+        ...this.state.assetHistoryEvents,
+      ];
+
+    if (command.action === "asset.create" && asset.qrToken)
+      this.state.assetHistoryEvents = [
+        {
+          ...event,
+          id: this.nextHistoryId(),
+          eventType: "qr_create",
+          category: "qr",
+          title: "QR identity created",
+          description: `A secure opaque QR identity was created for ${asset.code}.`,
+          sourceModule: "qr",
+          sourceRecordId: asset.id,
+          next: { qrTokenIssued: true },
         },
         ...this.state.assetHistoryEvents,
       ];
@@ -992,8 +1014,27 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             photos: (v.photos || []) as string[],
             notes: String(v.notes || ""),
             qr: true,
+            qrToken: (() => {
+              let token = generateQrToken();
+              while (this.state.qrIdentities.some((identity) => identity.id === token))
+                token = generateQrToken();
+              return token;
+            })(),
+            qrUpdatedAt: today(),
           };
           this.state.assets = [asset, ...this.state.assets];
+          const qrToken = asset.qrToken as string;
+          this.state.qrIdentities = [
+            {
+              id: qrToken,
+              assetId: asset.id,
+              status: "ACTIVE",
+              source: "created",
+              createdAt: today(),
+              createdBy: command.actor || "Naomi Williams",
+            },
+            ...this.state.qrIdentities,
+          ];
           result = {
             ok: true,
             message: `${asset.code} was created.`,
@@ -1121,6 +1162,150 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             ok: true,
             message: `${moved} item${moved === 1 ? "" : "s"} moved to ${destPath} (batch ${bulkBatchId}).`,
             entityId: bulkBatchId,
+          };
+          break;
+        }
+        case "qr.backfill": {
+          const assetIds = (
+            Array.isArray(v.assetIds)
+              ? (v.assetIds as string[]).filter(Boolean)
+              : command.entityId
+                ? [command.entityId]
+                : []
+          ).filter((id) => this.state.assets.some((asset) => asset.id === id));
+          if (!assetIds.length)
+            throw new Error("Select at least one asset to provision.");
+          const actor = command.actor || "Naomi Williams";
+          let provisioned = 0;
+          let repaired = 0;
+          for (const assetId of assetIds) {
+            const a = this.asset(assetId);
+            const existing = a.qrToken
+              ? this.state.qrIdentities.find((identity) => identity.id === a.qrToken)
+              : undefined;
+            if (existing && existing.status === "ACTIVE" && existing.assetId === a.id)
+              continue;
+            const now = today();
+            if (a.qrToken && isValidQrToken(a.qrToken) && !existing) {
+              this.state.qrIdentities = [
+                {
+                  id: a.qrToken,
+                  assetId: a.id,
+                  status: "ACTIVE",
+                  source: "backfilled",
+                  createdAt: now,
+                  createdBy: actor,
+                },
+                ...this.state.qrIdentities,
+              ];
+              a.qrUpdatedAt = now;
+              repaired += 1;
+            } else {
+              let token = generateQrToken();
+              while (this.state.qrIdentities.some((identity) => identity.id === token))
+                token = generateQrToken();
+              a.qrToken = token;
+              a.qr = true;
+              a.qrUpdatedAt = now;
+              this.state.qrIdentities = [
+                {
+                  id: token,
+                  assetId: a.id,
+                  status: "ACTIVE",
+                  source: "backfilled",
+                  createdAt: now,
+                  createdBy: actor,
+                },
+                ...this.state.qrIdentities,
+              ];
+              provisioned += 1;
+            }
+          }
+          result = {
+            ok: true,
+            message: `QR backfill complete — ${provisioned} minted, ${repaired} repaired.`,
+            entityId: assetIds[0],
+          };
+          break;
+        }
+        case "qr.reprint": {
+          const a = this.asset(command.entityId);
+          const token = String(v.qrToken || a.qrToken || "").trim();
+          const identity = token
+            ? this.state.qrIdentities.find((i) => i.id === token)
+            : undefined;
+          if (!token || !identity || identity.assetId !== a.id)
+            throw new Error("No matching QR identity found for this asset.");
+          result = {
+            ok: true,
+            message: `QR label reprint recorded for ${a.code}.`,
+            entityId: a.id,
+          };
+          break;
+        }
+        case "qr.revoke": {
+          const a = this.asset(command.entityId);
+          const token = String(v.qrToken || a.qrToken || "").trim();
+          const identity = token
+            ? this.state.qrIdentities.find((i) => i.id === token)
+            : undefined;
+          if (!token || !identity || identity.assetId !== a.id)
+            throw new Error("No active QR identity found for this asset.");
+          if (identity.status !== "ACTIVE")
+            throw new Error("This QR identity is already revoked.");
+          identity.status = "REVOKED";
+          identity.revokedAt = today();
+          identity.revokedBy = command.actor || "Naomi Williams";
+          if (a.qrToken === token) {
+            a.qrToken = undefined;
+            a.qr = false;
+            a.qrUpdatedAt = today();
+          }
+          result = {
+            ok: true,
+            message: `QR identity revoked for ${a.code}.`,
+            entityId: a.id,
+          };
+          break;
+        }
+        case "qr.replace": {
+          const a = this.asset(command.entityId);
+          const token = String(v.qrToken || a.qrToken || "").trim();
+          const identity = token
+            ? this.state.qrIdentities.find((i) => i.id === token)
+            : undefined;
+          if (!token || !identity || identity.assetId !== a.id)
+            throw new Error("No active QR identity found for this asset.");
+          if (identity.status === "ACTIVE") {
+            identity.status = "REVOKED";
+            identity.revokedAt = today();
+            identity.revokedBy = command.actor || "Naomi Williams";
+          }
+          let replacement = generateQrToken();
+          while (
+            this.state.qrIdentities.some((i) => i.id === replacement) ||
+            replacement === token
+          )
+            replacement = generateQrToken();
+          identity.replacedByToken = replacement;
+          a.qrToken = replacement;
+          a.qr = true;
+          a.qrUpdatedAt = today();
+          this.state.qrIdentities = [
+            {
+              id: replacement,
+              assetId: a.id,
+              status: "ACTIVE",
+              source: "rotated",
+              createdAt: today(),
+              createdBy: command.actor || "Naomi Williams",
+            },
+            ...this.state.qrIdentities,
+          ];
+          result = {
+            ok: true,
+            message: `QR identity replaced for ${a.code}.`,
+            entityId: a.id,
           };
           break;
         }
@@ -3414,6 +3599,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                 "sastropawiroe@kangoeroeschool.com",
                 "aliendas@kangoeroeschool.com",
                 "manager-ict@kangoeroeschool.com",
+                "sanoesij@kangoeroeschool.com",
+                "despercev@kangoeroeschool.com",
+                "macleanj@kangoeroeschool.com",
               ].includes(command.actorEmail.toLowerCase());
             
             if (!isManager) {

@@ -19,7 +19,8 @@ export function isConnectionRequiredAction(action: string): boolean {
     action === "audit.generate" || // bulk id allocation
     action === "asset.move" || // allocates a transaction id; must be atomic
     action === "asset.return" ||
-    action === "bulk.move"
+    action === "bulk.move" ||
+    action.startsWith("qr.")
   );
 }
 

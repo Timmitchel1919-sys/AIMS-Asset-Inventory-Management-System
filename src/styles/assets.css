@@ -259,6 +259,17 @@
   display: block;
   margin: 3px 0;
 }
+.qr-scan-hint {
+  font-weight: 600;
+  color: inherit;
+}
+@media (min-width: 200px) {
+  .qr-scan-hint {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+}
 .barcode-preview {
   font-family: monospace;
   letter-spacing: -2px;

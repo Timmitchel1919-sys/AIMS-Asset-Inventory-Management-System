@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Asset, AssetStatus, Condition, Role } from "./types";
 import { normalizeAssetCode } from "./assetCode";
+import { hasQrToken, qrResolverUrl } from "./qrIdentity";
 
 export type AssetCodePrefix = string;
 export interface AssetFormValues {
@@ -177,6 +178,20 @@ export function labelPayload(
   origin = "https://inventory.kcs.local",
 ) {
   return `${origin.replace(/\/$/, "")}/assets/${encodeURIComponent(asset.id)}`;
+}
+
+/**
+ * QR label payload. Every asset with an opaque identity token prints the
+ * secure resolver URL (`/q/<token>`); assets that still have no identity
+ * (for example legacy rows awaiting backfill) keep the historical deep-link
+ * so their existing labels remain fully supported until they are replaced.
+ */
+export function qrResolverPayload(
+  asset: Pick<Asset, "id" | "qrToken">,
+  origin: string = "https://inventory.kcs.local",
+) {
+  if (hasQrToken(asset)) return qrResolverUrl(asset.qrToken as string, origin);
+  return labelPayload(asset, origin);
 }
 
 export interface ImportRow {

@@ -7,6 +7,7 @@ import type {
   Maintenance,
   Movement,
   Notification,
+  QrIdentity,
   Repair,
 } from "../domain/types";
 import type { ListQuery, ListResult } from "./listQuery";
@@ -430,6 +431,7 @@ export interface MockSnapshot {
   notifications: Notification[];
   activity: ActivityRecord[];
   assetHistoryEvents: AssetHistoryEvent[];
+  qrIdentities: QrIdentity[];
   references: ReferenceRecord[];
   locationTypes: LocationType[];
   codeGroups: CodeGroup[];
@@ -452,6 +454,10 @@ export type WorkflowAction =
   | "asset.move"
   | "asset.return"
   | "bulk.move"
+  | "qr.backfill"
+  | "qr.reprint"
+  | "qr.revoke"
+  | "qr.replace"
   | "history.manual.saveDraft"
   | "history.manual.finalize"
   | "history.manual.delete"

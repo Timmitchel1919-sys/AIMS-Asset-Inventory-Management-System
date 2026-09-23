@@ -24,7 +24,7 @@ describe("Firestore AIMS authorization rules", () => {
   it("keeps private profiles owner-only and exposes only a validated email-free directory", () => {
     expect(rules).toContain("match /userDirectory/{uid}");
     expect(rules).toContain(
-      "hasOnly(['uid','displayName','photoURL','department','jobTitle','accountType','authProvider','emailVerified','status','updatedAt'])",
+      "hasOnly(['uid','displayName','photoURL','department','jobTitle','accountType','authProvider','emailVerified','status','updatedAt','lastLoginAt'])",
     );
     expect(rules).toContain("allow read: if isOwnUser(uid);");
   });
@@ -48,5 +48,20 @@ describe("Firestore AIMS authorization rules", () => {
     );
     expect(rules).toContain("data.source == 'legacy_import'");
     expect(rules).toContain("isOperationalCollection(collectionName)");
+  });
+  it("applies the generic deny-by-default catch-all", () => {
+    expect(rules).toContain(
+      "match /{document=**} { allow read, write: if false; }",
+    );
+  });
+  it("secures QR identities behind asset-view and one-way lifecycle rules", () => {
+    expect(rules).toContain("match /qrIdentities/{token}");
+    expect(rules).toContain("allow read: if hasPermission('assets.view');");
+    expect(rules).toContain("validQrIdentity(request.resource.data)");
+    expect(rules).toContain(
+      "request.resource.data.assetId == resource.data.assetId",
+    );
+    expect(rules).toContain("resource.data.status == 'ACTIVE'");
+    expect(rules).toContain("allow delete: if false;");
   });
 });
