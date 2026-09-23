@@ -28,7 +28,8 @@ const initials = (name: string) =>
   name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "U";
 
 export default function UserDirectory() {
-  const { language, formatDateTime } = useApp(), snapshot = useMockSnapshot(), nl = language === "nl";
+  const app = useApp(), { language, formatDateTime } = app, snapshot = useMockSnapshot(), nl = language === "nl";
+  const ownProfilePhoto = app.user?.profilePhoto;
   const firebaseMode = import.meta.env.VITE_APP_MODE !== "presentation" && !DEMO_AUTH_MODE;
   const [registeredUsers, setRegisteredUsers] = useState<
     Omit<DirectoryUser, "online">[] | null
@@ -47,7 +48,7 @@ export default function UserDirectory() {
         return {
           uid: document.id,
           displayName: String(item.displayName || (nl ? "Onbekende gebruiker" : "Unknown user")),
-          photoURL: typeof item.photoURL === "string" ? item.photoURL : null,
+          photoURL: item.uid === app.user?.id && ownProfilePhoto ? ownProfilePhoto : typeof item.photoURL === "string" ? item.photoURL : null,
           department: typeof item.department === "string" ? item.department : null,
           jobTitle: typeof item.jobTitle === "string" ? item.jobTitle : null,
           accountType: item.accountType === "demo-user" ? "demo-user" : "school-user",
@@ -109,7 +110,7 @@ export default function UserDirectory() {
             online: isEffectivelyOnline(presenceByUid[item.uid], now),
           }))
         : demoUsers,
-    [firebaseMode, registeredUsers, presenceByUid, now, demoUsers],
+    [firebaseMode, registeredUsers, presenceByUid, now, demoUsers, app.user?.id, ownProfilePhoto],
   );
   const providerLabel = (value: DirectoryUser["authProvider"]) => value === "anonymous"
     ? (nl ? "Anoniem" : "Anonymous")

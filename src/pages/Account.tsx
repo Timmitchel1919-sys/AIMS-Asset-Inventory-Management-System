@@ -72,7 +72,7 @@ export function ProfilePage() {
     setError("");
     try {
       await updateSelfProfile(values);
-      await app.refreshUser();
+      setEditing(false);
       setMessage(nl ? "Profiel bijgewerkt." : "Profile updated.");
     } catch (reason) {
       setError(authErrorMessage(reason));
