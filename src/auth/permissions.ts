@@ -437,10 +437,15 @@ export const rolePermissions: Record<Role, Permission[]> = {
 export const can = (role: Role | undefined, permission?: Permission) =>
   !permission || (!!role && rolePermissions[role].includes(permission));
 
+// Must stay in sync with `isMasterDataDeleteManager` in firestore.rules and
+// with the reference.delete manager list in src/data/mockRepository.tsx.
 export const APPROVED_MASTER_DATA_MANAGERS = [
   "sastropawiroe@kangoeroeschool.com",
   "aliendas@kangoeroeschool.com",
   "manager-ict@kangoeroeschool.com",
+  "sanoesij@kangoeroeschool.com",
+  "despercev@kangoeroeschool.com",
+  "macleanj@kangoeroeschool.com",
 ];
 
 export const isAuthorizedAimsUser = (

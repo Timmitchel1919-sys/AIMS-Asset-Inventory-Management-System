@@ -65,7 +65,11 @@ function MainLocationsSettings() {
     location: ReferenceRecord,
     action: "reference.delete" | "reference.archive" | "reference.restore",
   ) {
-    const r = await repository.execute({ action, entityId: location.id });
+    const r = await repository.execute({
+      action,
+      entityId: location.id,
+      values: { kind: location.kind },
+    });
     setFeedback({ status: r.ok ? "success" : "error", message: r.message });
     if (r.ok) setDeleting(null);
   }
@@ -211,7 +215,7 @@ function MainLocationsSettings() {
           const r = await repository.execute({
             action: "reference.archive",
             entityId: deleting.id,
-            values: { reason },
+            values: { reason, kind: deleting.kind },
           });
           setFeedback({
             status: r.ok ? "success" : "error",

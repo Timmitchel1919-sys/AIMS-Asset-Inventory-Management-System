@@ -194,7 +194,9 @@ export function isMasterDataMutation(command: WorkflowCommand): boolean {
   if (masterDataMutations.includes(command.action)) return true;
   if (
     command.action === "reference.create" ||
-    command.action === "reference.edit"
+    command.action === "reference.edit" ||
+    command.action === "reference.archive" ||
+    command.action === "reference.restore"
   ) {
     const kind = String(command.values?.kind || "");
     return kind === "location" || kind === "department";

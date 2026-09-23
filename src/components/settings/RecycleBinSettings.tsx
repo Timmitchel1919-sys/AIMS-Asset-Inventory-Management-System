@@ -9,6 +9,7 @@ type BinItem = {
   name: string;
   kind: "asset" | "inventory" | "reference" | "codeGroup";
   detail: string;
+  refKind?: "category" | "location" | "department";
 };
 export function RecycleBinSettings() {
   const repository = useRepository(),
@@ -42,6 +43,7 @@ export function RecycleBinSettings() {
         name: x.name,
         kind: "reference" as const,
         detail: x.kind === "location" ? "Locatie" : x.kind,
+        refKind: x.kind,
       })),
     ...snapshot.codeGroups
       .filter((x) => x.archived)
@@ -61,7 +63,11 @@ export function RecycleBinSettings() {
           : item.kind === "reference"
             ? "reference.restore"
             : "codeGroup.restore";
-    const r = await repository.execute({ action, entityId: item.id });
+    const r = await repository.execute({
+      action,
+      entityId: item.id,
+      values: item.kind === "reference" ? { kind: item.refKind } : undefined,
+    });
     setFeedback({ status: r.ok ? "success" : "error", message: r.message });
   }
   async function purge(item: BinItem) {

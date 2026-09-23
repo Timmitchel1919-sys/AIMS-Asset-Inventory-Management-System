@@ -71,6 +71,49 @@ describe("workflow authorization", () => {
     expect(isCommandAllowed(codeGroup, [])).toBe(false);
   });
 
+  it("classifies location/department archive and restore as master data", () => {
+    const locationArchive = {
+      action: "reference.archive",
+      values: { kind: "location" },
+    } as const;
+    const departmentRestore = {
+      action: "reference.restore",
+      values: { kind: "department" },
+    } as const;
+    expect(requiredPermission(locationArchive)).toBe("masterData.manage");
+    expect(requiredPermission(departmentRestore)).toBe("masterData.manage");
+    expect(
+      isCommandAllowed(locationArchive, [], [], { role: "warehouse-staff" }),
+    ).toBe(true);
+    expect(
+      isCommandAllowed(departmentRestore, [], [], { role: "ict-staff" }),
+    ).toBe(true);
+    // Without kind info, do not misclassify as master data.
+    expect(
+      isCommandAllowed({ action: "reference.archive" }, [], [], {
+        role: "warehouse-staff",
+      }),
+    ).toBe(false);
+  });
+
+  it("keeps category archive/restore behind categories.manage", () => {
+    const categoryArchive = {
+      action: "reference.archive",
+      values: { kind: "category" },
+    } as const;
+    expect(requiredPermission(categoryArchive)).toBe("categories.manage");
+    expect(
+      isCommandAllowed(categoryArchive, [], [], { role: "warehouse-staff" }),
+    ).toBe(false);
+    expect(isCommandAllowed(categoryArchive, ["categories.manage"])).toBe(true);
+    expect(
+      isCommandAllowed(
+        { action: "reference.restore", values: { kind: "category" } },
+        ["dashboard.view"],
+      ),
+    ).toBe(false);
+  });
+
   it("restricts master data deletion to the designated managers", () => {
     const deleteCodeGroup = { action: "codeGroup.delete" as const };
     expect(

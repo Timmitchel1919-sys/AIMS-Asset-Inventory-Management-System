@@ -890,6 +890,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       action:
         record.status === "Active" ? "reference.archive" : "reference.restore",
       entityId: record.id,
+      values: { kind: record.kind },
     });
     setFeedback({
       status: result.ok ? "success" : "error",
@@ -902,7 +903,10 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     const result = await repository.execute({
       action: "reference.archive",
       entityId: record.id,
-      values: { reason: nl ? "Verwijderd vanuit de module" : "Deleted from module" },
+      values: {
+        reason: nl ? "Verwijderd vanuit de module" : "Deleted from module",
+        kind: record.kind,
+      },
     });
     setFeedback({ status: result.ok ? "success" : "error", message: result.message });
     if (result.ok) {
