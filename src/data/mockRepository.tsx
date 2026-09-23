@@ -788,9 +788,16 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
     this.state = { ...this.state };
     this.listeners.forEach((listener) => listener());
   }
+  private nextActivityId() {
+    let sequence = this.state.activity.length;
+    let candidate = id("evt", sequence);
+    while (this.state.activity.some((entry) => entry.id === candidate))
+      candidate = id("evt", ++sequence);
+    return candidate;
+  }
   private log(command: WorkflowCommand, result: WorkflowResult) {
     const entry: ActivityRecord = {
-      id: id("evt", this.state.activity.length),
+      id: this.nextActivityId(),
       at: now(),
       user: command.actor || "Naomi Williams",
       action: command.action,

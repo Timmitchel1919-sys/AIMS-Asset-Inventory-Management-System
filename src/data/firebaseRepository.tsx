@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  getDocsFromServer,
   limit,
   onSnapshot,
   orderBy,
@@ -270,7 +271,30 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     await Promise.all(
       eagerCollectionKeys.map(async (key) => {
         try {
-          const result = await getDocs(collection(this.db, collections[key]));
+          // activityLogs' id (evt-XXXX) is derived from this array's local
+          // length with no server-side collision check, and every command
+          // logs one — a stale persistentLocalCache read here (one entry
+          // short) makes the next write recompute an id that already
+          // exists, which the immutable activityLogs rules then reject as
+          // an update, failing the *whole* transaction it's bundled into
+          // (see also nextActivityId() in mockRepository.tsx). Read this
+          // one collection straight from the server so the count is
+          // always accurate.
+          const coll = collection(this.db, collections[key]);
+          let result;
+          if (key === "activity") {
+            try {
+              result = await getDocsFromServer(coll);
+            } catch {
+              // Offline or otherwise unreachable — fall back to the cached
+              // read rather than failing the whole app load; the id
+              // collision this guards against can only happen while online
+              // anyway (the write itself requires connectivity).
+              result = await getDocs(coll);
+            }
+          } else {
+            result = await getDocs(coll);
+          }
           (next[key] as unknown) = result.docs.map((item) =>
             deserialize({ id: item.id, ...item.data() }),
           );
