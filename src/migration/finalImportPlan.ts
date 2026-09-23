@@ -227,7 +227,7 @@ export function buildFinalImportPlan(args: {
             ("description" in item ? item.description : undefined) ||
             item.value,
           minimumNumber: 1,
-          maximumNumber: 5000,
+          maximumNumber: 1000000000,
           nextAvailableNumber: 1,
           isActive: true,
           sortOrder: 0,

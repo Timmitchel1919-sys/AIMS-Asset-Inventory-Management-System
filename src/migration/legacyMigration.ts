@@ -971,7 +971,7 @@ export function dryRunLegacyMigration({
       name: `Legacy ${prefix}`,
       prefix,
       minimumNumber: 1,
-      maximumNumber: 5000,
+      maximumNumber: 1000000000,
       nextAvailableNumber: 1,
     }));
   const allRows = [...masterRows, ...historyRows];

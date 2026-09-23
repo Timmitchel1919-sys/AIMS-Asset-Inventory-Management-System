@@ -369,12 +369,14 @@ const locationTypeSeeds: LocationType[] = [
   createdAt: "2026-08-06T00:00:00.000Z",
   updatedAt: "2026-08-06T00:00:00.000Z",
 }));
+// Code groups are unlimited; minimumNumber/maximumNumber are no longer
+// user-editable and only exist for backward-compatible document shape.
 const codeGroupSeeds: CodeGroup[] = [
-  ["devices", "Mobile devices", "KCSMD", 1, 5000, 152],
-  ["laptops", "Laptops", "KCSL", 1, 5000, 126],
-  ["boards", "Boards and projectors", "KCSBD", 1, 5000, 43],
-  ["routers", "Routers and networking", "KCSRT", 1, 5000, 90],
-  ["power", "Power equipment", "KCSPW", 1, 5000, 19],
+  ["devices", "Mobile devices", "KCSMD", 1, 1000000000, 152],
+  ["laptops", "Laptops", "KCSL", 1, 1000000000, 126],
+  ["boards", "Boards and projectors", "KCSBD", 1, 1000000000, 43],
+  ["routers", "Routers and networking", "KCSRT", 1, 1000000000, 90],
+  ["power", "Power equipment", "KCSPW", 1, 1000000000, 19],
 ].map(
   (
     [groupId, name, prefix, minimumNumber, maximumNumber, nextAvailableNumber],
@@ -948,8 +950,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             .filter((asset) => asset.codePrefix === prefix)
             .map((asset) => asset.codeNumber);
           const number = Number(v.codeNumber || Math.max(0, ...used) + 1);
-          if (number < 1 || number > 5000)
-            throw new Error("KCS code sequence must be between 01 and 5000.");
+          // Code groups are unlimited — only guard against nonsensical input.
+          if (number < 1 || number > 1000000000)
+            throw new Error("The inventory code sequence is invalid.");
           const code = `${prefix}-${number < 100 ? String(number).padStart(2, "0") : number}`;
           const serial = String(v.serialNumber || "").trim();
           if (!serial) throw new Error("A serial number is required.");
@@ -3382,6 +3385,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           if (kind === "location") {
             const isMainLocation = String(v.type || "") === "Main location" || String(v.typeId || "") === "main-location";
             const newPrefix = String((v.details as any)?.prefix || "").trim().toLowerCase();
+            const normalizedName = name.toLowerCase().replace(/\s+/g, " ");
 
             if (isMainLocation) {
               if (
@@ -3389,10 +3393,11 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                   (x) =>
                     x.kind === "location" &&
                     x.type === "Main location" &&
-                    x.name.trim().toLowerCase() === name.toLowerCase(),
+                    x.name.trim().toLowerCase().replace(/\s+/g, " ") ===
+                      normalizedName,
                 )
               )
-                throw new Error("This main location already exists.");
+                throw new Error("Main location already exists.");
               
               if (
                 newPrefix &&
@@ -3487,7 +3492,10 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             );
           if (record.kind === "location") {
             const isMainLocation = record.type === "Main location" || record.typeId === "main-location";
-            const newName = String(v.name ?? record.name).trim().toLowerCase();
+            const newName = String(v.name ?? record.name)
+              .trim()
+              .toLowerCase()
+              .replace(/\s+/g, " ");
             const newPrefix = String((v.details as any)?.prefix ?? record.details?.prefix ?? "").trim().toLowerCase();
 
             if (isMainLocation) {
@@ -3497,10 +3505,10 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                     x.id !== record.id &&
                     x.kind === "location" &&
                     x.type === "Main location" &&
-                    x.name.trim().toLowerCase() === newName,
+                    x.name.trim().toLowerCase().replace(/\s+/g, " ") === newName,
                 )
               )
-                throw new Error("This main location already exists.");
+                throw new Error("Main location already exists.");
               
               if (
                 newPrefix &&
@@ -3741,31 +3749,23 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             prefix = String(v.prefix || "")
               .trim()
               .toUpperCase(),
-            minimumNumber = Number(v.minimumNumber),
-            maximumNumber = Number(v.maximumNumber),
-            nextAvailableNumber = Number(v.nextAvailableNumber);
+            normalizedName = name.toLowerCase().replace(/\s+/g, " ");
           if (!name || !prefix)
             throw new Error("Name and prefix are required.");
-          if (
-            minimumNumber < 0 ||
-            maximumNumber < minimumNumber ||
-            nextAvailableNumber < minimumNumber ||
-            nextAvailableNumber > maximumNumber
-          )
-            throw new Error(
-              "Number range and next available number are invalid.",
-            );
+          // Code groups are unlimited: minimumNumber/maximumNumber are fixed,
+          // generous defaults, never user-editable. nextAvailableNumber
+          // always starts at the floor for a brand-new group.
+          const minimumNumber = 1,
+            maximumNumber = 1000000000,
+            nextAvailableNumber = 1;
           if (
             this.state.codeGroups.some(
-              (x) => x.name.toLowerCase() === name.toLowerCase(),
+              (x) => x.name.trim().toLowerCase().replace(/\s+/g, " ") === normalizedName,
             )
           )
-            throw new Error("This code group already exists.");
-          
-          if (
-            this.state.codeGroups.some((x) => x.prefix === prefix)
-          )
-            throw new Error("This code prefix is already used by a code group.");
+            throw new Error("Code group already exists.");
+          if (this.state.codeGroups.some((x) => x.prefix === prefix))
+            throw new Error("Code prefix already exists.");
           const group: CodeGroup = {
             id: id("cg", this.state.codeGroups.length),
             name,
@@ -3781,7 +3781,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           this.state.codeGroups = [...this.state.codeGroups, group];
           result = {
             ok: true,
-            message: `${group.name} was created.`,
+            message: "Code group successfully added.",
             entityId: group.id,
           };
           break;
@@ -3792,33 +3792,27 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             prefix = String(v.prefix ?? group.prefix)
               .trim()
               .toUpperCase(),
-            minimumNumber = Number(v.minimumNumber ?? group.minimumNumber),
-            maximumNumber = Number(v.maximumNumber ?? group.maximumNumber),
-            nextAvailableNumber = Number(
-              v.nextAvailableNumber ?? group.nextAvailableNumber,
-            );
-          if (
-            minimumNumber < 0 ||
-            maximumNumber < minimumNumber ||
-            nextAvailableNumber < minimumNumber ||
-            nextAvailableNumber > maximumNumber
-          )
-            throw new Error(
-              "Number range and next available number are invalid.",
-            );
+            normalizedName = name.toLowerCase().replace(/\s+/g, " "),
+            // Code groups are unlimited and no longer editable via the UI;
+            // preserve whatever the group already has.
+            minimumNumber = group.minimumNumber,
+            maximumNumber = group.maximumNumber,
+            nextAvailableNumber = group.nextAvailableNumber;
           if (
             this.state.codeGroups.some(
-              (x) => x.id !== group.id && x.name.toLowerCase() === name.toLowerCase(),
+              (x) =>
+                x.id !== group.id &&
+                x.name.trim().toLowerCase().replace(/\s+/g, " ") === normalizedName,
             )
           )
-            throw new Error("This code group already exists.");
+            throw new Error("Code group already exists.");
 
           if (
             this.state.codeGroups.some(
               (x) => x.id !== group.id && x.prefix === prefix,
             )
           )
-            throw new Error("This code prefix is already used by a code group.");
+            throw new Error("Code prefix already exists.");
           Object.assign(group, {
             name,
             prefix,
@@ -3829,7 +3823,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           });
           result = {
             ok: true,
-            message: `${group.name} was updated.`,
+            message: "Code group successfully updated.",
             entityId: group.id,
           };
           break;

@@ -184,7 +184,7 @@ service cloud.firestore {
         ])
         && data.code is string && data.code.size() > 0 && data.code.size() <= 40
         && data.codePrefix is string && data.codePrefix.size() > 0 && data.codePrefix.size() <= 16
-        && data.codeNumber is int && data.codeNumber >= 1 && data.codeNumber <= 5000
+        && data.codeNumber is int && data.codeNumber >= 1 && data.codeNumber <= 1000000000
         && data.name is string && data.name.size() > 0 && data.name.size() <= 200
         && auditMetadataValid(data) && noPrivilegeFields(data);
     }
@@ -271,7 +271,7 @@ service cloud.firestore {
         && data.keys().hasAll(['code','codePrefix','codeNumber','name','category','type','brand','model','serialNumber','location','department','status','condition','purchaseDate','warrantyExpiry','lastUpdated','qr','createdAt','createdBy','updatedAt','updatedBy'])
         && data.code is string && data.code.size() > 0 && data.code.size() <= 40
         && data.codePrefix is string && data.codePrefix.size() > 0 && data.codePrefix.size() <= 16
-        && data.codeNumber is int && data.codeNumber >= 1 && data.codeNumber <= 5000
+        && data.codeNumber is int && data.codeNumber >= 1 && data.codeNumber <= 1000000000
         && data.name is string && data.name.size() > 0 && data.name.size() <= 200
         && data.serialNumber is string && data.serialNumber.size() <= 200
         && shortString(data, 'description', 4000)
@@ -322,13 +322,18 @@ service cloud.firestore {
         && noPrivilegeFields(data);
     }
 
+    // Code groups are unlimited: the app no longer exposes minimumNumber/
+    // maximumNumber for editing (they're set to fixed, generous defaults on
+    // create) — they stay required here only for backward compatibility
+    // with documents written before this policy, and the ceiling is a
+    // defensive sanity bound, not a real product limit.
     function validCodeGroup(data) {
       return data.keys().hasOnly(['name','prefix','minimumNumber','maximumNumber','nextAvailableNumber','isActive','sortOrder','createdAt','createdBy','updatedAt','updatedBy','isArchived','archivedAt','archivedBy','archived','deletionReason'])
         && data.keys().hasAll(['name','prefix','minimumNumber','maximumNumber','nextAvailableNumber','isActive','sortOrder','createdAt','updatedAt','updatedBy'])
         && data.name is string && data.name.size() > 0 && data.name.size() <= 100
         && data.prefix is string && data.prefix.matches('^[A-Z0-9]{1,16}$')
         && data.minimumNumber is int && data.minimumNumber >= 1
-        && data.maximumNumber is int && data.maximumNumber >= data.minimumNumber && data.maximumNumber <= 5000
+        && data.maximumNumber is int && data.maximumNumber >= data.minimumNumber && data.maximumNumber <= 1000000000
         && data.nextAvailableNumber is int && data.nextAvailableNumber >= data.minimumNumber && data.nextAvailableNumber <= data.maximumNumber + 1
         && data.isActive is bool && data.sortOrder is int
         && (!('archived' in data) || data.archived is bool)

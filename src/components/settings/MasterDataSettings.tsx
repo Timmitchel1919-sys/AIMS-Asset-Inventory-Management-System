@@ -362,8 +362,7 @@ function CodeGroupsSettings() {
                 {group.name} <code>{group.prefix}</code>
               </strong>
               <small>
-                Reeks {group.minimumNumber}–{group.maximumNumber} · Volgend{" "}
-                {group.prefix}{group.nextAvailableNumber}
+                Volgende {group.prefix}{group.nextAvailableNumber}
               </small>
             </div>
             <Badge tone={group.isActive ? "success" : "neutral"}>

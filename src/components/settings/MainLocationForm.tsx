@@ -36,42 +36,45 @@ export function MainLocationForm({
       .toUpperCase();
     const status = String(data.get("status") || "Active");
 
-    if (!name || !prefix) {
+    if (!name) {
       setFeedback({
         status: "error",
-        message: nl
-          ? "Naam en locatiecode zijn verplicht."
-          : "Name and location code are required.",
+        message: nl ? "Naam is verplicht." : "Name is required.",
       });
       setBusy(false);
       return;
     }
 
-    // Duplicate check
+    // Duplicate check — normalize whitespace so "KCS Onderbouw",
+    // "kcs onderbouw" and "KCS  Onderbouw" are all treated as the same name.
     const existingMainLocations = snapshot.references.filter(
       (x) => x.kind === "location" && x.type === "Main location"
     );
+    const normalize = (value: string) =>
+      value.trim().toLowerCase().replace(/\s+/g, " ");
+    const normalizedName = normalize(name);
 
     const duplicateName = existingMainLocations.find(
-      (x) =>
-        x.name.toLowerCase() === name.toLowerCase() && x.id !== editing?.id
+      (x) => normalize(x.name) === normalizedName && x.id !== editing?.id
     );
     if (duplicateName) {
       setFeedback({
         status: "error",
         message: nl
-          ? "Deze hoofdlocatie bestaat al."
-          : "This main location already exists.",
+          ? "Hoofdlocatie bestaat al."
+          : "Main location already exists.",
       });
       setBusy(false);
       return;
     }
 
-    const duplicatePrefix = existingMainLocations.find(
-      (x) =>
-        String(x.details.prefix || "").toLowerCase() === prefix.toLowerCase() &&
-        x.id !== editing?.id
-    );
+    const duplicatePrefix =
+      prefix &&
+      existingMainLocations.find(
+        (x) =>
+          String(x.details.prefix || "").toLowerCase() ===
+            prefix.toLowerCase() && x.id !== editing?.id
+      );
     if (duplicatePrefix) {
       setFeedback({
         status: "error",
@@ -104,7 +107,17 @@ export function MainLocationForm({
 
     setFeedback({
       status: result.ok ? "success" : "error",
-      message: result.message,
+      message: result.ok
+        ? editing
+          ? nl
+            ? "Hoofdlocatie succesvol bijgewerkt."
+            : "Main location successfully updated."
+          : nl
+            ? "Hoofdlocatie succesvol toegevoegd."
+            : "Main location successfully added."
+        : nl && result.message === "Main location already exists."
+          ? "Hoofdlocatie bestaat al."
+          : result.message,
     });
     setBusy(false);
 
@@ -126,10 +139,9 @@ export function MainLocationForm({
       />
       <Field
         name="prefix"
-        label={nl ? "Locatiecode" : "Location code"}
+        label={nl ? "Locatiecode (optioneel)" : "Location code (optional)"}
         defaultValue={String(editing?.details.prefix || "")}
         maxLength={20}
-        required
         disabled={busy}
       />
       <SelectField

@@ -5,6 +5,9 @@ import { useApp } from "../../context/AppContext";
 import { useMockSnapshot, useRepository } from "../../data/repositoryContext";
 import type { CodeGroup } from "../../data/contracts";
 
+// Code groups are unlimited: there is no minimum/maximum/range to configure
+// here. "Volgende beschikbare code" is informational only, always derived
+// from what has ever been issued for this prefix — never a manual input.
 export function CodeGroupForm({
   onSaved,
   onCancel,
@@ -24,10 +27,7 @@ export function CodeGroupForm({
   }>({ status: "idle", message: "" });
   const [busy, setBusy] = useState(false);
 
-  // Prefix handling for preview
   const [currentPrefix, setCurrentPrefix] = useState(group?.prefix || "");
-
-  // Calculate the preview value
   const nextNumber = group?.nextAvailableNumber ?? 1;
   const previewCode = `${currentPrefix}${nextNumber}`;
 
@@ -39,8 +39,6 @@ export function CodeGroupForm({
     const d = new FormData(event.currentTarget);
     const name = String(d.get("name") || "").trim();
     const prefix = String(d.get("prefix") || "").trim();
-    const minNumber = Number(d.get("minimumNumber"));
-    const maxNumber = Number(d.get("maximumNumber"));
 
     if (!name || !prefix) {
       setFeedback({
@@ -53,40 +51,32 @@ export function CodeGroupForm({
       return;
     }
 
-    if (minNumber < 1 || maxNumber < minNumber) {
-      setFeedback({
-        status: "error",
-        message: nl
-          ? "Ongeldig nummerbereik."
-          : "Invalid number range.",
-      });
-      setBusy(false);
-      return;
-    }
-
-    if (group && maxNumber < nextNumber - 1) {
-      setFeedback({
-        status: "error",
-        message: nl
-          ? "Het nummerbereik kan niet worden verlaagd tot onder reeds uitgegeven codes."
-          : "The number range cannot be reduced below already issued codes.",
-      });
-      setBusy(false);
-      return;
-    }
-
-    // Duplicate check
-    const duplicate = snapshot.codeGroups.find(
+    const normalizedName = name.toLowerCase().replace(/\s+/g, " ");
+    const normalizedPrefix = prefix.toLowerCase();
+    const duplicateName = snapshot.codeGroups.find(
       (x) =>
-        (x.name.toLowerCase() === name.toLowerCase() ||
-          x.prefix.toLowerCase() === prefix.toLowerCase()) &&
-        x.id !== group?.id
+        x.name.trim().toLowerCase().replace(/\s+/g, " ") === normalizedName &&
+        x.id !== group?.id,
     );
-
-    if (duplicate) {
+    if (duplicateName) {
       setFeedback({
         status: "error",
         message: nl ? "Codegroep bestaat al." : "Code group already exists.",
+      });
+      setBusy(false);
+      return;
+    }
+    const duplicatePrefix = snapshot.codeGroups.find(
+      (x) =>
+        x.prefix.trim().toLowerCase() === normalizedPrefix &&
+        x.id !== group?.id,
+    );
+    if (duplicatePrefix) {
+      setFeedback({
+        status: "error",
+        message: nl
+          ? "Codeprefix bestaat al."
+          : "Code prefix already exists.",
       });
       setBusy(false);
       return;
@@ -97,16 +87,25 @@ export function CodeGroupForm({
     const result = await repository.execute({
       action: group ? "codeGroup.edit" : "codeGroup.create",
       entityId: group?.id,
-      values: {
-        name,
-        prefix,
-        minimumNumber: minNumber,
-        maximumNumber: maxNumber,
-        nextAvailableNumber: nextNumber, // Preserve the read-only next number
-      },
+      values: { name, prefix },
     });
 
-    setFeedback({ status: result.ok ? "success" : "error", message: result.message });
+    setFeedback({
+      status: result.ok ? "success" : "error",
+      message: result.ok
+        ? group
+          ? nl
+            ? "Codegroep succesvol bijgewerkt."
+            : "Code group successfully updated."
+          : nl
+            ? "Codegroep succesvol toegevoegd."
+            : "Code group successfully added."
+        : nl && result.message === "Code group already exists."
+          ? "Codegroep bestaat al."
+          : nl && result.message === "Code prefix already exists."
+            ? "Codeprefix bestaat al."
+            : result.message,
+    });
     setBusy(false);
 
     if (result.ok && result.entityId) {
@@ -127,32 +126,12 @@ export function CodeGroupForm({
       />
       <Field
         name="prefix"
-        label={nl ? "Code" : "Code"}
+        label={nl ? "Codeprefix" : "Code prefix"}
         defaultValue={group?.prefix}
         onChange={(e) => setCurrentPrefix(e.target.value)}
         required
-        disabled={busy || !!group} // Usually prefix cannot be easily changed if records exist, but leaving editable if repository allows, though standard is disabled if it causes issues. Actually, requirement implies prefix is editable but let's allow it unless it breaks. We will allow it.
+        disabled={busy || !!group}
       />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-        <Field
-          name="minimumNumber"
-          type="number"
-          min="1"
-          label={nl ? "Nummerbereik (van)" : "Number range (from)"}
-          defaultValue={String(group?.minimumNumber ?? 1)}
-          required
-          disabled={busy}
-        />
-        <Field
-          name="maximumNumber"
-          type="number"
-          min="1"
-          label={nl ? "Nummerbereik (tot)" : "Number range (to)"}
-          defaultValue={String(group?.maximumNumber ?? 5000)}
-          required
-          disabled={busy}
-        />
-      </div>
 
       <div className="field wide" style={{ marginBottom: "1rem" }}>
         <label className="field-label">
@@ -161,7 +140,7 @@ export function CodeGroupForm({
         <div style={{ padding: "8px 12px", background: "var(--color-background-alt)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)" }}>
           <strong>{previewCode}</strong>
           <div style={{ fontSize: "0.85em", color: "var(--color-text-dim)" }}>
-            {nl ? "Automatisch beheerd door AIMS" : "Automatically managed by AIMS"}
+            {nl ? "Automatisch beheerd door AIMS — ongelimiteerd" : "Automatically managed by AIMS — unlimited"}
           </div>
         </div>
       </div>
@@ -180,4 +159,3 @@ export function CodeGroupForm({
     </form>
   );
 }
-

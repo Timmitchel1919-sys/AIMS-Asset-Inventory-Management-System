@@ -6,7 +6,7 @@ export function normalizeAssetCode(input:string){
  const raw=compact.slice(prefix.length);
  if(!/^\d+$/.test(raw))return null;
  const codeNumber=Number(raw);
- if(codeNumber<1||codeNumber>5000)return null;
+ if(codeNumber<1||codeNumber>1000000000)return null;
  return{codePrefix:prefix,codeNumber,fullAssetCode:`${prefix}-${codeNumber<100?String(codeNumber).padStart(2,'0'):codeNumber}`};
 }
 export interface AssetCodeLike{code?:string;codePrefix?:string;codeNumber?:number}
@@ -30,6 +30,15 @@ export function compareAssetCodes(left:AssetCodeLike,right:AssetCodeLike,mode:As
 /**
  * Permanent inventory-code allocation for one code group/prefix.
  *
+ * Code groups are unlimited — there is no configurable minimum/maximum
+ * range. `group.minimumNumber`/`group.maximumNumber` only exist on the type
+ * for backward compatibility with documents written before this policy
+ * (some still have the old 5000 ceiling stored); this function
+ * deliberately never treats `group.maximumNumber` as a real limit, only
+ * `group.minimumNumber` as a floor, so pre-existing code groups become
+ * unlimited immediately with no migration needed. ABSOLUTE_CEILING below is
+ * a defensive sanity bound against garbage input, not a product limit.
+ *
  * An Inv.code, once assigned, is reserved forever — disposing, archiving or
  * otherwise retiring the asset it belongs to never frees the number for
  * reuse. The next number is always one past the highest number this prefix
@@ -43,8 +52,10 @@ export function compareAssetCodes(left:AssetCodeLike,right:AssetCodeLike,mode:As
  * behind reality (for example a legacy-imported asset that predates this
  * counter), without needing a separate migration pass.
  */
+const ABSOLUTE_CEILING = 1_000_000_000;
+
 export function allocateAssetCodeNumber(
-  group: { minimumNumber: number; maximumNumber: number; nextAvailableNumber: number },
+  group: { minimumNumber: number; nextAvailableNumber: number },
   existingAssets: readonly { codePrefix: string; codeNumber: number }[],
   prefix: string,
   requested?: number,
@@ -60,11 +71,10 @@ export function allocateAssetCodeNumber(
   const floor = Math.max(group.minimumNumber, highestEverUsed + 1);
   if (requested) {
     if (requested < floor) return { error: "already-used" };
-    if (requested < group.minimumNumber || requested > group.maximumNumber)
+    if (requested < group.minimumNumber || requested > ABSOLUTE_CEILING)
       return { error: "range-exhausted" };
     return { number: requested };
   }
-  if (floor > group.maximumNumber || floor > 5000)
-    return { error: "range-exhausted" };
+  if (floor > ABSOLUTE_CEILING) return { error: "range-exhausted" };
   return { number: floor };
 }
