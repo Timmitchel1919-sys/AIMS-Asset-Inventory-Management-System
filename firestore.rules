@@ -27,22 +27,16 @@ service cloud.firestore {
     function isActiveAssignment() {
       return !hasAccessAssignment() || get(accessAssignmentPath()).data.active == true;
     }
-    // Central Master Data authorization: any authenticated, verified, active
-    // AIMS user. It intentionally does not require unrelated UI feature
-    // permissions such as dashboard.view, settings.manage or departments.manage.
+    // Central Master Data authorization: any verified, active AIMS user —
+    // including one with no accessAssignments document yet (a brand-new
+    // account whose provisionUserAccess call hasn't run or hasn't been
+    // read back yet). It intentionally does not require unrelated UI
+    // feature permissions such as dashboard.view, settings.manage or
+    // departments.manage, and does not require an existing access
+    // assignment or custom claims — only suspension
+    // (isActiveAssignment() == false) withholds it.
     function isAuthorizedAimsUser() {
-      return isVerified()
-        && isActiveAssignment()
-        && (
-          isBootstrapAdministrator()
-          || (('role' in request.auth.token)
-            && request.auth.token.role is string
-            && request.auth.token.role.size() > 0)
-          || (('permissions' in request.auth.token)
-            && request.auth.token.permissions is list
-            && request.auth.token.permissions.size() > 0)
-          || hasAccessAssignment()
-        );
+      return isVerified() && isActiveAssignment();
     }
     // Every authorized AIMS user may add and delete Master Data. Deletion is
     // still business-safe client-side (records move to the recycle bin first;
