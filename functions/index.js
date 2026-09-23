@@ -29,7 +29,6 @@ const syncSpreadsheetId = defineString("AIMS_SYNC_SPREADSHEET_ID", {
 // to adjust the cadence (App Engine cron syntax or "every N hours").
 const SYNC_EXPORT_SCHEDULE = "every 24 hours";
 const SCHOOL_DOMAIN = "kangoeroeschool.com";
-const BOOTSTRAP_ADMIN_UID = "VogTjC6S1aXHO6ySBbdiQ7LNOYG3";
 
 function authorized(request) {
   const email = String(request.auth?.token?.email || "")
@@ -41,17 +40,11 @@ function authorized(request) {
   );
 }
 
+// Every verified school account has full ("super admin") rights, including
+// the admin-only Cloud Functions below — mirrors hasPermission() in
+// firestore.rules and rolePermissions in src/auth/permissions.ts.
 function isAdmin(request) {
-  if (!authorized(request)) return false;
-  const token = request.auth?.token || {};
-  const permissions = Array.isArray(token.permissions) ? token.permissions : [];
-  return (
-    request.auth?.uid === BOOTSTRAP_ADMIN_UID ||
-    token.role === "administrator" ||
-    token.admin === true ||
-    permissions.includes("admin.access") ||
-    permissions.includes("admin.system.configure")
-  );
+  return authorized(request);
 }
 
 /**

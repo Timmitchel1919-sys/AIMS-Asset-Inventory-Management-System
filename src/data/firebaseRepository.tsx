@@ -22,7 +22,7 @@ import {
   isConnectionRequiredAction,
   OFFLINE_BLOCKED_MESSAGE_EN,
 } from "./offlinePolicy";
-import { rolePermissions, type Permission } from "../auth/permissions";
+import { rolePermissions } from "../auth/permissions";
 import type { Role } from "../domain/types";
 import { AIMS_BOOTSTRAP_ADMIN_UID } from "../auth/accessBootstrap";
 import {
@@ -235,45 +235,31 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
         email: user.email ?? null,
       };
     const token = await user.getIdTokenResult();
-    const tokenPermissions = Array.isArray(token.claims.permissions)
-      ? token.claims.permissions.filter(
-          (value): value is string => typeof value === "string",
-        )
-      : [];
     const tokenDenials = Array.isArray(token.claims.denials)
       ? token.claims.denials.filter(
           (value): value is string => typeof value === "string",
         )
       : [];
-    const role = String(
-      token.claims.role || "",
-    ) as keyof typeof rolePermissions;
-    const roleGrants = role in rolePermissions ? rolePermissions[role] : [];
     const assignment = await getDoc(
       doc(this.db, "accessAssignments", user.uid),
     );
     const data = assignment.data();
-    const grants = Array.isArray(data?.permissions)
-      ? data.permissions.filter(
-          (value: unknown): value is string => typeof value === "string",
-        )
-      : [];
     const denials = Array.isArray(data?.denials)
       ? data.denials.filter(
           (value: unknown): value is string => typeof value === "string",
         )
       : [];
+    const active = data?.active !== false;
+    // Every verified AIMS user has full (super admin) rights, regardless of
+    // the role/permission list stored on their access assignment — only
+    // suspension (active === false) or an explicit denial withholds
+    // anything. Mirrors hasPermission()/hasAnyPermission() in
+    // firestore.rules.
     return {
-      permissions: [
-        ...new Set<Permission | string>([
-          ...roleGrants,
-          ...tokenPermissions,
-          ...grants,
-        ]),
-      ],
+      permissions: active ? rolePermissions.administrator : [],
       denials: [...new Set([...tokenDenials, ...denials])],
-      active: data?.active !== false,
-      role: role in rolePermissions ? (role as Role) : undefined,
+      active,
+      role: "administrator",
       email: user.email ?? null,
     };
   }

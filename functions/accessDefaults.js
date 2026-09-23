@@ -1,15 +1,21 @@
-// Baseline access for a newly verified school account. It mirrors the
-// application's fallback role (warehouse-staff in src/auth/permissions.ts +
-// src/context/AppContext.tsx) so that a user who registered and verified can
-// actually read and operate the system before an administrator customizes
-// their role/assignment. Keep this list synchronized with
-// rolePermissions['warehouse-staff'].
-export const DEFAULT_ACCESS_ROLE = "warehouse-staff";
+// Baseline access for a newly verified school account. Every verified user
+// gets full ("super admin") rights — this mirrors the application's role
+// catalog (every entry in rolePermissions in src/auth/permissions.ts is now
+// the full permission list) so a user who registered and verified can
+// immediately read and operate every part of the system. The actual
+// enforcement no longer depends on this list matching exactly — see
+// hasPermission()/hasAnyPermission() in firestore.rules and
+// resolveActorAccess() in src/data/firebaseRepository.tsx, which grant every
+// permission to any verified, non-suspended user regardless of this
+// document's contents — but this stays in sync for consistency and as the
+// value new accessAssignments documents are seeded with.
+export const DEFAULT_ACCESS_ROLE = "administrator";
 
 export const DEFAULT_ACCESS_PERMISSIONS = [
   "dashboard.view",
   "assets.view",
   "assets.create",
+  "assets.import",
   "assets.edit",
   "assets.archive",
   "assets.viewTechnicalDetails",
@@ -20,6 +26,7 @@ export const DEFAULT_ACCESS_PERMISSIONS = [
   "inventory.view",
   "inventory.manage",
   "inventory.create",
+  "inventory.import",
   "inventory.edit",
   "inventory.receive",
   "inventory.issue",
@@ -169,9 +176,23 @@ export const DEFAULT_ACCESS_PERMISSIONS = [
   "management.export",
   "management.financial",
   "assistant.use",
+  "users.manage",
+  "roles.manage",
   "activity.view",
   "disposals.view",
   "disposals.request",
   "disposals.approve",
+  "settings.manage",
   "locationTypes.manage",
+  "legal.read",
+  "legal.manage",
+  "legal.approve",
+  "legal.publish",
+  "legal.audit",
+  "admin.access",
+  "admin.users.manage",
+  "admin.roles.manage",
+  "admin.audit.read",
+  "admin.legal.manage",
+  "admin.system.configure",
 ];

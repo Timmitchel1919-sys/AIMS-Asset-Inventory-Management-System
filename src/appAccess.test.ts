@@ -16,11 +16,11 @@ describe('app download and admin access integration',()=>{
     expect(appDownloadConfig.iosUrl).not.toBe('');
   });
 
-  it('allows only the administrator role to access the Admin Console',()=>{
+  it('gives every role Admin Console access — everyone is a super admin',()=>{
     expect(can('administrator','admin.access')).toBe(true);
-    expect(can('ict-manager','admin.access')).toBe(false);
-    expect(can('warehouse-manager','admin.access')).toBe(false);
-    expect(can('warehouse-staff','admin.access')).toBe(false);
+    expect(can('ict-manager','admin.access')).toBe(true);
+    expect(can('warehouse-manager','admin.access')).toBe(true);
+    expect(can('warehouse-staff','admin.access')).toBe(true);
   });
 
   it('protects the admin route with admin.access',()=>{
@@ -50,7 +50,7 @@ describe('app download and admin access integration',()=>{
     expect(rules).toContain("match /{document=**} { allow read, write: if false; }");
   });
 
-  it('keeps the provisioned default grant in sync with the fallback role', () => {
+  it('keeps the provisioned default grant in sync with the super-admin permission set', () => {
     const source = readFileSync('functions/accessDefaults.js', 'utf8');
     const match = source.match(
       /DEFAULT_ACCESS_PERMISSIONS = \[([\s\S]*?)\];/,
@@ -60,11 +60,11 @@ describe('app download and admin access integration',()=>{
       .match(/"[^"]+"/g)
       ?.map((value) => value.slice(1, -1)) ?? [];
     expect([...provisioned].sort()).toEqual(
-      [...rolePermissions['warehouse-staff']].sort(),
+      [...rolePermissions['administrator']].sort(),
     );
   });
 
-  it('grants every fallback-role user add/delete across module data', () => {
+  it('grants every role full add/edit/delete rights across every module — everyone is super admin', () => {
     const staff = rolePermissions['warehouse-staff'];
     expect(staff).toContain('assets.create');
     expect(staff).toContain('assets.archive');
@@ -73,11 +73,11 @@ describe('app download and admin access integration',()=>{
     expect(staff).toContain('borrows.create');
     expect(staff).toContain('maintenance.create');
     expect(staff).toContain('repairs.create');
-    expect(staff).not.toContain('admin.access');
-    expect(staff).not.toContain('users.manage');
-    expect(staff).not.toContain('roles.manage');
-    expect(staff).not.toContain('settings.manage');
-    expect(staff.length).toBeLessThanOrEqual(200);
+    expect(staff).toContain('admin.access');
+    expect(staff).toContain('users.manage');
+    expect(staff).toContain('roles.manage');
+    expect(staff).toContain('settings.manage');
+    expect(staff).toEqual(rolePermissions['administrator']);
   });
 
   it('uses Firebase anonymous authentication for one-click demo access',()=>{

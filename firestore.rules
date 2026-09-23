@@ -53,32 +53,17 @@ service cloud.firestore {
           && get(accessAssignmentPath()).data.denials is list
           && value in get(accessAssignmentPath()).data.denials);
     }
+    // Every verified, non-suspended AIMS user has full ("super admin")
+    // rights to every permission string — role/permission-list documents are
+    // no longer consulted as a restriction, only suspension
+    // (isActiveAssignment() == false) or an explicit denial can withhold
+    // anything. Keep in sync with rolePermissions in src/auth/permissions.ts
+    // and resolveActorAccess() in src/data/firebaseRepository.tsx.
     function hasPermission(value) {
-      return isVerified() && !isExplicitlyDenied(value) && (
-        isBootstrapAdministrator()
-        || (('role' in request.auth.token) && request.auth.token.role == 'administrator')
-        || (value == 'inventory.import'
-          && ('role' in request.auth.token)
-          && request.auth.token.role in ['ict-manager', 'warehouse-manager'])
-        || (('permissions' in request.auth.token) && request.auth.token.permissions is list
-          && request.auth.token.permissions.size() <= 160
-          && value in request.auth.token.permissions)
-        || (hasAccessAssignment()
-          && get(accessAssignmentPath()).data.active == true
-          && get(accessAssignmentPath()).data.permissions is list
-          && get(accessAssignmentPath()).data.permissions.size() <= 160
-          && value in get(accessAssignmentPath()).data.permissions)
-      );
+      return isVerified() && isActiveAssignment() && !isExplicitlyDenied(value);
     }
     function hasAnyPermission(values) {
-      return isVerified() && values is list && values.size() <= 30 && (
-        isBootstrapAdministrator()
-        || (('role' in request.auth.token) && request.auth.token.role == 'administrator')
-        || (('permissions' in request.auth.token) && request.auth.token.permissions is list && request.auth.token.permissions.hasAny(values))
-        || (hasAccessAssignment()
-          && get(accessAssignmentPath()).data.active == true
-          && get(accessAssignmentPath()).data.permissions.hasAny(values))
-      ) && !(
+      return isVerified() && values is list && values.size() <= 30 && isActiveAssignment() && !(
         (('denials' in request.auth.token) && request.auth.token.denials is list && request.auth.token.denials.hasAny(values))
         || (hasAccessAssignment() && get(accessAssignmentPath()).data.denials.hasAny(values))
       );

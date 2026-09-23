@@ -371,61 +371,20 @@ const all: Permission[] = [
   "admin.system.configure",
 ];
 
+// Every role has full ("super admin") rights: every user, regardless of
+// which of these role labels they carry, sees and can do everything an
+// administrator can — add, edit and delete across every module. Keep in
+// sync with DEFAULT_ACCESS_PERMISSIONS in functions/accessDefaults.js and
+// hasPermission()/hasAnyPermission() in firestore.rules, which grant the
+// same way server-side.
 export const rolePermissions: Record<Role, Permission[]> = {
   administrator: all,
-  "ict-manager": all.filter(
-    (p) =>
-      !["users.manage", "roles.manage", "locationTypes.manage"].includes(p) &&
-      !p.startsWith("admin."),
-  ),
-  "warehouse-manager": all.filter(
-    (p) =>
-      ![
-        "users.manage",
-        "roles.manage",
-        "settings.manage",
-        "assets.import",
-      ].includes(p) && !p.startsWith("admin."),
-  ),
-  "ict-staff": all.filter((p) => p !== "inventory.import"),
-  // Default role for a newly registered, verified school account. Every
-  // registered user may add and delete data across all modules, so this role
-  // mirrors the full permission set minus only administration/legal/import
-  // boundaries. Keep in sync with DEFAULT_ACCESS_PERMISSIONS in
-  // functions/accessDefaults.js.
-  "warehouse-staff": all.filter(
-    (p) =>
-      !p.startsWith("admin.") &&
-      !p.startsWith("legal.") &&
-      ![
-        "users.manage",
-        "roles.manage",
-        "settings.manage",
-        "assets.import",
-        "inventory.import",
-      ].includes(p),
-  ),
-  management: [
-    "dashboard.view",
-    "assets.view",
-    "history.view",
-    "inventory.view",
-    "audits.view",
-    "reports.view",
-    "notifications.view",
-    "disposals.view",
-    "disposals.approve",
-  ],
-  auditor: [
-    "dashboard.view",
-    "assets.view",
-    "history.view",
-    "inventory.view",
-    "audits.view",
-    "reports.view",
-    "activity.view",
-    "disposals.view",
-  ],
+  "ict-manager": all,
+  "warehouse-manager": all,
+  "ict-staff": all,
+  "warehouse-staff": all,
+  management: all,
+  auditor: all,
 };
 
 export const can = (role: Role | undefined, permission?: Permission) =>
