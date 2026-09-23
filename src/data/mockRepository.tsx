@@ -808,8 +808,20 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
     };
     this.state.activity = [entry, ...this.state.activity];
   }
+  // assetHistoryEvents is deliberately not eagerly loaded (see
+  // eagerCollectionKeys in firebaseRepository.tsx) — only the events for
+  // assets the user has actually opened are ever present in
+  // state.assetHistoryEvents, so its length is not the true global count.
+  // The Firebase-backed repository raises this floor to an accurate
+  // server-side count at initialize() time; the mock engine leaves it at 0,
+  // where state.assetHistoryEvents.length (the full seed data) already is
+  // the true count.
+  protected historySequenceFloor = 0;
   private nextHistoryId() {
-    let sequence = this.state.assetHistoryEvents.length;
+    let sequence = Math.max(
+      this.state.assetHistoryEvents.length,
+      this.historySequenceFloor,
+    );
     let candidate = id("ahe", sequence);
     while (
       this.state.assetHistoryEvents.some((event) => event.id === candidate)

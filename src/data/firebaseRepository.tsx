@@ -3,6 +3,7 @@ import {
   collection,
   deleteField,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
   getDocsFromServer,
@@ -271,28 +272,23 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     await Promise.all(
       eagerCollectionKeys.map(async (key) => {
         try {
-          // activityLogs' id (evt-XXXX) is derived from this array's local
-          // length with no server-side collision check, and every command
-          // logs one — a stale persistentLocalCache read here (one entry
-          // short) makes the next write recompute an id that already
-          // exists, which the immutable activityLogs rules then reject as
-          // an update, failing the *whole* transaction it's bundled into
-          // (see also nextActivityId() in mockRepository.tsx). Read this
-          // one collection straight from the server so the count is
-          // always accurate.
+          // Every module's entity id (evt-/ast-/asn-/br-/cg-/... -XXXX) is
+          // derived from this array's local length with no server-side
+          // collision check — see id() in mockRepository.tsx. A stale
+          // persistentLocalCache read here (one entry short of the real
+          // server count) makes the next create recompute an id that
+          // already exists remotely; for immutable collections (activityLogs)
+          // Firestore then rejects it outright, and for others it silently
+          // merges into an unrelated existing record. Read straight from
+          // the server so the count is always accurate, falling back to the
+          // cache only if the server is unreachable (e.g. offline) — the
+          // write itself requires connectivity anyway, so the collision this
+          // guards against cannot occur in that case.
           const coll = collection(this.db, collections[key]);
           let result;
-          if (key === "activity") {
-            try {
-              result = await getDocsFromServer(coll);
-            } catch {
-              // Offline or otherwise unreachable — fall back to the cached
-              // read rather than failing the whole app load; the id
-              // collision this guards against can only happen while online
-              // anyway (the write itself requires connectivity).
-              result = await getDocs(coll);
-            }
-          } else {
+          try {
+            result = await getDocsFromServer(coll);
+          } catch {
             result = await getDocs(coll);
           }
           (next[key] as unknown) = result.docs.map((item) =>
@@ -330,6 +326,21 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     next.systemSettings = settings?.docs[0]
       ? (deserialize(settings.docs[0].data()) as MockSnapshot["systemSettings"])
       : { hierarchyValidationMode: "warning" };
+    // assetHistoryEvents is lazily loaded per asset (see eagerCollectionKeys
+    // above), so its in-memory length is nowhere near the true total —
+    // nextHistoryId() in mockRepository.tsx would otherwise recompute an
+    // ahe-XXXX id already used by an asset nobody has opened this session
+    // and collide with it. A count aggregation is a cheap, read-only way to
+    // seed an accurate floor without eagerly fetching the whole collection.
+    try {
+      const historyCount = await getCountFromServer(
+        collection(this.db, collections.assetHistoryEvents),
+      );
+      this.historySequenceFloor = historyCount.data().count;
+    } catch {
+      // Permission-denied or offline — nextHistoryId() falls back to its
+      // local-length-based sequence, same as before this fix.
+    }
     this.replaceState(next);
     this.initialized = true;
     this.notificationUnsubscribe?.();
