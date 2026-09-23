@@ -379,7 +379,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
           <div className="brand-copy app-sidebar__brand-text">
             <strong>AIMS</strong>
-            <span>Asset &amp; Inventory Management System</span>
+            <span>
+              Asset &amp; Inventory
+              <br />
+              Management System
+            </span>
           </div>
           {!app.sidebarCollapsed && (
             <button
