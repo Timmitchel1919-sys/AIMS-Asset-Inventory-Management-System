@@ -20,7 +20,7 @@ export function Dialog({open,title,description,children,onClose,footer,className
   useEffect(()=>{const dialog=ref.current;if(!dialog)return;if(open&&!dialog.open)dialog.showModal();if(!open&&dialog.open)dialog.close()},[open]);
   return <dialog ref={ref} className={`dialog ${className}`.trim()} aria-labelledby={titleId} onCancel={event=>{event.preventDefault();onClose()}} onClose={()=>{if(open)onClose()}}>
     <header><div><h2 id={titleId}>{title}</h2>{description&&<p>{description}</p>}</div><button className="icon-button" aria-label="Close" onClick={onClose}><X/></button></header>
-    <div className="dialog-body">{children}</div>
+    <div className="dialog-body">{open ? children : null}</div>
     {footer&&<footer>{footer}</footer>}
   </dialog>;
 }

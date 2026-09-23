@@ -2,14 +2,14 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { OPEN_ACCOUNT_MENU_EVENT } from "../lib/accountMenu";
 
 vi.mock("../context/AppContext", () => ({
   useApp: () => ({ language: "nl" }),
 }));
 
-import { AccountBackButton } from "./WorkflowUi";
+import { AccountBackButton, Dialog } from "./WorkflowUi";
 
 function CurrentPath() {
   return <output>{useLocation().pathname}</output>;
@@ -35,5 +35,37 @@ describe("AccountBackButton", () => {
 
     expect(onOpen).toHaveBeenCalledOnce();
     expect(screen.getByText("/dashboard")).toBeVisible();
+  });
+});
+
+beforeEach(() => {
+  HTMLDialogElement.prototype.showModal = vi.fn();
+  HTMLDialogElement.prototype.close = vi.fn();
+});
+
+describe("Dialog", () => {
+  it("remounts form content after closing so default values belong to the selected record", () => {
+    const { rerender } = render(
+      <Dialog open title="Edit" onClose={() => {}}>
+        <input aria-label="Code group name" defaultValue="First group" />
+      </Dialog>,
+    );
+
+    expect(screen.getByLabelText("Code group name")).toHaveValue("First group");
+
+    rerender(
+      <Dialog open={false} title="Edit" onClose={() => {}}>
+        <input aria-label="Code group name" defaultValue="First group" />
+      </Dialog>,
+    );
+    expect(screen.queryByLabelText("Code group name")).not.toBeInTheDocument();
+
+    rerender(
+      <Dialog open title="Edit" onClose={() => {}}>
+        <input aria-label="Code group name" defaultValue="Second group" />
+      </Dialog>,
+    );
+
+    expect(screen.getByLabelText("Code group name")).toHaveValue("Second group");
   });
 });
