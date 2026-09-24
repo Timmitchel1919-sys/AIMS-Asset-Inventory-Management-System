@@ -704,16 +704,26 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
         command.actor || this.actorName() || this.actorUid() || "Unknown user",
       actorEmail: command.actorEmail || firebaseAuth?.currentUser?.email || undefined,
     };
-    // Inv.codes are permanently immutable at the database layer (Firestore
-    // rules pin code/codePrefix/codeNumber on every `assets` update), so a
-    // codeCorrection here would always fail with a raw permission-denied.
-    // Fail fast with an honest explanation instead of a confusing write.
-    if (command.action === "asset.edit" && command.values?.codeCorrection)
-      return {
-        ok: false,
-        message:
-          "Inventory-code corrections are not yet available for AIMS accounts connected to Firebase. Contact ICT Support.",
-      };
+    // Asset identifiers remain client-immutable in Firestore Rules. A
+    // correction is therefore performed by a trusted, audited callable; the
+    // subsequent normal edit intentionally omits all identifier fields.
+    if (command.action === "asset.edit" && command.values?.codeCorrection) {
+      if (!firebaseFunctions)
+        return { ok: false, message: "Inventory-code corrections require Firebase." };
+      try {
+        const call = httpsCallable(firebaseFunctions, "correctAssetCode");
+        await call({
+          assetId: command.entityId,
+          code: String(command.values.codeCorrection),
+          reason: String(command.values.correctionReason || ""),
+        });
+        await this.initialize();
+        const { codeCorrection, correctionReason, codePrefix, codeNumber, ...editableValues } = command.values;
+        command = { ...command, values: editableValues };
+      } catch (error) {
+        return { ok: false, message: firestoreErrorMessage(error).message };
+      }
+    }
     const before = structuredClone(this.snapshot());
     const existingGroup = command.action === "codeGroup.edit" ? this.state.codeGroups.find((item) => item.id === command.entityId) : undefined;
     if (existingGroup && String(command.values?.prefix || existingGroup.prefix).trim().toUpperCase() !== existingGroup.prefix) {

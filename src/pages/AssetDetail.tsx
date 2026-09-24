@@ -326,10 +326,10 @@ export default function AssetDetail() {
           <div className="asset-digital-identity">
             <span className="asset-illustration">{asset.name.slice(0, 1)}</span>
             <div>
-              <AssetStatusBadge
-                status={asset.status}
-              />
-              <ConditionBadge condition={asset.condition} />
+              <div className="asset-status-stack">
+                <AssetStatusBadge status={asset.status} />
+                <ConditionBadge condition={asset.condition} />
+              </div>
               <h2>{asset.name}</h2>
               <p>
                 {asset.category} · {asset.type}

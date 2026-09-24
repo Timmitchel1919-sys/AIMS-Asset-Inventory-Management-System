@@ -43,19 +43,28 @@
   align-items: center;
   gap: 20px;
 }
-.asset-digital-identity h2 {
+.asset-status-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.asset-status-stack .asset-status,
+.asset-status-stack .asset-condition {
+  width: fit-content;
+}.asset-digital-identity h2 {
   margin: 8px 0 4px;
 }
 .asset-digital-identity p {
   margin: 0 0 8px;
   color: var(--color-text-secondary);
 }
-.asset-digital-identity span {
+.asset-digital-identity > .asset-illustration {
   display: flex;
   align-items: center;
   gap: 5px;
 }
-.asset-digital-identity span svg {
+.asset-digital-identity > .asset-illustration svg {
   width: 15px;
 }
 .asset-qr {

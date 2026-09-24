@@ -684,3 +684,90 @@ export const renameCodeGroupPrefix = onCall(
     return { ok: true, groupId, prefix, assetsUpdated: assets.size, categoriesUpdated: categories.size };
   },
 );
+/**
+ * Trusted, audited correction of one official asset code. Client writes keep
+ * code/codePrefix/codeNumber immutable; this path reserves the replacement
+ * code, preserves the old code and records the reason without deleting the
+ * asset or its history.
+ */
+export const correctAssetCode = onCall(
+  { region: "southamerica-east1", timeoutSeconds: 60, memory: "256MiB" },
+  async (request) => {
+    if (!authorized(request))
+      throw new HttpsError("permission-denied", "A verified AIMS account is required.");
+    const uid = String(request.auth?.uid || "");
+    const assetId = String(request.data?.assetId || "").trim();
+    const reason = String(request.data?.reason || "").trim();
+    const compactCode = String(request.data?.code || "")
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "");
+    const codeMatch = compactCode.match(/^([A-Z][A-Z0-9]{1,15})-(\d{1,9})$/);
+    if (!uid || !assetId || !codeMatch || reason.length < 3 || reason.length > 1000)
+      throw new HttpsError("invalid-argument", "Provide an asset, a valid official code, and a correction reason.");
+    const [, codePrefix, codeNumberText] = codeMatch;
+    const codeNumber = Number(codeNumberText);
+    const code = `${codePrefix}-${codeNumber < 100 ? String(codeNumber).padStart(2, "0") : codeNumber}`;
+    const db = getFirestore();
+    const assignment = await db.collection("accessAssignments").doc(uid).get();
+    const assignmentData = assignment.data();
+    if (!assignment.exists || assignmentData?.active !== true)
+      throw new HttpsError("permission-denied", "Your AIMS access is inactive.");
+    if (!['administrator', 'ict-staff'].includes(String(assignmentData.role || '')))
+      throw new HttpsError("permission-denied", "Only authorized ICT administrators may correct official asset codes.");
+    const assetRef = db.collection("assets").doc(assetId);
+    const codeRef = db.collection("assetCodes").doc(code);
+    const groupQuery = db.collection("codeGroups").where("prefix", "==", codePrefix).limit(1);
+    await db.runTransaction(async (transaction) => {
+      const [assetSnapshot, codeSnapshot, groupSnapshot, currentCode, historicCode] = await Promise.all([
+        transaction.get(assetRef),
+        transaction.get(codeRef),
+        transaction.get(groupQuery),
+        transaction.get(db.collection("assets").where("code", "==", code).limit(1)),
+        transaction.get(db.collection("assets").where("previousCodes", "array-contains", code).limit(1)),
+      ]);
+      if (!assetSnapshot.exists)
+        throw new HttpsError("not-found", "Asset not found.");
+      if (groupSnapshot.empty || groupSnapshot.docs[0].data().isActive === false)
+        throw new HttpsError("failed-precondition", "The selected code group is not active.");
+      const asset = assetSnapshot.data();
+      if (asset.code === code) return;
+      const usedByAnotherAsset = [currentCode, historicCode].some(
+        (snapshot) => !snapshot.empty && snapshot.docs.some((doc) => doc.id !== assetId),
+      );
+      if (codeSnapshot.exists || usedByAnotherAsset)
+        throw new HttpsError("already-exists", "This inventory code has already been used and cannot be reassigned.");
+      const now = FieldValue.serverTimestamp();
+      transaction.update(assetRef, {
+        code,
+        codePrefix,
+        codeNumber,
+        previousCodes: [...new Set([...(asset.previousCodes || []), asset.code])],
+        lastUpdated: new Date().toISOString().slice(0, 10),
+        lastModifiedBy: uid,
+        updatedAt: now,
+        updatedBy: uid,
+      });
+      transaction.set(codeRef, {
+        code,
+        codeGroupId: groupSnapshot.docs[0].id,
+        reservedBy: uid,
+        createdAt: now,
+      });
+      transaction.set(db.collection("activityLogs").doc(), {
+        action: "asset.code.correct",
+        entityType: "asset",
+        entityId: assetId,
+        actorUserId: uid,
+        actorEmail: request.auth.token.email || "",
+        reason,
+        before: { code: asset.code, codePrefix: asset.codePrefix, codeNumber: asset.codeNumber },
+        after: { code, codePrefix, codeNumber },
+        createdAt: now,
+        updatedAt: now,
+        updatedBy: uid,
+      });
+    });
+    return { ok: true, assetId, code };
+  },
+);

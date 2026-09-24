@@ -3,9 +3,9 @@ import{assetFormDefaults,assetFormSchema,canCorrectOfficialCode,isAssignmentElig
 
 const messages={required:'required',serial:'serial',prefix:'prefix',correctionReason:'reason',price:'price'};
 describe('asset-management frontend rules',()=>{
-  it('validates a complete create form',()=>expect(assetFormSchema(messages).safeParse({...assetFormDefaults,name:'Laptop',category:'Laptops',serialNumber:'SER-001',location:'ICT Store',department:'ICT'}).success).toBe(true));
+  it('validates a complete create form',()=>expect(assetFormSchema(messages).safeParse({...assetFormDefaults,codeNumber:'1',name:'Laptop',category:'Laptops',serialNumber:'SER-001',location:'ICT Store',department:'ICT'}).success).toBe(true));
   it('rejects required fields and an out-of-range price',()=>{const result=assetFormSchema(messages).safeParse({...assetFormDefaults,purchasePrice:'-1'});expect(result.success).toBe(false);expect(result.error?.issues.map(issue=>issue.message)).toContain('price')});
-  it('requires a reason for an official-code correction',()=>expect(assetFormSchema(messages,true).safeParse({...assetFormDefaults,name:'Laptop',category:'Laptops',serialNumber:'SER-001',location:'ICT Store',department:'ICT',codeCorrection:'KCSMD-200'}).error?.issues[0].message).toBe('reason'));
+  it('requires a reason for an official-code correction',()=>expect(assetFormSchema(messages,true).safeParse({...assetFormDefaults,codeNumber:'1',name:'Laptop',category:'Laptops',serialNumber:'SER-001',location:'ICT Store',department:'ICT',codeCorrection:'KCSMD-200'}).error?.issues[0].message).toBe('reason'));
   it('restricts official-code corrections to administrators',()=>{expect(canCorrectOfficialCode('administrator')).toBe(true);expect(canCorrectOfficialCode('ict-manager')).toBe(false)});
   it('allows assignment only for eligible lifecycle states',()=>{expect(isAssignmentEligible({status:'Available'})).toBe(true);expect(isAssignmentEligible({status:'Reserved'})).toBe(true);expect(isAssignmentEligible({status:'Borrowed'})).toBe(false)});
   it('requires a real movement destination',()=>{expect(validateAssetMovement({location:'Store',department:'ICT'},'','ICT').ok).toBe(false);expect(validateAssetMovement({location:'Store',department:'ICT'},'Store','ICT').ok).toBe(false);expect(validateAssetMovement({location:'Store',department:'ICT'},'Server room','ICT').ok).toBe(true)});

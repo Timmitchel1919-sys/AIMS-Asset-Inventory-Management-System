@@ -1,15 +1,15 @@
 const knownPrefixes=['KCSMD','KCSL','KCSBD','KCSRT','KCSPW'] as const;
 export function normalizeAssetCode(input:string){
- const compact=input.toUpperCase().replace(/[\s-]+/g,'');
- const prefix=knownPrefixes.find(p=>compact.startsWith(p));
- if(!prefix)return null;
- const raw=compact.slice(prefix.length);
- if(!/^\d+$/.test(raw))return null;
+ const normalized=input.toUpperCase().replace(/\s+/g,'');
+ const separated=normalized.match(/^([A-Z][A-Z0-9]{1,15})-(\d{1,9})$/);
+ const compact=normalized.replace(/-/g,'');
+ const prefix=separated?.[1]||knownPrefixes.find(value=>compact.startsWith(value));
+ const raw=separated?.[2]||(prefix?compact.slice(prefix.length):'');
+ if(!prefix||!/^\d+$/.test(raw))return null;
  const codeNumber=Number(raw);
  if(codeNumber<1||codeNumber>1000000000)return null;
  return{codePrefix:prefix,codeNumber,fullAssetCode:`${prefix}-${codeNumber<100?String(codeNumber).padStart(2,'0'):codeNumber}`};
-}
-export interface AssetCodeLike{code?:string;codePrefix?:string;codeNumber?:number}
+}export interface AssetCodeLike{code?:string;codePrefix?:string;codeNumber?:number}
 export type AssetCodeSortMode='full'|'prefix'|'sequence';
 export function parseAssetCode(value:AssetCodeLike){
  const normalized=value.code?normalizeAssetCode(value.code):null;
