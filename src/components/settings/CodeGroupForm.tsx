@@ -128,10 +128,19 @@ export function CodeGroupForm({
         name="prefix"
         label={nl ? "Codeprefix" : "Code prefix"}
         defaultValue={group?.prefix}
-        onChange={(e) => setCurrentPrefix(e.target.value)}
+        onChange={(e) => setCurrentPrefix(e.target.value.toUpperCase())}
+        pattern="[A-Za-z0-9]{1,16}"
+        maxLength={16}
         required
-        disabled={busy || !!group}
+        disabled={busy}
       />
+      {group && currentPrefix.trim().toUpperCase() !== group.prefix && (
+        <p className="field wide" style={{ marginTop: "0.5rem", marginBottom: "1rem", fontSize: "0.85em", color: "var(--color-text-dim)" }}>
+          {nl
+            ? "Let op: bij een gewijzigde prefix worden bestaande codes van middelen die aan deze codegroep gekoppeld zijn automatisch aangepast (oude code blijft bewaard als vorige code) en geüpdatet."
+            : "Note: changing the prefix automatically rewrites the inventory codes of every asset linked to this code group (the old code is kept as a previous code) and updates linked categories."}
+        </p>
+      )}
 
       <div className="field wide" style={{ marginBottom: "1rem" }}>
         <label className="field-label">

@@ -562,10 +562,24 @@ service cloud.firestore {
       allow read: if hasPermission('assets.view');
       allow create: if validLegacyImportedAsset(request.resource.data)
         || (hasPermission('assets.create') && validAsset(request.resource.data));
+      // Inv.codes are immutable in normal edits. The only exception is a code
+      // group prefix correction: the app pushes the old code onto
+      // previousCodes before re-coding, so an update may only change the code
+      // when it both switches prefix and proves the old code was recorded.
       allow update: if hasAnyPermission(['assets.edit','assets.archive','movements.create']) && validAsset(request.resource.data) && immutableAuditFields()
-        && request.resource.data.code == resource.data.code
-        && request.resource.data.codePrefix == resource.data.codePrefix
-        && request.resource.data.codeNumber == resource.data.codeNumber;
+        && (
+          (
+            request.resource.data.code == resource.data.code
+            && request.resource.data.codePrefix == resource.data.codePrefix
+            && request.resource.data.codeNumber == resource.data.codeNumber
+          )
+          || (
+            request.resource.data.codePrefix != resource.data.codePrefix
+            && 'previousCodes' in request.resource.data
+            && request.resource.data.previousCodes is list
+            && resource.data.code in request.resource.data.previousCodes
+          )
+        );
       allow delete: if false;
     }
     match /qrIdentities/{token} {

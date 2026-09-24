@@ -44,7 +44,7 @@ afterEach(() => {
 });
 
 describe("ProfilePage", () => {
-  it("houdt het bewerkingspaneel open na het opslaan", async () => {
+  it("sluit het bewerkingspaneel na het opslaan en toont een bevestiging", async () => {
     render(<ProfilePage />);
 
     fireEvent.click(screen.getByRole("button", { name: "Profiel bewerken" }));
@@ -54,7 +54,11 @@ describe("ProfilePage", () => {
 
     await waitFor(() => expect(updateSelfProfile).toHaveBeenCalled());
     expect(await screen.findByText("Profiel bijgewerkt.")).toBeVisible();
-    expect(screen.getByRole("textbox", { name: "Volledige naam" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Profiel opslaan" })).toBeVisible();
+    expect(
+      screen.queryByRole("textbox", { name: "Volledige naam" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Profiel bewerken" }),
+    ).toBeVisible();
   });
 });

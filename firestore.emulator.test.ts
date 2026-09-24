@@ -696,6 +696,85 @@ describe("Firebase repository persistence and concurrency", () => {
     refreshed.dispose();
   });
 
+  it("persists a code-group prefix correction across linked assets and categories", async () => {
+    await seedConcurrencyFixtures();
+    await environment.withSecurityRulesDisabled(async (context) => {
+      const d = context.firestore();
+      await setDoc(doc(d, "categories/laptops"), {
+        kind: "category",
+        name: "Laptops",
+        type: "Serialized",
+        status: "Active",
+        relatedCount: 0,
+        details: { codeGroup: "KCSMD" },
+        createdAt: serverTimestamp(),
+        createdBy: uid,
+        updatedAt: serverTimestamp(),
+        updatedBy: uid,
+      });
+    });
+    const db = environment.authenticatedContext(uid, claims).firestore();
+    const access = async () => ({
+      permissions: [
+        "admin.system.configure",
+        "assets.view",
+        "assets.create",
+        "assets.edit",
+        "categories.manage",
+      ],
+      denials: [],
+      active: true,
+    });
+    const repo = new FirebaseInventoryRepository(
+      db,
+      () => uid,
+      undefined,
+      access,
+    );
+    await repo.initialize();
+    await repo.execute({
+      action: "asset.create",
+      values: {
+        codePrefix: "KCSMD",
+        name: "Rename phone",
+        serialNumber: "REN-001",
+      },
+    });
+    const asset = repo
+      .snapshot()
+      .assets.find((item) => item.codePrefix === "KCSMD")!;
+    const result = await repo.execute({
+      action: "codeGroup.edit",
+      entityId: "devices",
+      actor: "Administrator",
+      values: { name: "Mobile devices", prefix: "KCSM" },
+    });
+    expect(JSON.stringify(result)).toContain('"ok":true');
+    const refreshed = new FirebaseInventoryRepository(
+      db,
+      () => uid,
+      undefined,
+      access,
+    );
+    await refreshed.initialize();
+    const renamed = refreshed
+      .snapshot()
+      .assets.find((item) => item.id === asset.id);
+    expect(renamed?.codePrefix).toBe("KCSM");
+    expect(renamed?.code).toBe(`KCSM-${asset.codeNumber}`);
+    expect(renamed?.previousCodes).toContain(asset.code);
+    const category = refreshed
+      .snapshot()
+      .references.find((item) => item.id === "laptops");
+    expect(category?.details.codeGroup).toBe("KCSM");
+    expect(
+      refreshed.snapshot().codeGroups.find((item) => item.id === "devices")
+        ?.prefix,
+    ).toBe("KCSM");
+    repo.dispose();
+    refreshed.dispose();
+  });
+
   it("persists stock workflow records and rejects a stale concurrent issue", async () => {
     await seedConcurrencyFixtures();
     const db = environment.authenticatedContext(uid, claims).firestore();

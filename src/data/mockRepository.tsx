@@ -3814,8 +3814,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               .trim()
               .toUpperCase(),
             normalizedName = name.toLowerCase().replace(/\s+/g, " "),
-            // Code groups are unlimited and no longer editable via the UI;
-            // preserve whatever the group already has.
+            // Code groups are unlimited; the numeric bounds/next code are
+            // derived from what has ever been issued under the prefix, so
+            // they are never edited directly.
             minimumNumber = group.minimumNumber,
             maximumNumber = group.maximumNumber,
             nextAvailableNumber = group.nextAvailableNumber;
@@ -3834,6 +3835,52 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             )
           )
             throw new Error("Code prefix already exists.");
+
+          const previousPrefix = group.prefix;
+          if (previousPrefix !== prefix) {
+            // A prefix edit is a bulk re-code: every asset whose Inv.code
+            // carries the old prefix is renumbered to the new one (the old
+            // code is preserved in previousCodes so it stays permanently
+            // reserved), and every category linked to the group via
+            // details.codeGroup/details.prefix follows the new prefix.
+            const formatCode = (number: number) =>
+              `${prefix}-${number < 100 ? String(number).padStart(2, "0") : number}`;
+            const targets = new Map<string, string>();
+            for (const asset of this.state.assets)
+              if (asset.codePrefix === previousPrefix)
+                targets.set(asset.id, formatCode(asset.codeNumber));
+            const targetCodes = new Set(targets.values());
+            for (const asset of this.state.assets) {
+              if (targets.has(asset.id)) continue;
+              if (
+                targetCodes.has(asset.code) ||
+                (asset.previousCodes || []).some((code) => targetCodes.has(code))
+              )
+                throw new Error(
+                  "This inventory code has already been used and cannot be reassigned.",
+                );
+            }
+            for (const asset of this.state.assets) {
+              const code = targets.get(asset.id);
+              if (!code) continue;
+              asset.previousCodes = [...(asset.previousCodes || []), asset.code];
+              asset.code = code;
+              asset.codePrefix = prefix;
+              asset.lastUpdated = today();
+              asset.lastModifiedBy = command.actor || "Naomi Williams";
+            }
+            for (const reference of this.state.references) {
+              if (reference.kind !== "category") continue;
+              const details = reference.details as Record<
+                string,
+                string | number | boolean | string[]
+              >;
+              if (details.codeGroup === previousPrefix)
+                details.codeGroup = prefix;
+              if (details.prefix === previousPrefix) details.prefix = prefix;
+            }
+          }
+
           Object.assign(group, {
             name,
             prefix,

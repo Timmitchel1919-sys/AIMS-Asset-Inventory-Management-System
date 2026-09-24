@@ -123,6 +123,81 @@ describe("mock workflow repository", () => {
     expect(asset.code).toBe("KCSL-300");
     expect(asset.lastModifiedBy).toBe("Administrator");
   });
+  it("renumbers linked assets and relinks categories when a code-group prefix is corrected", async () => {
+    const group = repo.snapshot().codeGroups.find((g) => g.prefix === "KCSMD")!;
+    const affected = repo
+      .snapshot()
+      .assets.filter((asset) => asset.codePrefix === "KCSMD");
+    const before = affected.map((asset) => asset.code);
+    const linkedCategory = repo
+      .snapshot()
+      .references.find((value) => value.details.codeGroup === "KCSMD")!;
+    const previousPrefix = group.prefix;
+    const result = await repo.execute({
+      action: "codeGroup.edit",
+      entityId: group.id,
+      actor: "Administrator",
+      values: { name: group.name, prefix: "KCSM" },
+    });
+    expect(result.ok).toBe(true);
+    expect(
+      repo.snapshot().codeGroups.find((g) => g.id === group.id)?.prefix,
+    ).toBe("KCSM");
+    const renamed = repo
+      .snapshot()
+      .assets.filter((asset) => asset.codePrefix === "KCSM");
+    expect(renamed).toHaveLength(affected.length);
+    renamed.forEach((asset, index) => {
+      const number = affected[index].codeNumber;
+      expect(asset.code).toBe(
+        `KCSM-${number < 100 ? String(number).padStart(2, "0") : number}`,
+      );
+      expect(asset.previousCodes).toContain(before[index]);
+      expect(asset.lastModifiedBy).toBe("Administrator");
+    });
+    expect(
+      repo.snapshot().assets.some((asset) => asset.codePrefix === previousPrefix),
+    ).toBe(false);
+    expect(
+      repo
+        .snapshot()
+        .references.find((value) => value.id === linkedCategory.id)?.details
+        .codeGroup,
+    ).toBe("KCSM");
+    expect(
+      repo.snapshot().codeGroups.find((g) => g.id === group.id)
+        ?.nextAvailableNumber,
+    ).toBe(group.nextAvailableNumber);
+  });
+  it("lets a main-location location code be corrected even with linked data", async () => {
+    const main = repo
+      .snapshot()
+      .references.find((value) => value.type === "Main location")!;
+    const linkedAsset = repo
+      .snapshot()
+      .assets.find(
+        (asset) =>
+          asset.currentLocationId === main.id ||
+          (!asset.currentLocationId && asset.location === main.name),
+      );
+    const result = await repo.execute({
+      action: "reference.edit",
+      entityId: main.id,
+      values: { details: { ...main.details, prefix: "KOND" } },
+    });
+    expect(result.ok, String(result.message)).toBe(true);
+    const updated = repo
+      .snapshot()
+      .references.find((value) => value.id === main.id)!;
+    expect(updated.details.prefix).toBe("KOND");
+    if (linkedAsset) {
+      const stillLinked = repo
+        .snapshot()
+        .assets.find((asset) => asset.id === linkedAsset.id);
+      expect(stillLinked?.code).toBe(linkedAsset.code);
+      expect(stillLinked?.codePrefix).toBe(linkedAsset.codePrefix);
+    }
+  });
   it("moves an asset and appends movement history", async () => {
     const asset = repo.snapshot().assets[1],
       count = repo.snapshot().movements.length;

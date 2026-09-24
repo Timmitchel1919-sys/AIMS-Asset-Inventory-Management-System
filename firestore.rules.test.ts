@@ -37,7 +37,8 @@ describe("Firestore AIMS authorization rules", () => {
   });
   it("allows only explicitly authorized, schema-validated legacy inventory imports", () => {
     expect(rules).toContain("hasPermission('inventory.import')");
-    expect(rules).toContain("request.auth.token.role in ['ict-manager', 'warehouse-manager']");
+    // Authorization is permission-based, not restricted to specific roles.
+    expect(rules).not.toContain("request.auth.token.role in");
     expect(rules).toContain("validLegacyImportedAsset(request.resource.data)");
     expect(rules).toContain("validLegacyImportedInventory(request.resource.data)");
     expect(rules).toContain(
@@ -63,5 +64,19 @@ describe("Firestore AIMS authorization rules", () => {
     );
     expect(rules).toContain("resource.data.status == 'ACTIVE'");
     expect(rules).toContain("allow delete: if false;");
+  });
+  it("keeps asset codes immutable except a previousCodes-guarded prefix rename", () => {
+    expect(rules).toContain(
+      "request.resource.data.code == resource.data.code",
+    );
+    expect(rules).toContain(
+      "request.resource.data.codePrefix == resource.data.codePrefix",
+    );
+    expect(rules).toContain(
+      "request.resource.data.codePrefix != resource.data.codePrefix",
+    );
+    expect(rules).toContain(
+      "resource.data.code in request.resource.data.previousCodes",
+    );
   });
 });
