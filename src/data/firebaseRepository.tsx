@@ -18,7 +18,8 @@ import {
   type Firestore,
   where,
 } from "firebase/firestore";
-import { firebaseAuth, requireFirebase } from "../lib/firebase";
+import { httpsCallable } from "firebase/functions";
+import { firebaseAuth, firebaseFunctions, requireFirebase } from "../lib/firebase";
 import { isConnectivityError, reportWriteError } from "../lib/connectivity";
 import {
   isConnectionRequiredAction,
@@ -714,6 +715,17 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
           "Inventory-code corrections are not yet available for AIMS accounts connected to Firebase. Contact ICT Support.",
       };
     const before = structuredClone(this.snapshot());
+    const existingGroup = command.action === "codeGroup.edit" ? this.state.codeGroups.find((item) => item.id === command.entityId) : undefined;
+    if (existingGroup && String(command.values?.prefix || existingGroup.prefix).trim().toUpperCase() !== existingGroup.prefix) {
+      if (!firebaseFunctions) return { ok: false, message: "Code-prefixcorrecties vereisen Firebase." };
+      try {
+        const call = httpsCallable(firebaseFunctions, "renameCodeGroupPrefix");
+        await call({ groupId: existingGroup.id, name: String(command.values?.name || existingGroup.name), prefix: String(command.values?.prefix || existingGroup.prefix) });
+        await this.initialize();
+        return { ok: true, message: "Codegroep en gekoppelde middelen zijn bijgewerkt.", entityId: existingGroup.id };
+      } catch (error) { return { ok: false, message: firestoreErrorMessage(error).message };
+      }
+    }
     try {
       const access = await this.resolveActorAccess();
       if (

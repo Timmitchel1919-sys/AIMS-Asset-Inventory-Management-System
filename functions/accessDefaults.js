@@ -9,7 +9,7 @@
 // permission to any verified, non-suspended user regardless of this
 // document's contents — but this stays in sync for consistency and as the
 // value new accessAssignments documents are seeded with.
-export const DEFAULT_ACCESS_ROLE = "administrator";
+export const DEFAULT_ACCESS_ROLE = "warehouse-staff";
 
 export const DEFAULT_ACCESS_PERMISSIONS = [
   "dashboard.view",
@@ -194,5 +194,4 @@ export const DEFAULT_ACCESS_PERMISSIONS = [
   "admin.roles.manage",
   "admin.audit.read",
   "admin.legal.manage",
-  "admin.system.configure",
-];
+  "admin.system.configure",].filter((permission) => !permission.startsWith("admin.") && !["users.manage", "roles.manage", "inventory.import", "assets.import", "settings.manage"].includes(permission));

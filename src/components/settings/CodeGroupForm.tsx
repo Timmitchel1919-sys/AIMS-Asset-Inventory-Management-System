@@ -27,6 +27,8 @@ export function CodeGroupForm({
   }>({ status: "idle", message: "" });
   const [busy, setBusy] = useState(false);
 
+  // Submit controlled state, not a stale dialog FormData snapshot.
+  const [name, setName] = useState(group?.name || "");
   const [currentPrefix, setCurrentPrefix] = useState(group?.prefix || "");
   const nextNumber = group?.nextAvailableNumber ?? 1;
   const previewCode = `${currentPrefix}${nextNumber}`;
@@ -36,11 +38,10 @@ export function CodeGroupForm({
     if (busy) return;
     setBusy(true);
 
-    const d = new FormData(event.currentTarget);
-    const name = String(d.get("name") || "").trim();
-    const prefix = String(d.get("prefix") || "").trim();
+    const trimmedName = name.trim();
+    const prefix = currentPrefix.trim().toUpperCase();
 
-    if (!name || !prefix) {
+    if (!trimmedName || !prefix) {
       setFeedback({
         status: "error",
         message: nl
@@ -51,7 +52,7 @@ export function CodeGroupForm({
       return;
     }
 
-    const normalizedName = name.toLowerCase().replace(/\s+/g, " ");
+    const normalizedName = trimmedName.toLowerCase().replace(/\s+/g, " ");
     const normalizedPrefix = prefix.toLowerCase();
     const duplicateName = snapshot.codeGroups.find(
       (x) =>
@@ -87,7 +88,7 @@ export function CodeGroupForm({
     const result = await repository.execute({
       action: group ? "codeGroup.edit" : "codeGroup.create",
       entityId: group?.id,
-      values: { name, prefix },
+      values: { name: trimmedName, prefix },
     });
 
     setFeedback({
@@ -120,14 +121,15 @@ export function CodeGroupForm({
       <Field
         name="name"
         label={nl ? "Naam codegroep" : "Code group name"}
-        defaultValue={group?.name}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
         required
         disabled={busy}
       />
       <Field
         name="prefix"
         label={nl ? "Codeprefix" : "Code prefix"}
-        defaultValue={group?.prefix}
+        value={currentPrefix}
         onChange={(e) => setCurrentPrefix(e.target.value.toUpperCase())}
         pattern="[A-Za-z0-9]{1,16}"
         maxLength={16}

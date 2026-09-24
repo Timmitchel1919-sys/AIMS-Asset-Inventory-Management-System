@@ -641,3 +641,46 @@ export const resolveSyncConflict = onCall(
     return { ok: true, applied: true, syncVersion: newVersion, changes };
   },
 );
+
+/** Trusted, audited code-group prefix migration. All active AIMS users may request it;
+ * direct client writes remain unable to change code prefixes or asset codes. */
+export const renameCodeGroupPrefix = onCall(
+  { region: "southamerica-east1", timeoutSeconds: 60, memory: "512MiB" },
+  async (request) => {
+    if (!authorized(request)) throw new HttpsError("permission-denied", "A verified AIMS account is required.");
+    const uid = String(request.auth?.uid || "");
+    const groupId = String(request.data?.groupId || "").trim();
+    const prefix = String(request.data?.prefix || "").trim().toUpperCase();
+    const name = String(request.data?.name || "").trim();
+    if (!uid || !groupId || !name || !/^[A-Z0-9]{1,16}$/.test(prefix))
+      throw new HttpsError("invalid-argument", "A code-group name and an alphanumeric prefix are required.");
+    const db = getFirestore();
+    const assignment = await db.collection("accessAssignments").doc(uid).get();
+    if (!assignment.exists || assignment.data()?.active !== true)
+      throw new HttpsError("permission-denied", "Your AIMS access is inactive.");
+    const groupRef = db.collection("codeGroups").doc(groupId);
+    const group = await groupRef.get();
+    if (!group.exists) throw new HttpsError("not-found", "Code group not found.");
+    const before = group.data();
+    const oldPrefix = String(before.prefix || "").toUpperCase();
+    const duplicate = await db.collection("codeGroups").where("prefix", "==", prefix).limit(1).get();
+    if (!duplicate.empty && duplicate.docs[0].id !== groupId)
+      throw new HttpsError("already-exists", "Code prefix already exists.");
+    const assets = await db.collection("assets").where("codePrefix", "==", oldPrefix).get();
+    const categories = await db.collection("categories").where("details.codeGroup", "==", oldPrefix).get();
+    if (assets.size + categories.size > 400)
+      throw new HttpsError("failed-precondition", "Too many linked records for one safe prefix migration. Contact ICT Support.");
+    const batch = db.batch();
+    const now = FieldValue.serverTimestamp();
+    batch.update(groupRef, { name, prefix, updatedAt: now, updatedBy: uid });
+    for (const doc of assets.docs) {
+      const asset = doc.data(), number = Number(asset.codeNumber);
+      const code = `${prefix}-${number < 100 ? String(number).padStart(2, "0") : number}`;
+      batch.update(doc.ref, { code, codePrefix: prefix, previousCodes: [...new Set([...(asset.previousCodes || []), asset.code])], lastUpdated: new Date().toISOString().slice(0, 10), lastModifiedBy: uid, updatedAt: now, updatedBy: uid });
+    }
+    for (const doc of categories.docs) batch.update(doc.ref, { "details.codeGroup": prefix, updatedAt: now, updatedBy: uid });
+    batch.set(db.collection("activityLogs").doc(), { action: "codeGroup.prefix.rename", entityType: "codeGroup", entityId: groupId, actorUserId: uid, actorEmail: request.auth.token.email || "", before: { name: before.name, prefix: oldPrefix, linkedAssets: assets.size, linkedCategories: categories.size }, after: { name, prefix }, createdAt: now, updatedAt: now, updatedBy: uid });
+    await batch.commit();
+    return { ok: true, groupId, prefix, assetsUpdated: assets.size, categoriesUpdated: categories.size };
+  },
+);
