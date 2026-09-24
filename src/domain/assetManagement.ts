@@ -6,6 +6,7 @@ import { hasQrToken, qrResolverUrl } from "./qrIdentity";
 export type AssetCodePrefix = string;
 export interface AssetFormValues {
   codePrefix: AssetCodePrefix;
+  codeNumber: string;
   name: string;
   description: string;
   category: string;
@@ -37,6 +38,7 @@ export interface AssetFormValues {
 }
 export const assetFormDefaults: AssetFormValues = {
   codePrefix: "KCSMD",
+  codeNumber: "",
   name: "",
   description: "",
   category: "",
@@ -76,6 +78,7 @@ export type ValidationMessages = {
 export function assetFormSchema(messages: ValidationMessages, isEdit = false) {
   return z
     .object({
+      codeNumber: z.string().trim().regex(/^\d+$/, { message: messages.required }).refine((value) => Number(value) >= 1 && Number(value) <= 1000000000, { message: messages.required }),
       codePrefix: z
         .string()
         .trim()

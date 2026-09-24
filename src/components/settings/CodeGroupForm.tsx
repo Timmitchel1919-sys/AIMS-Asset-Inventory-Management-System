@@ -30,8 +30,6 @@ export function CodeGroupForm({
   // Submit controlled state, not a stale dialog FormData snapshot.
   const [name, setName] = useState(group?.name || "");
   const [currentPrefix, setCurrentPrefix] = useState(group?.prefix || "");
-  const nextNumber = group?.nextAvailableNumber ?? 1;
-  const previewCode = `${currentPrefix}${nextNumber}`;
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -143,20 +141,7 @@ export function CodeGroupForm({
             : "Note: changing the prefix automatically rewrites the inventory codes of every asset linked to this code group (the old code is kept as a previous code) and updates linked categories."}
         </p>
       )}
-
-      <div className="field wide" style={{ marginBottom: "1rem" }}>
-        <label className="field-label">
-          {nl ? "Volgende beschikbare code" : "Next available code"}
-        </label>
-        <div style={{ padding: "8px 12px", background: "var(--color-background-alt)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)" }}>
-          <strong>{previewCode}</strong>
-          <div style={{ fontSize: "0.85em", color: "var(--color-text-dim)" }}>
-            {nl ? "Automatisch beheerd door AIMS — ongelimiteerd" : "Automatically managed by AIMS — unlimited"}
-          </div>
-        </div>
-      </div>
-
-      {group && (
+\n\n      {group && (
         <p className="record-audit" style={{ marginTop: "1rem" }}>
           <small>
             {nl ? "Toegevoegd" : "Added"}: {group.createdBy || "—"} ·{" "}

@@ -91,6 +91,7 @@ export default function AssetForm() {
     ? {
         ...assetFormDefaults,
         codePrefix: existing.codePrefix as AssetFormValues["codePrefix"],
+        codeNumber: String(existing.codeNumber),
         name: existing.name,
         description: existing.description || "",
         category: existing.category,
@@ -252,7 +253,6 @@ export default function AssetForm() {
                       value={existing.code}
                       readOnly
                     />
-                    <p className="field-hint">{a("permanentNotice")}</p>
                   </div>
                 ) : (
                   <div className="field-with-hint">
@@ -272,7 +272,8 @@ export default function AssetForm() {
                           </option>
                         ))}
                     </SelectField>
-                    <p className="field-hint">{a("permanentNotice")}</p>
+                    <Field label={app.language === "nl" ? "Bestaand volgnummer" : "Existing sequence number"} type="number" min="1" max="1000000000" required error={errors.codeNumber?.message} {...register("codeNumber")} />
+                    <p className="field-hint">{app.language === "nl" ? "Voer het bestaande nummer uit het inventarisoverzicht in." : "Enter the existing number from the inventory list."}</p>
                   </div>
                 )}
                 <Field
