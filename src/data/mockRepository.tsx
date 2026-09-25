@@ -81,6 +81,7 @@ import {
   validateLocationMove,
 } from "../domain/rules";
 import { RepositoryProvider } from "./repositoryContext";
+import { ASSET_CONDITIONS } from "../domain/assetCondition";
 
 const clone = <T,>(value: T): T => structuredClone(value);
 const today = () => new Date().toISOString().slice(0, 10);
@@ -4525,17 +4526,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
     a.department = String(v.destinationDepartment || a.department);
 
     const requestedCondition = String(v.conditionAfter || v.condition || "");
-    if (
-      [
-        "New",
-        "Excellent",
-        "Good",
-        "Fair",
-        "Poor",
-        "Defective",
-        "Beyond Repair",
-      ].includes(requestedCondition)
-    )
+    if ((ASSET_CONDITIONS as readonly string[]).includes(requestedCondition))
       a.condition = requestedCondition as typeof a.condition;
 
     if (isReturn) {

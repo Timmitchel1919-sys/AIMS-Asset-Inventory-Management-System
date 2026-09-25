@@ -10,3 +10,4 @@ describe('Wave 4 assignment and borrowing rules',()=>{
   it('calculates accessory discrepancies explicitly',()=>expect(accessoryDiscrepancies([{name:'Charger',quantity:1,conditionAtIssue:'Good'}],[])[0]).toMatchObject({name:'Charger',missing:true}));
   it('assesses condition changes with textual outcomes',()=>{expect(conditionAssessment('Good','Good')).toBe('No deterioration');expect(conditionAssessment('Good','Poor')).toBe('Minor damage')});
 });
+describe('migration conditions in assessments',()=>{it('ranks new values like their closest existing value',()=>{expect(conditionAssessment('Good','Bad')).toBe(conditionAssessment('Good','Poor'));expect(conditionAssessment('Good','Use for parts')).toBe(conditionAssessment('Good','Beyond Repair'));expect(conditionAssessment('Good','Unknown')).toBe('Requires inspection')})});

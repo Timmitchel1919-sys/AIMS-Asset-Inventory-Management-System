@@ -20,6 +20,7 @@ import type { Repair } from "../domain/types";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { uploadAimsFiles } from "../services/firebaseStorageUploads";
 import { StatusBadge } from "../components/AssetStatusBadge";
+import { ASSET_CONDITIONS } from "../domain/assetCondition";
 
 export default function RepairsPage() {
   const { language } = useApp(),
@@ -396,12 +397,9 @@ export default function RepairsPage() {
               label={nl ? "Nieuwe conditie" : "New condition"}
               required
             >
-              <option>Excellent</option>
-              <option>Good</option>
-              <option>Fair</option>
-              <option>Poor</option>
-              <option>Defective</option>
-              <option>Beyond Repair</option>
+              {ASSET_CONDITIONS.filter((value) => value !== "New").map((value) => (
+                <option key={value}>{value}</option>
+              ))}
             </SelectField>
             <label className="field">
               <span>{nl ? "Foto na reparatie" : "After photograph"}</span>

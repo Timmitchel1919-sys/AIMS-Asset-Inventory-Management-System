@@ -48,6 +48,7 @@ import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { runBulkCommands } from "../data/bulkActions";
 import type { Asset } from "../domain/types";
 import { useT } from "../i18n";
+import { ASSET_CONDITIONS } from "../domain/assetCondition";
 
 const columnIds = [
   "code",
@@ -540,15 +541,7 @@ export default function Assets() {
         : bulkAction === "status"
           ? facets.status || []
           : bulkAction === "edit"
-            ? [
-                "New",
-                "Excellent",
-                "Good",
-                "Fair",
-                "Poor",
-                "Defective",
-                "Beyond Repair",
-              ]
+            ? [...ASSET_CONDITIONS]
             : [];
 
   return (

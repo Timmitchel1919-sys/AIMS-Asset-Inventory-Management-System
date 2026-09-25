@@ -8,16 +8,9 @@ import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { locationPath } from "../domain/locationTree";
 import type { Condition } from "../domain/types";
+import { ASSET_CONDITIONS } from "../domain/assetCondition";
 
-const CONDITIONS: Condition[] = [
-  "New",
-  "Excellent",
-  "Good",
-  "Fair",
-  "Poor",
-  "Defective",
-  "Beyond Repair",
-];
+const CONDITIONS: readonly Condition[] = ASSET_CONDITIONS;
 
 type Mode = "transfer" | "return";
 

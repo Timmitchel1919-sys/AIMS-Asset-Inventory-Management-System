@@ -214,6 +214,10 @@ const en = {
   "condition.Poor": "Poor",
   "condition.Defective": "Defective",
   "condition.Beyond Repair": "Beyond repair",
+  "condition.Bad": "Bad",
+  "condition.Use for parts": "Use for parts",
+  "condition.Out of service": "Out of service",
+  "condition.Unknown": "Unknown",
 } as const;
 
 const nl: Record<keyof typeof en, string> = {
@@ -432,6 +436,10 @@ const nl: Record<keyof typeof en, string> = {
   "condition.Poor": "Slecht",
   "condition.Defective": "Defect",
   "condition.Beyond Repair": "Onherstelbaar",
+  "condition.Bad": "Slecht (defect)",
+  "condition.Use for parts": "Voor onderdelen",
+  "condition.Out of service": "Buiten gebruik",
+  "condition.Unknown": "Onbekend",
 };
 
 export type TranslationKey = keyof typeof en;

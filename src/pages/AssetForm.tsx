@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAssetT } from "../assetCopy";
+import { ASSET_CONDITIONS } from "../domain/assetCondition";
 import {
   formatTechnicalSpecifications,
   parseTechnicalSpecifications,
@@ -54,15 +55,7 @@ const statuses: AssetStatus[] = [
   "Disposed",
   "Archived",
 ];
-const conditions: Condition[] = [
-  "New",
-  "Excellent",
-  "Good",
-  "Fair",
-  "Poor",
-  "Defective",
-  "Beyond Repair",
-];
+const conditions: readonly Condition[] = ASSET_CONDITIONS;
 const split = (value: string) =>
   value
     .split(",")

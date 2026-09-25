@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ASSET_CONDITIONS } from "./assetCondition";
 import type { Asset, AssetStatus, Condition, Role } from "./types";
 import { normalizeAssetCode } from "./assetCode";
 import { hasQrToken, qrResolverUrl } from "./qrIdentity";
@@ -105,15 +106,7 @@ export function assetFormSchema(messages: ValidationMessages, isEdit = false) {
         "Disposed",
         "Archived",
       ]),
-      condition: z.enum([
-        "New",
-        "Excellent",
-        "Good",
-        "Fair",
-        "Poor",
-        "Defective",
-        "Beyond Repair",
-      ]),
+      condition: z.enum(ASSET_CONDITIONS),
       location: z.string(),
       currentLocationId: z.string().default(""),
       department: z.string().min(1, messages.required),

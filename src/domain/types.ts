@@ -28,7 +28,11 @@ export type Condition =
   | "Fair"
   | "Poor"
   | "Defective"
-  | "Beyond Repair";
+  | "Beyond Repair"
+  | "Bad"
+  | "Use for parts"
+  | "Out of service"
+  | "Unknown";
 export interface User {
   id: string;
   name: string;
