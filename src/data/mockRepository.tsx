@@ -1100,9 +1100,17 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             a.codePrefix = normalized.codePrefix;
             a.codeNumber = normalized.codeNumber;
           }
+          // Identifiers are immutable on a normal edit: the form echoes them
+          // back as strings (codeNumber "2"), which would overwrite the stored
+          // integer and be rejected by Firestore Rules. They change only via
+          // the audited code-correction path above.
           const values = { ...v };
           delete values.codeCorrection;
           delete values.correctionReason;
+          delete values.code;
+          delete values.codePrefix;
+          delete values.codeNumber;
+          delete values.previousCodes;
           Object.assign(a, values, {
             serialNumber: serial,
             lastUpdated: today(),

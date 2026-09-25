@@ -123,6 +123,26 @@ describe("mock workflow repository", () => {
     expect(asset.code).toBe("KCSL-300");
     expect(asset.lastModifiedBy).toBe("Administrator");
   });
+  it("keeps asset identifiers immutable when a normal edit echoes form strings", async () => {
+    const asset = repo.snapshot().assets[1];
+    const { code, codePrefix, codeNumber } = asset;
+    const result = await repo.execute({
+      action: "asset.edit",
+      entityId: asset.id,
+      values: {
+        code,
+        codePrefix,
+        codeNumber: String(codeNumber),
+        notes: "Added later",
+      },
+    });
+    expect(result.ok).toBe(true);
+    expect(asset.notes).toBe("Added later");
+    expect(asset.code).toBe(code);
+    expect(asset.codePrefix).toBe(codePrefix);
+    expect(asset.codeNumber).toBe(codeNumber);
+    expect(typeof asset.codeNumber).toBe("number");
+  });
   it("renumbers linked assets and relinks categories when a code-group prefix is corrected", async () => {
     const group = repo.snapshot().codeGroups.find((g) => g.prefix === "KCSMD")!;
     const affected = repo
