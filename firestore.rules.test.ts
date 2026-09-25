@@ -65,7 +65,7 @@ describe("Firestore AIMS authorization rules", () => {
     expect(rules).toContain("resource.data.status == 'ACTIVE'");
     expect(rules).toContain("allow delete: if false;");
   });
-  it("keeps asset codes immutable except a previousCodes-guarded prefix rename", () => {
+  it("keeps asset codes immutable", () => {
     expect(rules).toContain(
       "request.resource.data.code == resource.data.code",
     );
@@ -73,10 +73,7 @@ describe("Firestore AIMS authorization rules", () => {
       "request.resource.data.codePrefix == resource.data.codePrefix",
     );
     expect(rules).toContain(
-      "request.resource.data.codePrefix != resource.data.codePrefix",
-    );
-    expect(rules).toContain(
-      "resource.data.code in request.resource.data.previousCodes",
+      "request.resource.data.codeNumber == resource.data.codeNumber",
     );
   });
 });

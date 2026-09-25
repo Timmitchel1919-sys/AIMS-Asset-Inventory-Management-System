@@ -194,4 +194,5 @@ export const DEFAULT_ACCESS_PERMISSIONS = [
   "admin.roles.manage",
   "admin.audit.read",
   "admin.legal.manage",
-  "admin.system.configure",].filter((permission) => !permission.startsWith("admin.") && !["users.manage", "roles.manage", "inventory.import", "assets.import", "settings.manage"].includes(permission));
+  "admin.system.configure",];
+
