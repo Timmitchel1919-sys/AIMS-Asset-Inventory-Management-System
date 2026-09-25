@@ -479,6 +479,16 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
           data.qrToken = deleteField();
           data.qrUpdatedAt = deleteField();
         }
+        // set(..., { merge: true }) deep-merges maps, so specification keys
+        // removed in the form would otherwise survive in Firestore.
+        const oldSpecs = (old as { technicalSpecifications?: Record<string, string> } | undefined)
+          ?.technicalSpecifications;
+        if (key === "assets" && oldSpecs) {
+          const nextSpecs = { ...(data.technicalSpecifications || {}) };
+          for (const specKey of Object.keys(oldSpecs))
+            if (!(specKey in nextSpecs)) nextSpecs[specKey] = deleteField();
+          data.technicalSpecifications = nextSpecs;
+        }
         if (key === "assets" && data.qrUpdatedAt)
           data.qrUpdatedAt = serverTimestamp();
         if (key === "qrIdentities" && (data as Record<string, unknown>).revokedAt)

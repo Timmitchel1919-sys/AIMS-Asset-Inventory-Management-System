@@ -5,6 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAssetT } from "../assetCopy";
 import {
+  formatTechnicalSpecifications,
+  parseTechnicalSpecifications,
+} from "../domain/technicalSpecifications";
+import {
   Button,
   Card,
   Field,
@@ -120,11 +124,9 @@ export default function AssetForm() {
         manufacturer: existing.manufacturer || "",
         warrantyStart: existing.warrantyStart || "",
         warrantyExpiry: existing.warrantyExpiry,
-        technicalSpecifications: Object.entries(
-          existing.technicalSpecifications || {},
-        )
-          .map(([key, value]) => `${key}: ${value}`)
-          .join("\n"),
+        technicalSpecifications: formatTechnicalSpecifications(
+          existing.technicalSpecifications,
+        ),
         attachments: (existing.attachments || []).join(", "),
         photos: (existing.photos || []).join(", "),
         notes: existing.notes || "",
@@ -165,14 +167,8 @@ export default function AssetForm() {
     const selectedLocation = snapshot.references.find(
       (item) => item.id === values.currentLocationId,
     );
-    const specifications = Object.fromEntries(
-      values.technicalSpecifications
-        .split(/\r?\n/)
-        .filter(Boolean)
-        .map((line: string) => {
-          const [key, ...rest] = line.split(":");
-          return [key.trim(), rest.join(":").trim()];
-        }),
+    const specifications = parseTechnicalSpecifications(
+      values.technicalSpecifications,
     );
     const uploadId = existing?.id || crypto.randomUUID();
     const [uploadedAttachments, uploadedPhotos] = await Promise.all([
@@ -409,7 +405,7 @@ export default function AssetForm() {
                 <TextAreaField
                   className="wide"
                   label={a("specifications")}
-                  placeholder="CPU: Intel Core i5&#10;RAM: 16 GB"
+                  placeholder={app.language === "nl" ? "Vrije tekst, of per regel Sleutel: waarde\nCPU: Intel Core i5\nRAM: 16 GB" : "Free text, or one Key: value per line\nCPU: Intel Core i5\nRAM: 16 GB"}
                   {...register("technicalSpecifications")}
                 />
               </div>

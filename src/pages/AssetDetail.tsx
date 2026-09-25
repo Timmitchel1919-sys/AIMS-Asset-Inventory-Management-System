@@ -32,6 +32,7 @@ import { ConditionBadge } from "../components/ConditionBadge";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { qrResolverPayload } from "../domain/assetManagement";
+import { RAW_SPECIFICATIONS_KEY } from "../domain/technicalSpecifications";
 import { useT } from "../i18n";
 
 const tabs: AssetCopyKey[] = [
@@ -400,12 +401,20 @@ export default function AssetDetail() {
             {tab === "technicalDetails" && (
               <dl className="asset-overview-grid">
                 {Object.entries(asset.technicalSpecifications || {}).map(
-                  ([key, value]) => (
-                    <div key={key}>
-                      <dt>{key}</dt>
-                      <dd>{value}</dd>
-                    </div>
-                  ),
+                  ([key, value]) =>
+                    key === RAW_SPECIFICATIONS_KEY || !String(value ?? "").trim() ? (
+                      <div key={key} style={{ gridColumn: "1 / -1" }}>
+                        <dt>{app.language === "nl" ? "Specificaties" : "Specifications"}</dt>
+                        <dd style={{ whiteSpace: "pre-line" }}>
+                          {key === RAW_SPECIFICATIONS_KEY ? value : key}
+                        </dd>
+                      </div>
+                    ) : (
+                      <div key={key}>
+                        <dt>{key}</dt>
+                        <dd>{value}</dd>
+                      </div>
+                    ),
                 )}
               </dl>
             )}
