@@ -1,0 +1,54 @@
+"SCREEN CODE"	"LOCATIE GROEP"	"ADMIN INVENTORY LOCATION"	"PASSWORD"	"\"	"BRAND"	"MODULE MINI DESKTOP"	"WIFI USER NAME"	"WIFI PASSWORD"	"Column 11"	"OPMERKINGEN"	"Column 1"
+KCSDB46	1A	34									
+KCSDB45	1D	37					KCSMD10						
+KCSDB17	2A	32		Riotouch digibord	Riotouch	KCSRT06		digibord26	digibord26		Wel module	
+KCSDB52	2A						KCSMD20						
+KCSDB07	2C	5		Prowise digibord	Prowise	KCSPW05		digibord16	digibord16		Wel module	
+KCSDB49	3A			SHARP DIGIBORD	SHARP		KCSMD14						
+KCSDB02	3B	12	32026b	Prowise digibord	Prowise		KCSMD05	digibord11	digibord11		Geen eigen module. Gebruikt Mini hp PC 	
+KCSDB19	3C	11		Prowise digibord	SAMSUNG		KCSMD04	digibord27	digibord27		Scherm 2e handse (gratis) | touch defect	
+KCSDB03	3D	10	32026d	Prowise Digibord	Prowise	KCSPW02		digibord12	digibord12		Wel module	
+KCSDB48	4A	14		Prowise Digibord	Prowise		KCSMD15	digibord23	digibord23		Wel module	
+KCSDB48	4A	9		SHARP DIGIBORD	SHARP		KCSMD15						
+KCSDB04	4B	9		SHARPP DIGIBORD	SHARP		KCSMD21	digibord13	digibord13		Wel module	
+KCSDB13	4B	9		Prowise Digibord	Prowise	KCSPW10		digibord22	digibord22		Wel module	
+KCSDB08	4C	6		Prowise Digibord	Prowise	KCSRT06		digibord17	digibord17		Wel module	
+KCSDB44	4D	8		Sharp digibord	sharp		KCSMD09						
+KCSDB11	5A	2		Prowise Digibord	Prowise		KCSMD07	digibord20	digibord20		Geen eigen module. Gebruikt mini HP pc	
+KCSDB12	5B			Prowise digibord	Prowise	KCSRT05		digibord21	digibord21		Digibord scherm heeft strepen en heeft geen eigen module. Gebruikt Riotouch module	
+	5B			Sharp digiboard	SHARP		KCSMD16						
+KCSDB05	5C	3		Prowise digibord	Prowise	KCSPW03		digibord14	digibird14		Wel module	
+KCSDB10	5C	3		Riotouch Digibord	Riotouch	KCSRT03		digibord19	digibord19		Wel module	
+KCSDB09	5D	4		Riotouch digibord	Riotouch	KCSRT02		digibord18	digibord18		Wel module	
+KCSDB16	6A	19		Prowie Digibord	Prowise	KCSPW07		digibord25	digibord25		Wel module	
+KCSDB14	6C	15		Prowise Digibord	Prowise	KCSPW01		digibord24	digibord24		Wel module	
+KCSDB37	7A	58		Sharp digibord	Sharp		KCSMD02	digibord30	digibord30		Geen eigen module. Gebruikt HP mini PC	
+KCSDB36	7B	59		Sharp digibord	sharp		KCSMD01	digibord29	digibord29		Geen eigen module . Gebruikt HP mini pc. Scherm heeft een streep	
+KCSDB51	7B	59		Sharp digibord	Sharp		KCSMD01						
+KCSDB06	7C	60		Prowise digibord	Prowise	KCSPW06		digibord15	digibord15		Wel module	
+KCSDB47	7D	67					KCSMD13						
+KCSDB38	8A	62		Sharp digibord	sharp		KCSMD03	digibord31	digibord31		Geen eige module. Gebrukt HP mini pc	
+KCSDB39	8B	63		Sharp digibord	Sharp		KCSMD22	digibord32	digibord32		Geen eigen module. Gebruikt laptop zonder batterij ( oude laptop van Caroline als een module)	
+KCSDB40	8C	66		Sharp digibord	sharp		KCSMD23				Geen eigen module. Laptop wordt met HDMI aangesloten	
+KCSDB33	cabin 1	73		sharp digibord	sharp		KCSMD19				Geen eigen module. Laptop wordt aangesloten via HDMI	
+KCSDB34	cabin 2	72		Prowise Digibord	Prowise						Geen eigen module. Laptop wordt aangesloten via HDMI	
+KCSDB35	Cabin 3	85		Prowise Digibord	Prowise						Geen eigen module. Laptop wordt aangesloten via HDMI	
+KCSDB20	Lokaal 1	83		Prowise Digibord	Prowise	KCSPW12		digibord01	digibord01		Wel module: 	
+KCSDB27	Lokaal 10	91		Samsung whiteboard	samsung			digibord06	digibord06		Geen eigen module. Laptop wordt aangesloten via HDMI	
+KCSDB28	Lokaal 11	90		Prowise Digibord	Prowise	KCSPW13		digibord09	digibord09		Wel module	
+KCSDB29	lokaal 12	89		samsung whiteboard	Samsung			digibord07	digibord07		Geen eigen module. Laptop wordt aangesloten via HDMI	
+KCSDB30	Lokaal 13	88		Samsung whiteboard	Samsung			digibord08	digibord08		Geen eigen module. Laptop wordt aangesloten via HDMI	
+KCSDB31	Lokaal 14	86		sharp digibord	sharp		KCSMD17				Geen eigen module. Mini PC KCSMD17 | Optie2: HDMI voor laptop 	
+KCSDB32	Lokaal 15	87		sharp digibord	sharp		KCSMD08	digibord33	digibord33		Geen eigen module. Gebruikt mini HP PC | optie 2: HDMI voor laptop	
+KCSDB21	Lokaal 2	82		Prowise Digibord	Prowise	KCSPW11		digibord02	digibord02		Wel module: 	
+KCSDB23	Lokaal 3	81		Riotouch Digibord	Riotouch	KCSRT05		digibord03	digibord03		Wel module: 	
+KCSDB24	Lokaal 4	80		Samsung whiteboard	Samsung			digibord04	digibord04		Geen eigen module. Laptop wordt aangesloten via HDMI	
+KCSDB25	Lokaal 5	77		Sharp digibord	Sharp		KCSMD18	digibord21	digibord21		Geen eigen module. Laptop wordt aangesloten via HDMI	
+KCSDB26	Lokaal 9	92		Samsung whiteboard	samsung			digibord05	digibord05		Geen eigen module. Laptop wordt aangesloten via HDMI	
+KCSDB01				Prowise digibord	Prowise	KCSPW01		digibord10	digibord10		power issue vervangen | gefiks in conference	
+KCSDB18				Prowise Digibord	Prowise						Alleen scherm heeft veel strepen. Komt van groep 1A geswitched met KCSDB12	
+KCSDB41				Riotouch Digibord	Riotouch		KCSMD06	digibord28	digibord28		Geen eigen module. Gebruikt mini HP pc	
+KCSDB42				Prowise Digibord	Prowise						Alleen scherm heeft veel strepen. 	
+KCSDB43				Prowise Digibord	Prowise						Alleen scherm Gaat niet aan. In kampoe (opslag)	Conference room 
+KCSDB50					SHARP									
+						SHARP									

@@ -1,4 +1,4 @@
-import { lazy, type ComponentType, type LazyExoticComponent } from "react";
+﻿import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 import type { Permission } from "../auth/permissions";
 
 export type RouteIcon =
@@ -564,7 +564,7 @@ export const routeManifest: AppRoute[] = [
     id: "categories",
     path: "/categories",
     component: page(async () => ({
-      default: (await import("../pages/ReferenceData")).CategoriesPage,
+      default: (await import("../pages/Categories")).CategoriesPage,
     })),
     titleKey: "routes.categories",
     navKey: "nav.categories",
@@ -580,7 +580,7 @@ export const routeManifest: AppRoute[] = [
     id: "category-new",
     path: "/categories/new",
     component: page(async () => ({
-      default: (await import("../pages/ReferenceData")).CategoriesPage,
+      default: (await import("../pages/Categories")).CategoriesPage,
     })),
     titleKey: "routes.categories",
     permission: "categories.manage",
@@ -594,7 +594,7 @@ export const routeManifest: AppRoute[] = [
     id: "category-edit",
     path: "/categories/:categoryId/edit",
     component: page(async () => ({
-      default: (await import("../pages/ReferenceData")).CategoriesPage,
+      default: (await import("../pages/Categories")).CategoriesPage,
     })),
     titleKey: "routes.categories",
     permission: "categories.manage",
@@ -608,7 +608,7 @@ export const routeManifest: AppRoute[] = [
     id: "category-detail",
     path: "/categories/:categoryId",
     component: page(async () => ({
-      default: (await import("../pages/ReferenceData")).CategoriesPage,
+      default: (await import("../pages/Categories")).CategoriesPage,
     })),
     titleKey: "routes.categories",
     permission: "categories.manage",

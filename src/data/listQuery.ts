@@ -43,7 +43,7 @@ const filterMatches=(value:unknown,filter:ListFilter)=>{
 };
 
 export function executeListQuery<T>(rows:readonly T[],query:ListQuery,adapter:ListQueryAdapter<T>):ListResult<T>{
-  const pageSize=Math.max(1,Math.min(100,Math.trunc(query.pageSize||25)));
+  const pageSize=Math.max(1,Math.min(10000,Math.trunc(query.pageSize||25)));
   const search=normalize(query.search);
   const filtered=rows.filter(row=>{
     if(search&&!adapter.searchable.some(field=>normalize(adapter.value(row,String(field))).includes(search)))return false;

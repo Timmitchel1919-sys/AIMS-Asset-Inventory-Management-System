@@ -1630,5 +1630,5 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
   );
 }
 
-export const CategoriesPage = () => <ReferenceDataPage kind="category" />;
+
 export const DepartmentsPage = () => <ReferenceDataPage kind="department" />;

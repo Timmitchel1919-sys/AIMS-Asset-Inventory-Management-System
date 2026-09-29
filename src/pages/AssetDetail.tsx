@@ -1,4 +1,4 @@
-import {
+﻿import {
   Archive,
   ArrowLeft,
   Check,
@@ -234,9 +234,9 @@ export default function AssetDetail() {
     [a("warrantyExpiry"), asset.warrantyExpiry],
     [a("supplier"), asset.supplier || "—"],
     [a("manufacturer"), asset.manufacturer || "—"],
-    [a("createdBy"), asset.createdBy || "Naomi Williams"],
-    [a("createdDate"), asset.dateAdded || "2026-07-30"],
-    [a("modifiedBy"), asset.lastModifiedBy || "Naomi Williams"],
+    [a("createdBy"), (() => { const v = asset.createdBy; if (!v) return "-"; const u = snapshot.users.find(u => u.id === v); return u ? u.name : v; })()],
+    [a("createdDate"), asset.dateAdded || "-"],
+    [a("modifiedBy"), (() => { const v = asset.lastModifiedBy; if (!v) return "-"; const u = snapshot.users.find(u => u.id === v); return u ? u.name : v; })()],
     [a("modifiedDate"), asset.lastUpdated],
   ];
   const renderHistory = (key: keyof NonNullable<typeof histories>) => {

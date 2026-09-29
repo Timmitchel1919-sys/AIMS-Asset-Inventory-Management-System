@@ -1,8 +1,8 @@
-import { useApp } from "./context/AppContext";
+﻿import { useApp } from "./context/AppContext";
 
 const en = {
   "nav.dashboard": "Dashboard",
-  "nav.assets": "ICT Assets",
+  "categories.assetName": "Asset name","categories.category": "Category","categories.subCategory": "Sub-category","categories.trackingType": "Tracking type","categories.codeGroup": "Code group","categories.activeAssets": "Active assets","categories.manager": "Manager","categories.status": "Status","categories.actions": "Actions","categories.addCategory": "+ Add new category","categories.addSubCategory": "+ Add new sub-category","categories.addAssetName": "+ Add new asset name","categories.addAssetType": "+ Add asset type","nav.assets": "ICT Assets",
   "nav.inventory": "Warehouse",
   "nav.categories": "Categories",
   "nav.departments": "Departments",
@@ -222,7 +222,7 @@ const en = {
 
 const nl: Record<keyof typeof en, string> = {
   "nav.dashboard": "Dashboard",
-  "nav.assets": "ICT-middelen",
+  "categories.assetName": "Assetnaam","categories.category": "Categorie","categories.subCategory": "Subcategorie","categories.trackingType": "Trackingtype","categories.codeGroup": "Codegroep","categories.activeAssets": "Actieve middelen","categories.manager": "Beheerder","categories.status": "Status","categories.actions": "Acties","categories.addCategory": "+ Nieuwe categorie toevoegen","categories.addSubCategory": "+ Nieuwe subcategorie toevoegen","categories.addAssetName": "+ Nieuwe assetnaam toevoegen","categories.addAssetType": "+ Nieuw assettype","nav.assets": "ICT-middelen",
   "nav.inventory": "Magazijn",
   "nav.categories": "Categorieën",
   "nav.departments": "Afdelingen",

@@ -1,0 +1,166 @@
+[
+  {
+    "id": "cat-0032",
+    "name": "Laptops",
+    "parent": "Computers",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "KCSL"
+  },
+  {
+    "id": "cat-0062",
+    "name": "Digiborden",
+    "parent": "Schermen",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "KCSDB"
+  },
+  {
+    "id": "cat-0063",
+    "name": "Desktop Mini PC",
+    "parent": "Computers",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "KCSMD"
+  },
+  {
+    "id": "cat-0064",
+    "name": "Monitor",
+    "parent": "Schermen",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "KCSMON"
+  },
+  {
+    "id": "cat-0065",
+    "name": "Beamer",
+    "parent": "Projector",
+    "type": "Serialized",
+    "codeGroup": "BR"
+  },
+  {
+    "id": "cat-0066",
+    "name": "Desktop  PC",
+    "parent": "Computers",
+    "type": "Serialized",
+    "status": "Active"
+  },
+  {
+    "id": "cat-0067",
+    "name": "Router",
+    "parent": "Netwerk",
+    "type": "Serialized",
+    "status": "Active"
+  },
+  {
+    "id": "cat-0068",
+    "name": "Switch",
+    "parent": "Netwerk",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "SW"
+  },
+  {
+    "id": "cat-0069",
+    "name": "Access points",
+    "parent": "Netwerk",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "AP"
+  },
+  {
+    "id": "cat-0070",
+    "name": "Keyboard Wired",
+    "parent": "Randapparatuur",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "KBW"
+  },
+  {
+    "id": "cat-0071",
+    "name": "Keyboard Wireless",
+    "parent": "Randapparatuur",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "KBWS"
+  },
+  {
+    "id": "cat-0072",
+    "name": "Muis Wireless",
+    "parent": "Randapparatuur",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "MWS"
+  },
+  {
+    "id": "cat-0073",
+    "name": "Muis Wired",
+    "parent": "Randapparatuur",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "MW"
+  },
+  {
+    "id": "cat-0074",
+    "name": "Camera",
+    "parent": "Randapparatuur",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "CA"
+  },
+  {
+    "id": "cat-0075",
+    "name": "HDMI kabel",
+    "parent": "Cable",
+    "type": "Quantity-based",
+    "codeGroup": "KS"
+  },
+  {
+    "id": "cat-0076",
+    "name": "VGA kabel",
+    "parent": "Kabels",
+    "type": "Quantity-based",
+    "status": "Active",
+    "codeGroup": "KS"
+  },
+  {
+    "id": "cat-0077",
+    "name": "Power kabel",
+    "parent": "Kabels",
+    "type": "Quantity-based",
+    "status": "Active",
+    "codeGroup": "KS"
+  },
+  {
+    "id": "cat-0078",
+    "name": "Touch kabel",
+    "parent": "Kabels",
+    "type": "Quantity-based",
+    "status": "Active",
+    "codeGroup": "KS"
+  },
+  {
+    "id": "cat-0079",
+    "name": "Netwerk kabel Cat6",
+    "parent": "Netwerk",
+    "type": "Quantity-based",
+    "status": "Active",
+    "codeGroup": "KS"
+  },
+  {
+    "id": "cat-0080",
+    "name": "Smartphone",
+    "parent": "Mobiel apparten",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "KCSMOB"
+  },
+  {
+    "id": "cat-0081",
+    "name": "Tablets",
+    "parent": "Mobiel apparten",
+    "type": "Serialized",
+    "status": "Active",
+    "codeGroup": "TAB"
+  }
+]
