@@ -809,6 +809,10 @@ td {
   white-space: normal;
   overflow-wrap: break-word;
 }
+th[data-column-id="code"],
+td[data-column-id="code"] {
+  white-space: nowrap;
+}
 td strong,
 td b {
   color: var(--color-text-primary);
