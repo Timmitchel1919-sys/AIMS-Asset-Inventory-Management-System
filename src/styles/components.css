@@ -799,11 +799,15 @@ th {
   padding: 10px;
   font-size: 10px;
   font-weight: 750;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 td {
   border-bottom: 1px solid var(--color-border-subtle);
   padding: 10px;
   color: var(--color-text-secondary);
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 td strong,
 td b {
