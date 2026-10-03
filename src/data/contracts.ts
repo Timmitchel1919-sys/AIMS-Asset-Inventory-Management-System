@@ -232,7 +232,7 @@ export interface Disposal {
   finalHandler?: string;
   attachments?: string[];
 }
-export type ReferenceKind = "category" | "location" | "department";
+export type ReferenceKind = "category" | "subcategory" | "location" | "department";
 export interface ReferenceRecord {
   id: string;
   kind: ReferenceKind;

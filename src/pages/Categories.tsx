@@ -1,4 +1,4 @@
-ï»¿import { useState, useMemo, FormEvent } from "react";
+import { useState, useMemo, FormEvent } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Plus, Edit3 } from "lucide-react";
 import { useApp } from "../context/AppContext";
@@ -39,28 +39,28 @@ export const CategoriesPage = () => {
     {
       id: "category",
       label: t("categories.category"),
-      render: (item) => resolveCat(String(item.details?.categoryId))?.name || "â€”",
+      render: (item) => resolveCat(String(item.details?.categoryId))?.name || "—",
       text: (item) => resolveCat(String(item.details?.categoryId))?.name || "",
       sortable: true,
     },
     {
       id: "subcategory",
       label: t("categories.subCategory"),
-      render: (item) => resolveSub(String(item.details?.subCategoryId))?.name || "â€”",
+      render: (item) => resolveSub(String(item.details?.subCategoryId))?.name || "—",
       text: (item) => resolveSub(String(item.details?.subCategoryId))?.name || "",
       sortable: true,
     },
     {
       id: "tracking",
       label: t("categories.trackingType"),
-      render: (item) => item.type || "â€”",
+      render: (item) => item.type || "—",
       text: (item) => item.type || "",
       sortable: true,
     },
     {
       id: "codeGroup",
       label: t("categories.codeGroup"),
-      render: (item) => String(item.details?.codeGroup || "â€”"),
+      render: (item) => String(item.details?.codeGroup || "—"),
       text: (item) => String(item.details?.codeGroup || ""),
       sortable: true,
     },
@@ -106,16 +106,14 @@ export const CategoriesPage = () => {
     <>
       <PageHeader
         title={t("routes.categories")}
-        description={nl ? "Beheer hiÃ«rarchische asset types en classificaties." : "Manage hierarchical asset types and classifications."}
+        description={nl ? "Beheer hiërarchische asset types en classificaties." : "Manage hierarchical asset types and classifications."}
         actions={user ? <Button onClick={() => navigate("/categories/new?new=true")}><Plus size={16} /> {t("categories.addAssetType")}</Button> : undefined}
       />
       
       <DataTable
-        records={assetTypes}
+        rows={assetTypes}
         columns={columns as any}
-        defaultSort="name"
-        defaultDirection="asc"
-        emptyState={nl ? "Geen assettypes gevonden." : "No asset types found."}
+        id="categories-table" rowKey={(r) => r.id} searchPlaceholder="Search..." emptyTitle="No categories" emptyDescription="No categories found."
       />
 
       {isEditing && (
@@ -278,7 +276,7 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
 
           {availableSubs.length === 0 && categoryId && (
             <div style={{fontSize: "0.85rem", color: "var(--color-neutral-text)", marginTop: "-10px", marginBottom: "15px"}}>
-              {nl ? "Geen subcategorieÃ«n gevonden. " : "No sub-categories found. "}
+              {nl ? "Geen subcategorieën gevonden. " : "No sub-categories found. "}
               <a href="#" onClick={(e) => { e.preventDefault(); setInlineCreate("subcategory"); }}>{t("categories.addSubCategory")}</a>
             </div>
           )}
@@ -452,3 +450,4 @@ const InlineCreateModal = ({ level, categoryId, subCategoryId, onClose, onSucces
     </Dialog>
   );
 };
+

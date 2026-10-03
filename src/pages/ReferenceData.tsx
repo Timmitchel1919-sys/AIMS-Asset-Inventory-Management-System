@@ -161,6 +161,18 @@ function ParentLocationForm({
 }
 
 const copy = {
+  subcategory: {
+    en: [
+      "Sub-categories",
+      "Manage classification, custom fields, maintenance defaults and code groups.",
+      "Add sub-category",
+    ],
+    nl: [
+      "SubcategorieAn",
+      "Beheer classificatie, aangepaste velden, onderhoudsstandaarden en KCS-codegroepen.",
+      "Subcategorie toevoegen",
+    ],
+  },
   category: {
     en: [
       "Categories & asset types",

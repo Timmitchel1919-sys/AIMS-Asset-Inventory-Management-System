@@ -21,6 +21,7 @@ import {
   OfflineGate,
   PageHeader,
 } from "../components/WorkflowUi";
+import { ClassificationFields } from "../components/ClassificationFields";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import {
@@ -288,18 +289,7 @@ export default function AssetForm() {
             </Card>
             <Card title={a("classification")}>
               <div className="form-grid">
-                <SelectField
-                  label={a("category")}
-                  required
-                  error={errors.category?.message}
-                  {...register("category")}
-                >
-                  <option value="">{a("all")}</option>
-                  {categories.map((value) => (
-                    <option key={value}>{value}</option>
-                  ))}
-                </SelectField>
-                <Field label={a("subcategory")} {...register("subcategory")} />
+                <ClassificationFields />
                 <Field
                   label={a("itemType")}
                   required
@@ -422,6 +412,7 @@ export default function AssetForm() {
                     type="file"
                     multiple
                     accept="image/jpeg,image/png,image/webp"
+                    capture="environment"
                     onChange={(event) =>
                       setPhotoFiles(Array.from(event.target.files || []))
                     }

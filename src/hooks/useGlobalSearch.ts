@@ -7,7 +7,7 @@ import type {Role} from '../domain/types';
 import type {GlobalSearchResult,GlobalSearchResultType} from '../types/search';
 export const normalizeSearchValue=(value:string)=>value.toLocaleLowerCase('nl').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().replace(/\s+/g,' ');
 const text=(...values:unknown[])=>normalizeSearchValue(values.flat().filter(value=>value!==undefined&&value!==null).join(' '));
-const permission:Record<GlobalSearchResultType,Permission>={asset:'assets.view',user:'users.manage',location:'locations.manage',department:'departments.manage',assignment:'assignments.manage',maintenance:'maintenance.manage',repair:'repairs.manage',category:'categories.manage'};
+const permission:Record<GlobalSearchResultType,Permission>={asset:'assets.view',user:'users.manage',location:'locations.manage',department:'departments.manage',assignment:'assignments.manage',maintenance:'maintenance.manage',repair:'repairs.manage',category:'categories.manage',subcategory:'categories.manage'};
 export function buildGlobalSearchIndex(snapshot:MockSnapshot,role:Role){
  const results:GlobalSearchResult[]=[];const add=(result:GlobalSearchResult)=>{if(can(role,permission[result.type]))results.push({...result,searchableText:normalizeSearchValue(result.searchableText)})};
  snapshot.assets.forEach(x=>add({id:x.id,type:'asset',title:x.name,subtitle:[x.category,x.department,x.location,x.status].filter(Boolean).join(' · '),code:x.code,route:`/assets/${x.id}`,searchableText:text(x.code,x.previousCodes,x.name,x.category,x.subcategory,x.type,x.brand,x.model,x.serialNumber,x.barcode,x.assignedTo,x.responsibleEmployee,x.department,x.location,x.status)}));

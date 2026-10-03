@@ -10,7 +10,7 @@ type BinItem = {
   name: string;
   kind: "asset" | "inventory" | "reference" | "codeGroup";
   detail: string;
-  refKind?: "category" | "location" | "department";
+  refKind?: "category" | "subcategory" | "location" | "department";
 };
 export function RecycleBinSettings() {
   const { formatDateTime, language } = useApp(),
