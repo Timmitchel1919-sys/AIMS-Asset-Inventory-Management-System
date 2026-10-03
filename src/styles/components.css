@@ -4346,3 +4346,12 @@ html .system-information {
   .account-settings-grid .preferences-column:last-child > .card:first-child,
   .account-settings-grid .preferences-column:last-child > .card:nth-child(2) { grid-column: 1; grid-row: auto; }
 }
+
+/* Fixes from prompt */
+html[data-theme='dark'] .page-title p { background: transparent !important; color: #ffffff !important; border-color: rgba(255, 255, 255, 0.2) !important; }
+th { background: #333333 !important; color: #ffffff !important; }
+.search input { background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+
+
+.global-search input { background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+
