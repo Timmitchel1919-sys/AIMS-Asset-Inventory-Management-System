@@ -1,4 +1,4 @@
-﻿import { useApp } from "./context/AppContext";
+import { useApp } from "./context/AppContext";
 
 const en = {
   "nav.dashboard": "Dashboard",
@@ -152,7 +152,7 @@ const en = {
   "assets.subcategory": "Subcategory",
   "assets.itemType": "Item type",
   "assets.serial": "Serial number",
-  "assets.location": "Location",
+  "assets.location": "Main location",
   "assets.department": "Sub-location",
   "assets.assignee": "User",
   "assets.supplier": "Supplier",
@@ -374,7 +374,7 @@ const nl: Record<keyof typeof en, string> = {
   "assets.subcategory": "Subcategorie",
   "assets.itemType": "Middeltype",
   "assets.serial": "Serienummer",
-  "assets.location": "Locatie",
+  "assets.location": "Hoofd locatie",
   "assets.department": "Sub-locatie",
   "assets.assignee": "Gebruiker",
   "assets.supplier": "Leverancier",
