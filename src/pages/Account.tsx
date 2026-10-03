@@ -20,7 +20,7 @@ import { AccountBackButton, PageHeader } from "../components/WorkflowUi";
 import { authErrorMessage, updateSelfProfile } from "../auth/firebaseAuth";
 import { useApp } from "../context/AppContext";
 import type { ThemeId } from "../domain/types";
-import { TypographySettings } from "../components/settings/TypographySettings";
+
 
 const themes: [ThemeId, string][] = [
   ["aimsAzureGlass", "AIMS Azure Blue"],
@@ -247,7 +247,7 @@ export function PreferencesPage() {
         </p>
       )}
       <div className="account-settings-grid">
-        <TypographySettings />
+        
         <div className="preferences-columns">
           <div className="preferences-column">
         <Card>
