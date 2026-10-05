@@ -3,21 +3,25 @@ import {describe,expect,it} from 'vitest';
 
 const css=readFileSync(new URL('./dark.css',import.meta.url),'utf8').toLowerCase();
 
-describe('AIMS Midnight theme contract',()=>{
-  it('centralizes the approved surface and text palette',()=>{
-    for(const color of ['#0b1a2e','#102640','#173454','#1e4168','#254d78','#345a82','#2c7ef4','#155eef','#00aeef','#f4f8fc','#c1cedd','#8fa5bc','#5aa2ff','#27ae60','#f5b942','#e35d6a'])expect(css).toContain(color);
+describe('AIMS Dark Bento theme contract',()=>{
+  it('scopes every rule to the dark theme only',()=>{
+    expect(css).toContain('html[data-theme="dark"] {');
   });
-  it('reuses the Default Blue wave geometry',()=>{
-    for(const geometry of ['width: 540px','height: 540px','left: -270px','bottom: -210px','transform: rotate(-13deg)','width: 440px','height: 270px','right: -255px','top: 145px','transform: rotate(-19deg)'])expect(css).toContain(geometry);
+  it('centralizes the approved bento palette',()=>{
+    for(const color of ['#020203','#2949c8','#6b86f5','#e5e1e5','#c5c5d6','#8e90a0','#b9c3ff'])expect(css).toContain(color);
   });
-  it('covers notch, mobile waves, forms, tables, auth and bottom navigation',()=>{
-    for(const selector of ['.app-sidebar__active-notch','@media (max-width: 780px)',':is(input,select,textarea','.bottom-nav a',':is(.auth-page','.btn.primary','tbody tr:hover'])expect(css).toContain(selector);
+  it('uses the grid background with soft navy glows',()=>{
+    expect(css).toContain('background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px');
+    expect(css).toContain('radial-gradient(circle at 10% 10%, rgba(20,32,85,0.35)');
   });
-  it('uses a glossy cyan fill and a thin white outline for hovered, focused and active sidebar modules',()=>{
-    expect(css).toContain('.navigation-item:is(:hover,:focus-visible,.active,[aria-current="page"])');
-    expect(css).toContain('border-width: 1px');
-    expect(css).toContain('border-color: #ffffff');
-    expect(css).toContain('background: linear-gradient(180deg, #5adfff 0%, #00aeef 48%, #008dcc 100%)');
-    expect(css).toContain('inset 0 1px 0 rgba(255,255,255,.58)');
+  it('covers sidebar, topbar, forms, tables, auth and bottom navigation',()=>{
+    for(const selector of ['.app-sidebar','.topbar',':is(input, select, textarea','.btn.primary','tbody tr:hover',':is(.auth-page','.bottom-nav a'])expect(css).toContain(selector);
+  });
+  it('renders the table header bar grey with white text',()=>{
+    expect(css).toMatch(/:is\(thead, thead th\) \{\s*background: #3a3a3d !important;\s*color: #ffffff !important;/);
+  });
+  it('outlines the topbar global search field in white',()=>{
+    expect(css).toMatch(/\.global-search__input-wrapper \{\s*border: 1px solid rgba\(255, 255, 255, 0\.85\) !important;/);
   });
 });
+

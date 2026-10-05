@@ -1,6 +1,6 @@
-import { useState, useMemo, FormEvent } from "react";
+import { useState, FormEvent } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Plus, Edit3 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { ReferenceRecord } from "../data/contracts";
@@ -9,6 +9,29 @@ import { DataTable, DataColumn } from "../components/DataTable";
 import { Badge, Button, Field, SelectField } from "../components/ui";
 import { Dialog, MutationFeedback, PageHeader } from "../components/WorkflowUi";
 
+/** Standard AIMS asset categories, always offered in the Category dropdown. */
+export const STANDARD_CATEGORIES = [
+  "Computers",
+  "Display & Presentation",
+  "Network",
+  "Print & Scan",
+  "Mobile Devices",
+  "Telephony",
+  "Peripherals",
+  "Power & Electrical",
+  "Cables",
+  "Adapters",
+  "Servers & Infrastructure",
+  "Storage Media",
+  "Audio Visual Equipment",
+  "Security",
+] as const;
+
+const PRESET_PREFIX = "preset:";
+const EMPTY = "\u2014";
+
+const normalize = (value: string) => value.trim().toLowerCase().replace(/\s+/g, " ");
+
 export const CategoriesPage = () => {
   const { user, language } = useApp();
   const snapshot = useMockSnapshot();
@@ -16,17 +39,20 @@ export const CategoriesPage = () => {
   const nl = language === "nl";
   const navigate = useNavigate();
   const params = useParams();
-  
+
   const [searchParams] = useSearchParams();
   const isEditing = Boolean(params.categoryId) || searchParams.get("new") === "true";
-  
+
   const allRefs = snapshot.references.filter(r => r.kind === "category");
   const assetTypes = allRefs.filter(r => !r.details?.level || r.details?.level === "asset_name");
   const topCategories = allRefs.filter(r => r.details?.level === "category");
-  const subCategories = allRefs.filter(r => r.details?.level === "subcategory");
 
-  const resolveCat = (id?: string) => topCategories.find(c => c.id === id);
-  const resolveSub = (id?: string) => subCategories.find(s => s.id === id);
+  const categoryName = (item: ReferenceRecord) =>
+    topCategories.find(c => c.id === String(item.details?.categoryId))?.name ||
+    String(item.details?.categoryName || "");
+
+  const activeAssetCount = (item: ReferenceRecord) =>
+    snapshot.assets.filter(a => a.category === item.name && !["Archived", "Disposed"].includes(a.status)).length;
 
   const columns: DataColumn<ReferenceRecord>[] = [
     {
@@ -39,42 +65,29 @@ export const CategoriesPage = () => {
     {
       id: "category",
       label: t("categories.category"),
-      render: (item) => resolveCat(String(item.details?.categoryId))?.name || "—",
-      text: (item) => resolveCat(String(item.details?.categoryId))?.name || "",
-      sortable: true,
-    },
-    {
-      id: "subcategory",
-      label: t("categories.subCategory"),
-      render: (item) => resolveSub(String(item.details?.subCategoryId))?.name || "—",
-      text: (item) => resolveSub(String(item.details?.subCategoryId))?.name || "",
+      render: (item) => categoryName(item) || EMPTY,
+      text: (item) => categoryName(item),
       sortable: true,
     },
     {
       id: "tracking",
       label: t("categories.trackingType"),
-      render: (item) => item.type || "—",
+      render: (item) => item.type || EMPTY,
       text: (item) => item.type || "",
       sortable: true,
     },
     {
       id: "codeGroup",
       label: t("categories.codeGroup"),
-      render: (item) => String(item.details?.codeGroup || "—"),
+      render: (item) => String(item.details?.codeGroup || EMPTY),
       text: (item) => String(item.details?.codeGroup || ""),
       sortable: true,
     },
     {
       id: "activeAssets",
       label: t("categories.activeAssets"),
-      render: (item) => {
-        const count = snapshot.assets.filter(a => a.category === item.name && !['Archived','Disposed'].includes(a.status)).length;
-        return count;
-      },
-      text: (item) => {
-        const count = snapshot.assets.filter(a => a.category === item.name && !['Archived','Disposed'].includes(a.status)).length;
-        return String(count);
-      },
+      render: (item) => activeAssetCount(item),
+      text: (item) => String(activeAssetCount(item)),
       sortable: true,
     },
     {
@@ -89,31 +102,19 @@ export const CategoriesPage = () => {
     },
   ];
 
-  if (user) {
-    columns.push({
-      id: "actions",
-      label: "",
-      render: (item) => (
-        <Button variant="ghost" onClick={() => navigate(`/categories/${item.id}/edit`)}>
-          <Edit3 size={16} />
-        </Button>
-      ),
-      text: () => "",
-    });
-  }
-
   return (
-    <>
+    <div className="page data-page">
       <PageHeader
         title={t("routes.categories")}
-        description={nl ? "Beheer hiërarchische asset types en classificaties." : "Manage hierarchical asset types and classifications."}
+        description={nl ? "Beheer hi\u00ebrarchische asset types en classificaties." : "Manage hierarchical asset types and classifications."}
         actions={user ? <Button onClick={() => navigate("/categories/new?new=true")}><Plus size={16} /> {t("categories.addAssetType")}</Button> : undefined}
       />
-      
+
       <DataTable
         rows={assetTypes}
         columns={columns as any}
         id="categories-table" rowKey={(r) => r.id} searchPlaceholder="Search..." emptyTitle="No categories" emptyDescription="No categories found."
+        onRowClick={user ? (row) => navigate(`/categories/${row.id}/edit`) : undefined}
       />
 
       {isEditing && (
@@ -121,7 +122,7 @@ export const CategoriesPage = () => {
           onClose={() => navigate("/categories")}
         />
       )}
-    </>
+    </div>
   );
 };
 
@@ -132,52 +133,89 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
   const t = useT();
   const nl = language === "nl";
   const params = useParams();
-  
+
   const isEditing = Boolean(params.categoryId);
   const existing = isEditing ? snapshot.references.find(r => r.id === params.categoryId) : null;
-  
+
   const allRefs = snapshot.references.filter(r => r.kind === "category");
   const topCategories = allRefs.filter(r => r.details?.level === "category");
-  const subCategories = allRefs.filter(r => r.details?.level === "subcategory");
   const assetTypes = allRefs.filter(r => !r.details?.level || r.details?.level === "asset_name");
 
-  const [categoryId, setCategoryId] = useState(String(existing?.details?.categoryId || ""));
-  const [subCategoryId, setSubCategoryId] = useState(String(existing?.details?.subCategoryId || ""));
+  // Category options: every standard category (backed by its stored record when one exists)
+  // plus any additional categories that were added via "Add category".
+  const categoryOptions = [
+    ...STANDARD_CATEGORIES.map(name => {
+      const record = topCategories.find(c => normalize(c.name) === normalize(name));
+      return { value: record ? record.id : `${PRESET_PREFIX}${name}`, name };
+    }),
+    ...topCategories
+      .filter(c => !STANDARD_CATEGORIES.some(name => normalize(name) === normalize(c.name)))
+      .map(c => ({ value: c.id, name: c.name })),
+  ];
+
+  const initialCategory = () => {
+    const id = String(existing?.details?.categoryId || "");
+    if (id && categoryOptions.some(o => o.value === id)) return id;
+    const storedName = String(existing?.details?.categoryName || topCategories.find(c => c.id === id)?.name || "");
+    return categoryOptions.find(o => storedName && normalize(o.name) === normalize(storedName))?.value || "";
+  };
+
+  const [categoryId, setCategoryId] = useState(initialCategory);
   const [assetName, setAssetName] = useState(existing?.name || "");
   const [trackingType, setTrackingType] = useState(existing?.type || "Serialized");
   const [codeGroup, setCodeGroup] = useState(String(existing?.details?.codeGroup || ""));
   const [status, setStatus] = useState(existing?.status || "Active");
-  
-  const [inlineCreate, setInlineCreate] = useState<"category" | "subcategory" | "asset_name" | null>(null);
+
+  const [inlineCreate, setInlineCreate] = useState(false);
   const [feedback, setFeedback] = useState<{status: 'idle'|'loading'|'success'|'error', message: string}>({status: 'idle', message: ''});
 
-  const availableSubs = subCategories.filter(s => s.parentId === categoryId || String(s.details?.categoryId) === categoryId);
-  const availableAssetNames = assetTypes.filter(a => String(a.details?.subCategoryId) === subCategoryId || a.parentId === subCategoryId);
-  
+  const categoryNameOf = (record: ReferenceRecord) =>
+    String(record.details?.categoryName || topCategories.find(c => c.id === String(record.details?.categoryId))?.name || "");
+
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     setFeedback({status: 'idle', message: ''});
-    
+
     if (!assetName.trim()) {
       setFeedback({status: 'error', message: nl ? "Assetnaam is verplicht." : "Asset name is required."});
       return;
     }
+    const selected = categoryOptions.find(o => o.value === categoryId);
+    if (!selected) {
+      setFeedback({status: 'error', message: nl ? "Categorie is verplicht." : "Category is required."});
+      return;
+    }
 
     if (!isEditing) {
-      const dup = assetTypes.find(a => a.name.toLowerCase().trim() === assetName.toLowerCase().trim() && String(a.details?.subCategoryId) === subCategoryId);
+      const dup = assetTypes.find(a => normalize(a.name) === normalize(assetName) && normalize(categoryNameOf(a)) === normalize(selected.name));
       if (dup) {
-        setFeedback({status: 'error', message: nl ? "Deze assetnaam bestaat al in deze subcategorie." : "This asset name already exists in this sub-category."});
+        setFeedback({status: 'error', message: nl ? "Deze assetnaam bestaat al in deze categorie." : "This asset name already exists in this category."});
         return;
       }
     }
-    
+
     setFeedback({status: 'loading', message: 'Saving...'});
-    
+
+    // A standard category without a stored record yet is created on first use.
+    let resolvedCategoryId = categoryId;
+    if (categoryId.startsWith(PRESET_PREFIX)) {
+      const created = await repository.execute({
+        action: "reference.create",
+        actor: user?.name || user?.email || "System",
+        values: { kind: "category", name: selected.name, status: "Active", type: "Hierarchy", details: { level: "category" } },
+      });
+      if (!created.ok) {
+        setFeedback({status: 'error', message: created.message});
+        return;
+      }
+      resolvedCategoryId = created.entityId || "";
+    }
+
     const details = {
       ...(existing?.details || {}),
       level: "asset_name",
-      categoryId,
-      subCategoryId,
+      categoryId: resolvedCategoryId || undefined,
+      categoryName: selected.name,
       codeGroup: codeGroup === "" ? undefined : codeGroup,
     };
 
@@ -191,7 +229,7 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
         type: trackingType,
         status: status as any,
         details,
-        parentId: subCategoryId || categoryId || undefined
+        parentId: resolvedCategoryId || undefined
       }
     });
 
@@ -203,20 +241,8 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
     }
   };
 
-  const handleInlineCreated = (level: string, id: string, name: string) => {
-    setInlineCreate(null);
-    if (level === "category") {
-      setCategoryId(id);
-      setSubCategoryId("");
-    } else if (level === "subcategory") {
-      setSubCategoryId(id);
-    } else if (level === "asset_name") {
-      setAssetName(name);
-    }
-  };
-
   return (
-    <>
+      <>
       <Dialog
         open={true}
         title={isEditing ? (nl ? "Assettype bewerken" : "Edit asset type") : t("categories.addAssetType")}
@@ -226,7 +252,7 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
             <Button variant="ghost" onClick={onClose} disabled={feedback.status === 'loading'}>
               {nl ? "Annuleren" : "Cancel"}
             </Button>
-            <Button variant="primary" onClick={(e) => {
+            <Button variant="primary" onClick={() => {
               const form = document.getElementById("asset-type-form") as HTMLFormElement;
               if (form) form.requestSubmit();
             }} disabled={feedback.status === 'loading'}>
@@ -237,49 +263,23 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
       >
         <form id="asset-type-form" onSubmit={handleSave} className="form-stack">
           <MutationFeedback {...feedback} />
-          
+
           <SelectField
             label={t("categories.category")}
             value={categoryId}
             required
             onChange={e => {
               if (e.target.value === "__add__") {
-                setInlineCreate("category");
+                setInlineCreate(true);
                 return;
               }
               setCategoryId(e.target.value);
-              setSubCategoryId("");
             }}
           >
             <option value="">{nl ? "Selecteer categorie..." : "Select category..."}</option>
-            {topCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {categoryOptions.map(c => <option key={c.value} value={c.value}>{c.name}</option>)}
             <option value="__add__">{t("categories.addCategory")}</option>
           </SelectField>
-
-          <SelectField
-            label={t("categories.subCategory")}
-            value={subCategoryId}
-            required
-            disabled={!categoryId}
-            onChange={e => {
-              if (e.target.value === "__add__") {
-                setInlineCreate("subcategory");
-                return;
-              }
-              setSubCategoryId(e.target.value);
-            }}
-          >
-            <option value="">{nl ? "Selecteer subcategorie..." : "Select sub-category..."}</option>
-            {availableSubs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            {categoryId && <option value="__add__">{t("categories.addSubCategory")}</option>}
-          </SelectField>
-
-          {availableSubs.length === 0 && categoryId && (
-            <div style={{fontSize: "0.85rem", color: "var(--color-neutral-text)", marginTop: "-10px", marginBottom: "15px"}}>
-              {nl ? "Geen subcategorieën gevonden. " : "No sub-categories found. "}
-              <a href="#" onClick={(e) => { e.preventDefault(); setInlineCreate("subcategory"); }}>{t("categories.addSubCategory")}</a>
-            </div>
-          )}
 
           <div style={{display: 'flex', gap: '1rem'}}>
             <div style={{flex: 1}}>
@@ -331,19 +331,16 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
       </Dialog>
 
       {inlineCreate && (
-        <InlineCreateModal 
-          level={inlineCreate} 
-          categoryId={categoryId} 
-          subCategoryId={subCategoryId}
-          onClose={() => setInlineCreate(null)} 
-          onSuccess={handleInlineCreated} 
+        <AddCategoryModal
+          onClose={() => setInlineCreate(false)}
+          onSuccess={(id) => { setInlineCreate(false); setCategoryId(id); }}
         />
       )}
     </>
   );
 };
 
-const InlineCreateModal = ({ level, categoryId, subCategoryId, onClose, onSuccess }: { level: "category" | "subcategory" | "asset_name", categoryId: string, subCategoryId: string, onClose: () => void, onSuccess: (level: string, id: string, name: string) => void }) => {
+const AddCategoryModal = ({ onClose, onSuccess }: { onClose: () => void, onSuccess: (id: string) => void }) => {
   const { user, language } = useApp();
   const snapshot = useMockSnapshot();
   const repository = useRepository();
@@ -353,68 +350,46 @@ const InlineCreateModal = ({ level, categoryId, subCategoryId, onClose, onSucces
   const [name, setName] = useState("");
   const [feedback, setFeedback] = useState<{status: 'idle'|'loading'|'success'|'error', message: string}>({status: 'idle', message: ''});
 
-  let title = "";
-  if (level === "category") title = t("categories.addCategory");
-  if (level === "subcategory") title = t("categories.addSubCategory");
-  if (level === "asset_name") title = t("categories.addAssetName");
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFeedback({status: 'idle', message: ''});
     const trimmed = name.trim();
     if (!trimmed) {
-      setFeedback({status: 'error', message: "Name is required."});
+      setFeedback({status: 'error', message: nl ? "Naam is verplicht." : "Name is required."});
       return;
     }
 
-    const allRefs = snapshot.references.filter(r => r.kind === "category");
-    
-    if (level === "category") {
-      const dup = allRefs.find(r => r.details?.level === "category" && r.name.toLowerCase().trim() === trimmed.toLowerCase());
-      if (dup) return setFeedback({status: 'error', message: nl ? "Deze categorie bestaat al." : "This category already exists."});
-    } else if (level === "subcategory") {
-      const dup = allRefs.find(r => r.details?.level === "subcategory" && String(r.details?.categoryId) === categoryId && r.name.toLowerCase().trim() === trimmed.toLowerCase());
-      if (dup) return setFeedback({status: 'error', message: nl ? "Deze subcategorie bestaat al." : "This sub-category already exists."});
-    } else if (level === "asset_name") {
-      const dup = allRefs.find(r => (!r.details?.level || r.details?.level === "asset_name") && String(r.details?.subCategoryId) === subCategoryId && r.name.toLowerCase().trim() === trimmed.toLowerCase());
-      if (dup) return setFeedback({status: 'error', message: nl ? "Deze assetnaam bestaat al." : "This asset name already exists."});
+    const isDuplicate =
+      snapshot.references.some(r => r.kind === "category" && r.details?.level === "category" && normalize(r.name) === normalize(trimmed)) ||
+      STANDARD_CATEGORIES.some(n => normalize(n) === normalize(trimmed));
+    if (isDuplicate) {
+      setFeedback({status: 'error', message: nl ? "Deze categorie bestaat al." : "This category already exists."});
+      return;
     }
 
     setFeedback({status: 'loading', message: 'Saving...'});
 
-    const details: Record<string, any> = { level };
-    if (level === "subcategory" || level === "asset_name") details.categoryId = categoryId;
-    if (level === "asset_name") details.subCategoryId = subCategoryId;
-
     const res = await repository.execute({
       action: "reference.create",
       actor: user?.name || user?.email || "System",
-      values: {
-        kind: "category",
-        name: trimmed,
-        status: "Active",
-        type: level === "asset_name" ? "Serialized" : "Hierarchy",
-        details,
-        parentId: level === "subcategory" ? categoryId : level === "asset_name" ? subCategoryId : undefined
-      }
+      values: { kind: "category", name: trimmed, status: "Active", type: "Hierarchy", details: { level: "category" } }
     });
 
     if (!res.ok) {
       setFeedback({status: 'error', message: res.message});
-    } else {
-      setFeedback({status: 'success', message: 'Saved successfully.'});
-      // Mock repository returns ID implicitly via snapshot update, but execute does not return ID directly for reference.create.
-      setTimeout(() => {
-        const newlyAdded = snapshot.references.find(r => r.kind === "category" && r.name === trimmed && r.details?.level === level);
-        onSuccess(level, newlyAdded?.id || String(Date.now()), trimmed);
-      }, 500);
+      return;
     }
+    setFeedback({status: 'success', message: 'Saved successfully.'});
+    setTimeout(() => {
+      const newlyAdded = repository.snapshot().references.find(r => r.kind === "category" && r.name === trimmed && r.details?.level === "category");
+      onSuccess(res.entityId || newlyAdded?.id || "");
+    }, 500);
   };
 
   return (
-    <Dialog 
-      open={true} 
-      title={title} 
+    <Dialog
+      open={true}
+      title={t("categories.addCategory")}
       onClose={onClose}
       footer={
         <>
@@ -432,22 +407,18 @@ const InlineCreateModal = ({ level, categoryId, subCategoryId, onClose, onSucces
     >
       <form id="inline-create-form" onSubmit={handleSubmit} className="form-stack">
         <MutationFeedback {...feedback} />
-        
-        {level === "subcategory" && (
-          <div style={{marginBottom: "1rem"}}>
-            <strong>{t("categories.category")}:</strong> {snapshot.references.find(r => r.id === categoryId)?.name}
-          </div>
-        )}
-
-        <Field 
-          label={nl ? "Naam" : "Name"} 
-          value={name} 
-          onChange={e => setName(e.target.value)} 
-          required 
+        <Field
+          label={nl ? "Naam" : "Name"}
+          value={name}
+          onChange={e => setName(e.target.value)}
+          required
           autoFocus
         />
       </form>
     </Dialog>
   );
 };
+
+
+
 
