@@ -1,4 +1,4 @@
-﻿import { lazy, type ComponentType, type LazyExoticComponent } from "react";
+import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 import type { Permission } from "../auth/permissions";
 
 export type RouteIcon =
@@ -32,6 +32,7 @@ export interface AppRoute {
   titleKey: string;
   navKey?: string;
   permission?: Permission;
+  ownerOnly?: boolean;
   navigation: boolean;
   breadcrumb: string[];
   mobile: boolean;
@@ -44,6 +45,22 @@ export interface AppRoute {
 const page = (load: () => Promise<{ default: ComponentType }>) => lazy(load);
 
 export const routeManifest: AppRoute[] = [
+  ...[
+    '/device-management', '/device-monitoring', '/device-policies', 
+    '/device-network', '/device-commands', '/device-bulk-actions', 
+    '/device-compliance', '/device-settings'
+  ].map((path) => ({
+    id: path.substring(1),
+    path,
+    component: lazy(() => import("../pages/DeviceManagement")),
+    titleKey: "Device Management",
+    navigation: false,
+    breadcrumb: [],
+    mobile: false,
+    lazy: true as const,
+    status: "implemented" as const,
+    ownerOnly: true,
+  })),
   {
     id: "home",
     path: "/",

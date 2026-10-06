@@ -378,6 +378,7 @@ const all: Permission[] = [
 // hasPermission()/hasAnyPermission() in firestore.rules, which grant the
 // same way server-side.
 export const rolePermissions: Record<Role, Permission[]> = {
+  owner: all,
   administrator: all,
   "ict-manager": all,
   "warehouse-manager": all,

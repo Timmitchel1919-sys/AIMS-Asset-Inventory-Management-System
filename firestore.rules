@@ -38,6 +38,10 @@ service cloud.firestore {
     function isAuthorizedAimsUser() {
       return isVerified() && isActiveAssignment();
     }
+    // Strict OWNER-ONLY boundary for Device Management & Monitoring
+    function isOwner() {
+      return isVerified() && isActiveAssignment() && hasAccessAssignment() && get(accessAssignmentPath()).data.role == 'owner';
+    }
     // Every authorized AIMS user may add and delete Master Data. Deletion is
     // still business-safe client-side (records move to the recycle bin first;
     // permanent delete requires resolving active related data).
@@ -675,6 +679,31 @@ service cloud.firestore {
       allow create, update: if hasPermission('admin.system.configure') && validOperationalRecord(request.resource.data);
       allow delete: if false;
     }
+
+    // =======================================================================
+    // OWNER-ONLY DEVICE MANAGEMENT BOUNDARY
+    // =======================================================================
+    match /deviceManagement/{document=**} {
+      allow read, write: if isOwner();
+    }
+    match /deviceCommands/{document=**} {
+      allow read, write: if isOwner();
+    }
+    match /devicePolicies/{document=**} {
+      allow read, write: if isOwner();
+    }
+    match /deviceNetwork/{document=**} {
+      allow read, write: if isOwner();
+    }
+    match /deviceCompliance/{document=**} {
+      allow read, write: if isOwner();
+    }
+    match /deviceAuditTrail/{document=**} {
+      // Audit records must not be normally deleted.
+      allow read, create: if isOwner();
+      allow update, delete: if false;
+    }
+    // =======================================================================
 
     match /legalDocuments/{type} {
       allow read: if resource.data.status == 'published' || hasPermission('legal.read');

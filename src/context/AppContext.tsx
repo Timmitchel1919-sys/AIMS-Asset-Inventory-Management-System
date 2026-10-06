@@ -52,6 +52,14 @@ import {
 } from "../domain/dateTimePreferences";
 
 const demoUsers: Record<Role, User> = {
+  owner: {
+    id: "owner-1",
+    name: "System Owner",
+    email: "owner@kcs.example",
+    role: "owner",
+    department: "Executive",
+    initials: "SO",
+  },
   administrator: {
     id: "u1",
     name: "Naomi Williams",

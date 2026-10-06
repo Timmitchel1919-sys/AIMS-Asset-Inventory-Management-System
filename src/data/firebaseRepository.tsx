@@ -258,11 +258,12 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     // suspension (active === false) or an explicit denial withholds
     // anything. Mirrors hasPermission()/hasAnyPermission() in
     // firestore.rules.
+    const resolvedRole = (data?.role as Role) || "administrator";
     return {
-      permissions: active ? rolePermissions.administrator : [],
+      permissions: active ? rolePermissions[resolvedRole] || rolePermissions.administrator : [],
       denials: [...new Set([...tokenDenials, ...denials])],
       active,
-      role: "administrator",
+      role: resolvedRole,
       email: user.email ?? null,
     };
   }
