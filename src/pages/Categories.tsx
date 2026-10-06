@@ -110,14 +110,12 @@ export const CategoriesPage = () => {
         actions={user ? <Button onClick={() => navigate("/categories/new?new=true")}><Plus size={16} /> {t("categories.addAssetType")}</Button> : undefined}
       />
 
-      <DataTable
+      <section className="card data-card"><DataTable
         rows={assetTypes}
         columns={columns as any}
         id="categories-table" rowKey={(r) => r.id} searchPlaceholder="Search..." emptyTitle="No categories" emptyDescription="No categories found."
         onRowClick={user ? (row) => navigate(`/categories/${row.id}/edit`) : undefined}
-      />
-
-      {isEditing && (
+      /></section>{isEditing && (
         <CategoryModal
           onClose={() => navigate("/categories")}
         />

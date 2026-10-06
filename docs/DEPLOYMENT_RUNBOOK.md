@@ -19,7 +19,7 @@ sign-in.
 
 Applies to every verified school-domain account, including the requested ones:
 `despercev@kangoeroeschool.com`, `sastropawiroe@kangoeroeschool.com`,
-`macleanj@kangoeroeschool.com`, `sanoesij@kangoeroeschool.com`,
+`macleanj@kangoeroeschool.com`,
 `Manager-ICT@kangoeroeschool.com`.
 
 ## Deploy (two parts — CI only covers #2)
