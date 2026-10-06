@@ -2,7 +2,6 @@ import {
   Archive,
   Columns3,
   Download,
-  Save,
   Search,
   Trash2,
 } from "lucide-react";
@@ -98,9 +97,6 @@ export function DataTable<T>({
     direction: "asc" | "desc";
   } | null>(null);
   const [showColumns, setShowColumns] = useState(false);
-  const [savedViews, setSavedViews] = useState<string[]>(() =>
-    JSON.parse(localStorage.getItem(`kcs-views-${id}`) || "[]"),
-  );
   const [notice, setNotice] = useState("");
 
   const searchable = useMemo(
@@ -172,16 +168,6 @@ export function DataTable<T>({
         : [...current, idValue],
     );
   }
-  function saveView() {
-    const name = prompt(
-      nl ? "Naam van opgeslagen weergave" : "Saved view name",
-    );
-    if (!name) return;
-    const next = [...new Set([...savedViews, name])];
-    setSavedViews(next);
-    localStorage.setItem(`kcs-views-${id}`, JSON.stringify(next));
-    setNotice(nl ? "Weergave opgeslagen." : "View saved.");
-  }
   function exportCsv() {
     const header = visibleColumns
       .map((column) => quote(column.label))
@@ -251,10 +237,6 @@ export function DataTable<T>({
         </span>
         {filters}
         <div className="table-actions">
-          <Button variant="secondary" onClick={saveView}>
-            <Save />
-            {nl ? "Weergave opslaan" : "Save view"}
-          </Button>
           <div className="column-menu">
             <Button
               variant="secondary"
@@ -294,28 +276,11 @@ export function DataTable<T>({
           </Button>
         </div>
       </div>
-      {(query || savedViews.length > 0) && (
+      {query && (
         <div className="filter-chips">
-          {query && (
-            <button onClick={() => setQuery("")}>
-              {nl ? "Zoeken" : "Search"}: {query} ×
-            </button>
-          )}
-          {savedViews.map((view) => (
-            <span key={view}>
-              {view}
-              <button
-                aria-label={`${nl ? "Verwijder" : "Remove"} ${view}`}
-                onClick={() => {
-                  const next = savedViews.filter((value) => value !== view);
-                  setSavedViews(next);
-                  localStorage.setItem(`kcs-views-${id}`, JSON.stringify(next));
-                }}
-              >
-                ×
-              </button>
-            </span>
-          ))}
+          <button onClick={() => setQuery("")}>
+            {nl ? "Zoeken" : "Search"}: {query} ×
+          </button>
         </div>
       )}
       {selected.length > 0 && (
