@@ -514,15 +514,6 @@ const userSeeds: SystemUser[] = [
     status: "Active",
     lastLogin: "",
   },
-  {
-    id: "u7",
-    name: "Jason Sanoesi",
-    email: "sanoesij@kangoeroeschool.com",
-    role: "Junior IT Technician",
-    department: "ICT",
-    status: "Active",
-    lastLogin: "",
-  },
 ];
 const roleSeeds: RoleRecord[] = [
   {
@@ -4708,3 +4699,4 @@ export function MockRepositoryProvider({ children }: { children: ReactNode }) {
     <RepositoryProvider repository={repository}>{children}</RepositoryProvider>
   );
 }
+

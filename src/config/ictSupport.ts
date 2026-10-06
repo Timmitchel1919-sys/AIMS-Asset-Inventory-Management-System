@@ -8,5 +8,6 @@ export const KCS_ICT_SUPPORT_CONTACTS:IctSupportContact[]=[
  {id:'shaquil-alienda',name:'Shaquil Alienda',email:'aliendas@kangoeroeschool.com',role:'Junior IT Technician',department:'ICT',status:'active'},
  {id:'vicel-desperce',name:'Vicel Desperce',email:'despercev@kangoeroeschool.com',role:'Docent Informatica',department:'ICT',status:'active'},
  {id:'julian-maclean',name:'Julian Maclean',email:'macleanjv@kangoeroeschool.com',role:'IT Technician',department:'ICT',status:'active'},
- {id:'jason-sanoesi',name:'Jason Sanoesi',email:'sanoesij@kangoeroeschool.com',role:'Junior IT Technician',status:'active'}
+ 
 ];
+

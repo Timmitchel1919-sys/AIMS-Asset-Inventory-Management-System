@@ -4359,3 +4359,32 @@ html[data-theme='dark'] .page-title p { background: transparent !important; colo
 
 .global-search input { background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
 
+
+/* Center align number/quantity columns */
+th[data-column-id="quantity"], td[data-column-id="quantity"],
+th[data-column-id="qty"], td[data-column-id="qty"],
+th[data-column-id="expected"], td[data-column-id="expected"],
+th[data-column-id="verified"], td[data-column-id="verified"],
+th[data-column-id="available"], td[data-column-id="available"],
+th[data-column-id="reserved"], td[data-column-id="reserved"],
+th[data-column-id="onHand"], td[data-column-id="onHand"],
+th[data-column-id="minimum"], td[data-column-id="minimum"],
+th[data-column-id="activeAssets"], td[data-column-id="activeAssets"],
+th[data-column-id="subLocations"], td[data-column-id="subLocations"],
+th[data-column-id="assets"], td[data-column-id="assets"] {
+  text-align: center;
+}
+
+th[data-column-id="quantity"] button,
+th[data-column-id="qty"] button,
+th[data-column-id="expected"] button,
+th[data-column-id="verified"] button,
+th[data-column-id="available"] button,
+th[data-column-id="reserved"] button,
+th[data-column-id="onHand"] button,
+th[data-column-id="minimum"] button,
+th[data-column-id="activeAssets"] button,
+th[data-column-id="subLocations"] button,
+th[data-column-id="assets"] button {
+  justify-content: center;
+}

@@ -491,7 +491,7 @@ export function ResponsiveDataList<T>({
                 />
               </th>
               {shown.map((column) => (
-                <th key={column.id}>
+                <th key={column.id} data-column-id={column.id}>
                   {column.sortable ? (
                     <button onClick={() => onSort(column.id)}>
                       {column.label}
@@ -534,7 +534,7 @@ export function ResponsiveDataList<T>({
                     />
                   </td>
                   {shown.map((column) => (
-                    <td key={column.id}>{cell(column, row)}</td>
+                    <td key={column.id} data-column-id={column.id}>{cell(column, row)}</td>
                   ))}
                 </tr>
               );
