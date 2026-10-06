@@ -14,7 +14,6 @@ import {
   FilterInput,
   FilterPanel,
   ResponsiveDataList,
-  SavedViewSelector,
   type ListColumn,
 } from "../components/data-list/ListInfrastructure";
 import {
@@ -123,8 +122,7 @@ export default function Assets() {
   const [preferences, setPreferences] = useState(() =>
     loadListPreferences(localStorage, preferenceKey, columnIds),
   );
-  const [viewDialog, setViewDialog] = useState(false),
-    [viewName, setViewName] = useState("");
+
   const [bulkAction, setBulkAction] = useState(""),
     [bulkDialog, setBulkDialog] = useState(false),
     [bulkReason, setBulkReason] = useState(""),
@@ -358,49 +356,7 @@ export default function Assets() {
     saveListPreferences(localStorage, preferenceKey, preferences);
   }, [preferences]);
 
-  const saveView = () => {
-    if (!viewName.trim()) return;
-    const view: SavedListView = {
-      id: `view-${Date.now()}`,
-      name: viewName.trim(),
-      search,
-      filters: queryFilters,
-      sort: [sort],
-      pageSize,
-      visibleColumns: visible,
-      ownerId: user?.id || "anonymous",
-      isShared: false,
-      version: LIST_PREFERENCES_VERSION,
-    };
-    setPreferences((current) => upsertSavedView(current, view));
-    setViewName("");
-    setViewDialog(false);
-  };
-  const applyView = (id: string) => {
-    const view = preferences.savedViews.find((item) => item.id === id);
-    if (!view) return;
-    setSearch(view.search);
-    setFilters(
-      Object.fromEntries(
-        view.filters.map((filter) => [
-          filter.field === "dateAdded"
-            ? filter.operator === "gte"
-              ? "dateAddedFrom"
-              : "dateAddedTo"
-            : filter.field === "lastUpdated"
-              ? filter.operator === "gte"
-                ? "updatedFrom"
-                : "updatedTo"
-              : filter.field,
-          String(filter.value ?? ""),
-        ]),
-      ),
-    );
-    setSort(view.sort[0] || { field: "code", direction: "asc" });
-    setVisible(view.visibleColumns);
-    setCursor(undefined);
-    setSelected([]);
-  };
+
   const exportColumns: ExportColumn<Asset>[] = columns
     .filter((column) => visible.includes(column.id))
     .map((column) => ({
@@ -601,16 +557,6 @@ export default function Assets() {
             count={result.totalCount}
             filterCount={activeFilters.length}
             onToggleFilters={toggleFilters}
-            savedViews={
-              <SavedViewSelector
-                views={preferences.savedViews}
-                onApply={applyView}
-                onSave={() => setViewDialog(true)}
-                onDelete={(id) =>
-                  setPreferences((current) => removeSavedView(current, id))
-                }
-              />
-            }
             columnSelector={
               <ColumnSelector
                 columns={columns}
@@ -770,28 +716,7 @@ export default function Assets() {
             />
           )}
         </section>
-        <Dialog
-          open={viewDialog}
-          title={t("assets.saveView")}
-          onClose={() => setViewDialog(false)}
-          footer={
-            <>
-              <Button variant="ghost" onClick={() => setViewDialog(false)}>
-                {t("common.cancel")}
-              </Button>
-              <Button onClick={saveView} disabled={!viewName.trim()}>
-                {t("common.save")}
-              </Button>
-            </>
-          }
-        >
-          <Field
-            label={t("assets.viewName")}
-            value={viewName}
-            onChange={(event) => setViewName(event.target.value)}
-            autoFocus
-          />
-        </Dialog>
+
         <Dialog
           open={bulkDialog}
           title={t("assets.bulk.confirm")}

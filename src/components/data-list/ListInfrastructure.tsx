@@ -47,7 +47,6 @@ export function DataToolbar({
   searchLabel,
   filterCount,
   onToggleFilters,
-  savedViews,
   columnSelector,
   exportMenu,
   count,
@@ -57,7 +56,6 @@ export function DataToolbar({
   searchLabel: string;
   filterCount: number;
   onToggleFilters: () => void;
-  savedViews: ReactNode;
   columnSelector: ReactNode;
   exportMenu: ReactNode;
   count?: number;
@@ -92,7 +90,6 @@ export function DataToolbar({
           {t("common.filters")}
           {filterCount ? ` (${filterCount})` : ""}
         </Button>
-        {savedViews}
         {columnSelector}
         {exportMenu}
       </div>
@@ -257,47 +254,7 @@ export function ColumnSelector<T>({
   );
 }
 
-export function SavedViewSelector({
-  views,
-  onApply,
-  onSave,
-  onDelete,
-}: {
-  views: { id: string; name: string }[];
-  onApply: (id: string) => void;
-  onSave: () => void;
-  onDelete: (id: string) => void;
-}) {
-  const t = useT();
-  return (
-    <details className="list-menu">
-      <summary className="btn btn-secondary">
-        <Save />
-        {t("common.views")}
-      </summary>
-      <div>
-        <Button variant="ghost" onClick={onSave}>
-          {t("common.saveCurrentView")}
-        </Button>
-        {views.length === 0 ? (
-          <small>{t("common.noSavedViews")}</small>
-        ) : (
-          views.map((view) => (
-            <span className="saved-view-row" key={view.id}>
-              <button onClick={() => onApply(view.id)}>{view.name}</button>
-              <button
-                aria-label={`${t("common.removeFilter")}: ${view.name}`}
-                onClick={() => onDelete(view.id)}
-              >
-                <Trash2 />
-              </button>
-            </span>
-          ))
-        )}
-      </div>
-    </details>
-  );
-}
+
 
 export function ExportMenu({
   onCsv,

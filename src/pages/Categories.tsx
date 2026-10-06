@@ -1,11 +1,11 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { ReferenceRecord } from "../data/contracts";
 import { useT } from "../i18n";
-import { DataTable, DataColumn } from "../components/DataTable";
+import { DataPageLayout, DataToolbar, FilterInput, ResponsiveDataList, ListColumn } from "../components/data-list/ListInfrastructure";
 import { Badge, Button, Field, SelectField } from "../components/ui";
 import { Dialog, MutationFeedback, PageHeader } from "../components/WorkflowUi";
 
@@ -54,73 +54,127 @@ export const CategoriesPage = () => {
   const activeAssetCount = (item: ReferenceRecord) =>
     snapshot.assets.filter(a => a.category === item.name && !["Archived", "Disposed"].includes(a.status)).length;
 
-  const columns: DataColumn<ReferenceRecord>[] = [
-    {
-      id: "name",
-      label: t("categories.assetName"),
-      render: (item) => <strong>{item.name}</strong>,
-      text: (item) => item.name,
-      sortable: true,
-    },
-    {
-      id: "category",
-      label: t("categories.category"),
-      render: (item) => categoryName(item) || EMPTY,
-      text: (item) => categoryName(item),
-      sortable: true,
-    },
-    {
-      id: "tracking",
-      label: t("categories.trackingType"),
-      render: (item) => item.type || EMPTY,
-      text: (item) => item.type || "",
-      sortable: true,
-    },
-    {
-      id: "codeGroup",
-      label: t("categories.codeGroup"),
-      render: (item) => String(item.details?.codeGroup || EMPTY),
-      text: (item) => String(item.details?.codeGroup || ""),
-      sortable: true,
-    },
-    {
-      id: "activeAssets",
-      label: t("categories.activeAssets"),
-      render: (item) => activeAssetCount(item),
-      text: (item) => String(activeAssetCount(item)),
-      sortable: true,
-    },
-    {
-      id: "status",
-      label: t("categories.status"),
-      render: (item) => (
-        <Badge tone={item.status === "Active" ? "success" : "neutral"}>
-          {item.status}
-        </Badge>
-      ),
-      text: (item) => item.status,
-    },
-  ];
+  const columns = useMemo<ListColumn<ReferenceRecord>[]>(
+    () => [
+      {
+        id: "name",
+        label: t("categories.assetName"),
+        render: (item) => <strong>{item.name}</strong>,
+        value: (item) => item.name,
+        sortable: true,
+      },
+      {
+        id: "category",
+        label: t("categories.category"),
+        render: (item) => categoryName(item) || EMPTY,
+        value: (item) => categoryName(item),
+        sortable: true,
+      },
+      {
+        id: "tracking",
+        label: t("categories.trackingType"),
+        render: (item) => item.type || EMPTY,
+        value: (item) => item.type || "",
+        sortable: true,
+      },
+      {
+        id: "codeGroup",
+        label: t("categories.codeGroup"),
+        render: (item) => String(item.details?.codeGroup || EMPTY),
+        value: (item) => String(item.details?.codeGroup || ""),
+        sortable: true,
+      },
+      {
+        id: "activeAssets",
+        label: t("categories.activeAssets"),
+        render: (item) => activeAssetCount(item),
+        value: (item) => String(activeAssetCount(item)),
+        sortable: true,
+      },
+      {
+        id: "status",
+        label: t("categories.status"),
+        render: (item) => (
+          <Badge tone={item.status === "Active" ? "success" : "neutral"}>
+            {item.status}
+          </Badge>
+        ),
+        value: (item) => item.status,
+      },
+    ],
+    [t, snapshot.assets, topCategories]
+  );
+
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<{ field: string; direction: "asc" | "desc" }>({ field: "name", direction: "asc" });
+
+  const filteredAssetTypes = useMemo(() => {
+    let result = assetTypes;
+    if (query) {
+      const q = query.toLowerCase();
+      result = result.filter(item => 
+        item.name.toLowerCase().includes(q) ||
+        categoryName(item).toLowerCase().includes(q)
+      );
+    }
+    result.sort((a, b) => {
+      const col = columns.find(c => c.id === sort.field);
+      if (!col) return 0;
+      const valA = col.value ? col.value(a) : "";
+      const valB = col.value ? col.value(b) : "";
+      return sort.direction === "asc" ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
+    });
+    return result;
+  }, [assetTypes, query, sort, columns]);
+
+  const visibleColumns = columns.map(c => c.id);
 
   return (
-    <div className="page data-page">
-      <PageHeader
-        title={t("routes.categories")}
-        description={nl ? "Beheer hi\u00ebrarchische asset types en classificaties." : "Manage hierarchical asset types and classifications."}
-        actions={user ? <Button onClick={() => navigate("/categories/new?new=true")}><Plus size={16} /> {t("categories.addAssetType")}</Button> : undefined}
-      />
-
-      <section className="card data-card"><DataTable
-        rows={assetTypes}
-        columns={columns as any}
-        id="categories-table" rowKey={(r) => r.id} searchPlaceholder="Search..." emptyTitle="No categories" emptyDescription="No categories found."
-        onRowClick={user ? (row) => navigate(`/categories/${row.id}/edit`) : undefined}
-      /></section>{isEditing && (
+    <DataPageLayout
+      header={
+        <PageHeader
+          title={t("routes.categories")}
+          description={nl ? "Beheer hi\u00ebrarchische asset types en classificaties." : "Manage hierarchical asset types and classifications."}
+          actions={user ? <Button onClick={() => navigate("/categories/new?new=true")}><Plus size={16} /> {t("categories.addAssetType")}</Button> : undefined}
+        />
+      }
+    >
+      <section className="card data-card">
+        <DataToolbar
+          search={query}
+          onSearch={setQuery}
+          searchLabel={nl ? "Zoeken..." : "Search..."}
+          filterCount={0}
+          onToggleFilters={() => {}}
+          columnSelector={null}
+          exportMenu={null}
+        />
+        <ResponsiveDataList
+          id="categories-table"
+          rows={filteredAssetTypes}
+          columns={columns}
+          visible={visibleColumns}
+          rowKey={(r) => r.id}
+          selected={[]}
+          onSelection={() => {}}
+          onRowClick={user ? (row) => navigate(`/categories/${row.id}/edit`) : () => {}}
+          onSort={(id) => {
+            if (sort.field === id) {
+              setSort({ field: id, direction: sort.direction === "asc" ? "desc" : "asc" });
+            } else {
+              setSort({ field: id, direction: "asc" });
+            }
+          }}
+          sort={sort}
+        />
+      </section>
+      
+      {isEditing && (
         <CategoryModal
           onClose={() => navigate("/categories")}
         />
       )}
-    </div>
+    </DataPageLayout>
   );
 };
 
