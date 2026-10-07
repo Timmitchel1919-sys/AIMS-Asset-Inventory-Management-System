@@ -9,7 +9,7 @@ export const ASSET_CONDITION_DEFINITIONS:Record<AssetConditionKey,AssetCondition
  poor:{key:"poor",condition:"Poor",color:"#DC2626",colorToken:"asset-condition-poor",translationKey:"condition.Poor"}
 };
 const aliases:Record<string,AssetConditionKey>={good:"good",goed:"good",excellent:"good",uitstekend:"good",new:"good",nieuw:"good",fair:"fair",redelijk:"fair",poor:"poor",bad:"poor",slecht:"poor",defective:"poor",defect:"poor","beyond repair":"poor",onherstelbaar:"poor","use for parts":"poor","out of service":"poor","buiten gebruik":"poor"};
-export function normalizeAssetCondition(value:string){return aliases[value.trim().toLowerCase()]}
-export function assetConditionDefinition(value:string){const key=normalizeAssetCondition(value);return key?ASSET_CONDITION_DEFINITIONS[key]:undefined}
+export function normalizeAssetCondition(value?:string|null){if(!value)return undefined;return aliases[value.trim().toLowerCase()]}
+export function assetConditionDefinition(value?:string|null){if(!value)return undefined;const key=normalizeAssetCondition(value);return key?ASSET_CONDITION_DEFINITIONS[key]:undefined}
 /** The exact listed condition matching `value` (case/space-insensitive), if any. */
-export function knownAssetCondition(value:string):Condition|undefined{const v=value.trim().toLowerCase();return ASSET_CONDITIONS.find(c=>c.toLowerCase()===v)}
+export function knownAssetCondition(value?:string|null):Condition|undefined{if(!value)return undefined;const v=value.trim().toLowerCase();return ASSET_CONDITIONS.find(c=>c.toLowerCase()===v)}
