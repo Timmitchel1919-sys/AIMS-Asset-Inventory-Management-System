@@ -57,8 +57,8 @@ const statuses: AssetStatus[] = [
   "Archived",
 ];
 const conditions: readonly Condition[] = ASSET_CONDITIONS;
-const split = (value: string) =>
-  value
+const split = (value?: string) =>
+  (value || "")
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
@@ -104,7 +104,7 @@ export default function AssetForm() {
         location: existing.location,
         currentLocationId:
           existing.currentLocationId ||
-          snapshot.references.find(
+          (snapshot.references || []).find(
             (item) =>
               item.kind === "location" && item.name === existing.location,
           )?.id ||
@@ -121,8 +121,8 @@ export default function AssetForm() {
         technicalSpecifications: formatTechnicalSpecifications(
           existing.technicalSpecifications,
         ),
-        attachments: (existing.attachments || []).join(", "),
-        photos: (existing.photos || []).join(", "),
+        attachments: Array.isArray(existing.attachments) ? existing.attachments.join(", ") : (existing.attachments || ""),
+        photos: Array.isArray(existing.photos) ? existing.photos.join(", ") : (existing.photos || ""),
         notes: existing.notes || "",
       }
     : assetFormDefaults;
@@ -253,7 +253,7 @@ export default function AssetForm() {
                       {...register("codePrefix")}
                     >
                       <option value="">Select a code group</option>
-                      {[...snapshot.codeGroups]
+                      {[...(snapshot.codeGroups || [])]
                         .filter((group) => group.isActive)
                         .sort((a, b) => a.sortOrder - b.sortOrder)
                         .map((group) => (
@@ -330,7 +330,7 @@ export default function AssetForm() {
                   {...register("currentLocationId")}
                 >
                   <option value="">{a("all")}</option>
-                  {snapshot.references
+                  {(snapshot.references || [])
                     .filter(
                       (item) =>
                         item.kind === "location" && item.status === "Active",

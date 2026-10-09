@@ -35,8 +35,9 @@ export function parseTechnicalSpecifications(text: string) {
 }
 
 export function formatTechnicalSpecifications(
-  specifications: Record<string, string> | undefined,
+  specifications: Record<string, string> | string | undefined,
 ) {
+  if (typeof specifications === "string") return specifications;
   const entries = Object.entries(specifications || {});
   const raw = entries.find(([key]) => key === RAW_SPECIFICATIONS_KEY)?.[1];
   const lines = raw ? [raw] : [];

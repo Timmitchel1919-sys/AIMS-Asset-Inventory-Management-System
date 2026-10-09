@@ -34,7 +34,7 @@ export function ClassificationFields() {
   const [subcategoryError, setSubcategoryError] = useState("");
 
   const categories = useMemo(() => {
-    return snapshot.references
+    return (snapshot.references || [])
       .filter((ref) => ref.kind === "category" && ref.status === "Active")
       .map((ref) => ({
         id: ref.id,
@@ -51,12 +51,12 @@ export function ClassificationFields() {
 
   const subcategories = useMemo(() => {
     if (!currentCategory) return [];
-    const categoryRecord = snapshot.references.find(
+    const categoryRecord = (snapshot.references || []).find(
       (ref) => ref.kind === "category" && ref.name === currentCategory
     );
     if (!categoryRecord) return [];
 
-    return snapshot.references
+    return (snapshot.references || [])
       .filter(
         (ref) =>
           ref.kind === "subcategory" &&
@@ -119,7 +119,7 @@ export function ClassificationFields() {
       return;
     }
 
-    const categoryRecord = snapshot.references.find(
+    const categoryRecord = (snapshot.references || []).find(
       (ref) => ref.kind === "category" && ref.name === currentCategory
     );
 

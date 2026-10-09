@@ -237,39 +237,6 @@ export function DataTable<T>({
         </span>
         {filters}
         <div className="table-actions">
-          <div className="column-menu">
-            <Button
-              variant="secondary"
-              aria-expanded={showColumns}
-              onClick={() => setShowColumns((value) => !value)}
-            >
-              <Columns3 />
-              {nl ? "Kolommen" : "Columns"}
-            </Button>
-            {showColumns && (
-              <div
-                role="dialog"
-                aria-label={nl ? "Kolommen kiezen" : "Choose columns"}
-              >
-                {columns.map((column) => (
-                  <label key={column.id}>
-                    <input
-                      type="checkbox"
-                      checked={visible.includes(column.id)}
-                      onChange={() =>
-                        setVisible((current) =>
-                          current.includes(column.id)
-                            ? current.filter((value) => value !== column.id)
-                            : [...current, column.id],
-                        )
-                      }
-                    />
-                    {column.label}
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
           <Button variant="secondary" onClick={exportCsv}>
             <Download />
             {nl ? "Exporteren" : "Export"}

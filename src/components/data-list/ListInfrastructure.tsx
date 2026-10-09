@@ -90,7 +90,6 @@ export function DataToolbar({
           {t("common.filters")}
           {filterCount ? ` (${filterCount})` : ""}
         </Button>
-        {columnSelector}
         {exportMenu}
       </div>
     </div>
