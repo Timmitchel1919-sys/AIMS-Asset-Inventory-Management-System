@@ -16,11 +16,15 @@ describe("Master Data deletion policy", () => {
     expect(canDeleteMasterData(undefined)).toBe(false);
     expect(canDeleteMasterData("")).toBe(false);
   });
-  it("is mirrored server-side by the same list in firestore.rules", () => {
+  it("is enforced by the Cloud Function; Rules forbid client archive/delete outright", () => {
     const rules = readFileSync(new URL("../../firestore.rules", import.meta.url), "utf8");
-    const block = rules.slice(rules.indexOf("function canDeleteMasterData"));
-    for (const email of MASTER_DATA_DELETE_EMAILS) expect(block.slice(0, 500)).toContain(`'${email}'`);
-    expect(rules).toContain("allow delete: if canDeleteMasterData();");
+    const fn = readFileSync(new URL("../../functions/masterData.js", import.meta.url), "utf8");
+    for (const email of MASTER_DATA_DELETE_EMAILS) expect(fn).toContain(`"${email}"`);
+    // No client path remains, not even for the authorized accounts.
+    expect(rules).not.toContain("canDeleteMasterData");
+    const group = rules.slice(rules.indexOf("match /codeGroups/{id}"), rules.indexOf("match /assetTypes/{id}"));
+    expect(group).toContain("allow delete: if false;");
     expect(rules).toContain("collectionName == 'locations'");
+    expect(rules).toContain("resource.data.get('type', '') != 'Main location'");
   });
 });

@@ -712,15 +712,27 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     }
   }
 
-  private isMasterDataDeletion(command: WorkflowCommand) {
-    if (command.action === "codeGroup.delete") return true;
+  /**
+   * Archiving (recycle bin) or deleting a Codegroep or Hoofdlocatie. Rules
+   * forbid this from clients; it runs only in the archiveMasterData Cloud
+   * Function, which re-checks the policy and the real dependencies.
+   */
+  private masterDataDeletion(
+    command: WorkflowCommand,
+  ): { kind: "codeGroup" | "mainLocation"; mode: "archive" | "delete" } | null {
+    if (command.action === "codeGroup.delete")
+      return { kind: "codeGroup", mode: "archive" };
     if (command.action === "reference.delete" || command.action === "reference.archive") {
       const record = this.snapshot().references.find(
         (item) => item.id === command.entityId,
       );
-      return record?.kind === "location" && record.type === "Main location";
+      if (record?.kind === "location" && record.type === "Main location")
+        return {
+          kind: "mainLocation",
+          mode: command.action === "reference.delete" ? "delete" : "archive",
+        };
     }
-    return false;
+    return null;
   }
 
   override async execute(command: WorkflowCommand): Promise<WorkflowResult> {
@@ -741,8 +753,38 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     // Master Data deletion (recycle bin or permanent) is limited to the
     // authorized administrator accounts. Firestore Rules enforce the same
     // list server-side; this guard only gives a clear message earlier.
-    if (this.isMasterDataDeletion(command) && !canDeleteMasterData(command.actorEmail))
-      return { ok: false, message: MASTER_DATA_DELETE_DENIED_EN };
+    const deletion = this.masterDataDeletion(command);
+    if (deletion) {
+      if (!canDeleteMasterData(command.actorEmail))
+        return { ok: false, message: MASTER_DATA_DELETE_DENIED_EN };
+      if (!firebaseFunctions)
+        return { ok: false, message: "Deleting Master Data requires Firebase." };
+      try {
+        const call = httpsCallable(firebaseFunctions, "archiveMasterData");
+        await call({
+          kind: deletion.kind,
+          id: command.entityId,
+          mode: deletion.mode,
+          reason: String(command.values?.reason || ""),
+        });
+        await this.initialize();
+        return {
+          ok: true,
+          message:
+            deletion.mode === "delete"
+              ? "The record was permanently deleted."
+              : "The record was moved to the recycle bin.",
+          entityId: command.entityId,
+        };
+      } catch (error) {
+        // The Function's message names exactly which records still depend on it.
+        const message = (error as { message?: string })?.message;
+        return {
+          ok: false,
+          message: message || firestoreErrorMessage(error).message,
+        };
+      }
+    }
     // Asset identifiers remain client-immutable in Firestore Rules. A
     // correction is therefore performed by a trusted, audited callable; the
     // subsequent normal edit intentionally omits all identifier fields.

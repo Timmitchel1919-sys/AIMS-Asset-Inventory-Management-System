@@ -17,6 +17,11 @@ import {
 } from "./sheetsImport.js";
 import { applyPlan } from "./applyImport.js";
 import { readHealth, recordRun } from "./syncRuns.js";
+import {
+  MasterDataError,
+  archiveMasterData as archiveMasterDataImpl,
+  checkDependencies,
+} from "./masterData.js";
 
 initializeApp();
 const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
@@ -769,5 +774,59 @@ export const correctAssetCode = onCall(
       });
     });
     return { ok: true, assetId, code };
+  },
+);
+
+const masterDataError = (error) =>
+  error instanceof MasterDataError
+    ? new HttpsError(error.code, error.message, error.details)
+    : error;
+
+/** Read-only: what still references a code group, Hoofdlocatie, category or
+ * asset type. Available to every verified AIMS account. */
+export const checkMasterDataDependencies = onCall(
+  { region: "southamerica-east1", timeoutSeconds: 30, memory: "256MiB" },
+  async (request) => {
+    if (!authorized(request))
+      throw new HttpsError("permission-denied", "A verified AIMS account is required.");
+    try {
+      return await checkDependencies(getFirestore(), {
+        kind: String(request.data?.kind || ""),
+        id: String(request.data?.id || ""),
+        includeInactive: request.data?.includeInactive === true,
+      });
+    } catch (error) {
+      throw masterDataError(error);
+    }
+  },
+);
+
+/** Trusted, dependency-aware archive/delete of a code group or Hoofdlocatie.
+ * Firestore Rules forbid clients from doing this directly, so the deletion
+ * policy (authorized administrator accounts only) and the dependency check
+ * cannot be bypassed from the browser. */
+export const archiveMasterData = onCall(
+  { region: "southamerica-east1", timeoutSeconds: 60, memory: "256MiB" },
+  async (request) => {
+    if (!authorized(request))
+      throw new HttpsError("permission-denied", "A verified AIMS account is required.");
+    try {
+      return await archiveMasterDataImpl(
+        getFirestore(),
+        {
+          uid: String(request.auth?.uid || ""),
+          email: String(request.auth?.token?.email || ""),
+        },
+        {
+          kind: String(request.data?.kind || ""),
+          id: String(request.data?.id || ""),
+          mode: String(request.data?.mode || ""),
+          reason: String(request.data?.reason || ""),
+        },
+        FieldValue.serverTimestamp(),
+      );
+    } catch (error) {
+      throw masterDataError(error);
+    }
   },
 );

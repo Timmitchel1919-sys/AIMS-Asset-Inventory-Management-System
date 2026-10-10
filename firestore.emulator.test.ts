@@ -388,35 +388,35 @@ describe("AIMS Firestore authorization", () => {
     await assertSucceeds(getDoc(doc(owner, "deviceManagement/x")));
   });
 
-  it("limits Master Data deletion to the authorized administrator accounts", async () => {
+  it("forbids archiving or deleting Master Data from any client, even authorized administrators", async () => {
     const group = {
       name: "Laptops", prefix: "KCSL", minimumNumber: 1, maximumNumber: 1000000000,
       nextAvailableNumber: 1, isActive: true, sortOrder: 1,
       createdAt: serverTimestamp(), createdBy: "seed", updatedAt: serverTimestamp(), updatedBy: "seed",
     };
-    const seed = async () =>
-      environment.withSecurityRulesDisabled(async (context) => {
-        const db = context.firestore();
-        await setDoc(doc(db, "codeGroups/cg1"), group);
-        await setDoc(doc(db, "locations/main1"), {
-          name: "Warehouse", type: "Main location", status: "Active",
-          createdAt: serverTimestamp(), createdBy: "seed", updatedAt: serverTimestamp(), updatedBy: "seed",
-        });
+    await environment.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, "codeGroups/cg1"), group);
+      await setDoc(doc(db, "locations/main1"), {
+        name: "Warehouse", type: "Main location", status: "Active",
+        createdAt: serverTimestamp(), createdBy: "seed", updatedAt: serverTimestamp(), updatedBy: "seed",
       });
-    await seed();
+      await setDoc(doc(db, "locations/sub1"), {
+        name: "Shelf", type: "Shelf", status: "Active",
+        createdAt: serverTimestamp(), createdBy: "seed", updatedAt: serverTimestamp(), updatedBy: "seed",
+      });
+    });
     const regular = environment.authenticatedContext("u1", verified("someone@kangoeroeschool.com")).firestore();
     const admin = environment.authenticatedContext("u2", verified("Manager-ICT@kangoeroeschool.com")).firestore();
-    // Regular users may update but not archive or delete.
+    for (const db of [regular, admin]) {
+      await assertFails(updateDoc(doc(db, "codeGroups/cg1"), { archived: true, isActive: false, updatedAt: serverTimestamp(), updatedBy: "x" }));
+      await assertFails(deleteDoc(doc(db, "codeGroups/cg1")));
+      await assertFails(updateDoc(doc(db, "locations/main1"), { status: "Archived", updatedAt: serverTimestamp(), updatedBy: "x" }));
+      await assertFails(deleteDoc(doc(db, "locations/main1")));
+    }
+    // Ordinary updates and sub-locations are unaffected.
     await assertSucceeds(updateDoc(doc(regular, "codeGroups/cg1"), { name: "Laptops 2", updatedAt: serverTimestamp(), updatedBy: "u1" }));
-    await assertFails(updateDoc(doc(regular, "codeGroups/cg1"), { archived: true, isActive: false, updatedAt: serverTimestamp(), updatedBy: "u1" }));
-    await assertFails(deleteDoc(doc(regular, "codeGroups/cg1")));
-    await assertFails(updateDoc(doc(regular, "locations/main1"), { status: "Archived", updatedAt: serverTimestamp(), updatedBy: "u1" }));
-    await assertFails(deleteDoc(doc(regular, "locations/main1")));
-    // Authorized administrators may.
-    await assertSucceeds(updateDoc(doc(admin, "codeGroups/cg1"), { archived: true, isActive: false, updatedAt: serverTimestamp(), updatedBy: "u2" }));
-    await assertSucceeds(updateDoc(doc(admin, "locations/main1"), { status: "Archived", updatedAt: serverTimestamp(), updatedBy: "u2" }));
-    await assertSucceeds(deleteDoc(doc(admin, "locations/main1")));
-    await assertSucceeds(deleteDoc(doc(admin, "codeGroups/cg1")));
+    await assertSucceeds(deleteDoc(doc(regular, "locations/sub1")));
   });
 
   it("allows only a valid self profile and denies privilege injection or cross-user access", async () => {
