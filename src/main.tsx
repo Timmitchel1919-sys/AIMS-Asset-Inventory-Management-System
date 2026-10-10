@@ -32,6 +32,7 @@ import "./styles/auth.css";
 import "./styles/list.css";
 import "./styles/assets.css";
 import "./styles/asset-status.css";
+import "./styles/device-management.css";
 import "./components/download/AnimatedDownloadButton.css";
 import "./styles/emerald-gloss.css";
 import "./styles/dark.css";

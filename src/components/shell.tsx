@@ -5,6 +5,7 @@ import {
   Bell,
   Bot,
   Boxes,
+  MonitorSmartphone,
   Building2,
   ChevronLeft,
   ChevronRight,
@@ -93,10 +94,15 @@ const icons: Record<RouteIcon, LucideIcon> = {
   activity: Activity,
   disposals: Recycle,
   settings: Settings,
+  devices: MonitorSmartphone,
   install: PackageOpen,
 };
 
 const sidebarRouteAliases: Record<string, string[]> = {
+  "device-management": [
+    "/device-monitoring", "/device-compliance", "/device-policies",
+    "/device-commands", "/device-bulk-actions", "/device-audit",
+  ],
   reports: ["/management"],
   admin: ["/users", "/roles", "/permissions", "/activity"],
   "admin-settings": ["/settings"],
@@ -240,7 +246,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Keep the complete module catalog visible in the sidebar. Route guards still
   // enforce role permissions after a module is selected.
   const routes = navRoutes;
-  const primaryRoutes = sidebarModuleOrder.flatMap((id) => {
+  // The owner-only Device Management module is only listed for the Owner.
+  const moduleOrder: readonly string[] =
+    app.user?.role === "owner"
+      ? [...sidebarModuleOrder, "device-management"]
+      : sidebarModuleOrder;
+  const primaryRoutes = moduleOrder.flatMap((id) => {
     const route = routes.find((candidate) => candidate.id === id);
     return route ? [route] : [];
   });

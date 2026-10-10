@@ -23,6 +23,7 @@ export type RouteIcon =
   | "activity"
   | "disposals"
   | "settings"
+  | "devices"
   | "install";
 export type RouteStatus = "implemented" | "partial" | "missing";
 export interface AppRoute {
@@ -45,17 +46,21 @@ export interface AppRoute {
 const page = (load: () => Promise<{ default: ComponentType }>) => lazy(load);
 
 export const routeManifest: AppRoute[] = [
+  // Owner-only Device Management console: one tabbed page, one path per tab.
   ...[
-    '/device-management', '/device-monitoring', '/device-policies', 
-    '/device-network', '/device-commands', '/device-bulk-actions', 
-    '/device-compliance', '/device-settings'
+    '/device-management', '/device-monitoring', '/device-compliance',
+    '/device-policies', '/device-commands', '/device-bulk-actions',
+    '/device-audit'
   ].map((path) => ({
     id: path.substring(1),
     path,
     component: lazy(() => import("../pages/DeviceManagement")),
-    titleKey: "Device Management",
-    navigation: false,
-    breadcrumb: [],
+    titleKey: "routes.deviceManagement",
+    ...(path === '/device-management'
+      ? { navKey: "nav.deviceManagement", icon: "devices" as const }
+      : {}),
+    navigation: path === '/device-management',
+    breadcrumb: ["routes.deviceManagement"],
     mobile: false,
     lazy: true as const,
     status: "implemented" as const,
