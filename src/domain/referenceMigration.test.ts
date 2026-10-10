@@ -176,3 +176,35 @@ describe("reference migration planner", () => {
     expect(csv).not.toContain("not-applicable");
   });
 });
+
+import { resolveAssetReferences } from "./referenceMigration";
+
+describe("resolveAssetReferences (live sync after a user action)", () => {
+  const lookups = () => {
+    const { assets: _a, assetTypes: _t, ...rest } = base();
+    return rest;
+  };
+  it("derives ids from the asset text", () => {
+    expect(resolveAssetReferences(asset({}), lookups())).toEqual({
+      categoryId: "cat-laptops",
+      codeGroupId: "cg-l",
+      departmentId: "dept-ict",
+      assignedUserId: "u1",
+    });
+  });
+  it("keeps a still-valid id, replaces a stale one, clears unmatched or emptied text", () => {
+    expect(resolveAssetReferences(asset({ assignedUserId: "u1" }), lookups()).assignedUserId).toBe("u1");
+    // The user reassigned the asset to someone else: the old id must not linger.
+    const moved = asset({ assignedUserId: "u1", assignedTo: "Bob Roe" });
+    const withBob = { ...lookups(), users: [...lookups().users, user("u2", "Bob Roe", "bob@kangoeroeschool.com")] };
+    expect(resolveAssetReferences(moved, withBob).assignedUserId).toBe("u2");
+    expect(resolveAssetReferences(moved, lookups()).assignedUserId).toBeNull();
+    // Returned / unassigned: id cleared.
+    expect(resolveAssetReferences(asset({ assignedUserId: "u1", assignedTo: undefined }), lookups()).assignedUserId).toBeNull();
+  });
+  it("does not guess when the text is ambiguous", () => {
+    const dup = { ...lookups(), users: [...lookups().users, user("u9", "Ann Lee", "other@kangoeroeschool.com")] };
+    expect(resolveAssetReferences(asset({}), dup).assignedUserId).toBeNull();
+    expect(resolveAssetReferences(asset({ assignedUserId: "u1" }), dup).assignedUserId).toBe("u1");
+  });
+});

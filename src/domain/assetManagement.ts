@@ -12,6 +12,8 @@ export interface AssetFormValues {
   description: string;
   category: string;
   subcategory: string;
+  /** Tracking type id (assetTypes collection); empty = not chosen. */
+  assetTypeId: string;
   type: string;
   brand: string;
   model: string;
@@ -44,6 +46,7 @@ export const assetFormDefaults: AssetFormValues = {
   description: "",
   category: "",
   subcategory: "",
+  assetTypeId: "",
   type: "Device",
   brand: "",
   model: "",
@@ -88,6 +91,7 @@ export function assetFormSchema(messages: ValidationMessages, isEdit = false) {
       description: z.string(),
       category: z.string().min(1, messages.required),
       subcategory: z.string(),
+      assetTypeId: z.string(),
       type: z.string().min(1, messages.required),
       brand: z.string(),
       model: z.string(),

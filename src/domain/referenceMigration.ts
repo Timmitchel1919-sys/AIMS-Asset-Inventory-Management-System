@@ -265,3 +265,53 @@ export function reportToCsv(report: MigrationReport): string {
     }
   return rows.map((row) => row.map(csvCell).join(",")).join("\n");
 }
+
+/** Fields kept in sync automatically whenever the text they derive from changes. */
+export const DERIVED_REFERENCE_FIELDS = [
+  "categoryId",
+  "codeGroupId",
+  "departmentId",
+  "assignedUserId",
+] as const satisfies readonly ReferenceField[];
+export type DerivedReferenceField = (typeof DERIVED_REFERENCE_FIELDS)[number];
+
+/**
+ * Canonical ids for ONE asset after a user action (create, edit, assign,
+ * transfer). Unlike the migration, the asset's text is authoritative here:
+ *  - an existing id that still agrees with the text is kept
+ *  - an id that disagrees (the user changed the text) is replaced by the
+ *    unique match, or cleared when there is none / it is ambiguous
+ *  - empty text clears the id
+ * The tracking type (assetTypeId) is chosen explicitly and never derived.
+ */
+export function resolveAssetReferences(
+  asset: Asset,
+  lookups: Omit<MigrationInput, "assets" | "assetTypes">,
+): Record<DerivedReferenceField, string | null> {
+  const input: MigrationInput = { ...lookups, assets: [asset], assetTypes: [] };
+  const first = planReferenceMigration(input).plans[0].fields;
+  const out = {} as Record<DerivedReferenceField, string | null>;
+  const sourceText: Record<DerivedReferenceField, string | undefined> = {
+    categoryId: asset.category,
+    codeGroupId: asset.codePrefix,
+    departmentId: asset.department,
+    assignedUserId: asset.assignedTo,
+  };
+  for (const field of DERIVED_REFERENCE_FIELDS) {
+    const plan = first[field];
+    if (!normalizeKey(sourceText[field])) {
+      out[field] = null; // text emptied (e.g. returned / unassigned): clear the id
+    } else if (plan.outcome === "already-set" || plan.outcome === "will-fill") {
+      out[field] = plan.id ?? null;
+    } else if (plan.outcome === "conflict") {
+      const retry = planReferenceMigration({
+        ...input,
+        assets: [{ ...asset, [field]: undefined }],
+      }).plans[0].fields[field];
+      out[field] = retry.outcome === "will-fill" ? (retry.id ?? null) : null;
+    } else {
+      out[field] = null;
+    }
+  }
+  return out;
+}

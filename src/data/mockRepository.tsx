@@ -82,6 +82,7 @@ import {
 } from "../domain/rules";
 import { RepositoryProvider } from "./repositoryContext";
 import { ASSET_CONDITIONS } from "../domain/assetCondition";
+import { resolveAssetReferences } from "../domain/referenceMigration";
 
 const clone = <T,>(value: T): T => structuredClone(value);
 const today = () => new Date().toISOString().slice(0, 10);
@@ -1008,6 +1009,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             assignedTo: String(v.assignedTo || "") || undefined,
             responsibleEmployee:
               String(v.responsibleEmployee || "") || undefined,
+            // Tracking type is chosen explicitly; the other canonical ids are
+            // derived below by syncAssetReferences.
+            assetTypeId: String(v.assetTypeId || "") || undefined,
             supplier: String(v.supplier || "") || undefined,
             manufacturer: String(v.manufacturer || "") || undefined,
             status: (v.status || "Available") as AssetStatus,
@@ -1036,6 +1040,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             })(),
             qrUpdatedAt: today(),
           };
+          this.syncAssetReferences(asset);
           this.state.assets = [asset, ...this.state.assets];
           const qrToken = asset.qrToken as string;
           this.state.qrIdentities = [
@@ -1108,6 +1113,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             lastUpdated: today(),
             lastModifiedBy: command.actor || "Naomi Williams",
           });
+          this.syncAssetReferences(a);
           result = {
             ok: true,
             message: `${a.code} was updated.`,
@@ -2065,6 +2071,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           a.assignedTo = assignment.assignee;
           a.department = assignment.department;
           a.location = assignment.location;
+          this.syncAssetReferences(a);
           this.state.assignments = [assignment, ...this.state.assignments];
           this.addMovement(
             "Assignment",
@@ -2195,6 +2202,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                   : "Available";
           a.condition = assignment.conditionAtReturn as typeof a.condition;
           delete a.assignedTo;
+          this.syncAssetReferences(a);
           this.addMovement(
             "Assignment return",
             a.name,
@@ -4364,6 +4372,29 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
     }
     return this.finish(command, result);
   }
+  /**
+   * Keeps the canonical id references (category, code group, department,
+   * assigned user) in step with the asset's text after any user action, so a
+   * reassignment or transfer never leaves a stale id behind. The tracking type
+   * is chosen explicitly and is not derived here.
+   */
+  private syncAssetReferences(a: Asset) {
+    const resolved = resolveAssetReferences(a, {
+      references: this.state.references,
+      codeGroups: this.state.codeGroups,
+      users: this.state.users,
+    });
+    // A lookup list that is empty (not loaded, or no permission to read it)
+    // proves nothing: never clear an existing id because of it.
+    const hasRefs = (kind: string) =>
+      this.state.references.some((item) => item.kind === kind);
+    if (!hasRefs("category")) resolved.categoryId = a.categoryId ?? null;
+    if (!hasRefs("department")) resolved.departmentId = a.departmentId ?? null;
+    if (!this.state.codeGroups.length) resolved.codeGroupId = a.codeGroupId ?? null;
+    if (!this.state.users.length) resolved.assignedUserId = a.assignedUserId ?? null;
+    Object.assign(a, resolved);
+  }
+
   private asset(entityId?: string) {
     const value = this.state.assets.find(
       (x) => x.id === (entityId || this.state.assets[0]?.id),
@@ -4527,6 +4558,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
         a.status = "Available";
     }
 
+    this.syncAssetReferences(a);
     a.lastUpdated = today();
     a.lastModifiedBy = actor;
     a.lastMovementAt = now();

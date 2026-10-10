@@ -22,6 +22,7 @@ import {
   PageHeader,
 } from "../components/WorkflowUi";
 import { ClassificationFields } from "../components/ClassificationFields";
+import { useAssetTypes } from "../data/assetTypesStore";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import {
@@ -72,7 +73,8 @@ export default function AssetForm() {
     app = useApp(),
     a = useAssetT(),
     t = useT(),
-    existing = snapshot.assets.find((asset) => asset.id === id);
+    existing = snapshot.assets.find((asset) => asset.id === id),
+    trackingTypes = useAssetTypes();
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const schema = assetFormSchema(
@@ -94,6 +96,7 @@ export default function AssetForm() {
         description: existing.description || "",
         category: existing.category,
         subcategory: existing.subcategory || "",
+        assetTypeId: existing.assetTypeId || "",
         type: existing.type,
         brand: existing.brand,
         model: existing.model,
@@ -130,7 +133,10 @@ export default function AssetForm() {
   const recoveredDraft = readLocalDraft<AssetFormValues>(draftKey);
   const formMethods = useForm<AssetFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: recoveredDraft?.value || defaults,
+    // Merge so a draft saved before a field existed still validates.
+    defaultValues: recoveredDraft?.value
+      ? { ...defaults, ...recoveredDraft.value }
+      : defaults,
   });
   const {
     register,
@@ -165,6 +171,15 @@ export default function AssetForm() {
     const specifications = parseTechnicalSpecifications(
       values.technicalSpecifications,
     );
+    // Tracking type: the chosen one; new assets default to "Serialized"
+    // (individual accountability) when that type exists. An edit never
+    // silently assigns one.
+    const assetTypeId =
+      values.assetTypeId ||
+      (!existing &&
+      trackingTypes.items.some((t) => t.id === "serialized" && t.status === "Active")
+        ? "serialized"
+        : "");
     const uploadId = existing?.id || crypto.randomUUID();
     const [uploadedAttachments, uploadedPhotos] = await Promise.all([
       uploadAimsFiles(attachmentFiles, "assets", uploadId),
@@ -184,6 +199,7 @@ export default function AssetForm() {
             ? selectedLocation.id
             : selectedLocation?.mainLocationId || null,
         purchasePrice: Number(values.purchasePrice || 0),
+        assetTypeId: assetTypeId || null,
         technicalSpecifications: specifications,
         attachments: [...split(values.attachments), ...uploadedAttachments],
         photos: [...split(values.photos), ...uploadedPhotos],
@@ -292,6 +308,25 @@ export default function AssetForm() {
             <Card title={a("classification")}>
               <div className="form-grid">
                 <ClassificationFields />
+                {trackingTypes.connected && (
+                  <SelectField
+                    label={app.language === "nl" ? "Beheertype" : "Tracking type"}
+                    {...register("assetTypeId")}
+                  >
+                    <option value="">
+                      {existing
+                        ? app.language === "nl" ? "Niet ingesteld" : "Not set"
+                        : app.language === "nl" ? "Standaard (Serialized)" : "Default (Serialized)"}
+                    </option>
+                    {trackingTypes.items
+                      .filter((item) => item.status === "Active" || item.id === existing?.assetTypeId)
+                      .map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                  </SelectField>
+                )}
                 <Field
                   label={a("itemType")}
                   required
