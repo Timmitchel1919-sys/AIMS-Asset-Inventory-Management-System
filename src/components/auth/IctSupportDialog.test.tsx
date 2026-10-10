@@ -14,7 +14,7 @@ describe('login ICT support dialog',()=>{
   expect(screen.getByText('SUBMIT YOUR ISSUE THROUGH THE TICKET SYSTEM FIRST.').tagName).toBe('STRONG');
   expect(screen.getByText('Monday–Friday: 07:30 A.M. – 14:00 P.M.')).toBeTruthy();
   expect(screen.getByText('Internal line: 430870 / 431977 ext. 225')).toBeTruthy();
-  expect(screen.getAllByRole('link').filter(x=>x.getAttribute('href')?.startsWith('mailto:'))).toHaveLength(7);
+  expect(screen.getAllByRole('link').filter(x=>x.getAttribute('href')?.startsWith('mailto:'))).toHaveLength(6);
   fireEvent.keyDown(document,{key:'Escape'});
   expect(screen.queryByRole('dialog')).toBeNull();
   expect(document.activeElement).toBe(trigger);

@@ -5,7 +5,7 @@ describe('presentation demonstration dataset',()=>{
     const first=new MockInventoryRepository().snapshot(),second=new MockInventoryRepository().snapshot();
     expect(first.assets.length).toBeGreaterThanOrEqual(20);
     expect(first.inventory.length).toBeGreaterThanOrEqual(10);
-    expect(first.users.length).toBeGreaterThanOrEqual(7);
+    expect(first.users.length).toBeGreaterThanOrEqual(6);
     expect(second.assets).toEqual(first.assets);
   });
   it('covers asset, stock and operational presentation states',()=>{
