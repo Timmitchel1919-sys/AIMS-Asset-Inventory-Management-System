@@ -1802,24 +1802,12 @@ html[data-aims-theme="aimsEmeraldGloss"]
 }
 .user-danger-action {
   border-color: #f45b6a !important;
-  background: linear-gradient(
-    180deg,
-    #ff6675 0%,
-    #dc2639 52%,
-    #b9152a 100%
-  ) !important;
+  background: #dc2639 !important;
   color: #fff !important;
-  box-shadow:
-    0 5px 14px rgba(185, 21, 42, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.38) !important;
+  box-shadow: 0 5px 14px rgba(185, 21, 42, 0.3)!important;
 }
 .user-danger-action:hover {
-  background: linear-gradient(
-    180deg,
-    #ff7b88 0%,
-    #e22d41 52%,
-    #c31930 100%
-  ) !important;
+  background: #e22d41 !important;
 }
 .legal-settings {
   display: grid;
@@ -2713,7 +2701,7 @@ html .system-information {
   text-decoration: none;
   font-weight: 650;
   line-height: 1.25;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .58);
+  box-shadow: none;
 }
 @media (max-width: 560px) {
   .inventory-action-card {

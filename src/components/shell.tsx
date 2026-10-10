@@ -249,7 +249,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   // The owner-only Device Management module is only listed for the Owner.
   const moduleOrder: readonly string[] =
     app.user?.role === "owner"
-      ? [...sidebarModuleOrder, "device-management"]
+      ? sidebarModuleOrder.flatMap((id) =>
+          id === "settings" ? ["device-management", id] : [id],
+        )
       : sidebarModuleOrder;
   const primaryRoutes = moduleOrder.flatMap((id) => {
     const route = routes.find((candidate) => candidate.id === id);

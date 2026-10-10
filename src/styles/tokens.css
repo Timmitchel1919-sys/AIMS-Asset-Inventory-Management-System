@@ -63,7 +63,7 @@
   --color-sidebar-background: linear-gradient(180deg,#124e32 0%,#0c432a 52%,#07351f 100%);
   --color-sidebar-text: #ffffff;
   --color-sidebar-muted: #c3d7ca;
-  --color-sidebar-active-background: linear-gradient(180deg,#ffd23f,#f6be23);
+  --color-sidebar-active-background: #f6be23;
   --color-sidebar-active-text: #103522;
   --color-sidebar-active-pointer: #FFFFFF;
   --color-sidebar-hover: rgba(255,255,255,.1);
