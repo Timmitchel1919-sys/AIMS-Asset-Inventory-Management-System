@@ -23,6 +23,7 @@ import { LocationTypeForm } from "../components/settings/LocationTypesSettings";
 import { DepartmentIntelligencePanel } from "../components/departments/DepartmentIntelligencePanel";
 import { MainLocationForm } from "../components/settings/MainLocationForm";
 import { CodeGroupForm } from "../components/settings/CodeGroupForm";
+import { assetInDepartment } from "../domain/assetLookups";
 
 
 function ParentLocationForm({
@@ -755,7 +756,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       ? displayRows.reduce(
           (totals, department) => {
             for (const asset of snapshot.assets) {
-              if (asset.department !== department.name) continue;
+              if (!assetInDepartment(asset, department)) continue;
               if (["Disposed", "Archived"].includes(asset.status))
                 totals.inactive += 1;
               else totals.active += 1;

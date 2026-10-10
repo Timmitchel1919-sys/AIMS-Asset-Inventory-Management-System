@@ -9,6 +9,7 @@ import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { locationPath } from "../domain/locationTree";
 import type { Condition } from "../domain/types";
 import { ASSET_CONDITIONS } from "../domain/assetCondition";
+import { assetCategoryName } from "../domain/assetLookups";
 
 const CONDITIONS: readonly Condition[] = ASSET_CONDITIONS;
 
@@ -162,7 +163,7 @@ function AssetMove({ mode }: { mode: Mode }) {
             <dl>
               <div><dt>INV-CODE</dt><dd>{asset.code}</dd></div>
               <div><dt>{nl ? "Naam" : "Name"}</dt><dd>{asset.name}</dd></div>
-              <div><dt>{nl ? "Categorie" : "Category"}</dt><dd>{asset.category}</dd></div>
+              <div><dt>{nl ? "Categorie" : "Category"}</dt><dd>{assetCategoryName(asset, snapshot.references)}</dd></div>
               <div><dt>{nl ? "Merk / model" : "Brand / model"}</dt><dd>{[asset.brand, asset.model].filter(Boolean).join(" ") || "—"}</dd></div>
               <div><dt>{nl ? "Serienummer" : "Serial number"}</dt><dd>{asset.serialNumber || "—"}</dd></div>
               <div><dt>{nl ? "Huidige conditie" : "Current condition"}</dt><dd>{asset.condition}</dd></div>

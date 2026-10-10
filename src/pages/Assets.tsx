@@ -48,6 +48,7 @@ import { runBulkCommands } from "../data/bulkActions";
 import type { Asset } from "../domain/types";
 import { useT } from "../i18n";
 import { ASSET_CONDITIONS } from "../domain/assetCondition";
+import { assetAssigneeName, assetDepartmentName } from "../domain/assetLookups";
 
 const columnIds = [
   "code",
@@ -314,15 +315,18 @@ export default function Assets() {
         id: "department",
         label: t("assets.department"),
         sortable: true,
-        render: (asset) => asset.department,
-        value: (asset) => asset.department,
+        // Read through the canonical id so a renamed department shows everywhere.
+        render: (asset) => assetDepartmentName(asset, snapshot.references),
+        value: (asset) => assetDepartmentName(asset, snapshot.references),
       },
       {
         id: "assignee",
         label: t("assets.assignee"),
         sortable: true,
-        render: (asset) => asset.assignedTo || asset.responsibleEmployee,
-        value: (asset) => asset.assignedTo || asset.responsibleEmployee,
+        render: (asset) =>
+          assetAssigneeName(asset, snapshot.users) || asset.responsibleEmployee,
+        value: (asset) =>
+          assetAssigneeName(asset, snapshot.users) || asset.responsibleEmployee,
       },
       {
         id: "condition",
@@ -345,7 +349,7 @@ export default function Assets() {
         value: (asset) => t(`status.${asset.status}`),
       },
     ],
-    [t],
+    [t, snapshot.references, snapshot.users],
   );
   const visible = preferences.visibleColumns.length
     ? preferences.visibleColumns

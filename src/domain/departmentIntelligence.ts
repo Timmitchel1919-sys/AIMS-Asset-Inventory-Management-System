@@ -16,12 +16,21 @@ import type {
 } from "../data/contracts";
 import { locationPathNames } from "./locationTree";
 
-/** Every asset currently attributed to this department (by name — `Asset.department` is a plain string, not a foreign key). */
+/**
+ * Every asset currently attributed to this department. Uses the canonical
+ * `departmentId` when the asset has one (so renames never lose assets) and the
+ * stored department name otherwise.
+ */
 export function assetsForDepartment(
   assets: Asset[],
   departmentName: string,
+  departmentId?: string,
 ): Asset[] {
-  return assets.filter((a) => a.department === departmentName);
+  return assets.filter((a) =>
+    a.departmentId && departmentId
+      ? a.departmentId === departmentId
+      : a.department === departmentName,
+  );
 }
 
 /** Quantity-based stock lines attributed to this department, if any. */

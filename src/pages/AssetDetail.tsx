@@ -31,6 +31,7 @@ import { AssetStatusBadge } from "../components/AssetStatusBadge";
 import { ConditionBadge } from "../components/ConditionBadge";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
+import { assetAssigneeName, assetCategoryName, assetDepartmentName } from "../domain/assetLookups";
 import { qrResolverPayload } from "../domain/assetManagement";
 import { RAW_SPECIFICATIONS_KEY } from "../domain/technicalSpecifications";
 import { useT } from "../i18n";
@@ -223,11 +224,11 @@ export default function AssetDetail() {
     [a("condition"), t(`condition.${asset.condition}`)],
     [a("brand"), asset.brand],
     [a("model"), asset.model],
-    [a("category"), asset.category],
+    [a("category"), assetCategoryName(asset, snapshot.references)],
     [a("subcategory"), asset.subcategory || "—"],
     [a("location"), asset.location],
-    [a("department"), asset.department],
-    [a("assignedUser"), asset.assignedTo || "—"],
+    [a("department"), assetDepartmentName(asset, snapshot.references)],
+    [a("assignedUser"), assetAssigneeName(asset, snapshot.users) || "—"],
     [a("responsible"), asset.responsibleEmployee || "—"],
     [a("purchaseDate"), asset.purchaseDate],
     [a("warrantyStart"), asset.warrantyStart || "—"],

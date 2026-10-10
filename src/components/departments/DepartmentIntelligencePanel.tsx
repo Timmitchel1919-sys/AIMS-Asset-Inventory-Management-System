@@ -149,8 +149,8 @@ export function DepartmentIntelligencePanel({
 
   const deptName = department?.name || "";
   const deptAssets = useMemo(
-    () => assetsForDepartment(snapshot.assets, deptName),
-    [snapshot.assets, deptName],
+    () => assetsForDepartment(snapshot.assets, deptName, department?.id),
+    [snapshot.assets, deptName, department?.id],
   );
   const ictAssets = useMemo(
     () => deptAssets.filter((a) => isIctCategory(a.category, snapshot.references)),

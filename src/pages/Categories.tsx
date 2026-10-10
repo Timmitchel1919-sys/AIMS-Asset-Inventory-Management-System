@@ -1,6 +1,7 @@
 import { TrackingTypesPanel } from "../components/TrackingTypesPanel";
 import { useAssetTypes } from "../data/assetTypesStore";
 import { readAllowedAssetTypeIds } from "../domain/categoryRelations";
+import { assetInCategory } from "../domain/assetLookups";
 import { useState, FormEvent, useMemo } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Plus } from "lucide-react";
@@ -55,7 +56,7 @@ export const CategoriesPage = () => {
     String(item.details?.categoryName || "");
 
   const activeAssetCount = (item: ReferenceRecord) =>
-    snapshot.assets.filter(a => a.category === item.name && !["Archived", "Disposed"].includes(a.status)).length;
+    snapshot.assets.filter(a => assetInCategory(a, item) && !["Archived", "Disposed"].includes(a.status)).length;
 
   const columns = useMemo<ListColumn<ReferenceRecord>[]>(
     () => [
