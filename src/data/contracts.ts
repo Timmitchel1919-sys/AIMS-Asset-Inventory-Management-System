@@ -387,6 +387,8 @@ export interface ActivityRecord {
   at: string;
   user: string;
   action: string;
+  /** Canonical audit event (e.g. CODEGROUP_CREATED); see domain/auditEvents. */
+  event?: string;
   entityType: string;
   entityId: string;
   result: "Success" | "Failure";

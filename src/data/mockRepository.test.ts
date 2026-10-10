@@ -42,7 +42,12 @@ describe("mock workflow repository", () => {
       ),
     ).toBe(false);
     await repo.execute({ action: "asset.restore", entityId: created.entityId });
-    expect(repo.snapshot().activity).toHaveLength(4);
+    // create, edit, archive, restore = 4 commands; creation additionally logs
+    // the INVENTORY_CODE_ASSIGNED audit event as its own entry.
+    expect(repo.snapshot().activity).toHaveLength(5);
+    expect(
+      repo.snapshot().activity.filter((entry) => !entry.event || entry.event !== "INVENTORY_CODE_ASSIGNED"),
+    ).toHaveLength(4);
   });
   it("moves deleted code groups to the recycle bin and restores them", async () => {
     const created = await repo.execute({

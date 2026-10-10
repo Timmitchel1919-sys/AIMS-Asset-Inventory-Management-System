@@ -353,8 +353,9 @@ service cloud.firestore {
     }
 
     function validActivity(data) {
-      return data.keys().hasOnly(['at','user','action','entityType','entityId','result','detail','createdAt','createdBy','updatedAt','updatedBy'])
+      return data.keys().hasOnly(['at','user','action','event','entityType','entityId','result','detail','createdAt','createdBy','updatedAt','updatedBy'])
         && data.keys().hasAll(['at','user','action','entityType','entityId','result','detail','createdAt','createdBy','updatedAt','updatedBy'])
+        && (!('event' in data) || (data.event is string && data.event.matches('^[A-Z_]{3,48}$')))
         && data.at is string && data.at.size() <= 40
         && data.user is string && data.user.size() <= 150
         && data.action is string && data.action.size() <= 100

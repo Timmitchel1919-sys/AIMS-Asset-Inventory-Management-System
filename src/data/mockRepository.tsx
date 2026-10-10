@@ -83,6 +83,7 @@ import {
 import { RepositoryProvider } from "./repositoryContext";
 import { ASSET_CONDITIONS } from "../domain/assetCondition";
 import { resolveAssetReferences } from "../domain/referenceMigration";
+import { auditEventsFor, type AuditContext } from "../domain/auditEvents";
 import {
   ASSET_TYPE_NOT_ALLOWED,
   assetTypeAllowed,
@@ -793,18 +794,36 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
       candidate = id("evt", ++sequence);
     return candidate;
   }
+  // Captured before a command mutates anything (a delete removes the record
+  // whose kind we need to name the audit event).
+  private auditContext: AuditContext = {};
   private log(command: WorkflowCommand, result: WorkflowResult) {
-    const entry: ActivityRecord = {
-      id: this.nextActivityId(),
+    const events = result.ok
+      ? auditEventsFor(command.action, this.auditContext)
+      : [];
+    const base = {
       at: now(),
       user: command.actor || "Naomi Williams",
       action: command.action,
       entityType: command.action.split(".")[0],
       entityId: result.entityId || command.entityId || "batch",
-      result: result.ok ? "Success" : "Failure",
-      detail: result.message,
+      result: (result.ok ? "Success" : "Failure") as ActivityRecord["result"],
     };
-    this.state.activity = [entry, ...this.state.activity];
+    const created: ActivityRecord[] = [];
+    (events.length ? events : [undefined]).forEach((event) => {
+      // The code assignment gets its own entry that names the Inv.code.
+      const code =
+        event === "INVENTORY_CODE_ASSIGNED"
+          ? this.state.assets.find((asset) => asset.id === base.entityId)?.code
+          : undefined;
+      created.push({
+        id: `${this.nextActivityId()}${created.length ? `-${created.length}` : ""}`,
+        ...base,
+        ...(event ? { event } : {}),
+        detail: code ? `Inv.code ${code} assigned` : result.message,
+      });
+    });
+    this.state.activity = [...created.reverse(), ...this.state.activity];
   }
   // assetHistoryEvents is deliberately not eagerly loaded (see
   // eagerCollectionKeys in firebaseRepository.tsx) — only the events for
@@ -958,6 +977,18 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
     await new Promise((resolve) => setTimeout(resolve, 120));
     const historyBefore = clone(this.state);
     const v = command.values || {};
+    this.auditContext = {
+      referenceKind: command.action.startsWith("reference.")
+        ? String(
+            this.state.references.find((item) => item.id === command.entityId)
+              ?.kind ||
+              v.kind ||
+              "",
+          )
+        : undefined,
+      codeCorrection:
+        command.action === "asset.edit" && !!String(v.codeCorrection || "").trim(),
+    };
     let result: WorkflowResult = { ok: true, message: "Operation completed." };
     try {
       switch (command.action) {

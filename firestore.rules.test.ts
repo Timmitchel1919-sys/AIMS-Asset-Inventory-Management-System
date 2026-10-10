@@ -106,4 +106,10 @@ describe("Firestore AIMS authorization rules", () => {
     // The immutable inventory-code guarantee on asset updates is untouched.
     expect(rules).toContain("request.resource.data.code == resource.data.code");
   });
+  it("allows only a well-formed canonical audit event on activity logs", () => {
+    expect(rules).toContain("'action','event','entityType'");
+    expect(rules).toContain("data.event.matches('^[A-Z_]{3,48}$')");
+    // Activity logs stay immutable.
+    expect(rules).toContain("match /activityLogs/{id}");
+  });
 });

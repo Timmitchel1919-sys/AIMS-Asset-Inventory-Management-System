@@ -158,3 +158,40 @@ describe("asset canonical reference sync", () => {
     });
   });
 });
+
+describe("canonical audit events", () => {
+  it("logs named events for code groups, locations, categories, assets and Inv.codes", async () => {
+    const repo = new MockInventoryRepository();
+    const events = () => repo.snapshot().activity.map((a) => a.event).filter(Boolean);
+    await repo.execute({ action: "codeGroup.create", values: { name: "Audit group", prefix: "AUDX" } });
+    expect(events()).toContain("CODEGROUP_CREATED");
+    const group = repo.snapshot().codeGroups.find((g) => g.prefix === "AUDX")!;
+    await repo.execute({ action: "codeGroup.edit", entityId: group.id, values: { name: "Audit group 2", prefix: "AUDX" } });
+    expect(events()).toContain("CODEGROUP_UPDATED");
+    await repo.execute({ action: "codeGroup.delete", entityId: group.id, values: { reason: "test" } });
+    expect(events()).toContain("CODEGROUP_ARCHIVED");
+
+    await repo.execute({ action: "reference.create", values: { kind: "category", name: "Audit category", status: "Active", type: "Hierarchy", details: { level: "category" } } });
+    expect(events()).toContain("CATEGORY_CREATED");
+
+    const created = await repo.execute({ action: "asset.create", values: { name: "Audited", serialNumber: "AUD-1" } });
+    const entries = repo.snapshot().activity.filter((a) => a.entityId === created.entityId);
+    expect(entries.map((e) => e.event).sort()).toEqual(["ASSET_CREATED", "INVENTORY_CODE_ASSIGNED"]);
+    expect(new Set(repo.snapshot().activity.map((a) => a.id)).size).toBe(repo.snapshot().activity.length);
+    const assigned = entries.find((e) => e.event === "INVENTORY_CODE_ASSIGNED")!;
+    expect(assigned.detail).toMatch(/^Inv\.code .+ assigned$/);
+    await repo.execute({ action: "asset.edit", entityId: created.entityId, values: { notes: "x" } });
+    expect(events()).toContain("ASSET_UPDATED");
+  });
+
+  it("does not name events for failed commands and keeps the original action", async () => {
+    const repo = new MockInventoryRepository();
+    const before = repo.snapshot().activity.length;
+    const failed = await repo.execute({ action: "asset.create", values: { name: "No serial" } });
+    expect(failed.ok).toBe(false);
+    const added = repo.snapshot().activity.slice(0, repo.snapshot().activity.length - before);
+    expect(added.every((a) => !a.event)).toBe(true);
+    expect(added[0].action).toBe("asset.create");
+    expect(added[0].result).toBe("Failure");
+  });
+});
