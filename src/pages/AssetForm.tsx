@@ -1,6 +1,6 @@
 import { ArrowLeft, Save, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAssetT } from "../assetCopy";
@@ -128,16 +128,17 @@ export default function AssetForm() {
     : assetFormDefaults;
   const draftKey = `asset-form:${existing?.id || "new"}`;
   const recoveredDraft = readLocalDraft<AssetFormValues>(draftKey);
+  const formMethods = useForm<AssetFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: recoveredDraft?.value || defaults,
+  });
   const {
     register,
     handleSubmit,
     formState: { errors, isDirty, isSubmitting },
     setError,
     watch,
-  } = useForm<AssetFormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: recoveredDraft?.value || defaults,
-  });
+  } = formMethods;
   const watchedValues = watch();
   const draftAutosave = useAutosaveDraft({
     key: draftKey,
@@ -232,6 +233,7 @@ export default function AssetForm() {
             </Button>
           </>}
         />
+        <FormProvider {...formMethods}>
         <form id="asset-form" onSubmit={submit} noValidate>
           <div className="asset-form-sections">
             <Card title={a("identity")}>
@@ -462,6 +464,7 @@ export default function AssetForm() {
             </Button>
           </div>
         </form>
+        </FormProvider>
       </div>
     </OfflineGate>
   );

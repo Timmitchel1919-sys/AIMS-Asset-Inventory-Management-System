@@ -97,10 +97,14 @@ export function ClassificationFields() {
     }
 
     try {
-      await repository.execute({
+      const result = await repository.execute({
         action: "reference.create",
         values: { kind: "category", name: normalizedName, status: "Active" },
       });
+      if (!result.ok) {
+        setCategoryError(result.message);
+        return;
+      }
       handleCategorySelect(normalizedName);
       setAddCategoryOpen(false);
       setNewCategoryName("");
@@ -129,7 +133,7 @@ export function ClassificationFields() {
     }
 
     try {
-      await repository.execute({
+      const result = await repository.execute({
         action: "reference.create",
         values: {
           kind: "subcategory",
@@ -139,6 +143,10 @@ export function ClassificationFields() {
           parent: categoryRecord.name,
         },
       });
+      if (!result.ok) {
+        setSubcategoryError(result.message);
+        return;
+      }
       handleSubcategorySelect(normalizedName);
       setAddSubcategoryOpen(false);
       setNewSubcategoryName("");
@@ -329,8 +337,8 @@ export function ClassificationFields() {
         title={nl ? "Categorie toevoegen" : "Add category"}
         footer={
           <>
-            <Button variant="ghost" onClick={() => setAddCategoryOpen(false)}>{nl ? "Annuleren" : "Cancel"}</Button>
-            <Button onClick={handleAddCategory}>{nl ? "Categorie toevoegen" : "Add category"}</Button>
+            <Button type="button" variant="ghost" onClick={() => setAddCategoryOpen(false)}>{nl ? "Annuleren" : "Cancel"}</Button>
+            <Button type="button" onClick={handleAddCategory}>{nl ? "Categorie toevoegen" : "Add category"}</Button>
           </>
         }
       >
@@ -354,8 +362,8 @@ export function ClassificationFields() {
         title={nl ? "Subcategorie toevoegen" : "Add sub-category"}
         footer={
           <>
-            <Button variant="ghost" onClick={() => setAddSubcategoryOpen(false)}>{nl ? "Annuleren" : "Cancel"}</Button>
-            <Button onClick={handleAddSubcategory}>{nl ? "Subcategorie toevoegen" : "Add sub-category"}</Button>
+            <Button type="button" variant="ghost" onClick={() => setAddSubcategoryOpen(false)}>{nl ? "Annuleren" : "Cancel"}</Button>
+            <Button type="button" onClick={handleAddSubcategory}>{nl ? "Subcategorie toevoegen" : "Add sub-category"}</Button>
           </>
         }
       >
