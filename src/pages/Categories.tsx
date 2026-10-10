@@ -1,4 +1,6 @@
 import { TrackingTypesPanel } from "../components/TrackingTypesPanel";
+import { useAssetTypes } from "../data/assetTypesStore";
+import { readAllowedAssetTypeIds } from "../domain/categoryRelations";
 import { useState, FormEvent, useMemo } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Plus } from "lucide-react";
@@ -227,6 +229,8 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
   const [assetName, setAssetName] = useState(existing?.name || "");
   const [trackingType, setTrackingType] = useState(existing?.type || "Serialized");
   const [codeGroup, setCodeGroup] = useState(String(existing?.details?.codeGroup || ""));
+  const trackingTypes = useAssetTypes();
+  const [allowedTypes, setAllowedTypes] = useState<string[]>(readAllowedAssetTypeIds(existing || undefined));
   const [status, setStatus] = useState(existing?.status || "Active");
 
   const [inlineCreate, setInlineCreate] = useState(false);
@@ -280,6 +284,11 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
       categoryId: resolvedCategoryId || undefined,
       categoryName: selected.name,
       codeGroup: codeGroup === "" ? undefined : codeGroup,
+      // Stable reference to the default Codegroep (the prefix above is kept
+      // for compatibility and stays in step on prefix migrations).
+      codeGroupId: codeGroup === "" ? undefined : snapshot.codeGroups.find(g => g.prefix === codeGroup)?.id,
+      // Empty = every tracking type is allowed.
+      allowedAssetTypeIds: allowedTypes.length ? allowedTypes : undefined,
     };
 
     const res = await repository.execute({
@@ -390,6 +399,21 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
               </SelectField>
             </div>
           </div>
+
+          {trackingTypes.connected && trackingTypes.items.length > 0 && (
+            <fieldset className="dm-checks" style={{marginTop: '1rem'}}>
+              <legend>{nl ? "Toegestane beheertypen (leeg = alle)" : "Allowed tracking types (none = all)"}</legend>
+              {trackingTypes.items.filter(item => item.status === "Active" || allowedTypes.includes(item.id)).map(item => (
+                <label key={item.id} className="dm-check">
+                  <input
+                    type="checkbox"
+                    checked={allowedTypes.includes(item.id)}
+                    onChange={() => setAllowedTypes(list => list.includes(item.id) ? list.filter(x => x !== item.id) : [...list, item.id])}
+                  />{" "}{item.name}
+                </label>
+              ))}
+            </fieldset>
+          )}
         </form>
       </Dialog>
 

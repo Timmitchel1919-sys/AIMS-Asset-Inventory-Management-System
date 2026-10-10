@@ -83,6 +83,11 @@ import {
 import { RepositoryProvider } from "./repositoryContext";
 import { ASSET_CONDITIONS } from "../domain/assetCondition";
 import { resolveAssetReferences } from "../domain/referenceMigration";
+import {
+  ASSET_TYPE_NOT_ALLOWED,
+  assetTypeAllowed,
+  effectiveCategoryRelations,
+} from "../domain/categoryRelations";
 
 const clone = <T,>(value: T): T => structuredClone(value);
 const today = () => new Date().toISOString().slice(0, 10);
@@ -968,6 +973,10 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           const code = `${prefix}-${number < 100 ? String(number).padStart(2, "0") : number}`;
           const serial = String(v.serialNumber || "").trim();
           if (!serial) throw new Error("A serial number is required.");
+          this.assertAssetTypeAllowed(
+            String(v.category || "Other school equipment"),
+            String(v.assetTypeId || ""),
+          );
           // Inv.codes are permanent: a number that any asset currently holds
           // OR ever held (previousCodes, from an administrative correction)
           // can never be assigned to a different asset.
@@ -1072,6 +1081,18 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             )
           )
             throw new Error("Serial number already exists.");
+          // Enforce the category's allowed tracking types only when the
+          // category or the type actually changes, so existing assets whose
+          // combination predates a restriction can still be edited.
+          if (
+            (v.assetTypeId !== undefined &&
+              (v.assetTypeId || null) !== (a.assetTypeId || null)) ||
+            (v.category !== undefined && v.category !== a.category)
+          )
+            this.assertAssetTypeAllowed(
+              String(v.category ?? a.category),
+              String((v.assetTypeId !== undefined ? v.assetTypeId : a.assetTypeId) || ""),
+            );
           const correction = String(v.codeCorrection || "").trim();
           if (correction) {
             if (!String(v.correctionReason || "").trim())
@@ -4378,6 +4399,16 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
    * reassignment or transfer never leaves a stale id behind. The tracking type
    * is chosen explicitly and is not derived here.
    */
+  private assertAssetTypeAllowed(category: string, assetTypeId: string) {
+    const relations = effectiveCategoryRelations(
+      category,
+      this.state.references,
+      this.state.codeGroups,
+    );
+    if (!assetTypeAllowed(assetTypeId, relations))
+      throw new Error(ASSET_TYPE_NOT_ALLOWED.en);
+  }
+
   private syncAssetReferences(a: Asset) {
     const resolved = resolveAssetReferences(a, {
       references: this.state.references,

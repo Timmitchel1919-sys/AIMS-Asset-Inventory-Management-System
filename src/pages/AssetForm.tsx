@@ -1,5 +1,5 @@
 import { ArrowLeft, Save, ShieldAlert } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
@@ -23,6 +23,10 @@ import {
 } from "../components/WorkflowUi";
 import { ClassificationFields } from "../components/ClassificationFields";
 import { useAssetTypes } from "../data/assetTypesStore";
+import {
+  assetTypeAllowed,
+  effectiveCategoryRelations,
+} from "../domain/categoryRelations";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import {
@@ -144,8 +148,35 @@ export default function AssetForm() {
     formState: { errors, isDirty, isSubmitting },
     setError,
     watch,
+    setValue,
+    getValues,
   } = formMethods;
   const watchedValues = watch();
+  // Category relations: default Codegroep and allowed tracking types.
+  const relations = useMemo(
+    () =>
+      effectiveCategoryRelations(
+        watchedValues.category,
+        snapshot.references,
+        snapshot.codeGroups,
+      ),
+    [watchedValues.category, snapshot.references, snapshot.codeGroups],
+  );
+  const previousCategory = useRef(watchedValues.category);
+  useEffect(() => {
+    if (previousCategory.current === watchedValues.category) return;
+    previousCategory.current = watchedValues.category;
+    // A newly chosen category pre-selects its default Codegroep (new assets
+    // only; an existing asset's identifier never changes here).
+    if (!existing && relations.codeGroup)
+      setValue("codePrefix", relations.codeGroup.prefix as AssetFormValues["codePrefix"], {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    const chosen = getValues("assetTypeId");
+    if (chosen && !assetTypeAllowed(chosen, relations))
+      setValue("assetTypeId", "", { shouldDirty: true });
+  }, [watchedValues.category, relations, existing, setValue, getValues]);
   const draftAutosave = useAutosaveDraft({
     key: draftKey,
     value: watchedValues,
@@ -308,6 +339,12 @@ export default function AssetForm() {
             <Card title={a("classification")}>
               <div className="form-grid">
                 <ClassificationFields />
+                {relations.codeGroup && !existing && (
+                  <p className="field-hint wide">
+                    {app.language === "nl" ? "Standaard codegroep voor deze categorie" : "Default code group for this category"}
+                    : {relations.codeGroup.name} ({relations.codeGroup.prefix})
+                  </p>
+                )}
                 {trackingTypes.connected && (
                   <SelectField
                     label={app.language === "nl" ? "Beheertype" : "Tracking type"}
@@ -319,7 +356,11 @@ export default function AssetForm() {
                         : app.language === "nl" ? "Standaard (Serialized)" : "Default (Serialized)"}
                     </option>
                     {trackingTypes.items
-                      .filter((item) => item.status === "Active" || item.id === existing?.assetTypeId)
+                      .filter(
+                        (item) =>
+                          (item.status === "Active" && assetTypeAllowed(item.id, relations)) ||
+                          item.id === existing?.assetTypeId,
+                      )
                       .map((item) => (
                         <option key={item.id} value={item.id}>
                           {item.name}

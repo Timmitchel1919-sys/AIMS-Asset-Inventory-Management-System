@@ -117,4 +117,44 @@ describe("asset canonical reference sync", () => {
     expect(returned.ok, returned.message).toBe(true);
     expect(find(created.entityId).assignedUserId).toBeNull();
   });
+
+  describe("category allowed tracking types", () => {
+    const restrict = (name: string, allowed: string[]) => {
+      const record = (repo as unknown as { state: { references: { kind: string; name: string; details: Record<string, unknown> }[] } }).state.references.find((r) => r.kind === "category" && r.name === name)!;
+      record.details = { ...record.details, allowedAssetTypeIds: allowed };
+    };
+
+    it("rejects a tracking type the category does not allow, accepts allowed or unset", async () => {
+      const { category, group } = pick();
+      restrict(category.name, ["serialized"]);
+      const base = { serialNumber: "", codePrefix: group.prefix, category: category.name };
+      const bad = await repo.execute({ action: "asset.create", values: { ...base, name: "A", serialNumber: "AT-1", assetTypeId: "bulk" } });
+      expect(bad.ok).toBe(false);
+      expect(bad.message).toMatch(/not allowed for the selected category/);
+      expect((await repo.execute({ action: "asset.create", values: { ...base, name: "B", serialNumber: "AT-2", assetTypeId: "serialized" } })).ok).toBe(true);
+      expect((await repo.execute({ action: "asset.create", values: { ...base, name: "C", serialNumber: "AT-3" } })).ok).toBe(true);
+    });
+
+    it("treats an empty allowed list as 'any'", async () => {
+      const { category, group } = pick();
+      restrict(category.name, []);
+      const ok = await repo.execute({ action: "asset.create", values: { name: "D", serialNumber: "AT-4", codePrefix: group.prefix, category: category.name, assetTypeId: "consumable" } });
+      expect(ok.ok).toBe(true);
+    });
+
+    it("blocks changing to a disallowed type or category, but grandfathers an unchanged combination", async () => {
+      const { category, group } = pick();
+      const created = await repo.execute({ action: "asset.create", values: { name: "Old", serialNumber: "AT-5", codePrefix: group.prefix, category: category.name, assetTypeId: "bulk" } });
+      expect(created.ok).toBe(true);
+      restrict(category.name, ["serialized"]); // restriction added later
+      // Unrelated edits (form echoes the same type and category) still work.
+      const same = await repo.execute({ action: "asset.edit", entityId: created.entityId, values: { notes: "n", category: category.name, assetTypeId: "bulk" } });
+      expect(same.ok, same.message).toBe(true);
+      const change = await repo.execute({ action: "asset.edit", entityId: created.entityId, values: { assetTypeId: "consumable" } });
+      expect(change.ok).toBe(false);
+      expect(find(created.entityId).assetTypeId).toBe("bulk");
+      const toSerialized = await repo.execute({ action: "asset.edit", entityId: created.entityId, values: { assetTypeId: "serialized" } });
+      expect(toSerialized.ok).toBe(true);
+    });
+  });
 });
