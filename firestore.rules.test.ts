@@ -76,4 +76,22 @@ describe("Firestore AIMS authorization rules", () => {
       "request.resource.data.codeNumber == resource.data.codeNumber",
     );
   });
+  it("identifies the Owner by verified token email, never by a writable role field", () => {
+    expect(rules).toContain(
+      "request.auth.token.email.lower() == 'aliendas@kangoeroeschool.com'",
+    );
+    expect(rules).not.toContain("data.role == 'owner'");
+    expect(rules).toContain("return isOwner() || (isVerified()");
+    expect(rules).toContain("ownerRoleAllowed(request.resource.data)");
+    expect(rules).toContain("ownerRoleAllowed(resource.data)");
+    for (const name of [
+      "deviceManagement",
+      "deviceCommands",
+      "devicePolicies",
+      "deviceNetwork",
+      "deviceCompliance",
+      "deviceAuditTrail",
+    ])
+      expect(rules).toContain(`match /${name}/{document=**}`);
+  });
 });

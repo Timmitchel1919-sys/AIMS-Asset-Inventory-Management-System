@@ -27,7 +27,7 @@ import {
 } from "./offlinePolicy";
 import { rolePermissions } from "../auth/permissions";
 import type { Role } from "../domain/types";
-import { AIMS_BOOTSTRAP_ADMIN_UID } from "../auth/accessBootstrap";
+import { AIMS_BOOTSTRAP_ADMIN_UID, isAimsOwnerEmail } from "../auth/accessBootstrap";
 import {
   isCommandAllowed,
   requiredPermission,
@@ -258,11 +258,19 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     // suspension (active === false) or an explicit denial withholds
     // anything. Mirrors hasPermission()/hasAnyPermission() in
     // firestore.rules.
-    const resolvedRole = (data?.role as Role) || "administrator";
+    // Only the verified Owner email is ever the owner; a stored 'owner' role
+    // on anyone else is ignored.
+    const isOwnerAccount = user.emailVerified && isAimsOwnerEmail(user.email);
+    const storedRole = (data?.role as Role) || "administrator";
+    const resolvedRole: Role = isOwnerAccount
+      ? "owner"
+      : storedRole === "owner"
+        ? "administrator"
+        : storedRole;
     return {
-      permissions: active ? rolePermissions[resolvedRole] || rolePermissions.administrator : [],
+      permissions: active || isOwnerAccount ? rolePermissions[resolvedRole] || rolePermissions.administrator : [],
       denials: [...new Set([...tokenDenials, ...denials])],
-      active,
+      active: active || isOwnerAccount,
       role: resolvedRole,
       email: user.email ?? null,
     };

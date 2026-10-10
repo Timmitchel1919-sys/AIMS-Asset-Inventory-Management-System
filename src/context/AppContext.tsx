@@ -37,7 +37,7 @@ import {
   canFirebaseUserAccess,
   isVerificationRequired,
 } from "../auth/aimsEmailPolicy";
-import { AIMS_BOOTSTRAP_ADMIN_UID } from "../auth/accessBootstrap";
+import { AIMS_BOOTSTRAP_ADMIN_UID, isAimsOwnerEmail } from "../auth/accessBootstrap";
 import {
   DEFAULT_FONT_FAMILY,
   DEFAULT_FONT_SIZE,
@@ -264,7 +264,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const tokenRole = demoUser
         ? undefined
         : (await firebaseUser.getIdTokenResult(true)).claims.role;
-       const role = firebaseUser.uid === AIMS_BOOTSTRAP_ADMIN_UID
+       const isOwnerAccount = !demoUser && firebaseUser.emailVerified && isAimsOwnerEmail(firebaseUser.email);
+       const role = isOwnerAccount
+         ? "owner"
+         : firebaseUser.uid === AIMS_BOOTSTRAP_ADMIN_UID
          ? "administrator"
          : DEMO_AUTH_MODE
         ? "ict-staff"
@@ -273,6 +276,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           : validRoles.has(profile.role as Role)
           ? (profile.role as Role)
           : "warehouse-staff";
+      // Only the verified Owner email may ever hold the owner role.
+      const effectiveRole: Role =
+        role === "owner" && !isOwnerAccount && !DEMO_AUTH_MODE ? "administrator" : role;
       const created =
         profile.createdAt &&
         typeof profile.createdAt === "object" &&
@@ -287,7 +293,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         id: profile.uid,
         name: profile.fullName,
         email: profile.email || "",
-        role,
+        role: effectiveRole,
         department: profile.department || "",
         jobTitle: profile.jobTitle,
         accountType: profile.accountType,

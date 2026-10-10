@@ -324,6 +324,70 @@ describe("AIMS Firestore authorization", () => {
     await assertFails(setDoc(doc(wrongDomain, "roles/bootstrap-denied"), role));
   });
 
+  it("makes only the verified Owner email the owner and blocks self-promotion", async () => {
+    const assignment = (uid: string, role: string) => ({
+      uid,
+      role,
+      permissions: [],
+      denials: [],
+      active: true,
+      allRecords: true,
+      departmentIds: [],
+      locationIds: [],
+      createdAt: serverTimestamp(),
+      createdBy: uid,
+      updatedAt: serverTimestamp(),
+      updatedBy: uid,
+    });
+    const owner = environment
+      .authenticatedContext("owner-uid", verified("aliendas@kangoeroeschool.com"))
+      .firestore();
+    const admin = environment
+      .authenticatedContext("admin-uid", verified("someone@kangoeroeschool.com"))
+      .firestore();
+    const unverifiedOwner = environment
+      .authenticatedContext("owner-uid", {
+        email: "aliendas@kangoeroeschool.com",
+        email_verified: false,
+      })
+      .firestore();
+    // A regular user cannot create or edit an assignment carrying role owner.
+    await assertFails(
+      setDoc(doc(admin, "accessAssignments/admin-uid"), assignment("admin-uid", "owner")),
+    );
+    await assertSucceeds(
+      setDoc(doc(admin, "accessAssignments/admin-uid"), assignment("admin-uid", "administrator")),
+    );
+    await assertFails(
+      updateDoc(doc(admin, "accessAssignments/admin-uid"), { role: "owner", updatedAt: serverTimestamp() }),
+    );
+    // Even a stored owner role grants no device access to a non-owner.
+    await environment.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), "accessAssignments/fake-owner"), assignment("fake-owner", "owner"));
+    });
+    const fake = environment
+      .authenticatedContext("fake-owner", verified("fake@kangoeroeschool.com"))
+      .firestore();
+    for (const collection of ["deviceManagement", "deviceCommands", "devicePolicies", "deviceNetwork", "deviceCompliance", "deviceAuditTrail"]) {
+      await assertFails(getDoc(doc(fake, `${collection}/x`)));
+      await assertFails(getDoc(doc(admin, `${collection}/x`)));
+      await assertFails(getDoc(doc(unverifiedOwner, `${collection}/x`)));
+      await assertSucceeds(setDoc(doc(owner, `${collection}/x`), { value: 1 }));
+      await assertSucceeds(getDoc(doc(owner, `${collection}/x`)));
+    }
+    // The audit trail is create-only, even for the Owner.
+    await assertFails(updateDoc(doc(owner, "deviceAuditTrail/x"), { value: 2 }));
+    await assertFails(deleteDoc(doc(owner, "deviceAuditTrail/x")));
+    // The Owner may hold the owner role and cannot be locked out by suspension.
+    await assertSucceeds(
+      setDoc(doc(owner, "accessAssignments/owner-uid"), assignment("owner-uid", "owner")),
+    );
+    await environment.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(doc(context.firestore(), "accessAssignments/owner-uid"), { active: false });
+    });
+    await assertSucceeds(getDoc(doc(owner, "deviceManagement/x")));
+  });
+
   it("allows only a valid self profile and denies privilege injection or cross-user access", async () => {
     const db = environment
       .authenticatedContext("user-1", verified())

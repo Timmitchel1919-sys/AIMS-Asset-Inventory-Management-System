@@ -38,9 +38,18 @@ service cloud.firestore {
     function isAuthorizedAimsUser() {
       return isVerified() && isActiveAssignment();
     }
-    // Strict OWNER-ONLY boundary for Device Management & Monitoring
+    // The single AIMS Owner / super admin, identified by the verified email
+    // in the Firebase Auth token (which a client cannot forge or edit). It is
+    // deliberately NOT derived from the writable accessAssignments.role field,
+    // so no other user can promote themselves. The Owner is never locked out
+    // by a suspension or denial. Keep in sync with AIMS_OWNER_EMAIL in
+    // src/auth/accessBootstrap.ts.
     function isOwner() {
-      return isVerified() && isActiveAssignment() && hasAccessAssignment() && get(accessAssignmentPath()).data.role == 'owner';
+      return isVerified() && request.auth.token.email.lower() == 'aliendas@kangoeroeschool.com';
+    }
+    // The 'owner' role label may only ever be written by the Owner.
+    function ownerRoleAllowed(data) {
+      return data.role != 'owner' || isOwner();
     }
     // Every authorized AIMS user may add and delete Master Data. Deletion is
     // still business-safe client-side (records move to the recycle bin first;
@@ -58,13 +67,13 @@ service cloud.firestore {
     // anything. Keep in sync with rolePermissions in src/auth/permissions.ts
     // and resolveActorAccess() in src/data/firebaseRepository.tsx.
     function hasPermission(value) {
-      return isVerified() && isActiveAssignment() && !isExplicitlyDenied(value);
+      return isOwner() || (isVerified() && isActiveAssignment() && !isExplicitlyDenied(value));
     }
     function hasAnyPermission(values) {
-      return isVerified() && values is list && values.size() <= 30 && isActiveAssignment() && !(
+      return isOwner() || (isVerified() && values is list && values.size() <= 30 && isActiveAssignment() && !(
         (('denials' in request.auth.token) && request.auth.token.denials is list && request.auth.token.denials.hasAny(values))
         || (hasAccessAssignment() && get(accessAssignmentPath()).data.denials.hasAny(values))
-      );
+      ));
     }
     function isOwnUser(uid) { return isVerified() && request.auth.uid == uid; }
     function shortString(data, field, maximum) {
@@ -532,10 +541,13 @@ service cloud.firestore {
       allow read: if isOwnUser(uid) || hasPermission('admin.users.manage');
       allow create: if hasPermission('admin.users.manage')
         && validAccessAssignment(request.resource.data, uid)
+        && ownerRoleAllowed(request.resource.data)
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time;
       allow update: if hasPermission('admin.users.manage')
         && validAccessAssignment(request.resource.data, uid)
+        && ownerRoleAllowed(request.resource.data)
+        && ownerRoleAllowed(resource.data)
         && immutableAuditFields()
         && request.resource.data.updatedAt == request.time;
       allow delete: if false;
