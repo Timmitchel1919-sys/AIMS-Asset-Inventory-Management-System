@@ -71,6 +71,11 @@ describe("DeviceManagement page", () => {
     expect(screen.getByText(second.code)).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
   });
+  it("labels every table cell so tables can collapse into cards on mobile", () => {
+    renderAt("/device-management");
+    const cell = screen.getByText(first.code).closest("td")!;
+    expect(cell).toHaveAttribute("data-label", "Device");
+  });
   it("selects the tab from the route", () => {
     renderAt("/device-policies");
     expect(screen.getByRole("tab", { name: "Policies" })).toHaveAttribute("aria-selected", "true");

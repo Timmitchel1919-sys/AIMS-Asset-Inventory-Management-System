@@ -61,7 +61,7 @@ export const routeManifest: AppRoute[] = [
       : {}),
     navigation: path === '/device-management',
     breadcrumb: ["routes.deviceManagement"],
-    mobile: false,
+    mobile: true,
     lazy: true as const,
     status: "implemented" as const,
     ownerOnly: true,

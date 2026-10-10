@@ -1,5 +1,5 @@
 import { Info, Plus, ShieldAlert, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DevicePicker } from "../components/DevicePicker";
 import { Badge, Button, Field, Loader, SelectField, State, TextAreaField } from "../components/ui";
@@ -191,6 +191,18 @@ export default function DeviceManagement() {
   const [commandAck, setCommandAck] = useState(false);
   const [policyDraft, setPolicyDraft] = useState<(Partial<DevicePolicy> & { ageText: string }) | null>(null);
   const [busy, setBusy] = useState(false);
+  const panelRef = useRef<HTMLElement>(null);
+  // Mobile: tables collapse into cards, so every cell needs its column label.
+  useLayoutEffect(() => {
+    panelRef.current?.querySelectorAll("table").forEach((table) => {
+      const labels = [...table.querySelectorAll("thead th")].map((th) => th.textContent ?? "");
+      table.querySelectorAll("tbody tr").forEach((row) =>
+        [...row.children].forEach((cell, index) => {
+          if (labels[index]) cell.setAttribute("data-label", labels[index]);
+        }),
+      );
+    });
+  });
 
   const run = async (work: () => Promise<unknown>, success: string) => {
     setBusy(true);
@@ -377,7 +389,7 @@ export default function DeviceManagement() {
       ) : data.loading ? (
         <Loader />
       ) : (
-        <section className="card dm-panel" role="tabpanel">
+        <section className="card dm-panel" role="tabpanel" ref={panelRef}>
           {tab === "overview" && (
             <>
               <div className="dm-kpis">
