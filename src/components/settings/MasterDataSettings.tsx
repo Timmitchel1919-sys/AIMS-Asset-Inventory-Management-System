@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Badge, Button } from "../ui";
 import { ConfirmDialog, Dialog, MutationFeedback } from "../WorkflowUi";
 import { useApp } from "../../context/AppContext";
+import { canDeleteMasterData } from "../../auth/masterDataDeletion";
 import type { CodeGroup, ReferenceRecord } from "../../data/contracts";
 import { useMockSnapshot, useRepository } from "../../data/repositoryContext";
 import { MainLocationForm } from "./MainLocationForm";
@@ -14,7 +15,8 @@ type Feedback = {
 };
 
 function MainLocationsSettings() {
-  const { formatDateTime, language } = useApp(),
+  const { formatDateTime, language, user } = useApp(),
+    mayDelete = canDeleteMasterData(user?.email),
     nl = language === "nl",
     repository = useRepository(),
     snapshot = useMockSnapshot();
@@ -181,14 +183,16 @@ function MainLocationsSettings() {
               >
                 <Power />
               </Button>
-              <Button
-                variant="danger"
-                title="Hoofdlocatie naar prullenbak verplaatsen"
-                aria-label={`${location.name} naar prullenbak verplaatsen`}
-                onClick={() => setDeleting(location)}
-              >
-                <Trash2 />
-              </Button>
+              {mayDelete && (
+                <Button
+                  variant="danger"
+                  title="Hoofdlocatie naar prullenbak verplaatsen"
+                  aria-label={`${location.name} naar prullenbak verplaatsen`}
+                  onClick={() => setDeleting(location)}
+                >
+                  <Trash2 />
+                </Button>
+              )}
             </div>
           </article>
         ))}
@@ -243,7 +247,8 @@ function MainLocationsSettings() {
 }
 
 function CodeGroupsSettings() {
-  const { formatDateTime, language } = useApp(),
+  const { formatDateTime, language, user } = useApp(),
+    mayDelete = canDeleteMasterData(user?.email),
     nl = language === "nl",
     repository = useRepository(),
     snapshot = useMockSnapshot();
@@ -419,9 +424,11 @@ function CodeGroupsSettings() {
               >
                 <Power />
               </Button>
-              <Button variant="danger" onClick={() => setDeleting(group)}>
-                <Trash2 />
-              </Button>
+              {mayDelete && (
+                <Button variant="danger" onClick={() => setDeleting(group)}>
+                  <Trash2 />
+                </Button>
+              )}
             </div>
           </article>
         ))}

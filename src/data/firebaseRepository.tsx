@@ -29,6 +29,10 @@ import { rolePermissions } from "../auth/permissions";
 import type { Role } from "../domain/types";
 import { AIMS_BOOTSTRAP_ADMIN_UID, isAimsOwnerEmail } from "../auth/accessBootstrap";
 import {
+  MASTER_DATA_DELETE_DENIED_EN,
+  canDeleteMasterData,
+} from "../auth/masterDataDeletion";
+import {
   isCommandAllowed,
   requiredPermission,
 } from "../auth/workflowAuthorization";
@@ -708,6 +712,17 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     }
   }
 
+  private isMasterDataDeletion(command: WorkflowCommand) {
+    if (command.action === "codeGroup.delete") return true;
+    if (command.action === "reference.delete" || command.action === "reference.archive") {
+      const record = this.snapshot().references.find(
+        (item) => item.id === command.entityId,
+      );
+      return record?.kind === "location" && record.type === "Main location";
+    }
+    return false;
+  }
+
   override async execute(command: WorkflowCommand): Promise<WorkflowResult> {
     if (!this.initialized)
       return { ok: false, message: "AIMS data is still loading. Please wait." };
@@ -723,6 +738,11 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
         command.actor || this.actorName() || this.actorUid() || "Unknown user",
       actorEmail: command.actorEmail || firebaseAuth?.currentUser?.email || undefined,
     };
+    // Master Data deletion (recycle bin or permanent) is limited to the
+    // authorized administrator accounts. Firestore Rules enforce the same
+    // list server-side; this guard only gives a clear message earlier.
+    if (this.isMasterDataDeletion(command) && !canDeleteMasterData(command.actorEmail))
+      return { ok: false, message: MASTER_DATA_DELETE_DENIED_EN };
     // Asset identifiers remain client-immutable in Firestore Rules. A
     // correction is therefore performed by a trusted, audited callable; the
     // subsequent normal edit intentionally omits all identifier fields.

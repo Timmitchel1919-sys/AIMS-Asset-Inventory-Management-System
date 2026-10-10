@@ -47,6 +47,18 @@ service cloud.firestore {
     function isOwner() {
       return isVerified() && request.auth.token.email.lower() == 'aliendas@kangoeroeschool.com';
     }
+    // Master Data (Hoofdlocaties, Codegroepen) may be viewed, created and
+    // updated by every authorized user, but only these accounts may delete —
+    // that is, move to the recycle bin (archive) or permanently remove.
+    // Keep in sync with MASTER_DATA_DELETE_EMAILS in
+    // src/auth/masterDataDeletion.ts.
+    function canDeleteMasterData() {
+      return isVerified() && request.auth.token.email.lower() in [
+        'sastropawiroe@kangoeroeschool.com',
+        'aliendas@kangoeroeschool.com',
+        'manager-ict@kangoeroeschool.com'
+      ];
+    }
     // The 'owner' role label may only ever be written by the Owner.
     function ownerRoleAllowed(data) {
       return data.role != 'owner' || isOwner();
@@ -613,8 +625,12 @@ service cloud.firestore {
       allow update: if isAuthorizedAimsUser()
         && validCodeGroup(request.resource.data)
         && immutableAuditFields()
-        && request.resource.data.prefix == resource.data.prefix;
-      allow delete: if isAuthorizedAimsUser();
+        && request.resource.data.prefix == resource.data.prefix
+        // Moving a code group to the recycle bin is a deletion.
+        && (request.resource.data.get('archived', false) != true
+            || resource.data.get('archived', false) == true
+            || canDeleteMasterData());
+      allow delete: if canDeleteMasterData();
     }
     match /assetCodes/{code} {
       allow read: if hasAnyPermission(['assets.view','assets.create']);
@@ -762,10 +778,17 @@ service cloud.firestore {
         && canWriteOperationalCollection(collectionName)
         && collectionName != 'inventoryTransactions'
         && collectionName != 'assetMovements'
-        && validOperationalRecord(request.resource.data) && immutableAuditFields();
+        && validOperationalRecord(request.resource.data) && immutableAuditFields()
+        // Archiving a Hoofdlocatie (recycle bin) is a Master Data deletion.
+        && !(collectionName == 'locations'
+             && resource.data.get('type', '') == 'Main location'
+             && request.resource.data.get('status', '') == 'Archived'
+             && resource.data.get('status', '') != 'Archived'
+             && !canDeleteMasterData());
       allow delete: if isOperationalCollection(collectionName)
-        && collectionName in ['locations','departments']
-        && isAuthorizedAimsUser();
+        && ((collectionName == 'locations'
+              && (resource.data.get('type', '') != 'Main location' || canDeleteMasterData()))
+            || (collectionName == 'departments' && isAuthorizedAimsUser()));
     }
 
     match /{document=**} { allow read, write: if false; }
