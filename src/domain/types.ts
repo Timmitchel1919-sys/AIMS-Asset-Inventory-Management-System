@@ -72,6 +72,12 @@ export interface Asset {
   currentBin?: string;
   homeLocationId?: string;
   mainLocationId?: string;
+  /** Canonical references (additive; filled by the reference migration). */
+  categoryId?: string | null;
+  assetTypeId?: string | null;
+  codeGroupId?: string | null;
+  departmentId?: string | null;
+  assignedUserId?: string | null;
   lastMovementAt?: string;
   department: string;
   assignedTo?: string;

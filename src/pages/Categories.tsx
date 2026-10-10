@@ -1,3 +1,4 @@
+import { TrackingTypesPanel } from "../components/TrackingTypesPanel";
 import { useState, FormEvent, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Plus } from "lucide-react";
@@ -168,7 +169,9 @@ export const CategoriesPage = () => {
           sort={sort}
         />
       </section>
-      
+
+      <TrackingTypesPanel />
+
       {isEditing && (
         <CategoryModal
           onClose={() => navigate("/categories")}

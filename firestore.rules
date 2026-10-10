@@ -260,6 +260,8 @@ service cloud.firestore {
           'lastUpdated','lastModifiedBy','maintenanceRequired','usefulLifeEnd',
           'technicalSpecifications','remoteAccess','attachments','photos','notes',
           'sourceData','importMetadata','qr','qrToken','qrUpdatedAt',
+          // Canonical references (additive; the text fields above stay).
+          'categoryId','assetTypeId','codeGroupId','departmentId','assignedUserId',
           'createdAt','updatedAt','updatedBy','isArchived','archivedAt','archivedBy'
         ])
         && data.keys().hasAll(['code','codePrefix','codeNumber','name','category','type','brand','model','serialNumber','location','department','status','condition','purchaseDate','warrantyExpiry','lastUpdated','qr','createdAt','createdBy','updatedAt','updatedBy'])
@@ -276,6 +278,11 @@ service cloud.firestore {
         && validLegacyInventorySourceData(data)
         && validLegacyInventoryImportMetadata(data)
         && data.qr is bool
+        && nullableShortString(data, 'categoryId', 128)
+        && nullableShortString(data, 'assetTypeId', 128)
+        && nullableShortString(data, 'codeGroupId', 128)
+        && nullableShortString(data, 'departmentId', 128)
+        && nullableShortString(data, 'assignedUserId', 128)
         && (!('qrToken' in data) || (data.qrToken is string && data.qrToken.size() >= 16 && data.qrToken.size() <= 64))
         && (!('qrUpdatedAt' in data) || data.qrUpdatedAt is timestamp)
         && auditMetadataValid(data)
@@ -332,6 +339,16 @@ service cloud.firestore {
         && data.isActive is bool && data.sortOrder is int
         && (!('archived' in data) || data.archived is bool)
         && (!('deletionReason' in data) || (data.deletionReason is string && data.deletionReason.size() <= 500))
+        && auditMetadataValid(data);
+    }
+
+    function validAssetType(data) {
+      return data.keys().hasOnly(['name','description','behavior','status','createdAt','createdBy','updatedAt','updatedBy'])
+        && data.keys().hasAll(['name','behavior','status','createdAt','createdBy','updatedAt','updatedBy'])
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 80
+        && shortString(data, 'description', 500)
+        && data.behavior in ['SERIALIZED','BULK','CONSUMABLE']
+        && data.status in ['Active','Inactive','Archived']
         && auditMetadataValid(data);
     }
 
@@ -631,6 +648,25 @@ service cloud.firestore {
             || resource.data.get('archived', false) == true
             || canDeleteMasterData());
       allow delete: if canDeleteMasterData();
+    }
+    // Asset Types (tracking behavior). The document id is the normalised slug
+    // of the name, so the id itself enforces name uniqueness. The behavior and
+    // name are immutable once created; types are archived, never deleted.
+    match /assetTypes/{id} {
+      allow read: if isAuthorizedAimsUser();
+      allow create: if hasPermission('categories.manage')
+        && id.matches('^[a-z0-9]+(-[a-z0-9]+)*$') && id.size() <= 64
+        && validAssetType(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if hasPermission('categories.manage')
+        && validAssetType(request.resource.data)
+        && immutableAuditFields()
+        && request.resource.data.behavior == resource.data.behavior
+        && request.resource.data.name == resource.data.name
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
     }
     match /assetCodes/{code} {
       allow read: if hasAnyPermission(['assets.view','assets.create']);

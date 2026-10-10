@@ -66,3 +66,10 @@
   .dm-kpi strong { font-size: 1.3rem; }
   .dm-checks { grid-template-columns: 1fr; }
 }
+
+/* Tracking types panel (Categories page) */
+.tracking-types { display: grid; gap: var(--space-3); margin-top: var(--space-4); }
+.tracking-types__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.tracking-types__list li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.tracking-types__desc { display: block; margin-top: 4px; color: var(--color-text-secondary); }
+.tracking-types__form { display: grid; gap: var(--space-3); max-width: 520px; }
