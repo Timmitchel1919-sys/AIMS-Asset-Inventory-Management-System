@@ -1,6 +1,6 @@
 import { TrackingTypesPanel } from "../components/TrackingTypesPanel";
 import { useState, FormEvent, useMemo } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
@@ -171,6 +171,14 @@ export const CategoriesPage = () => {
       </section>
 
       <TrackingTypesPanel />
+
+      {user?.role === "owner" && (
+        <p className="field-hint">
+          <Link to="/reference-migration">
+            {nl ? "Referentiemigratie assets (rapport eerst)" : "Asset reference migration (report first)"}
+          </Link>
+        </p>
+      )}
 
       {isEditing && (
         <CategoryModal

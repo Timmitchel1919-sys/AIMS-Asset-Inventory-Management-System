@@ -46,6 +46,19 @@ export interface AppRoute {
 const page = (load: () => Promise<{ default: ComponentType }>) => lazy(load);
 
 export const routeManifest: AppRoute[] = [
+  // Owner-only, report-first migration of canonical asset references.
+  {
+    id: "reference-migration",
+    path: "/reference-migration",
+    component: lazy(() => import("../pages/ReferenceMigration")),
+    titleKey: "routes.categories",
+    navigation: false,
+    breadcrumb: ["routes.categories"],
+    mobile: true,
+    lazy: true as const,
+    status: "implemented" as const,
+    ownerOnly: true,
+  },
   // Owner-only Device Management console: one tabbed page, one path per tab.
   ...[
     '/device-management', '/device-monitoring', '/device-compliance',
