@@ -167,6 +167,8 @@ export interface WorkflowHistoryEvent {
 }
 export interface Assignment {
   id: string;
+  /** Canonical AIMS user (Firebase Auth uid); `assignee` stays as the display name. */
+  assigneeUserId?: string;
   reference: string;
   assetId: string;
   assetCode: string;
@@ -565,6 +567,7 @@ export type WorkflowAction =
   | "corrective.complete"
   | "corrective.verify"
   | "corrective.reopen"
+  | "corrective.apply"
   | "disposal.create"
   | "disposal.inspect"
   | "disposal.approve"

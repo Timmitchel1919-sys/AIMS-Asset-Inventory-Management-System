@@ -13,8 +13,10 @@ export const ASSET_STATUS_TRANSITIONS: Record<AssetStatus, readonly AssetStatus[
   Assigned: ["Available", "Borrowed", "Under Repair", "Under Maintenance", "Damaged", "Lost", "Missing"],
   Borrowed: ["Available", "Assigned", "Under Repair", "Under Maintenance", "Damaged", "Lost", "Missing"],
   Reserved: ["Available", "Assigned", "Borrowed", "Under Repair", "Under Maintenance", "Damaged"],
-  "Under Repair": ["Available", "Under Maintenance", "Damaged", "Disposed", "Archived"],
-  "Under Maintenance": ["Available", "Under Repair", "Damaged"],
+  // After work the asset goes back to whoever still holds it (Assigned or
+  // Borrowed) or to Available; "needs a user" is enforced by validateAssetState.
+  "Under Repair": ["Available", "Assigned", "Borrowed", "Under Maintenance", "Damaged", "Disposed", "Archived"],
+  "Under Maintenance": ["Available", "Assigned", "Borrowed", "Under Repair", "Damaged"],
   Damaged: ["Available", "Under Repair", "Disposed", "Archived"],
   Lost: ["Available", "Missing", "Disposed", "Archived"],
   Missing: ["Available", "Lost", "Disposed", "Archived"],

@@ -113,6 +113,7 @@ const exactPermissions: Partial<Record<WorkflowAction, Permission>> = {
   "corrective.complete": "corrective.perform",
   "corrective.verify": "corrective.verify",
   "corrective.reopen": "corrective.reopen",
+  "corrective.apply": "corrective.perform",
   "disposal.create": "disposals.request",
   "disposal.inspect": "disposals.approve",
   "disposal.approve": "disposals.approve",

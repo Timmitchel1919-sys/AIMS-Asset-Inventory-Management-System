@@ -11,6 +11,8 @@ import { Badge } from "../ui";
 import { Dialog, MutationFeedback } from "../WorkflowUi";
 import { DataTable, type DataColumn } from "../DataTable";
 import { StatusBadge } from "../AssetStatusBadge";
+import { ConditionBadge } from "../ConditionBadge";
+import { assetAssigneeName } from "../../domain/assetLookups";
 import { can } from "../../auth/permissions";
 import { useApp } from "../../context/AppContext";
 import { useMockSnapshot } from "../../data/repositoryContext";
@@ -227,10 +229,32 @@ export function DepartmentIntelligencePanel({
       sortable: true,
     },
     {
+      id: "brand",
+      label: nl ? "Merk" : "Brand",
+      render: (a) => a.brand || "—",
+      text: (a) => a.brand || "",
+      sortable: true,
+    },
+    {
+      id: "condition",
+      label: nl ? "Conditie" : "Condition",
+      render: (a) => <ConditionBadge condition={a.condition} size="compact" />,
+      text: (a) => a.condition,
+      sortable: true,
+    },
+    {
       id: "status",
       label: "Status",
       render: (a) => <StatusBadge status={a.status} size="compact" />,
       text: (a) => a.status,
+      sortable: true,
+    },
+    {
+      id: "assignee",
+      label: nl ? "Toegewezen aan" : "Assigned to",
+      // Read through the canonical user id so a renamed user shows everywhere.
+      render: (a) => assetAssigneeName(a, snapshot.users) || "—",
+      text: (a) => assetAssigneeName(a, snapshot.users),
       sortable: true,
     },
   ];

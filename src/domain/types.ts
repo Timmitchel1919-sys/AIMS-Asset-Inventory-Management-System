@@ -183,6 +183,8 @@ export interface Movement {
 }
 export interface BorrowRecord {
   id: string;
+  /** Canonical AIMS user (Firebase Auth uid); `borrower` stays as the display name. */
+  borrowerUserId?: string;
   reference: string;
   asset: string;
   assetCode: string;
@@ -330,6 +332,8 @@ export type MaintenanceStatus =
   | "Cancelled";
 export interface Maintenance {
   id: string;
+  /** The asset's status when work started, so it can be restored afterwards. */
+  assetStatusBefore?: AssetStatus;
   reference?: string;
   scheduleId?: string;
   asset: string;
@@ -508,8 +512,21 @@ export interface CorrectiveAction {
     | "Overdue";
   result?: string;
   verifiedBy?: string;
+  /** Change to the canonical asset record proposed by this action. It is only
+   * applied after the action has been approved (see corrective.apply). */
+  proposedChange?: CorrectiveProposedChange;
+  proposedBy?: string;
+  /** What was actually applied, kept for the audit trail. */
+  appliedChange?: { field: CorrectiveProposedChange["field"]; from: string; to: string; at: string; by: string };
   history: import("../data/contracts").WorkflowHistoryEvent[];
 }
+export const CORRECTION_FIELDS = ["location", "assignedTo", "condition", "status"] as const;
+export interface CorrectiveProposedChange {
+  field: (typeof CORRECTION_FIELDS)[number];
+  /** Location id (field = location) or the new value as text. */
+  value: string;
+}
+export type { Assignment } from "../data/contracts";
 export interface Notification {
   id: string;
   title: string;

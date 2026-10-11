@@ -7,6 +7,7 @@ import type {
   AuditDiscrepancy,
   BorrowRecord,
   CorrectiveAction,
+  CorrectiveProposedChange,
   Maintenance,
   Movement,
   Repair,
@@ -83,7 +84,9 @@ import {
 import { RepositoryProvider } from "./repositoryContext";
 import { ASSET_CONDITIONS } from "../domain/assetCondition";
 import { resolveAssetReferences } from "../domain/referenceMigration";
-import { withAssetWorkflowComposition } from "./assetWorkflowComposition";
+import { CORRECTION_FIELDS } from "../domain/types";
+import { canChangeAssetStatus } from "../domain/assetStatusTransitions";
+import { uiLanguage, withAssetWorkflowComposition } from "./assetWorkflowComposition";
 import { auditEventsFor, type AuditContext } from "../domain/auditEvents";
 import {
   ASSET_TYPE_NOT_ALLOWED,
@@ -2077,6 +2080,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             assetName: a.name,
             category: a.category,
             assignee: String(v.assignee || "Naomi Williams"),
+            assigneeUserId:
+              String(v.assigneeUserId || "") ||
+              this.userIdFor(String(v.assignee || "Naomi Williams")),
             assigneeType: String(v.assigneeType || "Employee"),
             department: String(v.department || "ICT"),
             location: String(v.location || a.location),
@@ -2292,6 +2298,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             assetCode: a.code,
             assetId: a.id,
             borrower: String(v.borrower || "Authorized employee"),
+            borrowerUserId:
+              String(v.borrowerUserId || "") ||
+              this.userIdFor(String(v.borrower || "")),
             borrowerType: String(v.borrowerType || "Employee"),
             department: String(v.department || "Administration"),
             reason: String(v.reason || "Authorized temporary use"),
@@ -2804,6 +2813,30 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           )
             throw new Error("A reason is required.");
           const previous = m.status;
+          const maintained = this.state.assets.find(
+            (value) => value.id === m.assetId || value.code === m.assetCode,
+          );
+          // Work starts: the asset is In maintenance. Whoever holds it keeps
+          // the assignment; the previous status is remembered for the return.
+          if (
+            command.action === "maintenance.start" &&
+            maintained &&
+            maintained.status !== "Under Maintenance"
+          ) {
+            if (!canChangeAssetStatus(maintained.status, "Under Maintenance"))
+              throw new Error(
+                `An asset with status "${maintained.status}" cannot enter maintenance.`,
+              );
+            m.assetStatusBefore = maintained.status;
+            maintained.status = "Under Maintenance";
+          }
+          // Work ends without completing (cancelled / skipped): back to normal.
+          if (
+            ["maintenance.cancel", "maintenance.skip"].includes(command.action) &&
+            maintained?.status === "Under Maintenance" &&
+            m.assetStatusBefore
+          )
+            maintained.status = m.assetStatusBefore;
           m.status = next;
           m.notes = String(v.notes || m.notes || "");
           if (command.action === "maintenance.reschedule")
@@ -2827,7 +2860,20 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               (value) => value.code === m.assetCode,
             );
             if (asset) {
-              asset.status = (v.assetStatus || "Available") as AssetStatus;
+              // Return to the status the asset had before the work (or the one
+              // the technician chose), never forcing an assigned asset to
+              // "Available". A status is only touched when the asset is in
+              // maintenance or one is chosen explicitly.
+              const target = (v.assetStatus ||
+                m.assetStatusBefore ||
+                (asset.assignedTo ? "Assigned" : "Available")) as AssetStatus;
+              if (asset.status === "Under Maintenance" || v.assetStatus) {
+                if (!canChangeAssetStatus(asset.status, target))
+                  throw new Error(
+                    `The asset cannot change from "${asset.status}" to "${target}" when maintenance completes.`,
+                  );
+                asset.status = target;
+              }
               if (v.condition)
                 asset.condition = v.condition as Asset["condition"];
             }
@@ -3293,6 +3339,22 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             priority: String(v.priority || discrepancy.severity),
             approvalRequired: String(v.approvalRequired) === "true",
             status: "Assigned",
+            ...(v.proposedField
+              ? (() => {
+                  const field = String(v.proposedField) as CorrectiveProposedChange["field"];
+                  const value = String(v.proposedValue ?? "").trim();
+                  if (!(CORRECTION_FIELDS as readonly string[]).includes(field) || !value)
+                    throw new Error("A proposed correction needs a valid field and value.");
+                  if (String(v.description || "").trim().length < 3)
+                    throw new Error("A reason is required for a proposed correction.");
+                  return {
+                    proposedChange: { field, value },
+                    proposedBy: command.actor || "Naomi Williams",
+                    // A change to authoritative asset data always needs review.
+                    approvalRequired: true,
+                  };
+                })()
+              : {}),
             history: [],
           };
           this.state.correctiveActions = [
@@ -3327,7 +3389,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                   : command.action === "corrective.reject"
                     ? "Rejected"
                     : command.action === "corrective.complete"
-                      ? action.approvalRequired
+                      ? action.approvalRequired && action.status !== "Approved"
                         ? "Pending Approval"
                         : "Completed"
                       : command.action === "corrective.verify"
@@ -3344,6 +3406,8 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             );
           action.status = next;
           action.result = String(v.result || action.result || "");
+          if (command.action === "corrective.complete" && v.appliedChange)
+            action.appliedChange = v.appliedChange as CorrectiveAction["appliedChange"];
           action.verifiedBy =
             next === "Verified"
               ? command.actor || "Naomi Williams"
@@ -3507,6 +3571,11 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                 );
             }
           }
+          if (kind === "department")
+            this.assertDepartmentValid({
+              name,
+              mainLocationId: String(v.mainLocationId || ""),
+            });
           const record: ReferenceRecord = {
             id: id(String(kind).slice(0, 3), this.state.references.length),
             kind,
@@ -3620,6 +3689,18 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                 );
             }
           }
+          if (record.kind === "department")
+            this.assertDepartmentValid(
+              {
+                name: String(v.name ?? record.name),
+                mainLocationId: String(
+                  v.mainLocationId !== undefined
+                    ? v.mainLocationId
+                    : record.mainLocationId || "",
+                ),
+              },
+              record,
+            );
           Object.assign(record, v, {
             parentId: parentLocationId || undefined,
             parentLocationId,
@@ -4431,6 +4512,67 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
    * reassignment or transfer never leaves a stale id behind. The tracking type
    * is chosen explicitly and is not derived here.
    */
+  /**
+   * A department always belongs to an existing, active Hoofdlocatie from Master
+   * Data and its name is unique within that Hoofdlocatie. On an edit, keeping
+   * the department's current Hoofdlocatie is always fine, even if it has since
+   * been deactivated (historical records stay valid; only NEW choices are
+   * restricted).
+   */
+  /** The canonical user id for a typed name or e-mail, or undefined when it is not unique. */
+  private userIdFor(name: string): string | undefined {
+    const key = name.trim().toLowerCase();
+    if (!key) return undefined;
+    const matches = this.state.users.filter(
+      (user) => user.name.trim().toLowerCase() === key || user.email.trim().toLowerCase() === key,
+    );
+    return matches.length === 1 ? matches[0].id : undefined;
+  }
+
+  private assertDepartmentValid(
+    next: { name: string; mainLocationId: string },
+    existing?: ReferenceRecord,
+  ) {
+    const nl = uiLanguage() === "nl";
+    const main = this.state.references.find(
+      (item) =>
+        item.id === next.mainLocationId &&
+        item.kind === "location" &&
+        item.type === "Main location",
+    );
+    if (!next.mainLocationId || !main)
+      throw new Error(
+        nl
+          ? "Kies een geldige Hoofdlocatie uit Master data."
+          : "Choose a valid Hoofdlocatie from Master Data.",
+      );
+    const unchanged = existing?.mainLocationId === next.mainLocationId;
+    if (main.status !== "Active" && !unchanged)
+      throw new Error(
+        nl
+          ? "Deze Hoofdlocatie is niet actief en kan niet worden gekozen."
+          : "This Hoofdlocatie is not active and cannot be chosen.",
+      );
+    const key = (value: string) => value.trim().toLowerCase().replace(/\s+/g, " ");
+    if (!key(next.name))
+      throw new Error(nl ? "Naam is verplicht." : "Name is required.");
+    if (
+      this.state.references.some(
+        (item) =>
+          item.kind === "department" &&
+          item.id !== existing?.id &&
+          item.status !== "Archived" &&
+          item.mainLocationId === next.mainLocationId &&
+          key(item.name) === key(next.name),
+      )
+    )
+      throw new Error(
+        nl
+          ? "Deze afdeling bestaat al binnen deze Hoofdlocatie."
+          : "This department already exists in this Hoofdlocatie.",
+      );
+  }
+
   private assertAssetTypeAllowed(category: string, assetTypeId: string) {
     const relations = effectiveCategoryRelations(
       category,
@@ -4579,6 +4721,25 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
       : String(v.destinationLocation || "").trim();
     if (!destName && !destId)
       throw new Error("Destination location is required.");
+    // A destination chosen by id must be a real, ACTIVE location: assets are
+    // never placed on an unknown or deactivated location. (An asset that is
+    // already in a location that was deactivated later is not moved silently.)
+    if (destId) {
+      const target = this.state.references.find(
+        (item) => item.id === destId && item.kind === "location",
+      );
+      const nl = uiLanguage() === "nl";
+      if (!target)
+        throw new Error(
+          nl ? "De gekozen locatie bestaat niet." : "The chosen location does not exist.",
+        );
+      if (target.status !== "Active")
+        throw new Error(
+          nl
+            ? "De gekozen locatie is niet actief en kan niet worden gebruikt."
+            : "The chosen location is not active and cannot be used.",
+        );
+    }
 
     const destBin = String(v.destinationBin || "").trim() || undefined;
     const before = {

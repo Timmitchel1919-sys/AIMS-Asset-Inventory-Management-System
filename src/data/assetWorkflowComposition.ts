@@ -55,6 +55,8 @@ export async function composeAssetCommand(
   execute: Execute,
   command: WorkflowCommand,
 ): Promise<WorkflowResult> {
+  if (command.action === "corrective.apply")
+    return applyApprovedCorrection(repository, execute, command);
   if (command.action !== "asset.create" && command.action !== "asset.edit")
     return execute(command);
   const lang = uiLanguage();
@@ -136,6 +138,99 @@ export async function composeAssetCommand(
     ...command,
     values: { ...rest, ...(target !== settled ? { status: target } : {}) },
   });
+}
+
+const CORRECTION = {
+  nl: {
+    notFound: "De corrigerende actie bestaat niet meer.",
+    notApproved: "Alleen een goedgekeurde correctie kan worden toegepast. Laat de correctie eerst beoordelen en goedkeuren.",
+    noChange: "Deze actie heeft geen voorgestelde wijziging.",
+    noAsset: "Het bijbehorende middel is niet gevonden. Alleen ICT-middelen kunnen via een correctie worden aangepast.",
+    stale: "Het middel is sinds het voorstel gewijzigd. Bekijk de afwijking opnieuw voordat je de correctie toepast.",
+    applied: (code: string, field: string, from: string, to: string) => `Correctie toegepast op ${code}: ${field} ${from || "—"} → ${to || "—"}.`,
+    bookkeeping: (summary: string, message: string) => `${summary} De administratie van de correctie is niet bijgewerkt: ${message}`,
+    fields: { location: "locatie", assignedTo: "toegewezen aan", condition: "conditie", status: "status" },
+  },
+  en: {
+    notFound: "The corrective action no longer exists.",
+    notApproved: "Only an approved correction can be applied. Have it reviewed and approved first.",
+    noChange: "This action has no proposed change.",
+    noAsset: "The related asset was not found. Only ICT assets can be changed through a correction.",
+    stale: "The asset changed after the proposal was made. Review the discrepancy again before applying the correction.",
+    applied: (code: string, field: string, from: string, to: string) => `Correction applied to ${code}: ${field} ${from || "—"} → ${to || "—"}.`,
+    bookkeeping: (summary: string, message: string) => `${summary} The correction record was not updated: ${message}`,
+    fields: { location: "location", assignedTo: "assigned to", condition: "condition", status: "status" },
+  },
+} as const;
+
+/**
+ * Applies an APPROVED corrective action to the canonical asset record. This is
+ * the only way an inventory-control finding changes authoritative data: the
+ * discrepancy itself never overwrites anything, and a correction must have been
+ * reviewed and approved first. The change goes through the normal validated
+ * workflows (asset.move / asset edit with status and assignment rules), so it is
+ * audited, recorded in history and refused if it is not allowed.
+ */
+async function applyApprovedCorrection(
+  repository: Pick<InventoryRepository, "snapshot">,
+  execute: Execute,
+  command: WorkflowCommand,
+): Promise<WorkflowResult> {
+  const lang = uiLanguage();
+  const t = CORRECTION[lang];
+  const fail = (message: string): WorkflowResult => ({ ok: false, message });
+  const snapshot = repository.snapshot();
+  const action = snapshot.correctiveActions.find((item) => item.id === command.entityId);
+  if (!action) return fail(t.notFound);
+  if (action.status !== "Approved") return fail(t.notApproved);
+  const change = action.proposedChange;
+  if (!change) return fail(t.noChange);
+  const discrepancy = snapshot.auditDiscrepancies.find((item) => item.id === action.discrepancyId);
+  const asset = snapshot.assets.find((item) => item.id === discrepancy?.recordId);
+  if (!discrepancy || !asset) return fail(t.noAsset);
+
+  const locationName = (id: string) => snapshot.references.find((item) => item.id === id)?.name ?? id;
+  const before =
+    change.field === "location"
+      ? asset.currentLocationPath || asset.location
+      : change.field === "assignedTo"
+        ? asset.assignedTo ?? ""
+        : String(asset[change.field]);
+  const after = change.field === "location" ? locationName(change.value) : change.value;
+  if (before === after) return fail(t.stale);
+
+  const reason = `Inventory correction ${action.reference}: ${action.description}`;
+  const meta = { actor: command.actor, actorEmail: command.actorEmail };
+  const applied =
+    change.field === "location"
+      ? await execute({ action: "asset.move", entityId: asset.id, ...meta, values: { destinationLocationId: change.value, reason } })
+      : await composeAssetCommand(repository, execute, {
+          action: "asset.edit",
+          entityId: asset.id,
+          ...meta,
+          values: { [change.field]: change.value },
+        });
+  if (!applied.ok) return applied; // nothing else was touched
+
+  const summary = t.applied(asset.code, t.fields[change.field], before, after);
+  const completed = await execute({
+    action: "corrective.complete",
+    entityId: action.id,
+    ...meta,
+    values: {
+      result: summary,
+      appliedChange: { field: change.field, from: before, to: after, at: new Date().toISOString(), by: command.actor ?? "" },
+    },
+  });
+  if (!completed.ok) return { ok: false, entityId: action.id, message: t.bookkeeping(summary, completed.message) };
+  const resolved = await execute({
+    action: "discrepancy.resolve",
+    entityId: discrepancy.id,
+    ...meta,
+    values: { resolution: summary },
+  });
+  if (!resolved.ok) return { ok: false, entityId: action.id, message: t.bookkeeping(summary, resolved.message) };
+  return { ok: true, entityId: action.id, message: summary };
 }
 
 function assignmentValues(

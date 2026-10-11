@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { emptyMovementFilters, filterMovements, invalidDateRange, type MovementFilters } from "../domain/movementFilters";
 import {
   Badge,
   Button,
@@ -43,7 +44,8 @@ export default function MovementsPage() {
     navigate = useNavigate();
   const [open, setOpen] = useState(location.pathname.endsWith("/new")),
     [confirm, setConfirm] = useState(false),
-    [pending, setPending] = useState<Record<string, unknown>>({});
+    [pending, setPending] = useState<Record<string, unknown>>({}),
+    [filters, setFilters] = useState<MovementFilters>(emptyMovementFilters);
   const [feedback, setFeedback] = useState<{
     status: "idle" | "loading" | "success" | "error";
     message: string;
@@ -106,6 +108,14 @@ export default function MovementsPage() {
       text: (item) => item.by,
     },
   ];
+  const movementTypes = [...new Set(snapshot.movements.map((item) => item.type))].sort();
+  const departmentNames = [
+    ...new Set(
+      snapshot.movements.flatMap((item) => [item.sourceDepartment, item.destinationDepartment, item.relatedDepartment]).filter((v): v is string => Boolean(v)),
+    ),
+  ].sort();
+  const dateProblem = invalidDateRange(filters);
+  const visibleMovements = useMemo(() => filterMovements(snapshot.movements, filters), [snapshot.movements, filters]);
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const values: Record<string, unknown> = Object.fromEntries(
@@ -158,8 +168,22 @@ export default function MovementsPage() {
         <section className="card data-card">
           <DataTable
             id="movements"
-            rows={snapshot.movements}
+            rows={visibleMovements}
             columns={columns}
+            filters={
+              <div className="movement-filters" role="group" aria-label={nl ? "Filters" : "Filters"}>
+                <SelectField label="Type" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
+                  <option value="">{nl ? "Alle typen" : "All types"}</option>
+                  {movementTypes.map((value) => <option key={value} value={value}>{value}</option>)}
+                </SelectField>
+                <Field label={nl ? "Van" : "From"} type="date" value={filters.from} onChange={(e) => setFilters({ ...filters, from: e.target.value })} error={dateProblem ? (nl ? "De einddatum ligt vóór de begindatum." : "The end date is before the start date.") : undefined} />
+                <Field label={nl ? "Tot" : "To"} type="date" value={filters.to} onChange={(e) => setFilters({ ...filters, to: e.target.value })} />
+                <SelectField label={nl ? "Afdeling" : "Department"} value={filters.department} onChange={(e) => setFilters({ ...filters, department: e.target.value })}>
+                  <option value="">{nl ? "Alle afdelingen" : "All departments"}</option>
+                  {departmentNames.map((value) => <option key={value} value={value}>{value}</option>)}
+                </SelectField>
+              </div>
+            }
             rowKey={(item) => item.id}
             searchPlaceholder={nl ? "Zoek mutaties…" : "Search movements…"}
             emptyTitle={nl ? "Geen mutaties" : "No movements"}

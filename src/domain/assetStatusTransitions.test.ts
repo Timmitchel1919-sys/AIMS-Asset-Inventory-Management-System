@@ -40,7 +40,7 @@ describe("asset status transitions", () => {
   });
 
   it("blocks impossible jumps", () => {
-    expect(canChangeAssetStatus("Under Repair", "Assigned")).toBe(false);
+    expect(canChangeAssetStatus("Under Repair", "Reserved")).toBe(false);
     expect(canChangeAssetStatus("Under Maintenance", "Archived")).toBe(false);
     expect(canChangeAssetStatus("Lost", "Assigned")).toBe(false);
     expect(canChangeAssetStatus("Assigned", "Archived")).toBe(false);
@@ -64,5 +64,8 @@ describe("asset status transitions", () => {
     // A person may still hold a device that is in for repair or maintenance.
     expect(validateAssetState({ from: "Assigned", to: "Under Repair", assignee: "Ann" })).toBeNull();
     expect(validateAssetState({ from: "Assigned", to: "Assigned", assignee: "Ann" })).toBeNull();
+    // Back from work to the person who still holds it, but never to nobody.
+    expect(validateAssetState({ from: "Under Maintenance", to: "Assigned", assignee: "Ann" })).toBeNull();
+    expect(validateAssetState({ from: "Under Repair", to: "Assigned", assignee: "" })).toBe("held-without-user");
   });
 });

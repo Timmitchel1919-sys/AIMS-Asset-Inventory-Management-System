@@ -1,3 +1,4 @@
+import { AssignmentHandover } from "../components/assignments/AssignmentHandover";
 import { Plus, RotateCcw, Signature } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { useParams } from "react-router-dom";
@@ -313,10 +314,13 @@ export default function AssignmentsPage() {
                 ))}
               </div>
               {selected.active && (
-                <Button onClick={() => setReturning(true)}>
-                  <RotateCcw />
-                  {nl ? "Retour registreren" : "Register return"}
-                </Button>
+                <>
+                  <Button onClick={() => setReturning(true)}>
+                    <RotateCcw />
+                    {nl ? "Retour registreren" : "Register return"}
+                  </Button>
+                  <AssignmentHandover assignment={selected} onDone={() => setSelected(null)} />
+                </>
               )}
             </>
           )}

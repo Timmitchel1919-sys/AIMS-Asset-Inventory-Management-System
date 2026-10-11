@@ -31,3 +31,15 @@ html[data-theme="dark"] .asset-condition{--condition-text:#e2e8f0}html[data-them
 .status-breakdown button:hover { background: var(--color-surface-hover); }
 .status-breakdown strong { font-size: 1.15rem; }
 @media (max-width: 480px) { .status-breakdown { grid-template-columns: 1fr 1fr; } }
+
+/* Inventory control: discrepancies and corrections */
+.audit-discrepancies { display: grid; gap: var(--space-3); margin-top: var(--space-4); }
+.audit-discrepancies h3 { margin: 0; }
+.audit-discrepancy { display: grid; gap: var(--space-2); }
+.audit-discrepancy header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.audit-correction { display: grid; gap: 4px; padding: var(--space-2) var(--space-3); border-left: 3px solid var(--color-primary); background: var(--color-surface-secondary); border-radius: var(--radius-sm); }
+.audit-correction small { color: var(--color-text-secondary); }
+.audit-discrepancy .actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+/* Movement history filters */
+.movement-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-3); margin-bottom: var(--space-3); }
