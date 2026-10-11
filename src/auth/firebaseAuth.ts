@@ -285,6 +285,22 @@ function clearPending(uid: string) {
     /* Storage may be unavailable. */
   }
 }
+/**
+ * An administrator suspends an account by setting its access assignment to
+ * active=false. The user may read their own assignment, so sign-in can refuse
+ * a suspended account WITHOUT depending on the Cloud Function being reachable
+ * (fail-closed for an explicit suspension). An unreadable assignment is not a
+ * suspension: Firestore Rules still deny a suspended account all data.
+ */
+export async function isAccessSuspended(uid: string): Promise<boolean> {
+  try {
+    const { db } = requireFirebase();
+    const snapshot = await getDoc(doc(db, "accessAssignments", uid));
+    return snapshot.exists() && snapshot.data()?.active === false;
+  } catch {
+    return false;
+  }
+}
 async function ensureDefaultAccessAssignment(user: FirebaseUser) {
   if (DEMO_AUTH_MODE || !firebaseFunctions || !user.emailVerified) return;
   try {
@@ -459,6 +475,9 @@ export async function ensureAimsUserProfile(
     throw new Error(AIMS_ACCESS_MESSAGE);
   if (isVerificationRequired() && !user.emailVerified)
     throw new Error(AIMS_VERIFY_MESSAGE);
+  // A suspended account is refused before anything is written for it.
+  if (!DEMO_AUTH_MODE && (await isAccessSuspended(user.uid)))
+    throw new AccountDisabledError();
   const { db } = requireFirebase(),
     ref = doc(db, "users", user.uid),
     snapshot = await getDoc(ref),
