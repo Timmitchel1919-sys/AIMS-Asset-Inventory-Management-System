@@ -10,7 +10,6 @@ import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { safeTargetFromState, type ReturnPathParts } from "../lib/navigation";
 import { Button } from "../components/ui";
-import { AimsPublicLockup } from "../components/branding/AimsPublicLockup";
 import { AuthBrandPanel } from "../components/auth/AuthBrandPanel";
 import { AuthFooter } from "../components/auth/AuthFooter";
 import { useApp } from "../context/AppContext";
@@ -160,11 +159,6 @@ export default function Auth({
       {/* Right side: Integrated Authentication Panel */}
       <main className="auth-panel">
         <div className="auth-panel-inner">
-          {/* Mobile-only header lockup */}
-          <div className="auth-mobile-header">
-            <AimsPublicLockup />
-          </div>
-
           <div className="auth-card login-card auth-form-container">
             {mode === "forgot" && (
               <label className="auth-language-select">

@@ -2565,7 +2565,7 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
   height: auto;
   flex-direction: row;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
 }
 
 .aims-public-page--premium .aims-public-header .aims-public-lockup > img {
@@ -2582,7 +2582,7 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  margin-left: 12px;
+  margin-left: 0;
   order: 1;
 }
 
@@ -2607,7 +2607,7 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
 
 @media (max-width: 1200px) and (min-width: 681px) {
   .aims-public-page--premium .aims-public-header .aims-public-lockup {
-    gap: 12px;
+    gap: 8px;
   }
 
   .aims-public-page--premium .aims-public-header .aims-public-lockup > img {
@@ -2631,7 +2631,7 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
   }
 
   .aims-public-page--premium .aims-public-header .aims-public-lockup {
-    gap: 7px;
+    gap: 6px;
   }
 
   .aims-public-page--premium .aims-public-header .aims-public-lockup > img {
@@ -2647,7 +2647,7 @@ html[data-theme] .aims-public-page--premium .aims-final-cta{background:linear-gr
   }
 
   .aims-public-page--premium .aims-public-header .aims-public-lockup__copy {
-    margin-left: 6px;
+    margin-left: 0;
   }
 
   .aims-public-page--premium .aims-public-header .aims-public-lockup__copy small {
