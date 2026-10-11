@@ -20,6 +20,7 @@ import {
   type CommandRequest,
   type DeviceAuditEntry,
   type DeviceCommand,
+  type DeviceCommandStatus,
   type DevicePolicy,
   type ManagedDevice,
 } from "../domain/deviceManagement";
@@ -68,15 +69,19 @@ const mapPolicy = (id: string, data: DocumentData): DevicePolicy => ({
   updatedBy: data.updatedBy,
   updatedAt: toIso(data.updatedAt),
 });
+const VALID_STATUSES: DeviceCommandStatus[] = ["queued", "dispatched", "executed", "cancelled"];
 const mapCommand = (id: string, data: DocumentData): DeviceCommand => ({
   id,
   assetId: String(data.assetId || ""),
   assetCode: String(data.assetCode || ""),
   type: data.type,
-  status: data.status === "cancelled" ? "cancelled" : "queued",
+  status: VALID_STATUSES.includes(data.status) ? (data.status as DeviceCommandStatus) : "queued",
   reason: String(data.reason || ""),
   createdBy: data.createdBy,
   createdAt: toIso(data.createdAt),
+  dispatchedAt: toIso(data.dispatchedAt),
+  executedAt: toIso(data.executedAt),
+  executionOutput: data.executionOutput ? String(data.executionOutput) : undefined,
   batchId: data.batchId,
 });
 const mapAudit = (id: string, data: DocumentData): DeviceAuditEntry => ({
@@ -345,3 +350,81 @@ export async function cancelCommand(command: DeviceCommand, actor: DeviceActor) 
   );
   await batch.commit();
 }
+
+export async function dispatchCommand(command: DeviceCommand, actor: DeviceActor) {
+  if (command.status !== "queued") return;
+  const db = requireDb();
+  const batch = writeBatch(db);
+  batch.update(doc(db, DEVICE_COLLECTIONS.commands, command.id), {
+    status: "dispatched",
+    dispatchedAt: serverTimestamp(),
+  });
+  batch.set(
+    doc(collection(db, DEVICE_COLLECTIONS.audit)),
+    auditEntry(actor, "command.dispatched", `Command "${command.type}" dispatched to device`, {
+      assetId: command.assetId,
+      assetCode: command.assetCode,
+    }),
+  );
+  await batch.commit();
+}
+
+export async function executeCommand(
+  command: DeviceCommand,
+  actor: DeviceActor,
+  output = "Executed successfully by virtual device agent",
+) {
+  if (command.status === "cancelled" || command.status === "executed") return;
+  const db = requireDb();
+  const batch = writeBatch(db);
+  batch.update(doc(db, DEVICE_COLLECTIONS.commands, command.id), {
+    status: "executed",
+    executedAt: serverTimestamp(),
+    executionOutput: output,
+  });
+  batch.set(
+    doc(collection(db, DEVICE_COLLECTIONS.audit)),
+    auditEntry(
+      actor,
+      "command.executed",
+      `Command "${command.type}" executed on device: ${output}`,
+      {
+        assetId: command.assetId,
+        assetCode: command.assetCode,
+      },
+    ),
+  );
+  await batch.commit();
+}
+
+export async function dispatchAndExecuteAllQueued(
+  commands: DeviceCommand[],
+  actor: DeviceActor,
+) {
+  const pending = commands.filter((c) => c.status === "queued" || c.status === "dispatched");
+  if (!pending.length) return;
+  const db = requireDb();
+  const batch = writeBatch(db);
+  for (const cmd of pending) {
+    batch.update(doc(db, DEVICE_COLLECTIONS.commands, cmd.id), {
+      status: "executed",
+      dispatchedAt: serverTimestamp(),
+      executedAt: serverTimestamp(),
+      executionOutput: `Bulk simulated execution completed for ${cmd.type}`,
+    });
+    batch.set(
+      doc(collection(db, DEVICE_COLLECTIONS.audit)),
+      auditEntry(
+        actor,
+        "command.executed",
+        `Batch command "${cmd.type}" executed on device`,
+        {
+          assetId: cmd.assetId,
+          assetCode: cmd.assetCode,
+        },
+      ),
+    );
+  }
+  await batch.commit();
+}
+

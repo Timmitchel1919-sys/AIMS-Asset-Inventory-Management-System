@@ -11,6 +11,9 @@ const store = vi.hoisted(() => ({
   queueCommands: vi.fn(async (_request: unknown) => "batch"),
   assignPolicy: vi.fn(async () => undefined),
   enrollDevices: vi.fn(async () => undefined),
+  dispatchCommand: vi.fn(async () => undefined),
+  executeCommand: vi.fn(async () => undefined),
+  dispatchAndExecuteAllQueued: vi.fn(async () => undefined),
 }));
 
 vi.mock("../context/AppContext", () => ({
@@ -29,6 +32,9 @@ vi.mock("../data/deviceManagementStore", () => ({
   savePolicy: vi.fn(),
   deletePolicy: vi.fn(),
   cancelCommand: vi.fn(),
+  dispatchCommand: store.dispatchCommand,
+  executeCommand: store.executeCommand,
+  dispatchAndExecuteAllQueued: store.dispatchAndExecuteAllQueued,
 }));
 
 import DeviceManagement from "./DeviceManagement";
@@ -100,5 +106,48 @@ describe("DeviceManagement page", () => {
     fireEvent.click(submit);
     expect(store.queueCommands).toHaveBeenCalledTimes(1);
     expect(store.queueCommands.mock.calls[0][0]).toMatchObject({ type: "wipe", targets: [{ assetId: first.id }] });
+  });
+  it("allows dispatching queued commands", () => {
+    store.data = {
+      ...store.data,
+      commands: [
+        {
+          id: "cmd-1",
+          assetId: first.id,
+          assetCode: first.code,
+          type: "restart",
+          status: "queued",
+          reason: "Routine restart",
+          createdAt: "2026-06-01T12:00:00Z",
+        },
+      ],
+    };
+    renderAt("/device-commands");
+    expect(screen.getByText("Queued")).toBeInTheDocument();
+    const dispatchBtn = screen.getByRole("button", { name: "Dispatch" });
+    fireEvent.click(dispatchBtn);
+    expect(store.dispatchCommand).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows executing dispatched commands", () => {
+    store.data = {
+      ...store.data,
+      commands: [
+        {
+          id: "cmd-2",
+          assetId: first.id,
+          assetCode: first.code,
+          type: "lock",
+          status: "dispatched",
+          reason: "Security lockdown",
+          createdAt: "2026-06-01T12:00:00Z",
+        },
+      ],
+    };
+    renderAt("/device-commands");
+    expect(screen.getByText("Dispatched")).toBeInTheDocument();
+    const executeBtn = screen.getByRole("button", { name: "Execute" });
+    fireEvent.click(executeBtn);
+    expect(store.executeCommand).toHaveBeenCalledTimes(1);
   });
 });

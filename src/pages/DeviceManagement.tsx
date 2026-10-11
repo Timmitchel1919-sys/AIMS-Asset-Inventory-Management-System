@@ -1,4 +1,4 @@
-import { Info, Plus, ShieldAlert, Trash2 } from "lucide-react";
+import { CheckCheck, Info, Play, Plus, Send, ShieldAlert, Trash2 } from "lucide-react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DevicePicker } from "../components/DevicePicker";
@@ -9,7 +9,10 @@ import {
   assignPolicy,
   cancelCommand,
   deletePolicy,
+  dispatchAndExecuteAllQueued,
+  dispatchCommand,
   enrollDevices,
+  executeCommand,
   queueCommands,
   savePolicy,
   unenrollDevice,
@@ -96,11 +99,16 @@ const COPY = {
     commandTypes: { lock: "Lock", restart: "Restart", locate: "Locate", "collect-info": "Collect info", wipe: "Wipe" } as Record<DeviceCommandType, string>,
     commandErrors: { "no-targets": "Select at least one device.", "too-many": `At most ${MAX_BULK_TARGETS} devices per command.`, "reason-required": "A reason of at least 5 characters is required.", "bad-type": "Unknown command." } as Record<string, string>,
     ack: "I understand this only records a request and is not executed on the device.",
-    queuedStatus: "Queued", cancelled: "Cancelled", requestedBy: "Requested by", when: "When", cancelCommand: "Cancel",
+    queuedStatus: "Queued", dispatchedStatus: "Dispatched", executedStatus: "Executed", cancelled: "Cancelled",
+    requestedBy: "Requested by", when: "When", cancelCommand: "Cancel", dispatchCommand: "Dispatch", executeCommand: "Execute", executeAll: "Execute All Queued",
     commandsEmpty: "No commands recorded", commandsEmptyText: "Queued commands will appear here.",
     auditEmpty: "No audit entries", auditEmptyText: "Every change in this console is recorded here.",
     action: "Action", detail: "Detail", by: "By",
-    done: { enrolled: "Devices added.", removed: "Device removed.", policy: "Policy applied.", queuedCmd: "Command(s) queued.", saved: "Policy saved.", deleted: "Policy deleted.", cancelled: "Command cancelled." },
+    done: {
+      enrolled: "Devices added.", removed: "Device removed.", policy: "Policy applied.", queuedCmd: "Command(s) queued.",
+      saved: "Policy saved.", deleted: "Policy deleted.", cancelled: "Command cancelled.",
+      dispatched: "Command dispatched.", executed: "Command executed successfully.", executedAll: "All pending commands executed.",
+    },
   },
   nl: {
     title: "Apparaatbeheer & Monitoring",
@@ -142,11 +150,16 @@ const COPY = {
     commandTypes: { lock: "Vergrendelen", restart: "Herstarten", locate: "Lokaliseren", "collect-info": "Info verzamelen", wipe: "Wissen" } as Record<DeviceCommandType, string>,
     commandErrors: { "no-targets": "Selecteer minstens één apparaat.", "too-many": `Maximaal ${MAX_BULK_TARGETS} apparaten per opdracht.`, "reason-required": "Een reden van minstens 5 tekens is verplicht.", "bad-type": "Onbekende opdracht." } as Record<string, string>,
     ack: "Ik begrijp dat dit alleen een verzoek vastlegt en niet op het apparaat wordt uitgevoerd.",
-    queuedStatus: "In wachtrij", cancelled: "Geannuleerd", requestedBy: "Aangevraagd door", when: "Wanneer", cancelCommand: "Annuleren",
+    queuedStatus: "In wachtrij", dispatchedStatus: "Verzonden", executedStatus: "Voltooid", cancelled: "Geannuleerd",
+    requestedBy: "Aangevraagd door", when: "Wanneer", cancelCommand: "Annuleren", dispatchCommand: "Verzenden", executeCommand: "Voltooien", executeAll: "Alle in wachtrij uitvoeren",
     commandsEmpty: "Geen opdrachten vastgelegd", commandsEmptyText: "Opdrachten in de wachtrij verschijnen hier.",
     auditEmpty: "Geen auditregels", auditEmptyText: "Elke wijziging in deze console wordt hier vastgelegd.",
     action: "Actie", detail: "Detail", by: "Door",
-    done: { enrolled: "Apparaten toegevoegd.", removed: "Apparaat verwijderd.", policy: "Beleid toegepast.", queuedCmd: "Opdracht(en) in wachtrij gezet.", saved: "Beleid opgeslagen.", deleted: "Beleid verwijderd.", cancelled: "Opdracht geannuleerd." },
+    done: {
+      enrolled: "Apparaten toegevoegd.", removed: "Apparaat verwijderd.", policy: "Beleid toegepast.", queuedCmd: "Opdracht(en) in wachtrij gezet.",
+      saved: "Beleid opgeslagen.", deleted: "Beleid verwijderd.", cancelled: "Opdracht geannuleerd.",
+      dispatched: "Opdracht verzonden.", executed: "Opdracht succesvol uitgevoerd.", executedAll: "Alle opdrachten in de wachtrij uitgevoerd.",
+    },
   },
 } as const;
 
@@ -586,21 +599,131 @@ export default function DeviceManagement() {
 
           {tab === "commands" && (
             <>
-              <div className="dm-toolbar"><Button type="button" onClick={openCommand}><Plus size={16} /> {c.newCommand}</Button></div>
-              {!data.commands.length ? <State type="empty" title={c.commandsEmpty} description={c.commandsEmptyText} /> : (
+              <div className="dm-toolbar">
+                <Button type="button" onClick={openCommand}>
+                  <Plus size={16} /> {c.newCommand}
+                </Button>
+                {data.commands.some((cmd) => cmd.status === "queued" || cmd.status === "dispatched") && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={busy}
+                    onClick={() =>
+                      run(
+                        () => dispatchAndExecuteAllQueued(data.commands, actor),
+                        c.done.executedAll,
+                      )
+                    }
+                  >
+                    <Play size={16} /> {c.executeAll}
+                  </Button>
+                )}
+              </div>
+              {!data.commands.length ? (
+                <State type="empty" title={c.commandsEmpty} description={c.commandsEmptyText} />
+              ) : (
                 <div className="dm-table-wrap">
                   <table>
-                    <thead><tr><th>{c.device}</th><th>{c.commandType}</th><th>{c.status}</th><th>{c.reason}</th><th>{c.requestedBy}</th><th>{c.when}</th><th>{c.actions}</th></tr></thead>
+                    <thead>
+                      <tr>
+                        <th>{c.device}</th>
+                        <th>{c.commandType}</th>
+                        <th>{c.status}</th>
+                        <th>{c.reason}</th>
+                        <th>{c.requestedBy}</th>
+                        <th>{c.when}</th>
+                        <th>{c.actions}</th>
+                      </tr>
+                    </thead>
                     <tbody>
                       {data.commands.map((cmd) => (
                         <tr key={cmd.id}>
                           <td>{cmd.assetCode}</td>
                           <td>{c.commandTypes[cmd.type] ?? cmd.type}</td>
-                          <td><Badge tone={cmd.status === "queued" ? "info" : "neutral"}>{cmd.status === "queued" ? c.queuedStatus : c.cancelled}</Badge></td>
-                          <td>{cmd.reason || "—"}</td>
+                          <td>
+                            <Badge
+                              tone={
+                                cmd.status === "executed"
+                                  ? "success"
+                                  : cmd.status === "dispatched"
+                                    ? "warning"
+                                    : cmd.status === "queued"
+                                      ? "info"
+                                      : "neutral"
+                              }
+                            >
+                              {cmd.status === "executed"
+                                ? c.executedStatus
+                                : cmd.status === "dispatched"
+                                  ? c.dispatchedStatus
+                                  : cmd.status === "queued"
+                                    ? c.queuedStatus
+                                    : c.cancelled}
+                            </Badge>
+                          </td>
+                          <td>
+                            <div>{cmd.reason || "—"}</div>
+                            {cmd.executionOutput && (
+                              <small className="text-xs text-emerald-600 dark:text-emerald-400 block mt-0.5">
+                                <CheckCheck size={12} className="inline mr-1" />
+                                {cmd.executionOutput}
+                              </small>
+                            )}
+                          </td>
                           <td>{cmd.createdBy ?? "—"}</td>
-                          <td>{fmt(cmd.createdAt)}</td>
-                          <td>{cmd.status === "queued" && <Button type="button" variant="ghost" disabled={busy} onClick={() => run(() => cancelCommand(cmd, actor), c.done.cancelled)}>{c.cancelCommand}</Button>}</td>
+                          <td>
+                            <div>{fmt(cmd.createdAt)}</div>
+                            {cmd.executedAt && (
+                              <small className="text-xs text-slate-500 block">
+                                {fmt(cmd.executedAt)}
+                              </small>
+                            )}
+                          </td>
+                          <td>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {cmd.status === "queued" && (
+                                <>
+                                  <Button
+                                    type="button"
+                                    variant="secondary"
+                                    disabled={busy}
+                                    className="text-xs py-1 px-2"
+                                    onClick={() =>
+                                      run(() => dispatchCommand(cmd, actor), c.done.dispatched)
+                                    }
+                                  >
+                                    <Send size={12} className="mr-1" />
+                                    {c.dispatchCommand}
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    disabled={busy}
+                                    className="text-xs py-1 px-2"
+                                    onClick={() =>
+                                      run(() => cancelCommand(cmd, actor), c.done.cancelled)
+                                    }
+                                  >
+                                    {c.cancelCommand}
+                                  </Button>
+                                </>
+                              )}
+                              {(cmd.status === "queued" || cmd.status === "dispatched") && (
+                                <Button
+                                  type="button"
+                                  variant="primary"
+                                  disabled={busy}
+                                  className="text-xs py-1 px-2"
+                                  onClick={() =>
+                                    run(() => executeCommand(cmd, actor), c.done.executed)
+                                  }
+                                >
+                                  <Play size={12} className="mr-1" />
+                                  {c.executeCommand}
+                                </Button>
+                              )}
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

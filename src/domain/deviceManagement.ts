@@ -15,7 +15,7 @@ export const DEVICE_COMMAND_TYPES = [
   "wipe",
 ] as const;
 export type DeviceCommandType = (typeof DEVICE_COMMAND_TYPES)[number];
-export type DeviceCommandStatus = "queued" | "cancelled";
+export type DeviceCommandStatus = "queued" | "dispatched" | "executed" | "cancelled";
 
 /** Commands that are destructive or disruptive and need a written reason. */
 export const SENSITIVE_COMMANDS: readonly DeviceCommandType[] = ["wipe", "lock"];
@@ -60,6 +60,9 @@ export interface DeviceCommand {
   reason: string;
   createdBy?: string;
   createdAt?: string;
+  dispatchedAt?: string;
+  executedAt?: string;
+  executionOutput?: string;
   batchId?: string;
 }
 
