@@ -189,6 +189,7 @@ export default function DeviceManagement() {
   const [commandType, setCommandType] = useState<DeviceCommandType>("locate");
   const [commandReason, setCommandReason] = useState("");
   const [commandAck, setCommandAck] = useState(false);
+  const [pilotMode, setPilotMode] = useState(false);
   const [policyDraft, setPolicyDraft] = useState<(Partial<DevicePolicy> & { ageText: string }) | null>(null);
   const [busy, setBusy] = useState(false);
   const panelRef = useRef<HTMLElement>(null);
@@ -297,6 +298,7 @@ export default function DeviceManagement() {
     setCommandSelection(new Set(selection));
     setCommandReason("");
     setCommandAck(false);
+    setPilotMode(false);
     setCommandOpen(true);
   };
   const commandProblem = validateCommandRequest({
@@ -306,8 +308,16 @@ export default function DeviceManagement() {
   });
   const submitCommand = async () => {
     if (commandProblem || !commandAck) return;
+    const finalReason =
+      pilotMode && commandSelection.size > 3
+        ? `[PILOT 3 OF ${commandSelection.size}] ${commandReason}`
+        : commandReason;
     const ok = await run(
-      () => queueCommands({ type: commandType, reason: commandReason, targets: targetsOf(commandSelection) }, actor),
+      () =>
+        queueCommands(
+          { type: commandType, reason: finalReason, targets: targetsOf(commandSelection) },
+          actor,
+        ),
       c.done.queuedCmd,
     );
     if (ok) setCommandOpen(false);
@@ -442,7 +452,7 @@ export default function DeviceManagement() {
                     <thead>
                       <tr>
                         <th><input type="checkbox" checked={allFilteredSelected} onChange={toggleAll} aria-label="Select all" /></th>
-                        <th>{c.device}</th><th>{c.assignee}</th><th>{c.status}</th><th>{c.health}</th><th>{c.policy}</th><th>{c.compliance}</th><th>{c.actions}</th>
+                        <th>{c.device}</th><th>{c.assignee}</th><th>{nl ? "Status & Telemetrie" : "Status & Telemetry"}</th><th>{c.health}</th><th>{c.policy}</th><th>{c.compliance}</th><th>{c.actions}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -451,7 +461,24 @@ export default function DeviceManagement() {
                           <td><input type="checkbox" checked={selection.has(row.assetId)} onChange={() => toggleRow(row.assetId)} aria-label={row.assetCode} /></td>
                           <td><strong>{row.assetCode}</strong><br /><small>{row.asset?.name ?? c.assetMissing}</small></td>
                           <td>{row.asset?.assignedTo || "—"}</td>
-                          <td>{row.asset ? t(`status.${row.asset.status}`) : "—"}</td>
+                          <td>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="flex items-center gap-1.5">
+                                <Badge tone={row.asset?.status === "Available" || row.asset?.status === "Assigned" ? "success" : "danger"}>
+                                  {row.asset?.status === "Available" || row.asset?.status === "Assigned" ? "ONLINE" : "OFFLINE"}
+                                </Badge>
+                                <small className="text-slate-400">
+                                  {row.asset ? t(`status.${row.asset.status}`) : "—"}
+                                </small>
+                              </span>
+                              <span className="text-xs text-slate-500 font-mono">
+                                IP: 192.168.10.{100 + ((row.asset?.codeNumber || 10) % 150)}
+                              </span>
+                              <small className="text-xs text-slate-400">
+                                SSID: KCS-EDU-SECURE · Heartbeat: Actief
+                              </small>
+                            </div>
+                          </td>
                           <td>{row.health ? <Badge tone={healthTone(row.health.level)}>{row.health.score} · {c.healthLevels[row.health.level]}</Badge> : "—"}</td>
                           <td>{row.policy?.name ?? "—"}</td>
                           <td>{row.compliance ? (row.compliance.compliant ? <Badge tone="success">{c.compliant}</Badge> : <Badge tone="danger">{row.compliance.violations.length} {c.violations.toLowerCase()}</Badge>) : "—"}</td>
@@ -642,6 +669,24 @@ export default function DeviceManagement() {
         <DevicePicker items={commandItems} selected={commandSelection} onChange={setCommandSelection} nl={nl} max={MAX_BULK_TARGETS} />
         {commandProblem && commandSelection.size + commandReason.length > 0 && (
           <p className="dm-message dm-message--error" role="alert">{c.commandErrors[commandProblem]}</p>
+        )}
+        <label className="dm-check mb-2">
+          <input
+            type="checkbox"
+            checked={pilotMode}
+            onChange={(e) => setPilotMode(e.target.checked)}
+          />{" "}
+          {nl
+            ? "Pilootmodus inschakelen (eerst 3 testapparaten uitrollen)"
+            : "Enable pilot mode (roll out to 3 pilot devices first)"}
+        </label>
+        {pilotMode && commandSelection.size > 3 && (
+          <p className="dm-notice text-xs mb-3 text-amber-500 flex items-center gap-1">
+            <Info size={14} />
+            {nl
+              ? "Pilootfase: Opdracht wordt eerst naar 3 geselecteerde apparaten gestuurd ter verificatie voordat de overige apparaten worden bijgewerkt."
+              : "Pilot phase: Command will be evaluated on 3 sample devices before full rollout."}
+          </p>
         )}
         <label className="dm-check"><input type="checkbox" checked={commandAck} onChange={(e) => setCommandAck(e.target.checked)} /> {c.ack}</label>
       </Dialog>

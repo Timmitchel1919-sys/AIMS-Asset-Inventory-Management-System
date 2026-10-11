@@ -197,7 +197,21 @@ export default function Assistant() {
                     </small>
                   </>
                 ) : null}
-                {message.response?.workflow && (
+                {message.response?.actionProposal && (
+                  <div className="mt-3 p-3 rounded bg-amber-500/10 border border-amber-500/30 text-xs">
+                    <strong className="block text-amber-500 mb-1">
+                      {nl ? "Vereist Bevestiging / Autorisatie" : "Action Confirmation Required"}
+                    </strong>
+                    <p className="mb-2">{message.response.actionProposal.description}</p>
+                    <Link
+                      to={message.response.actionProposal.targetUrl}
+                      className="inline-flex items-center gap-1 font-semibold text-blue-500 hover:underline"
+                    >
+                      {nl ? "Ga naar workflow ter bevestiging" : "Proceed to workflow to confirm"} →
+                    </Link>
+                  </div>
+                )}
+                {message.response?.workflow && !message.response?.actionProposal && (
                   <>
                     <br />
                     <Link to={message.response.workflow}>
