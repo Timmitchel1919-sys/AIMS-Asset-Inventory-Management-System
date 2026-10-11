@@ -1,5 +1,4 @@
 import { initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
@@ -8,7 +7,6 @@ import {
   DEFAULT_ACCESS_PERMISSIONS,
   DEFAULT_ACCESS_ROLE,
 } from "./accessDefaults.js";
-import { AuthEventError, recordAuthEvent as recordAuthEventImpl } from "./authEvents.js";
 import { buildWorkbook, TAB_HEADERS } from "./sheetsExport.js";
 import { exportWorkbook, readTabs, writeCells } from "./sheetsClient.js";
 import {
@@ -131,32 +129,6 @@ export const provisionUserAccess = onCall(
         "internal",
         "Default access could not be provisioned. Notify ICT Support.",
       );
-    }
-  },
-);
-
-/**
- * Records a security-relevant authentication event and keeps the Users
- * directory authoritative (account status, last sign-in, audit trail). All
- * facts are derived server-side from Firebase Auth; the client only names the
- * event. See functions/authEvents.js.
- */
-export const recordAuthEvent = onCall(
-  { region: "southamerica-east1", timeoutSeconds: 30, memory: "256MiB" },
-  async (request) => {
-    try {
-      return await recordAuthEventImpl({
-        db: getFirestore(),
-        authAdmin: getAuth(),
-        FieldValue,
-        auth: request.auth,
-        data: request.data,
-      });
-    } catch (error) {
-      if (error instanceof AuthEventError)
-        throw new HttpsError(error.code, error.message);
-      console.error("Auth event recording failed", error?.message);
-      throw new HttpsError("internal", "The authentication event could not be recorded.");
     }
   },
 );

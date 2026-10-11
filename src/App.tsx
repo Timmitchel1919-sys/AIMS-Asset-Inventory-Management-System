@@ -6,7 +6,6 @@ import {can} from './auth/permissions';
 import {routeManifest,type AppRoute} from './routes/manifest';
 import {useApp} from './context/AppContext';
 import {DEMO_AUTH_MODE} from './auth/aimsEmailPolicy';
-import {AuthErrorBanner} from './components/auth/AuthErrorBanner';
 
 function RenderRoute({route}:{route:AppRoute}){
   const {user,authLoading,emailVerified,accessDenied,sessionExpired}=useApp();
@@ -19,7 +18,7 @@ function RenderRoute({route}:{route:AppRoute}){
     if(['login','signup'].includes(route.id)&&user)return <Navigate to={emailVerified?'/dashboard':'/verify-email'} replace/>;
     if(route.id==='verify-email'&&!user)return <Navigate to="/login" replace/>;
     if(route.id==='verify-email'&&emailVerified)return <Navigate to="/dashboard" replace/>;
-    return <RouteErrorBoundary><Suspense fallback={<RouteLoader/>}>{['login','signup'].includes(route.id)&&<AuthErrorBanner/>}<Page/></Suspense></RouteErrorBoundary>;
+    return <RouteErrorBoundary><Suspense fallback={<RouteLoader/>}><Page/></Suspense></RouteErrorBoundary>;
   }
   if(!user)return <Navigate to="/login" state={{from:location,reason:sessionExpired?'session-expired':undefined}} replace/>;
   if(!emailVerified&&!(DEMO_AUTH_MODE&&user.isDemoUser))return <Navigate to="/verify-email" replace/>;

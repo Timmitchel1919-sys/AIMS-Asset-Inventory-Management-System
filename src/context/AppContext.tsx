@@ -22,9 +22,7 @@ import {
   startPresenceHeartbeat,
   stopPresenceHeartbeat,
 } from "../lib/presence";
-import { reportAuthEvent } from "../auth/authEvents";
 import {
-  AccountDisabledError,
   demoLogin as firebaseDemoLogin,
   ensureAimsUserProfile,
   ensureDemoUserProfile,
@@ -133,10 +131,6 @@ type Ctx = {
   authLoading: boolean;
   emailVerified: boolean;
   accessDenied: boolean;
-  /** Why access was refused: a wrong-domain account, or a disabled one. */
-  accessDeniedReason: "domain" | "disabled";
-  /** Set when signing in succeeded but AIMS could not finish setting up the session. */
-  authError: boolean;
   sessionExpired: boolean;
   preferences: UserPreferences;
   updatePreferences: (value: UserPreferences) => Promise<void>;
@@ -188,8 +182,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   });
   const [emailVerified, setEmailVerified] = useState(presentationMode);
   const [accessDenied, setAccessDenied] = useState(false);
-  const [accessDeniedReason, setAccessDeniedReason] = useState<"domain" | "disabled">("domain");
-  const [authError, setAuthError] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
   const explicitLogout = useRef(false);
   const restoredAuthenticatedSession = useRef(false);
@@ -254,7 +246,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }));
       const demoUser = DEMO_AUTH_MODE && firebaseUser.isAnonymous;
       if (!canFirebaseUserAccess(firebaseUser)) {
-        setAccessDeniedReason("domain");
         setAccessDenied(true);
         await firebaseLogout();
         setUser(null);
@@ -265,28 +256,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       startPresenceHeartbeat(firebaseUser.uid);
       const canProvision =
         demoUser || !isVerificationRequired() || firebaseUser.emailVerified;
-      if (!canProvision && !demoUser) void reportAuthEvent("session");
-      let profile;
-      try {
-        profile = demoUser
-          ? await ensureDemoUserProfile(firebaseUser)
-          : canProvision
-            ? await ensureAimsUserProfile(firebaseUser)
-            : unverifiedAimsUserProfile(firebaseUser);
-      } catch (error) {
-        // The server reports the account as disabled: stop here and sign out
-        // so no protected UI is ever shown for it.
-        if (error instanceof AccountDisabledError) {
-          stopPresenceHeartbeat();
-          setAccessDeniedReason("disabled");
-          setAccessDenied(true);
-          await firebaseLogout();
-          setUser(null);
-          setEmailVerified(false);
-          return;
-        }
-        throw error;
-      }
+      const profile = demoUser
+        ? await ensureDemoUserProfile(firebaseUser)
+        : canProvision
+          ? await ensureAimsUserProfile(firebaseUser)
+          : unverifiedAimsUserProfile(firebaseUser);
       const tokenRole = demoUser
         ? undefined
         : (await firebaseUser.getIdTokenResult(true)).claims.role;
@@ -364,23 +338,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           restoredAuthenticatedSession.current = true;
           explicitLogout.current = false;
           setSessionExpired(false);
-          setAuthError(false);
         }
         await mapFirebaseUser(current);
       } catch (error) {
         if (import.meta.env.DEV)
           console.error("AIMS auth-state provisioning failed:", error);
-        // Never leave a half-initialised session behind: sign out and tell the
-        // user, instead of silently bouncing them to the login page.
-        stopPresenceHeartbeat();
-        setUser(null);
-        setEmailVerified(false);
-        setAuthError(true);
-        try {
-          await firebaseLogout();
-        } catch {
-          /* already signed out */
-        }
       } finally {
         setAuthLoading(false);
       }
@@ -400,8 +362,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       authLoading,
       emailVerified,
       accessDenied,
-      accessDeniedReason,
-      authError,
       sessionExpired,
       preferences,
       updatePreferences: async (next) => {
@@ -431,7 +391,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         remember = true,
         password = "",
       ) => {
-        setAuthError(false);
         setAccessDenied(false);
         setSessionExpired(false);
         explicitLogout.current = false;
@@ -475,9 +434,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // Mark presence offline while still authenticated — the security
         // rule is owner-write-only, so this must happen before sign-out.
         const uid = firebaseAuth?.currentUser?.uid;
-        // Audit the sign-out while the session is still valid (bounded wait so
-        // a slow network can never trap the user in a signed-in state).
-        if (uid) await reportAuthEvent("logout", undefined, 2000);
         if (uid) await markPresenceOffline(uid);
         await firebaseLogout();
       },
@@ -534,8 +490,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       authLoading,
       emailVerified,
       accessDenied,
-      accessDeniedReason,
-      authError,
       sessionExpired,
       preferences,
       presentationMode,

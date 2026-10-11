@@ -28,7 +28,6 @@ const HEARTBEAT_INTERVAL_MS = 45_000;
 export const PRESENCE_STALE_MS = 130_000;
 
 let heartbeatTimer: ReturnType<typeof setInterval> | undefined;
-let removeWakeListeners: (() => void) | undefined;
 
 async function writePresence(uid: string, online: boolean) {
   try {
@@ -50,30 +49,12 @@ export function startPresenceHeartbeat(uid: string): () => void {
   stopPresenceHeartbeat();
   void writePresence(uid, true);
   heartbeatTimer = setInterval(() => void writePresence(uid, true), HEARTBEAT_INTERVAL_MS);
-  // Background tabs throttle timers and a laptop can sleep: re-assert presence
-  // immediately when the tab becomes visible again or the network returns,
-  // instead of waiting out the next (possibly throttled) interval.
-  if (typeof window !== "undefined" && typeof document !== "undefined") {
-    const wake = () => {
-      if (document.visibilityState !== "hidden") void writePresence(uid, true);
-    };
-    document.addEventListener("visibilitychange", wake);
-    window.addEventListener("online", wake);
-    window.addEventListener("focus", wake);
-    removeWakeListeners = () => {
-      document.removeEventListener("visibilitychange", wake);
-      window.removeEventListener("online", wake);
-      window.removeEventListener("focus", wake);
-    };
-  }
   return stopPresenceHeartbeat;
 }
 
 export function stopPresenceHeartbeat() {
   if (heartbeatTimer) clearInterval(heartbeatTimer);
   heartbeatTimer = undefined;
-  removeWakeListeners?.();
-  removeWakeListeners = undefined;
 }
 
 /** Call before firebaseLogout() while the user is still authenticated —
