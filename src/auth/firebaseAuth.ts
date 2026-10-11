@@ -26,6 +26,7 @@ import {
 } from "firebase/auth";
 import { httpsCallable } from "firebase/functions";
 import { firebaseFunctions, requireFirebase } from "../lib/firebase";
+import { reportAuthEvent, type AuthEventName } from "./authEvents";
 import type { FontFamily, FontSize } from "../domain/typographyPreferences";
 import {
   AIMS_ACCESS_MESSAGE,
@@ -78,7 +79,7 @@ export type UserProfile = {
   accountType?: "school-user" | "demo-user";
   organizationDomain?: string | null;
   authProvider?: "password" | "google" | "anonymous";
-  status?: "active";
+  status?: "active" | "disabled" | "pending_verification";
   isDemoUser?: boolean;
   createdAt?: unknown;
   updatedAt?: unknown;
@@ -90,6 +91,16 @@ export type UserProfile = {
 
 export const allowedDomains = () => [AIMS_ORGANIZATION_DOMAIN];
 export const registrationEnabled = () => SELF_REGISTRATION_ENABLED;
+export const AIMS_DISABLED_MESSAGE =
+  "This account has been disabled. Contact ICT support.";
+export const AIMS_VERIFY_MESSAGE = "Verify your email address before accessing AIMS.";
+/** The server reported the account as disabled (suspended or disabled in Firebase Auth). */
+export class AccountDisabledError extends Error {
+  constructor() {
+    super(AIMS_DISABLED_MESSAGE);
+    this.name = "AccountDisabledError";
+  }
+}
 export class DemoProfileProvisioningError extends Error {
   constructor(public readonly cause: unknown) {
     super(
@@ -110,6 +121,55 @@ function logDevelopmentError(stage: string, error: unknown) {
   if (code) console.error("Firebase error code:", code);
   if (error instanceof Error)
     console.error("Firebase error message:", error.message);
+}
+const NL_MESSAGES: Record<string, string> = {
+  "Full name is required.": "Vul uw volledige naam in.",
+  "Full name must be 100 characters or fewer.":
+    "De volledige naam mag maximaal 100 tekens bevatten.",
+  "Enter a valid email address.": "Vul een geldig e-mailadres in.",
+  "Self-registration is temporarily unavailable.":
+    "Zelfregistratie is tijdelijk niet beschikbaar.",
+  "Use 8+ characters with uppercase, lowercase, and a number.":
+    "Gebruik minimaal 8 tekens met een hoofdletter, een kleine letter en een cijfer.",
+  "Passwords do not match.": "De wachtwoorden komen niet overeen.",
+  "Unable to sign in with the provided credentials.":
+    "Inloggen is niet gelukt met de opgegeven gegevens.",
+  "This account has been disabled.": "Dit account is uitgeschakeld.",
+  "Too many attempts. Please wait and try again.":
+    "Te veel pogingen. Wacht even en probeer het opnieuw.",
+  "An account already exists for this email address. Sign in instead.":
+    "Er bestaat al een account voor dit e-mailadres. Log in.",
+  "Google sign-in was cancelled.": "Inloggen met Google is geannuleerd.",
+  "Google sign-in was blocked by the browser. Allow pop-ups for AIMS and try again.":
+    "Inloggen met Google is door de browser geblokkeerd. Sta pop-ups toe voor AIMS en probeer het opnieuw.",
+  "Unable to reach Firebase. Check your network connection.":
+    "Firebase is niet bereikbaar. Controleer uw netwerkverbinding.",
+  "For security, sign in again before changing your password.":
+    "Log om veiligheidsredenen opnieuw in voordat u uw wachtwoord wijzigt.",
+  "The current password is not correct.": "Het huidige wachtwoord is onjuist.",
+  "The new password is too weak.": "Het nieuwe wachtwoord is te zwak.",
+  "The reset link is invalid or has expired. Request a new one.":
+    "De resetlink is ongeldig of verlopen. Vraag een nieuwe aan.",
+  "Firebase blocked access to the requested data.":
+    "Firebase heeft de toegang tot de gevraagde gegevens geblokkeerd.",
+  "Firebase configuration is invalid.": "De Firebase-configuratie is ongeldig.",
+  "Firebase Authentication is not configured correctly.":
+    "Firebase Authentication is niet correct ingesteld.",
+  "We could not complete that request. Please try again.":
+    "We konden dit verzoek niet voltooien. Probeer het opnieuw.",
+  [AIMS_DISABLED_MESSAGE]:
+    "Dit account is uitgeschakeld. Neem contact op met ICT-support.",
+  [AIMS_VERIFY_MESSAGE]: "Verifieer uw e-mailadres voordat u AIMS gebruikt.",
+  [AIMS_ACCESS_MESSAGE]:
+    "AIMS is alleen beschikbaar voor gebruikers met een @kangoeroeschool.com-account.",
+  [AIMS_LOGIN_DOMAIN_MESSAGE]:
+    "Gebruik uw @kangoeroeschool.com-e-mailadres om AIMS te openen.",
+  [AIMS_REGISTRATION_DOMAIN_MESSAGE]:
+    "Registratie is alleen beschikbaar voor @kangoeroeschool.com-gebruikers.",
+};
+/** Messages follow the user's AIMS language preference; English is the fallback. */
+export function localizeAuthMessage(message: string): string {
+  return currentLanguagePreference() === "nl" ? NL_MESSAGES[message] ?? message : message;
 }
 export function validateRegistration(
   input: RegistrationInput,
@@ -141,23 +201,42 @@ export function validateRegistration(
       "Use 8+ characters with uppercase, lowercase, and a number.";
   if (input.password !== confirmPassword)
     errors.confirmPassword = "Passwords do not match.";
-  return errors;
+  return Object.fromEntries(
+    Object.entries(errors).map(([key, value]) => [key, localizeAuthMessage(value)]),
+  );
 }
 export function authErrorMessage(error: unknown) {
+  if (error instanceof AccountDisabledError)
+    return localizeAuthMessage(AIMS_DISABLED_MESSAGE);
   if (error instanceof DemoProfileProvisioningError) return error.message;
   const code = firebaseErrorCode(error);
+  // Wrong password, unknown email and malformed email all collapse into one
+  // message so the form cannot be used to discover which addresses have accounts.
   const messages: Record<string, string> = {
     "auth/invalid-credential":
       "Unable to sign in with the provided credentials.",
+    "auth/invalid-login-credentials":
+      "Unable to sign in with the provided credentials.",
+    "auth/wrong-password": "Unable to sign in with the provided credentials.",
+    "auth/user-not-found": "Unable to sign in with the provided credentials.",
+    "auth/invalid-email": "Enter a valid email address.",
     "auth/user-disabled": "This account has been disabled.",
     "auth/too-many-requests": "Too many attempts. Please wait and try again.",
     "auth/email-already-in-use":
       "An account already exists for this email address. Sign in instead.",
     "auth/popup-closed-by-user": "Google sign-in was cancelled.",
+    "auth/cancelled-popup-request": "Google sign-in was cancelled.",
+    "auth/popup-blocked":
+      "Google sign-in was blocked by the browser. Allow pop-ups for AIMS and try again.",
     "auth/network-request-failed":
       "Unable to reach Firebase. Check your network connection.",
     "auth/requires-recent-login":
       "For security, sign in again before changing your password.",
+    "auth/weak-password": "The new password is too weak.",
+    "auth/expired-action-code":
+      "The reset link is invalid or has expired. Request a new one.",
+    "auth/invalid-action-code":
+      "The reset link is invalid or has expired. Request a new one.",
     "auth/operation-not-allowed":
       "Anonymous Authentication is disabled in Firebase. Enable it under Authentication → Sign-in method → Anonymous.",
     "auth/admin-restricted-operation":
@@ -176,12 +255,12 @@ export function authErrorMessage(error: unknown) {
       AIMS_ACCESS_MESSAGE,
       AIMS_LOGIN_DOMAIN_MESSAGE,
       AIMS_REGISTRATION_DOMAIN_MESSAGE,
-      "Verify your email address before accessing AIMS.",
+      AIMS_VERIFY_MESSAGE,
     ].includes(error.message)
   )
-    return error.message;
-  return (
-    messages[code] || "We could not complete that request. Please try again."
+    return localizeAuthMessage(error.message);
+  return localizeAuthMessage(
+    messages[code] || "We could not complete that request. Please try again.",
   );
 }
 const providerFor = (user: FirebaseUser): "password" | "google" =>
@@ -230,27 +309,37 @@ async function syncPublicDirectoryProfile(
     jobTitle?: string | null;
     accountType: "school-user" | "demo-user";
     authProvider: "password" | "google" | "anonymous";
-    recordLogin?: boolean;
   },
 ) {
   const { db } = requireFirebase();
-  await setDoc(
-    doc(db, "userDirectory", user.uid),
-    {
-      uid: user.uid,
+  const ref = doc(db, "userDirectory", user.uid);
+  const existing = await getDoc(ref);
+  if (existing.exists()) {
+    // Account status, verification and the real last sign-in are written by the
+    // recordAuthEvent Cloud Function; a client may only edit profile fields.
+    await updateDoc(ref, {
       displayName: profile.displayName,
       photoURL: user.photoURL || null,
       department: profile.department || null,
       jobTitle: profile.jobTitle || null,
-      accountType: profile.accountType,
-      authProvider: profile.authProvider,
-      emailVerified: user.emailVerified,
-      status: "active",
       updatedAt: serverTimestamp(),
-      ...(profile.recordLogin ? { lastLoginAt: serverTimestamp() } : {}),
-    },
-    { merge: true },
-  );
+    });
+    return;
+  }
+  // Fallback when the function was unreachable: seed an ACTIVE entry (the
+  // rules allow nothing else); the next successful event corrects any detail.
+  await setDoc(ref, {
+    uid: user.uid,
+    displayName: profile.displayName,
+    photoURL: user.photoURL || null,
+    department: profile.department || null,
+    jobTitle: profile.jobTitle || null,
+    accountType: profile.accountType,
+    authProvider: profile.authProvider,
+    emailVerified: user.emailVerified,
+    status: "active",
+    updatedAt: serverTimestamp(),
+  });
 }
 export async function loadProfile(user: FirebaseUser): Promise<UserProfile> {
   const { db } = requireFirebase();
@@ -360,7 +449,7 @@ export function ensureDemoUserProfile(
 export async function ensureAimsUserProfile(
   user: FirebaseUser,
   signupData?: Partial<RegistrationInput>,
-  options?: { recordLogin?: boolean },
+  options?: { recordLogin?: boolean; event?: AuthEventName },
 ): Promise<UserProfile> {
   // "Laatste aanmelding" must reflect a genuine sign-in, not every time this
   // function runs — it also runs on session restore (page load/refresh) via
@@ -369,7 +458,7 @@ export async function ensureAimsUserProfile(
   if (!isEmailAllowedForCurrentMode(user.email))
     throw new Error(AIMS_ACCESS_MESSAGE);
   if (isVerificationRequired() && !user.emailVerified)
-    throw new Error("Verify your email address before accessing AIMS.");
+    throw new Error(AIMS_VERIFY_MESSAGE);
   const { db } = requireFirebase(),
     ref = doc(db, "users", user.uid),
     snapshot = await getDoc(ref),
@@ -414,19 +503,26 @@ export async function ensureAimsUserProfile(
       displayName,
       photoURL: user.photoURL || existing?.photoURL || null,
       authProvider: provider,
-      emailVerified: user.emailVerified,
       updatedAt: serverTimestamp(),
-      ...(recordLogin ? { lastLoginAt: serverTimestamp() } : {}),
     });
+  // The server decides account status, verification and the sign-in time, and
+  // writes the audit entry. It runs BEFORE the client touches the directory so
+  // a disabled account is stopped here and never gets a "last login".
+  if (!DEMO_AUTH_MODE) {
+    const eventName: AuthEventName =
+      options?.event ?? (recordLogin ? "login" : "session");
+    const outcome = await reportAuthEvent(eventName, {
+      department: pending?.department ?? existing?.department,
+      jobTitle: pending?.jobTitle ?? existing?.jobTitle,
+    });
+    if (outcome?.status === "disabled") throw new AccountDisabledError();
+  }
   await syncPublicDirectoryProfile(user, {
     displayName,
     department: pending?.department?.trim() || existing?.department || null,
     jobTitle: pending?.jobTitle?.trim() || existing?.jobTitle || null,
     accountType: DEMO_AUTH_MODE ? "demo-user" : AIMS_ACCOUNT_TYPE,
     authProvider: provider,
-    // A brand-new account's first directory write should also carry its
-    // first login moment, same as the users/{uid} document above.
-    recordLogin: recordLogin || !snapshot.exists(),
   });
   await ensureDefaultAccessAssignment(user);
   clearPending(user.uid);
@@ -456,6 +552,11 @@ export async function register(input: RegistrationInput) {
       }),
     );
     await sendEmailVerification(credential.user);
+    if (!DEMO_AUTH_MODE)
+      await reportAuthEvent("registration", {
+        department: input.department?.trim(),
+        jobTitle: input.jobTitle?.trim(),
+      });
     if (!isVerificationRequired())
       await ensureAimsUserProfile(credential.user, input);
   } catch (error) {
@@ -542,10 +643,18 @@ export async function logout() {
   return signOut(requireFirebase().auth);
 }
 export async function forgotPassword(email: string) {
-  return sendPasswordResetEmail(
-    requireFirebase().auth,
-    email.trim().toLowerCase(),
-  );
+  try {
+    await sendPasswordResetEmail(
+      requireFirebase().auth,
+      email.trim().toLowerCase(),
+    );
+  } catch (error) {
+    // Never reveal whether an address has an account: an unknown address looks
+    // exactly like a successful request. Real faults (network, quota, bad
+    // format) are still reported.
+    if (firebaseErrorCode(error) === "auth/user-not-found") return;
+    throw error;
+  }
 }
 export async function resendVerification() {
   const user = requireFirebase().auth.currentUser;
@@ -558,7 +667,9 @@ export async function refreshVerification() {
   await reload(auth.currentUser);
   await auth.currentUser.getIdToken(true);
   if (auth.currentUser.emailVerified)
-    await ensureAimsUserProfile(auth.currentUser);
+    await ensureAimsUserProfile(auth.currentUser, undefined, {
+      event: "email_verified",
+    });
   return auth.currentUser.emailVerified;
 }
 export async function updateSelfProfile(values: {
@@ -601,9 +712,17 @@ export async function changePassword(
 ) {
   const user = requireFirebase().auth.currentUser;
   if (!user || !user.email) throw new Error("Sign in to change your password.");
-  await reauthenticateWithCredential(
-    user,
-    EmailAuthProvider.credential(user.email, currentPassword),
-  );
-  return updatePassword(user, password);
+  try {
+    await reauthenticateWithCredential(
+      user,
+      EmailAuthProvider.credential(user.email, currentPassword),
+    );
+  } catch (error) {
+    const code = firebaseErrorCode(error);
+    if (code === "auth/wrong-password" || code === "auth/invalid-credential")
+      throw new Error(localizeAuthMessage("The current password is not correct."));
+    throw error;
+  }
+  await updatePassword(user, password);
+  if (!DEMO_AUTH_MODE) await reportAuthEvent("password_changed");
 }

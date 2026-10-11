@@ -113,16 +113,43 @@ export function VerifyEmailPage() {
 export function AccessDeniedPage() {
   const app = useApp();
   const navigate = useNavigate();
+  const nl = app.language === "nl";
+  const disabled = app.accessDeniedReason === "disabled";
   return (
     <div className="auth-page">
       <main className="auth-panel">
         <Card className="auth-card">
           <ShieldCheck />
-          <h1>Access Restricted</h1>
-          <p>AIMS is available only to authorized Kangoeroe School users.</p>
-          <p>Please sign in with your @kangoeroeschool.com account.</p>
+          <h1>{nl ? "Toegang beperkt" : "Access Restricted"}</h1>
+          {disabled ? (
+            <>
+              <p>
+                {nl
+                  ? "Dit account is uitgeschakeld en heeft geen toegang tot AIMS."
+                  : "This account has been disabled and cannot access AIMS."}
+              </p>
+              <p>
+                {nl
+                  ? "Neem contact op met ICT-support als u denkt dat dit een vergissing is."
+                  : "Contact ICT support if you believe this is a mistake."}
+              </p>
+            </>
+          ) : (
+            <>
+              <p>
+                {nl
+                  ? "AIMS is alleen beschikbaar voor geautoriseerde gebruikers van de Kangoeroe School."
+                  : "AIMS is available only to authorized Kangoeroe School users."}
+              </p>
+              <p>
+                {nl
+                  ? "Log in met uw @kangoeroeschool.com-account."
+                  : "Please sign in with your @kangoeroeschool.com account."}
+              </p>
+            </>
+          )}
           <Button onClick={async () => { await app.logout(); navigate("/", { replace: true }); }}>
-            Sign Out and Return Home
+            {nl ? "Uitloggen en terug naar home" : "Sign Out and Return Home"}
           </Button>
         </Card>
       </main>

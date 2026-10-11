@@ -7,14 +7,22 @@ import { Badge, Card } from "../components/ui";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot } from "../data/repositoryContext";
 import { requireFirebase } from "../lib/firebase";
-import { isEffectivelyOnline, type PresenceRecord } from "../lib/presence";
+import type { PresenceRecord } from "../lib/presence";
+import {
+  accountStatusLabel,
+  accountStatusTone,
+  normalizeAccountStatus,
+  resolveAccountStatus,
+  resolvePresence,
+  type AccountStatus,
+} from "../auth/accountStatus";
 
 type DirectoryUser = {
   uid: string; displayName: string; photoURL?: string | null;
   department?: string | null; jobTitle?: string | null;
   accountType: "school-user" | "demo-user";
   authProvider: "password" | "google" | "anonymous";
-  emailVerified: boolean; status: "active"; lastLoginAt?: string;
+  emailVerified: boolean; status: AccountStatus; lastLoginAt?: string;
   online: boolean;
 };
 
@@ -37,7 +45,27 @@ export default function UserDirectory() {
   const [presenceByUid, setPresenceByUid] = useState<
     Record<string, PresenceRecord>
   >({});
+  // Suspended accounts (access assignment inactive) override the directory
+  // status, so an administrator's suspension shows up immediately.
+  const [assignmentActive, setAssignmentActive] = useState<Record<string, boolean>>({});
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!firebaseMode) return;
+    const { db } = requireFirebase();
+    return onSnapshot(
+      collection(db, "accessAssignments"),
+      (result) => {
+        const next: Record<string, boolean> = {};
+        result.docs.forEach((document) => {
+          next[document.id] = document.data().active !== false;
+        });
+        setAssignmentActive(next);
+      },
+      // Not readable for this account: fall back to the directory status alone.
+      () => setAssignmentActive({}),
+    );
+  }, [firebaseMode]);
 
   useEffect(() => {
     if (!firebaseMode) return;
@@ -54,7 +82,7 @@ export default function UserDirectory() {
           accountType: item.accountType === "demo-user" ? "demo-user" : "school-user",
           authProvider: item.authProvider === "google" || item.authProvider === "anonymous" ? item.authProvider : "password",
           emailVerified: item.emailVerified === true,
-          status: "active",
+          status: normalizeAccountStatus(item.status),
           lastLoginAt: asDate(item.lastLoginAt),
         };
       }));
@@ -105,12 +133,16 @@ export default function UserDirectory() {
   const users = useMemo<DirectoryUser[]>(
     () =>
       firebaseMode
-        ? (registeredUsers ?? []).map((item) => ({
-            ...item,
-            online: isEffectivelyOnline(presenceByUid[item.uid], now),
-          }))
+        ? (registeredUsers ?? []).map((item) => {
+            const status = resolveAccountStatus(item.status, assignmentActive[item.uid]);
+            return {
+              ...item,
+              status,
+              online: resolvePresence(status, presenceByUid[item.uid], now),
+            };
+          })
         : demoUsers,
-    [firebaseMode, registeredUsers, presenceByUid, now, demoUsers, app.user?.id, ownProfilePhoto],
+    [firebaseMode, registeredUsers, presenceByUid, assignmentActive, now, demoUsers, app.user?.id, ownProfilePhoto],
   );
   const providerLabel = (value: DirectoryUser["authProvider"]) => value === "anonymous"
     ? (nl ? "Anoniem" : "Anonymous")
@@ -134,7 +166,9 @@ export default function UserDirectory() {
       label: "Status",
       render: (item) => (
         <span className="directory-status-badges">
-          <Badge tone="success">{nl ? "Actief" : "Active"}</Badge>
+          <Badge tone={accountStatusTone(item.status)}>
+            {accountStatusLabel(item.status, language)}
+          </Badge>
           <Badge tone={item.online ? "success" : "danger"}>
             {presenceLabel(item.online)}
           </Badge>
@@ -149,6 +183,6 @@ export default function UserDirectory() {
     <PageHeader title={nl ? "Gebruikers" : "Users"} description={nl ? "Geautoriseerde accounts van de Kangoeroe School en actieve demogebruikers." : "Authorized Kangoeroe School accounts and active demo users."} />
     {error && <p className="notice error" role="alert">{error}</p>}
     <section className="card data-card directory-table"><DataTable id="users-directory" rows={users} columns={columns} rowKey={(item) => item.uid} totalLabel={nl ? "totaal gebruikers" : "total users"} loading={firebaseMode && registeredUsers === null} searchPlaceholder={nl ? "Gebruikers zoeken…" : "Search users…"} emptyTitle={nl ? "Geen geregistreerde gebruikers" : "No registered users"} emptyDescription={nl ? "Geautoriseerde accounts verschijnen hier automatisch na hun eerste geverifieerde aanmelding." : "Authorized accounts appear here automatically after their first verified sign-in."} /></section>
-    <section className="directory-cards" aria-label={nl ? "Gebruikers" : "Users"}>{users.map((item) => <Card key={item.uid}><header><span className="directory-avatar">{item.photoURL ? <img src={item.photoURL} alt="" /> : initials(item.displayName)}</span><div><strong>{item.displayName}</strong><small>{item.accountType === "demo-user" ? (nl ? "Demogebruiker" : "Demo User") : item.department || (nl ? "Afdeling niet opgegeven" : "Department not provided")}</small></div></header>{item.jobTitle && <p>{item.jobTitle}</p>}<footer><Badge tone="success">{nl ? "Actief" : "Active"}</Badge><Badge tone={item.online ? "success" : "danger"}>{presenceLabel(item.online)}</Badge><span>{providerLabel(item.authProvider)}</span></footer></Card>)}</section>
+    <section className="directory-cards" aria-label={nl ? "Gebruikers" : "Users"}>{users.map((item) => <Card key={item.uid}><header><span className="directory-avatar">{item.photoURL ? <img src={item.photoURL} alt="" /> : initials(item.displayName)}</span><div><strong>{item.displayName}</strong><small>{item.accountType === "demo-user" ? (nl ? "Demogebruiker" : "Demo User") : item.department || (nl ? "Afdeling niet opgegeven" : "Department not provided")}</small></div></header>{item.jobTitle && <p>{item.jobTitle}</p>}<footer><Badge tone={accountStatusTone(item.status)}>{accountStatusLabel(item.status, language)}</Badge><Badge tone={item.online ? "success" : "danger"}>{presenceLabel(item.online)}</Badge><span>{providerLabel(item.authProvider)}</span></footer></Card>)}</section>
   </div>;
 }

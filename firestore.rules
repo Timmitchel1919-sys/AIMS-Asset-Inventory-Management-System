@@ -350,7 +350,7 @@ service cloud.firestore {
     function validActivity(data) {
       return data.keys().hasOnly(['at','user','action','event','entityType','entityId','result','detail','createdAt','createdBy','updatedAt','updatedBy'])
         && data.keys().hasAll(['at','user','action','entityType','entityId','result','detail','createdAt','createdBy','updatedAt','updatedBy'])
-        && (!('event' in data) || (data.event is string && data.event.matches('^[A-Z_]{3,48}$')))
+        && (!('event' in data) || (data.event is string && data.event.matches('^[A-Z_]{3,48}$') && !data.event.matches('^AUTH_.*')))
         && data.at is string && data.at.size() <= 40
         && data.user is string && data.user.size() <= 150
         && data.action is string && data.action.size() <= 100
@@ -423,7 +423,7 @@ service cloud.firestore {
         && data.accountType in ['school-user','demo-user']
         && data.authProvider in ['password','google','anonymous']
         && data.emailVerified is bool
-        && data.status == 'active'
+        && data.status in ['active','disabled','pending_verification']
         && data.updatedAt is timestamp
         && (!('lastLoginAt' in data) || data.lastLoginAt is timestamp);
     }
@@ -558,6 +558,7 @@ service cloud.firestore {
       allow update: if isOwnUser(uid) && validUser(request.resource.data)
         && immutableUserCreatedAt()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','preferences','authProvider','emailVerified','updatedAt','lastLoginAt'])
+        && (!('lastLoginAt' in request.resource.data.diff(resource.data).affectedKeys()) || request.resource.data.lastLoginAt == request.time)
         && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }
@@ -578,12 +579,22 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Account status (active / disabled / pending_verification), verification
+    // and the real last sign-in are written by the recordAuthEvent Cloud
+    // Function (Admin SDK) from Firebase Auth. A client may seed its own
+    // ACTIVE entry (fallback if the function is unreachable) and edit its
+    // own profile fields, but can never change status or verification, and
+    // can only stamp lastLoginAt with the current server time.
     match /userDirectory/{uid} {
       allow read: if isVerified();
       allow create: if isOwnUser(uid) && validPublicDirectoryUser(request.resource.data, uid)
+        && request.resource.data.status == 'active'
+        && request.resource.data.emailVerified == true
+        && (!('lastLoginAt' in request.resource.data) || request.resource.data.lastLoginAt == request.time)
         && request.resource.data.updatedAt == request.time;
       allow update: if isOwnUser(uid) && validPublicDirectoryUser(request.resource.data, uid)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','authProvider','emailVerified','status','updatedAt','lastLoginAt'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','authProvider','updatedAt','lastLoginAt'])
+        && (!('lastLoginAt' in request.resource.data.diff(resource.data).affectedKeys()) || request.resource.data.lastLoginAt == request.time)
         && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }
