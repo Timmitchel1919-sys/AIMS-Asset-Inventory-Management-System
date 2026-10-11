@@ -1,0 +1,18 @@
+/* Mobile: list pages (assets, inventory, categories, repairs, movements, audits,
+   roles ...) are laid out as a fixed-height panel on desktop, where the table
+   scrolls inside it. The mobile card list has no inner scroller, so the panel
+   clipped everything below the first screen. On narrow screens the page simply
+   grows with its content and scrolls normally. Loaded last on purpose. */
+@media (max-width: 780px) {
+  .page.data-page,
+  .page:has(> .data-card) {
+    height: auto !important;
+    min-height: 0;
+  }
+  .page.data-page .data-card,
+  .page > .data-card {
+    flex: 0 0 auto;
+    min-height: 0;
+    overflow: visible;
+  }
+}

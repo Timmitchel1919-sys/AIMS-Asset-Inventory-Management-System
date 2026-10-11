@@ -1259,15 +1259,25 @@ html[data-theme] .auth-page:is(.auth-login, .auth-signup)::after,
   display: none !important;
 }
 
-/* Fixed viewport container with NO scrollbars */
-html,
-body,
-#root,
+/* Fixed viewport container with NO scrollbars (login / sign-up pages only) */
 .auth-page,
 .auth-page.auth-login,
 .auth-page.auth-signup,
 html[data-theme] .auth-page:is(.auth-login, .auth-signup),
 html[data-aims-theme] .auth-page:is(.auth-login, .auth-signup) {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+/* The page itself is locked ONLY while an auth page is on screen. This used to
+   apply to html/body/#root everywhere, which made every module taller than
+   the window impossible to scroll. Kept as a separate rule so a browser
+   without :has() ignores just this one and the rules above still apply. */
+html:has(.auth-page),
+body:has(.auth-page),
+#root:has(.auth-page) {
   height: 100dvh !important;
   max-height: 100dvh !important;
   overflow: hidden !important;

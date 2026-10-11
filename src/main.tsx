@@ -39,6 +39,7 @@ import "./styles/dark.css";
 import "./styles/aims-light.css";
 import "./styles/scrollbars.css";
 import "./styles/big-screen.css";
+import "./styles/mobile-scroll.css";
 
 /*
  * Apply the saved KCS theme before React renders.

@@ -26,14 +26,14 @@ describe("StarterLocationsButton", () => {
   it("shows what will be added, adds only after confirmation, then disables itself", async () => {
     render(<RepositoryProvider repository={repo}><StarterLocationsButton /></RepositoryProvider>);
     const before = departments().length;
-    const open = screen.getByRole("button", { name: /Kangoeroe High and Lokaal 3 - Lokaal 16/ });
+    const open = screen.getByRole("button", { name: /Kangoeroe High and Lokaal 2 - Lokaal 16/ });
     expect(open).toBeEnabled();
     fireEvent.click(open);
-    expect(screen.getByText(/14 department\(s\) will be added \(Lokaal 3 to Lokaal 16\)/)).toBeInTheDocument();
+    expect(screen.getByText(/15 department\(s\) will be added \(Lokaal 2 to Lokaal 16\)/)).toBeInTheDocument();
     expect(departments()).toHaveLength(before); // nothing yet
     fireEvent.click(screen.getByRole("button", { name: "Add" }));
-    await waitFor(() => expect(departments()).toHaveLength(before + 14), { timeout: 15000 });
-    expect(await screen.findByText(/14 department\(s\) added/, undefined, { timeout: 15000 })).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByRole("button", { name: /Kangoeroe High and Lokaal 3/ })).toBeDisabled());
+    await waitFor(() => expect(departments()).toHaveLength(before + 15), { timeout: 15000 });
+    expect(await screen.findByText(/15 department\(s\) added/, undefined, { timeout: 15000 })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("button", { name: /Kangoeroe High and Lokaal 2/ })).toBeDisabled());
   }, 30000);
 });

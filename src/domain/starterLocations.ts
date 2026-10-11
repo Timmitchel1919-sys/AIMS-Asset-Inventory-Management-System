@@ -2,12 +2,12 @@ import type { ReferenceRecord } from "../data/contracts";
 
 /**
  * Starter locations for the school: the Hoofdlocatie "Kangoeroe High" and the
- * classrooms "Lokaal 3" ... "Lokaal 16" under it. Applying them is idempotent:
+ * classrooms "Lokaal 2" ... "Lokaal 16" under it. Applying them is idempotent:
  * whatever already exists (compared by normalised name) is left alone, nothing
  * is renamed, reactivated or duplicated.
  */
 export const STARTER_MAIN_LOCATION = { name: "Kangoeroe High", codes: ["KH", "KHS", "KHIGH"] } as const;
-export const STARTER_FIRST_ROOM = 3;
+export const STARTER_FIRST_ROOM = 2;
 export const STARTER_LAST_ROOM = 16;
 export const STARTER_DEPARTMENTS: readonly string[] = Array.from(
   { length: STARTER_LAST_ROOM - STARTER_FIRST_ROOM + 1 },

@@ -4,7 +4,7 @@ import { MockInventoryRepository } from "./mockRepository";
 import { applyStarterLocations } from "./starterLocations";
 import { STARTER_DEPARTMENTS, planStarterLocations, starterPlanIsEmpty } from "../domain/starterLocations";
 
-describe("starter locations: Kangoeroe High and Lokaal 3 - 16", () => {
+describe("starter locations: Kangoeroe High and Lokaal 2 - 16", () => {
   let repo: MockInventoryRepository;
   beforeEach(() => {
     localStorage.setItem("kcs-language", "en");
@@ -14,19 +14,19 @@ describe("starter locations: Kangoeroe High and Lokaal 3 - 16", () => {
   const departments = () => repo.snapshot().references.filter((r) => r.kind === "department");
   const stateOf = () => (repo as unknown as { state: { references: unknown[] } }).state;
 
-  it("is exactly Lokaal 3 through Lokaal 16", () => {
-    expect(STARTER_DEPARTMENTS).toHaveLength(14);
-    expect(STARTER_DEPARTMENTS[0]).toBe("Lokaal 3");
+  it("is exactly Lokaal 2 through Lokaal 16", () => {
+    expect(STARTER_DEPARTMENTS).toHaveLength(15);
+    expect(STARTER_DEPARTMENTS[0]).toBe("Lokaal 2");
     expect(STARTER_DEPARTMENTS.at(-1)).toBe("Lokaal 16");
   });
 
-  it("uses an existing Kangoeroe High and adds the 14 classrooms under it", async () => {
+  it("uses an existing Kangoeroe High and adds the 15 classrooms under it", async () => {
     const high = mains().find((r) => r.name === "Kangoeroe High")!;
     const before = mains().length;
     const result = await applyStarterLocations(repo, "en");
     expect(result.ok, result.message).toBe(true);
     expect(result.createdMain).toBe(false);
-    expect(result.createdDepartments).toHaveLength(14);
+    expect(result.createdDepartments).toHaveLength(15);
     expect(mains()).toHaveLength(before);
     for (const name of STARTER_DEPARTMENTS)
       expect(departments().find((d) => d.name === name)).toMatchObject({ mainLocationId: high.id, status: "Active" });
@@ -43,7 +43,7 @@ describe("starter locations: Kangoeroe High and Lokaal 3 - 16", () => {
     // The department form lists exactly the active Main locations.
     const dropdown = repo.snapshot().references.filter((x) => x.kind === "location" && x.type === "Main location" && x.status === "Active");
     expect(dropdown.map((r) => r.name)).toContain("Kangoeroe High");
-    expect(departments().filter((d) => d.mainLocationId === high.id)).toHaveLength(14);
+    expect(departments().filter((d) => d.mainLocationId === high.id)).toHaveLength(15);
   });
 
   it("falls back to another code when KH is already used by a different Hoofdlocatie", async () => {
@@ -69,7 +69,7 @@ describe("starter locations: Kangoeroe High and Lokaal 3 - 16", () => {
     const high = mains().find((r) => r.name === "Kangoeroe High")!;
     await repo.execute({ action: "reference.create", values: { kind: "department", name: " lokaal  5 ", type: "Department", mainLocationId: high.id } });
     const result = await applyStarterLocations(repo, "en");
-    expect(result.createdDepartments).toHaveLength(13);
+    expect(result.createdDepartments).toHaveLength(14);
     expect(result.createdDepartments).not.toContain("Lokaal 5");
     expect(departments().filter((d) => d.mainLocationId === high.id && d.name.trim().toLowerCase().replace(/\s+/g, " ") === "lokaal 5")).toHaveLength(1);
   });
