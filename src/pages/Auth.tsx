@@ -410,8 +410,8 @@ export default function Auth({
                   </div>
                 )}
 
-                {/* Compact Secondary Footer */}
-                <AuthFooter language={app.language} />
+                {/* Compact secondary footer: not shown on the sign-up page. */}
+                {mode !== "signup" && <AuthFooter language={app.language} />}
               </>
             )}
           </div>
