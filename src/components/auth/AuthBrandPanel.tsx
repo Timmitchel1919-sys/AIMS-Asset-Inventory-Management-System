@@ -1,10 +1,8 @@
 import {
-  Boxes,
-  CheckCircle2,
-  Laptop,
-  QrCode,
+  ClipboardCheck,
+  ScanLine,
+  School,
   ShieldCheck,
-  TrendingUp,
 } from "lucide-react";
 import { AimsPublicLockup } from "../branding/AimsPublicLockup";
 
@@ -17,116 +15,84 @@ export function AuthBrandPanel({ language = "nl" }: AuthBrandPanelProps) {
 
   return (
     <aside className="auth-brand" aria-label={nl ? "AIMS Identiteit en overzicht" : "AIMS Brand and overview"}>
+      {/* Concentric curved radial arcs matching the reference image */}
+      <div className="auth-brand-arcs" aria-hidden="true">
+        <div className="auth-brand-arc auth-brand-arc--1" />
+        <div className="auth-brand-arc auth-brand-arc--2" />
+        <div className="auth-brand-arc auth-brand-arc--3" />
+      </div>
+
       <div className="auth-brand-inner">
-        {/* Top brand header */}
+        {/* Brand Lockup at top */}
         <div className="auth-brand-top">
-          <AimsPublicLockup inverse />
+          <AimsPublicLockup />
         </div>
 
-        {/* Visual showcase with preview UI cards inspired by reference */}
-        <div className="auth-showcase-visual" aria-hidden="true">
-          {/* Background ambient glow circles */}
-          <div className="auth-showcase-glow" />
+        {/* Supporting description */}
+        <p className="auth-brand-lead">
+          {nl
+            ? "Volledig inzicht, verantwoordelijkheid en levenscyclusbeheer voor schoolmiddelen."
+            : "Complete visibility, accountability, and lifecycle control for school assets."}
+        </p>
 
-          {/* Card 1: Asset & Inventory Overview (Top card) */}
-          <div className="auth-preview-card auth-preview-card--metrics">
-            <div className="auth-preview-card__header">
-              <div className="auth-preview-card__title-group">
-                <Boxes className="auth-preview-card__icon" />
-                <span className="auth-preview-card__title">
-                  {nl ? "Middelenoverzicht" : "Asset Overview"}
-                </span>
-              </div>
-              <span className="auth-preview-badge auth-preview-badge--live">
-                <span className="auth-preview-badge__dot" />
-                {nl ? "Realtime" : "Live"}
-              </span>
+        {/* 4 Feature items matching the reference image */}
+        <ul className="auth-brand-features">
+          <li className="auth-brand-feature">
+            <span className="auth-brand-feature__icon-box">
+              <ShieldCheck className="auth-brand-feature__icon" />
+            </span>
+            <div className="auth-brand-feature__text">
+              <strong>{nl ? "Veilige accounttoegang" : "Secure account access"}</strong>
+              <small>
+                {nl
+                  ? "Meerlaagse beveiliging om uw gegevens en middelen te beschermen."
+                  : "Layered security to protect your data and assets."}
+              </small>
             </div>
-            <div className="auth-preview-metrics">
-              <div className="auth-preview-metric">
-                <strong className="auth-preview-metric__value">1.482</strong>
-                <span className="auth-preview-metric__label">{nl ? "Totaal geregistreerd" : "Total registered"}</span>
-              </div>
-              <div className="auth-preview-pills">
-                <span className="auth-metric-pill auth-metric-pill--success">
-                  <span className="auth-metric-pill__dot" />
-                  {nl ? "94% Inzetbaar" : "94% Available"}
-                </span>
-                <span className="auth-metric-pill auth-metric-pill--primary">
-                  <span className="auth-metric-pill__dot" />
-                  {nl ? "128 In bruikleen" : "128 On loan"}
-                </span>
-              </div>
-            </div>
-          </div>
+          </li>
 
-          {/* Card 2: Recent Device Assignment (Middle floating card) */}
-          <div className="auth-preview-card auth-preview-card--item">
-            <div className="auth-preview-card__header">
-              <div className="auth-preview-card__title-group">
-                <Laptop className="auth-preview-card__icon" />
-                <div>
-                  <span className="auth-preview-card__title">Lenovo ThinkPad L14 Gen 4</span>
-                  <span className="auth-preview-card__subtitle">AST-2026-084</span>
-                </div>
-              </div>
-              <span className="auth-preview-badge auth-preview-badge--verified">
-                <CheckCircle2 className="auth-preview-badge__icon" />
-                {nl ? "Gekoppeld" : "Assigned"}
-              </span>
+          <li className="auth-brand-feature">
+            <span className="auth-brand-feature__icon-box">
+              <ClipboardCheck className="auth-brand-feature__icon" />
+            </span>
+            <div className="auth-brand-feature__text">
+              <strong>{nl ? "Traceerbare inventarisprocessen" : "Traceable inventory workflows"}</strong>
+              <small>
+                {nl
+                  ? "Realtime data en rapporten voor betere beslissingen."
+                  : "Real-time data and reporting for better decisions."}
+              </small>
             </div>
-            <div className="auth-preview-item-footer">
-              <span className="auth-preview-item-loc">{nl ? "IT-Beheerder • Lokaal 2.04" : "IT Staff • Room 2.04"}</span>
-              <span className="auth-preview-item-status">{nl ? "Geverifieerd" : "Verified"}</span>
+          </li>
+
+          <li className="auth-brand-feature">
+            <span className="auth-brand-feature__icon-box">
+              <ScanLine className="auth-brand-feature__icon" />
+            </span>
+            <div className="auth-brand-feature__text">
+              <strong>{nl ? "Mobiele controles en scans" : "Mobile audits and scanning"}</strong>
+              <small>
+                {nl
+                  ? "Vereenvoudig verificaties en verminder handmatige taken."
+                  : "Simplify verification and reduce manual work."}
+              </small>
             </div>
-          </div>
+          </li>
 
-          {/* Card 3: Quick Audit & Traceability (Lower card) */}
-          <div className="auth-preview-card auth-preview-card--audit">
-            <div className="auth-preview-card__header">
-              <div className="auth-preview-card__title-group">
-                <QrCode className="auth-preview-card__icon" />
-                <div>
-                  <span className="auth-preview-card__title">
-                    {nl ? "Snelle QR-Verificatie" : "Fast QR Verification"}
-                  </span>
-                  <span className="auth-preview-card__subtitle">
-                    {nl ? "100% Traceerbaar" : "100% Traceable"}
-                  </span>
-                </div>
-              </div>
-              <span className="auth-preview-badge auth-preview-badge--audit">
-                <ShieldCheck className="auth-preview-badge__icon" />
-                {nl ? "Beveiligd" : "Secure"}
-              </span>
+          <li className="auth-brand-feature">
+            <span className="auth-brand-feature__icon-box">
+              <School className="auth-brand-feature__icon" />
+            </span>
+            <div className="auth-brand-feature__text">
+              <strong>St. Kangoeroe Community School</strong>
+              <small>
+                {nl
+                  ? "Vertrouwd door scholen en organisaties."
+                  : "Trusted by schools and organizations."}
+              </small>
             </div>
-          </div>
-        </div>
-
-        {/* Hero headline and supporting copy */}
-        <div className="auth-brand-bottom">
-          <div className="auth-brand-emblem" aria-hidden="true">
-            <TrendingUp />
-          </div>
-          <h2 className="auth-brand-headline">
-            {nl
-              ? "Eén centrale hub voor slim inventaris- en middelenbeheer"
-              : "A Unified Hub for Smarter Asset & Inventory Management"}
-          </h2>
-          <p className="auth-brand-description">
-            {nl
-              ? "AIMS biedt St. Kangoeroe Community School realtime inzicht, betrouwbare verantwoording en volledige levenscycluscontrole."
-              : "AIMS provides St. Kangoeroe Community School with real-time insight, reliable accountability, and complete lifecycle control."}
-          </p>
-
-          {/* Pagination indicator dots like in reference image */}
-          <div className="auth-showcase-pagination" aria-hidden="true">
-            <span className="auth-pagination-bar auth-pagination-bar--active" />
-            <span className="auth-pagination-bar" />
-            <span className="auth-pagination-bar" />
-            <span className="auth-pagination-bar" />
-          </div>
-        </div>
+          </li>
+        </ul>
       </div>
     </aside>
   );

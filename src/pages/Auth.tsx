@@ -404,16 +404,11 @@ export default function Auth({
                   </>
                 )}
 
-                <div className="auth-links">
-                  {mode === "login" ? (
-                    <span>
-                      {nl ? "Nog geen account?" : "No account yet?"}{" "}
-                      <Link to="/signup">{nl ? "Registreren" : "Sign up"}</Link>
-                    </span>
-                  ) : (
+                {mode === "forgot" && (
+                  <div className="auth-links">
                     <Link to="/login">{nl ? "Terug naar aanmelden" : "Back to sign in"}</Link>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Compact Secondary Footer */}
                 <AuthFooter language={app.language} />
