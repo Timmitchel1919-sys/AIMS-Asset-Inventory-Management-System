@@ -23,6 +23,7 @@ import {
 } from "../components/WorkflowUi";
 import { ClassificationFields } from "../components/ClassificationFields";
 import { useAssetTypes } from "../data/assetTypesStore";
+import { allowedStatusTargets } from "../domain/assetStatusTransitions";
 import {
   assetTypeAllowed,
   effectiveCategoryRelations,
@@ -133,6 +134,15 @@ export default function AssetForm() {
         notes: existing.notes || "",
       }
     : assetFormDefaults;
+  const statusOptions: AssetStatus[] = existing
+    ? statuses.filter(
+        (value) =>
+          value === existing.status ||
+          allowedStatusTargets(existing.status).includes(value),
+      )
+    : statuses.filter(
+        (value) => value === "Available" || allowedStatusTargets("Available").includes(value),
+      );
   const draftKey = `asset-form:${existing?.id || "new"}`;
   const recoveredDraft = readLocalDraft<AssetFormValues>(draftKey);
   const formMethods = useForm<AssetFormValues>({
@@ -385,7 +395,8 @@ export default function AssetForm() {
             <Card title={a("ownership")}>
               <div className="form-grid">
                 <SelectField label={a("status")} {...register("status")}>
-                  {statuses.map((value) => (
+                  {/* Only logical next statuses; the current one stays selectable. */}
+                  {statusOptions.map((value) => (
                     <option key={value} value={value}>
                       {t(`status.${value}`)}
                     </option>

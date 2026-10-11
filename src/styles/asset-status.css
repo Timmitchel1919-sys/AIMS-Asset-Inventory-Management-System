@@ -24,3 +24,10 @@ td:has(>.asset-status.table){width:128px;min-width:128px;max-width:128px;white-s
 html[data-theme="dark"] .asset-condition{--condition-text:#e2e8f0}html[data-theme="dark"] .asset-condition-good{--condition-text:#86efac}html[data-theme="dark"] .asset-condition-fair{--condition-text:#fdba74}html[data-theme="dark"] .asset-condition-poor{--condition-text:#fca5a5}
 @media print{.asset-status,.asset-condition{background:#fff!important;color:#000!important;border:2px solid #000!important}.asset-status svg{stroke:#000}.asset-condition i{border:1px solid #000}}
 .sidebar nav a[href="/assistant"].active{background:var(--color-primary);color:#fff}
+
+/* Dashboard: live asset status distribution */
+.status-breakdown { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.status-breakdown button { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-elevated); color: var(--color-text); cursor: pointer; text-align: left; }
+.status-breakdown button:hover { background: var(--color-surface-hover); }
+.status-breakdown strong { font-size: 1.15rem; }
+@media (max-width: 480px) { .status-breakdown { grid-template-columns: 1fr 1fr; } }

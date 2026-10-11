@@ -28,6 +28,7 @@ import {
 import { rolePermissions } from "../auth/permissions";
 import type { Role } from "../domain/types";
 import { AIMS_BOOTSTRAP_ADMIN_UID, isAimsOwnerEmail } from "../auth/accessBootstrap";
+import { withAssetWorkflowComposition } from "./assetWorkflowComposition";
 import {
   MASTER_DATA_DELETE_DENIED_EN,
   canDeleteMasterData,
@@ -906,14 +907,16 @@ export function FirebaseRepositoryProvider({
   const { user } = useApp();
   const repository = useMemo(
     () =>
-      new FirebaseInventoryRepository(
-        requireFirebase().db,
-        () => firebaseAuth?.currentUser?.uid,
-        () =>
-          user?.name ||
-          user?.email ||
-          firebaseAuth?.currentUser?.displayName ||
-          undefined,
+      withAssetWorkflowComposition(
+        new FirebaseInventoryRepository(
+          requireFirebase().db,
+          () => firebaseAuth?.currentUser?.uid,
+          () =>
+            user?.name ||
+            user?.email ||
+            firebaseAuth?.currentUser?.displayName ||
+            undefined,
+        ),
       ),
     [user?.email, user?.name],
   );

@@ -207,7 +207,7 @@ export function DepartmentIntelligencePanel({
   const assetColumns: DataColumn<Asset>[] = [
     {
       id: "code",
-      label: nl ? "Middelcode" : "Asset ID",
+      label: "Inv.code",
       render: (a) => <strong>{a.code}</strong>,
       text: (a) => a.code,
       sortable: true,

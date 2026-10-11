@@ -15,6 +15,8 @@ import { lazy, Suspense, useDeferredValue, useMemo, useState } from "react";
 import { useMockSnapshot } from "../data/repositoryContext";
 import { Badge, Button, Card } from "../components/ui";
 import { useApp } from "../context/AppContext";
+import { assetStatusBreakdown } from "../domain/dashboardMetrics";
+import { StatusBadge } from "../components/AssetStatusBadge";
 
 const MovementChart = lazy(() => import("../components/dashboard/MovementChart"));
 
@@ -99,6 +101,7 @@ export default function Dashboard() {
       movementChart,
     };
   }, [deferredLocationId, snapshot]);
+  const statusBreakdown = assetStatusBreakdown(filtered.assets);
   const metrics = [
     [
       nl ? "Totaal middelen" : "Total assets",
@@ -229,6 +232,29 @@ export default function Dashboard() {
             </button>
           ))}
         </div>
+      </Card>
+      <Card
+        title={nl ? "Status van middelen" : "Asset status"}
+        className="status-breakdown-card"
+      >
+        <ul className="status-breakdown" aria-label={nl ? "Aantal middelen per status" : "Assets per status"}>
+          {statusBreakdown.counts.map((item) => (
+            <li key={item.key}>
+              <button type="button" onClick={() => navigate("/assets")}>
+                <StatusBadge status={item.status} size="compact" />
+                <strong>{item.count}</strong>
+              </button>
+            </li>
+          ))}
+          {statusBreakdown.other > 0 && (
+            <li>
+              <button type="button" onClick={() => navigate("/assets")}>
+                <span>{nl ? "Overig (verloren, vermist, afgevoerd)" : "Other (lost, missing, disposed)"}</span>
+                <strong>{statusBreakdown.other}</strong>
+              </button>
+            </li>
+          )}
+        </ul>
       </Card>
       <div className="dashboard-grid">
         <Card

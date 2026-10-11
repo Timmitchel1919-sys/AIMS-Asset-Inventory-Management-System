@@ -65,6 +65,25 @@ function MainLocationsSettings() {
         child.id !== item.id
     ).length;
 
+  // Deactivating is a plain status change (stays visible and restorable, can
+  // no longer be picked for new records). Moving to the recycle bin is a
+  // deletion and goes through the administrator-only flow below.
+  async function setActive(location: ReferenceRecord, active: boolean) {
+    const r = await repository.execute({
+      action: "reference.edit",
+      entityId: location.id,
+      values: { status: active ? "Active" : "Inactive" },
+    });
+    setFeedback({
+      status: r.ok ? "success" : "error",
+      message: r.ok
+        ? active
+          ? nl ? "Hoofdlocatie geactiveerd." : "Main location activated."
+          : nl ? "Hoofdlocatie gedeactiveerd." : "Main location deactivated."
+        : r.message,
+    });
+  }
+
   async function change(
     location: ReferenceRecord,
     action: "reference.delete" | "reference.archive" | "reference.restore",
@@ -172,14 +191,7 @@ function MainLocationsSettings() {
                     ? `${location.name} deactiveren`
                     : `${location.name} activeren`
                 }
-                onClick={() =>
-                  change(
-                    location,
-                    location.status === "Active"
-                      ? "reference.archive"
-                      : "reference.restore",
-                  )
-                }
+                onClick={() => setActive(location, location.status !== "Active")}
               >
                 <Power />
               </Button>

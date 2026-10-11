@@ -44,6 +44,16 @@ export function MainLocationForm({
       setBusy(false);
       return;
     }
+    // The location code is required for every new Hoofdlocatie (an existing
+    // record that already has one cannot lose it).
+    if (!prefix && (!editing || editing.details.prefix)) {
+      setFeedback({
+        status: "error",
+        message: nl ? "Locatiecode is verplicht." : "Location code is required.",
+      });
+      setBusy(false);
+      return;
+    }
 
     // Duplicate check — normalize whitespace so "KCS Onderbouw",
     // "kcs onderbouw" and "KCS  Onderbouw" are all treated as the same name.
@@ -139,19 +149,20 @@ export function MainLocationForm({
       />
       <Field
         name="prefix"
-        label={nl ? "Locatiecode (optioneel)" : "Location code (optional)"}
+        label={nl ? "Locatiecode" : "Location code"}
         defaultValue={String(editing?.details.prefix || "")}
         maxLength={20}
+        required={!editing || Boolean(editing.details.prefix)}
         disabled={busy}
       />
       <SelectField
         name="status"
         label="Status"
-        defaultValue={editing?.status || "Active"}
+        defaultValue={editing && editing.status !== "Active" ? "Inactive" : "Active"}
         disabled={busy}
       >
         <option value="Active">{nl ? "Actief" : "Active"}</option>
-        <option value="Archived">{nl ? "Inactief" : "Inactive"}</option>
+        <option value="Inactive">{nl ? "Inactief" : "Inactive"}</option>
       </SelectField>
 
       <div className="wide">

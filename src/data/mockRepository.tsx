@@ -83,6 +83,7 @@ import {
 import { RepositoryProvider } from "./repositoryContext";
 import { ASSET_CONDITIONS } from "../domain/assetCondition";
 import { resolveAssetReferences } from "../domain/referenceMigration";
+import { withAssetWorkflowComposition } from "./assetWorkflowComposition";
 import { auditEventsFor, type AuditContext } from "../domain/auditEvents";
 import {
   ASSET_TYPE_NOT_ALLOWED,
@@ -4790,7 +4791,9 @@ export function MockRepositoryProvider({ children }: { children: ReactNode }) {
   const { user } = useApp();
   repository.setActor(user?.name || user?.email);
   return (
-    <RepositoryProvider repository={repository}>{children}</RepositoryProvider>
+    <RepositoryProvider repository={withAssetWorkflowComposition(repository)}>
+      {children}
+    </RepositoryProvider>
   );
 }
 
