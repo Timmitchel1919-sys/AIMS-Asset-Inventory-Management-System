@@ -367,6 +367,9 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
         ) as MockSnapshot["notifications"];
         this.emit();
       },
+      // No Firestore rule grants access to notifications yet; keep the local
+      // list instead of surfacing an uncaught listener error on every login.
+      () => {},
     );
   }
 

@@ -196,6 +196,12 @@ export function authErrorMessage(error: unknown) {
     ].includes(error.message)
   )
     return error.message;
+  if (code === "permission-denied") {
+    const where = (error as { aimsStage?: string }).aimsStage;
+    return where
+      ? `${messages[code]} (${where})`
+      : messages[code];
+  }
   if (messages[code]) return messages[code];
   // Unknown failure: log it and show the code so it can be reported and fixed.
   console.warn("AIMS unmapped auth error:", code || "(no code)", error);
@@ -224,6 +230,16 @@ function clearPending(uid: string) {
     localStorage.removeItem(pendingKey(uid));
   } catch {
     /* Storage may be unavailable. */
+  }
+}
+/** Runs one profile-sync step and tags a failure with the step that caused it. */
+async function stage<T>(label: string, work: () => Promise<T>): Promise<T> {
+  try {
+    return await work();
+  } catch (error) {
+    if (typeof error === "object" && error !== null)
+      (error as { aimsStage?: string }).aimsStage = label;
+    throw error;
   }
 }
 async function ensureDefaultAccessAssignment(user: FirebaseUser) {
@@ -392,7 +408,7 @@ export async function ensureAimsUserProfile(
     throw new Error("Verify your email address before accessing AIMS.");
   const { db } = requireFirebase(),
     ref = doc(db, "users", user.uid),
-    snapshot = await getDoc(ref),
+    snapshot = await stage("read users/{uid}", () => getDoc(ref)),
     existing = snapshot.data() as Partial<UserProfile> | undefined,
     pending = signupData || readPending(user.uid),
     email = normalizeEmail(user.email || ""),
@@ -405,7 +421,7 @@ export async function ensureAimsUserProfile(
     ).trim(),
     provider = providerFor(user);
   if (!snapshot.exists())
-    await setDoc(ref, {
+    await stage("create users/{uid}", () => setDoc(ref, {
       uid: user.uid,
       displayName,
       email,
@@ -428,17 +444,17 @@ export async function ensureAimsUserProfile(
         fontFamily: "Inter",
         fontSize: 14,
       },
-    });
+    }));
   else
-    await updateDoc(ref, {
+    await stage("update users/{uid}", () => updateDoc(ref, {
       displayName,
       photoURL: user.photoURL || existing?.photoURL || null,
       authProvider: provider,
       emailVerified: user.emailVerified,
       updatedAt: serverTimestamp(),
       ...(recordLogin ? { lastLoginAt: serverTimestamp() } : {}),
-    });
-  await syncPublicDirectoryProfile(user, {
+    }));
+  await stage("write userDirectory/{uid}", () => syncPublicDirectoryProfile(user, {
     displayName,
     department: pending?.department?.trim() || existing?.department || null,
     jobTitle: pending?.jobTitle?.trim() || existing?.jobTitle || null,
@@ -447,7 +463,7 @@ export async function ensureAimsUserProfile(
     // A brand-new account's first directory write should also carry its
     // first login moment, same as the users/{uid} document above.
     recordLogin: recordLogin || !snapshot.exists(),
-  });
+  }));
   await ensureDefaultAccessAssignment(user);
   clearPending(user.uid);
   return loadProfile(user);
