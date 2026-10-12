@@ -110,7 +110,7 @@ const sidebarRouteAliases: Record<string, string[]> = {
   "admin-settings": ["/settings"],
 };
 const sidebarModuleOrder = [
-  "dashboard", "assets", "inventory", "categories", "tracking-types", "locations",
+  "dashboard", "assets", "inventory", "categories", "locations",
   "departments", "users", "assignments", "borrows",
   "repairs", "maintenance", "movements", "audits", "reports",
   "disposals", "assistant", "settings",
@@ -252,7 +252,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const moduleOrder: readonly string[] =
     app.user?.role === "owner"
       ? sidebarModuleOrder.flatMap((id) =>
-          id === "settings" ? ["device-management", id] : [id],
+          id === "settings"
+            ? ["device-management", id]
+            : id === "assistant"
+              ? [id, "tracking-types"]
+              : [id],
         )
       : sidebarModuleOrder;
   const primaryRoutes = moduleOrder.flatMap((id) => {
