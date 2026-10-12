@@ -1,4 +1,3 @@
-import { TrackingTypesPanel } from "../components/TrackingTypesPanel";
 import { useAssetTypes } from "../data/assetTypesStore";
 import { readAllowedAssetTypeIds } from "../domain/categoryRelations";
 import { assetInCategory } from "../domain/assetLookups";
@@ -172,8 +171,6 @@ export const CategoriesPage = () => {
           sort={sort}
         />
       </section>
-
-      <TrackingTypesPanel />
 
       {user?.role === "owner" && (
         <p className="field-hint">

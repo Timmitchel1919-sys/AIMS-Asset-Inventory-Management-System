@@ -6,6 +6,7 @@ export type RouteIcon =
   | "assets"
   | "inventory"
   | "categories"
+  | "tracking-types"
   | "locations"
   | "departments"
   | "assignments"
@@ -610,6 +611,22 @@ export const routeManifest: AppRoute[] = [
     lazy: true,
     status: "implemented",
     icon: "categories",
+  },
+  {
+    id: "tracking-types",
+    path: "/tracking-types",
+    component: page(async () => ({
+      default: (await import("../pages/TrackingTypes")).TrackingTypesPage,
+    })),
+    titleKey: "routes.trackingTypes",
+    navKey: "nav.trackingTypes",
+    permission: "categories.manage",
+    navigation: true,
+    breadcrumb: ["routes.categories", "routes.trackingTypes"],
+    mobile: true,
+    lazy: true,
+    status: "implemented",
+    icon: "tracking-types",
   },
   {
     id: "category-new",

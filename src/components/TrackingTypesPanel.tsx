@@ -19,7 +19,7 @@ const COPY = {
   nl: {
     title: "Beheertypen (asset type)",
     intro:
-      "Een beheertype bepaalt hoe een middel wordt bijgehouden. Dit is iets anders dan de categorie of het type-niveau hierboven.",
+      "Een beheertype bepaalt hoe een middel wordt bijgehouden. Dit is iets anders dan de categorie of het assettype.",
     behaviors: { SERIALIZED: "Serialized (per stuk)", BULK: "Bulk (gezamenlijk)", CONSUMABLE: "Verbruiksmateriaal" } as Record<AssetTypeBehavior, string>,
     name: "Naam",
     description: "Beschrijving",
@@ -38,7 +38,7 @@ const COPY = {
   en: {
     title: "Tracking types (asset type)",
     intro:
-      "A tracking type decides how an asset is tracked. It is different from the category or type level above.",
+      "A tracking type decides how an asset is tracked. It is different from the category or asset type.",
     behaviors: { SERIALIZED: "Serialized (per item)", BULK: "Bulk (collective)", CONSUMABLE: "Consumable" } as Record<AssetTypeBehavior, string>,
     name: "Name",
     description: "Description",

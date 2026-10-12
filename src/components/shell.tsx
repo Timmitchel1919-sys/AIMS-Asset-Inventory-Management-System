@@ -15,6 +15,7 @@ import {
   LogOut,
   MapPin,
   Menu,
+  ListChecks,
   Mic,
   PackageOpen,
   User,
@@ -77,6 +78,7 @@ const icons: Record<RouteIcon, LucideIcon> = {
   assets: Boxes,
   inventory: Warehouse,
   categories: FolderTree,
+  "tracking-types": ListChecks,
   locations: MapPin,
   departments: Building2,
   assignments: Archive,
@@ -108,7 +110,7 @@ const sidebarRouteAliases: Record<string, string[]> = {
   "admin-settings": ["/settings"],
 };
 const sidebarModuleOrder = [
-  "dashboard", "assets", "inventory", "categories", "locations",
+  "dashboard", "assets", "inventory", "categories", "tracking-types", "locations",
   "departments", "users", "assignments", "borrows",
   "repairs", "maintenance", "movements", "audits", "reports",
   "disposals", "assistant", "settings",
