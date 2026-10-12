@@ -73,8 +73,9 @@ export default function Auth({
         });
       } catch (reason) {
         setError(
-          authErrorMessage(reason) ===
-            "We could not complete that request. Please try again." &&
+          authErrorMessage(reason).startsWith(
+            "We could not complete that request. Please try again.",
+          ) &&
             reason instanceof Error
             ? reason.message
             : authErrorMessage(reason),

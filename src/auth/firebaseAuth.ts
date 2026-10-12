@@ -169,6 +169,22 @@ export function authErrorMessage(error: unknown) {
     "auth/configuration-not-found":
       "Firebase Authentication is not configured correctly.",
     "permission-denied": "Firebase blocked access to the requested data.",
+    "auth/invalid-login-credentials":
+      "Unable to sign in with the provided credentials.",
+    "auth/wrong-password": "Unable to sign in with the provided credentials.",
+    "auth/user-not-found": "Unable to sign in with the provided credentials.",
+    "auth/invalid-email": "Enter a valid email address.",
+    "auth/missing-password": "Enter your password.",
+    "auth/network-error": "Unable to reach Firebase. Check your network connection.",
+    "auth/internal-error": "Firebase Authentication had an internal error. Please try again.",
+    "auth/timeout": "Sign-in timed out. Please try again.",
+    "auth/web-storage-unsupported":
+      "This browser blocks storage that sign-in needs. Allow site data and try again.",
+    "auth/captcha-check-failed": "Security check failed. Please try again.",
+    unavailable: "Firebase is temporarily unavailable. Please try again.",
+    "failed-precondition":
+      "Firebase could not finish loading your profile. Please try again.",
+    unauthenticated: "Your session is not valid. Sign in again.",
   };
   if (
     error instanceof Error &&
@@ -180,9 +196,11 @@ export function authErrorMessage(error: unknown) {
     ].includes(error.message)
   )
     return error.message;
-  return (
-    messages[code] || "We could not complete that request. Please try again."
-  );
+  if (messages[code]) return messages[code];
+  // Unknown failure: log it and show the code so it can be reported and fixed.
+  console.warn("AIMS unmapped auth error:", code || "(no code)", error);
+  const detail = code ? ` (${code})` : "";
+  return `We could not complete that request. Please try again.${detail}`;
 }
 const providerFor = (user: FirebaseUser): "password" | "google" =>
   user.providerData.some((item) => item.providerId === "google.com")
