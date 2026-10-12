@@ -264,17 +264,13 @@ export default function ReportsPage() {
           </div>
 
           <div>
-            <Field label={nl ? "Snel Zoeken" : "Quick Search"}>
-              <div className="relative">
-                <input
-                  type="text"
-                  className="input w-full"
-                  placeholder={nl ? "Filter records…" : "Filter records…"}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-            </Field>
+            <Field
+              label={nl ? "Snel Zoeken" : "Quick Search"}
+              type="text"
+              placeholder={nl ? "Filter records…" : "Filter records…"}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
 
           <div>
