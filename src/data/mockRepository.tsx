@@ -1027,7 +1027,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             );
           if (
             this.state.assets.some(
-              (asset) => asset.serialNumber.toLowerCase() === serial.toLowerCase(),
+              (asset) => (asset.serialNumber ?? "").toLowerCase() === serial.toLowerCase(),
             )
           )
             throw new Error("Asset code and serial number must be unique.");
@@ -1107,12 +1107,13 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
         }
         case "asset.edit": {
           const a = this.asset(command.entityId);
-          const serial = String(v.serialNumber ?? a.serialNumber);
+          const serial = String(v.serialNumber ?? a.serialNumber ?? "");
           if (
             this.state.assets.some(
               (asset) =>
                 asset.id !== a.id &&
-                asset.serialNumber.toLowerCase() === serial.toLowerCase(),
+                !!serial.trim() &&
+                (asset.serialNumber ?? "").toLowerCase() === serial.toLowerCase(),
             )
           )
             throw new Error("Serial number already exists.");

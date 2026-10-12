@@ -217,7 +217,7 @@ export function parseAssetImport(
     headers = csvLine(lines[0] || "").map((value) => value.toLowerCase());
   const seenCodes = new Set(existing.map((asset) => asset.code)),
     seenSerials = new Set(
-      existing.map((asset) => asset.serialNumber.toLowerCase()),
+      existing.map((asset) => (asset.serialNumber ?? "").toLowerCase()),
     );
   return lines.slice(1).map((line, index): ImportRow => {
     const cells = csvLine(line),
