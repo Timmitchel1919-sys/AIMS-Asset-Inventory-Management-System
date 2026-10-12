@@ -199,7 +199,9 @@ export function authErrorMessage(error: unknown) {
   if (messages[code]) return messages[code];
   // Unknown failure: log it and show the code so it can be reported and fixed.
   console.warn("AIMS unmapped auth error:", code || "(no code)", error);
-  const detail = code ? ` (${code})` : "";
+  const reason =
+    code || (error instanceof Error ? `${error.name}: ${error.message}` : "");
+  const detail = reason ? ` (${reason.slice(0, 160)})` : "";
   return `We could not complete that request. Please try again.${detail}`;
 }
 const providerFor = (user: FirebaseUser): "password" | "google" =>
