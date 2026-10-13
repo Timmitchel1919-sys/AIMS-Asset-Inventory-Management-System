@@ -94,12 +94,16 @@ describe("Firestore AIMS authorization rules", () => {
     ])
       expect(rules).toContain(`match /${name}/{document=**}`);
   });
-  it("adds asset types and additive canonical asset references without loosening anything", () => {
+  it("keeps tracking type management Owner-only while retaining safe reference reads", () => {
     expect(rules).toContain("match /assetTypes/{id}");
     expect(rules).toContain("data.behavior in ['SERIALIZED','BULK','CONSUMABLE']");
     expect(rules).toContain("request.resource.data.behavior == resource.data.behavior");
     // Asset types are archived, never deleted.
     const block = rules.slice(rules.indexOf("match /assetTypes/{id}"), rules.indexOf("match /assetCodes/{code}"));
+    expect(block).toContain("allow read: if isAuthorizedAimsUser();");
+    expect(block).toContain("allow create: if isOwner()");
+    expect(block).toContain("allow update: if isOwner()");
+    expect(block).not.toContain("hasPermission('categories.manage')");
     expect(block).toContain("allow delete: if false;");
     for (const field of ["categoryId", "assetTypeId", "codeGroupId", "departmentId", "assignedUserId"])
       expect(rules).toContain(`nullableShortString(data, '${field}', 128)`);

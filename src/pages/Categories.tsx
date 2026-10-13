@@ -8,9 +8,10 @@ import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { ReferenceRecord } from "../data/contracts";
 import { useT } from "../i18n";
-import { DataPageLayout, DataToolbar, FilterInput, ResponsiveDataList, ListColumn } from "../components/data-list/ListInfrastructure";
+import { DataPageLayout, DataToolbar, FilterField, FilterPanel, ResponsiveDataList, ListColumn } from "../components/data-list/ListInfrastructure";
 import { Badge, Button, Field, SelectField } from "../components/ui";
 import { Dialog, MutationFeedback, PageHeader } from "../components/WorkflowUi";
+import { Trash2 } from "lucide-react";
 
 /** Standard AIMS asset categories, always offered in the Category dropdown. */
 export const STANDARD_CATEGORIES = [
@@ -111,8 +112,23 @@ export const CategoriesPage = () => {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<{ field: string; direction: "asc" | "desc" }>({ field: "name", direction: "asc" });
 
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState({ category: "", tracking: "", status: "" });
+  const activeFilterCount = Object.values(filters).filter(Boolean).length;
+  const categoryChoices = useMemo(
+    () => [...new Set(assetTypes.map(item => categoryName(item)).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [assetTypes, topCategories],
+  );
+  const trackingChoices = useMemo(
+    () => [...new Set(assetTypes.map(item => item.type).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [assetTypes],
+  );
+
   const filteredAssetTypes = useMemo(() => {
-    let result = assetTypes;
+    // Items moved to the recycle bin stay hidden unless asked for explicitly.
+    let result = assetTypes.filter(item => (filters.status ? item.status === filters.status : item.status !== "Archived"));
+    if (filters.category) result = result.filter(item => categoryName(item) === filters.category);
+    if (filters.tracking) result = result.filter(item => item.type === filters.tracking);
     if (query) {
       const q = query.toLowerCase();
       result = result.filter(item => 
@@ -128,7 +144,7 @@ export const CategoriesPage = () => {
       return sort.direction === "asc" ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
     });
     return result;
-  }, [assetTypes, query, sort, columns]);
+  }, [assetTypes, query, sort, columns, filters]);
 
   const visibleColumns = columns.map(c => c.id);
 
@@ -147,11 +163,35 @@ export const CategoriesPage = () => {
           search={query}
           onSearch={setQuery}
           searchLabel={nl ? "Zoeken..." : "Search..."}
-          filterCount={0}
-          onToggleFilters={() => {}}
+          filterCount={activeFilterCount}
+          onToggleFilters={() => setFiltersOpen(open => !open)}
           columnSelector={null}
           exportMenu={null}
         />
+        <FilterPanel
+          open={filtersOpen}
+          onClear={() => setFilters({ category: "", tracking: "", status: "" })}
+          onSave={() => setFiltersOpen(false)}
+        >
+          <FilterField
+            label={t("categories.category")}
+            value={filters.category}
+            values={categoryChoices}
+            onChange={value => setFilters(f => ({ ...f, category: value }))}
+          />
+          <FilterField
+            label={t("categories.trackingType")}
+            value={filters.tracking}
+            values={trackingChoices}
+            onChange={value => setFilters(f => ({ ...f, tracking: value }))}
+          />
+          <FilterField
+            label={t("categories.status")}
+            value={filters.status}
+            values={["Active", "Inactive", "Archived"]}
+            onChange={value => setFilters(f => ({ ...f, status: value }))}
+          />
+        </FilterPanel>
         <ResponsiveDataList
           id="categories-table"
           rows={filteredAssetTypes}
@@ -232,6 +272,38 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
   const [status, setStatus] = useState(existing?.status || "Active");
 
   const [inlineCreate, setInlineCreate] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const activeAssets = existing
+    ? snapshot.assets.filter(a => assetInCategory(a, existing) && !["Archived", "Disposed"].includes(a.status)).length
+    : 0;
+
+  const handleDelete = async () => {
+    if (!existing) return;
+    if (activeAssets > 0) {
+      setFeedback({
+        status: 'error',
+        message: nl
+          ? `Dit assettype heeft nog ${activeAssets} actieve assets. Verplaats of archiveer die eerst.`
+          : `This asset type still has ${activeAssets} active assets. Move or archive them first.`,
+      });
+      setConfirmDelete(false);
+      return;
+    }
+    setFeedback({ status: 'loading', message: nl ? "Verwijderen..." : "Deleting..." });
+    const res = await repository.execute({
+      action: "reference.archive",
+      entityId: existing.id,
+      actor: user?.name || user?.email || "System",
+      values: { kind: "category", reason: nl ? "Verwijderd vanuit Categorieën" : "Deleted from Categories" },
+    });
+    setConfirmDelete(false);
+    if (!res.ok) {
+      setFeedback({ status: 'error', message: res.message });
+      return;
+    }
+    setFeedback({ status: 'success', message: nl ? "Verplaatst naar de prullenbak." : "Moved to the recycle bin." });
+    setTimeout(onClose, 300);
+  };
   const [feedback, setFeedback] = useState<{status: 'idle'|'loading'|'success'|'error', message: string}>({status: 'idle', message: ''});
 
   const categoryNameOf = (record: ReferenceRecord) =>
@@ -319,6 +391,11 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
         onClose={onClose}
         footer={
           <>
+            {isEditing && existing && (
+              <Button variant="danger" onClick={() => setConfirmDelete(true)} disabled={feedback.status === 'loading'} style={{ marginRight: "auto" }}>
+                <Trash2 size={16} /> {nl ? "Verwijderen" : "Delete"}
+              </Button>
+            )}
             <Button variant="ghost" onClick={onClose} disabled={feedback.status === 'loading'}>
               {nl ? "Annuleren" : "Cancel"}
             </Button>
@@ -378,7 +455,6 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
               <SelectField
                 label={t("categories.codeGroup")}
                 value={codeGroup}
-                disabled={trackingType !== "Serialized"}
                 onChange={e => setCodeGroup(e.target.value)}
               >
                 <option value="">{nl ? "Geen (of niet van toepassing)" : "None (or N/A)"}</option>
@@ -413,6 +489,23 @@ const CategoryModal = ({ onClose }: { onClose: () => void }) => {
             </fieldset>
           )}
         </form>
+      </Dialog>
+
+      <Dialog
+        open={confirmDelete}
+        title={nl ? "Assettype verwijderen" : "Delete asset type"}
+        description={nl
+          ? `${existing?.name || "Dit assettype"} wordt naar de prullenbak verplaatst en kan daar worden hersteld of definitief verwijderd (Instellingen → Prullenbak).`
+          : `${existing?.name || "This asset type"} will be moved to the recycle bin, where it can be restored or permanently deleted (Settings → Recycle bin).`}
+        onClose={() => setConfirmDelete(false)}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setConfirmDelete(false)}>{nl ? "Annuleren" : "Cancel"}</Button>
+            <Button variant="danger" onClick={handleDelete}>{nl ? "Verwijderen" : "Delete"}</Button>
+          </>
+        }
+      >
+        <p>{nl ? "Alleen mogelijk als er geen actieve assets meer aan gekoppeld zijn." : "Only possible when no active assets are linked to it."}</p>
       </Dialog>
 
       {inlineCreate && (

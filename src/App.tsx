@@ -32,7 +32,7 @@ function RenderRoute({route}:{route:AppRoute}){
           </div>
           <h1 className="text-3xl font-light text-slate-800 mb-4">Access restricted</h1>
           <p className="text-slate-600 max-w-md mx-auto mb-8">
-            Device management and remote device controls are available only to the authorized AIMS Owner.
+            This module is available only to the authorized AIMS Owner.
           </p>
           <a href="/dashboard" className="px-6 py-2.5 bg-slate-900 text-white font-medium rounded-full hover:bg-slate-800 transition-colors">
             Back to Dashboard

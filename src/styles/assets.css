@@ -6,7 +6,74 @@
 .asset-form-sections .card {
   align-self: start;
 }
-.asset-form-sections .card:first-child,
+.asset-form-sections .asset-classification-card {
+  position: relative;
+  z-index: 2;
+  overflow: visible;
+}
+.asset-identity-code {
+  grid-column: 1;
+  grid-row: 1;
+}
+.asset-identity-serial {
+  grid-column: 1;
+  grid-row: 2;
+}
+.asset-identity-barcode {
+  grid-column: 2;
+  grid-row: 2;
+}
+.asset-identity-name {
+  grid-column: 1;
+  grid-row: 3;
+}
+.asset-identity-description {
+  grid-column: 1 / -1;
+  grid-row: 4;
+}
+/* Ensure category dropdown popover is solid white across every theme */
+html .asset-category-dropdown,
+html[data-theme] .asset-category-dropdown,
+html[data-aims-theme] .asset-category-dropdown,
+.app .asset-category-dropdown,
+.asset-classification-card .asset-category-dropdown,
+.asset-category-dropdown {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #123b78 !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--color-border, #cbd5e1) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.18), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+.asset-category-dropdown > div,
+.asset-category-dropdown ul {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+}
+.asset-category-dropdown input {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #123b78 !important;
+  border: 1px solid var(--color-border, #cbd5e1) !important;
+}
+.asset-category-dropdown .dropdown-item,
+.asset-category-dropdown li {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #123b78 !important;
+}
+.asset-category-dropdown .dropdown-item:hover,
+.asset-category-dropdown li:hover {
+  background: #f1f5f9 !important;
+  background-color: #f1f5f9 !important;
+  color: #0f2d5c !important;
+}
+.asset-category-dropdown button {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+}
 .asset-form-sections .card:nth-child(3),
 .asset-form-sections .card:last-child {
   grid-column: 1/-1;
@@ -308,6 +375,14 @@
   }
   .asset-form-sections .card {
     grid-column: auto !important;
+  }
+  .asset-identity-code,
+  .asset-identity-serial,
+  .asset-identity-barcode,
+  .asset-identity-name,
+  .asset-identity-description {
+    grid-column: auto;
+    grid-row: auto;
   }
   .asset-overview-grid {
     grid-template-columns: repeat(2, 1fr);

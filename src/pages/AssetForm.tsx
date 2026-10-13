@@ -293,10 +293,10 @@ export default function AssetForm() {
         <FormProvider {...formMethods}>
         <form id="asset-form" onSubmit={submit} noValidate>
           <div className="asset-form-sections">
-            <Card title={a("identity")}>
+            <Card title={a("identity")} className="asset-identity-card">
               <div className="form-grid">
                 {existing ? (
-                  <div className="field-with-hint">
+                  <div className="field-with-hint asset-identity-code">
                     <Field
                       label={a("officialCode")}
                       value={existing.code}
@@ -304,7 +304,7 @@ export default function AssetForm() {
                     />
                   </div>
                 ) : (
-                  <div className="field-with-hint">
+                  <div className="field-with-hint asset-identity-code">
                     <SelectField
                       label={a("codeGroup")}
                       required
@@ -325,28 +325,36 @@ export default function AssetForm() {
                     <p className="field-hint">{app.language === "nl" ? "Voer het bestaande nummer uit het inventarisoverzicht in." : "Enter the existing number from the inventory list."}</p>
                   </div>
                 )}
-                <Field
-                  label={a("name")}
-                  required
-                  error={errors.name?.message}
-                  {...register("name")}
-                />
-                <Field
-                  label={a("serial")}
-                  required
-                  error={errors.serialNumber?.message}
-                  {...register("serialNumber")}
-                />
-                <Field label={a("barcode")} {...register("barcode")} />
-                <TextAreaField
-                  className="wide"
-                  label={a("description")}
-                  {...register("description")}
-                />
+                <div className="asset-identity-serial">
+                  <Field
+                    label={a("serial")}
+                    required
+                    error={errors.serialNumber?.message}
+                    {...register("serialNumber")}
+                  />
+                </div>
+                <div className="asset-identity-barcode">
+                  <Field label={a("barcode")} {...register("barcode")} />
+                </div>
+                <div className="asset-identity-name">
+                  <Field
+                    label={a("name")}
+                    required
+                    error={errors.name?.message}
+                    {...register("name")}
+                  />
+                </div>
+                <div className="asset-identity-description wide">
+                  <TextAreaField
+                    className="wide"
+                    label={a("description")}
+                    {...register("description")}
+                  />
+                </div>
                 <p className="field-hint wide">{a("qrPreparation")}</p>
               </div>
             </Card>
-            <Card title={a("classification")}>
+            <Card title={a("classification")} className="asset-classification-card">
               <div className="form-grid">
                 <ClassificationFields />
                 {relations.codeGroup && !existing && (

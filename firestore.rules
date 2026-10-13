@@ -647,15 +647,17 @@ service cloud.firestore {
     // Asset Types (tracking behavior). The document id is the normalised slug
     // of the name, so the id itself enforces name uniqueness. The behavior and
     // name are immutable once created; types are archived, never deleted.
+    // They remain readable as reference data in asset forms, but managing the
+    // Tracking Types module is strictly Owner-only.
     match /assetTypes/{id} {
       allow read: if isAuthorizedAimsUser();
-      allow create: if hasPermission('categories.manage')
+      allow create: if isOwner()
         && id.matches('^[a-z0-9]+(-[a-z0-9]+)*$') && id.size() <= 64
         && validAssetType(request.resource.data)
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
         && request.resource.data.createdBy == request.auth.uid;
-      allow update: if hasPermission('categories.manage')
+      allow update: if isOwner()
         && validAssetType(request.resource.data)
         && immutableAuditFields()
         && request.resource.data.behavior == resource.data.behavior

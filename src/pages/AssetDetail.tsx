@@ -215,7 +215,6 @@ export default function AssetDetail() {
     setConfirmArchive(false);
   }
   const overview = [
-    [a("internalId"), asset.id],
     [a("officialCode"), asset.code],
     [a("serial"), asset.serialNumber],
     [a("barcode"), asset.barcode || asset.code],
@@ -235,7 +234,6 @@ export default function AssetDetail() {
     [a("warrantyExpiry"), asset.warrantyExpiry],
     [a("supplier"), asset.supplier || "—"],
     [a("manufacturer"), asset.manufacturer || "—"],
-    [a("createdBy"), (() => { const v = asset.createdBy; if (!v) return "-"; const u = snapshot.users.find(u => u.id === v); return u ? u.name : v; })()],
     [a("createdDate"), asset.dateAdded || "-"],
     [a("modifiedBy"), (() => { const v = asset.lastModifiedBy; if (!v) return "-"; const u = snapshot.users.find(u => u.id === v); return u ? u.name : v; })()],
     [a("modifiedDate"), asset.lastUpdated],
