@@ -1,4 +1,4 @@
-﻿import {
+import {
   Archive,
   ArrowLeft,
   Check,
@@ -9,6 +9,7 @@
   Printer,
   Recycle,
   RotateCcw,
+  Trash2,
   UserRound,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -206,10 +207,12 @@ export default function AssetDetail() {
       </div>
     );
   async function toggleArchive() {
+    const isArchived = asset?.status === "Archived";
     const result = await repository.execute({
-      action: asset?.status === "Archived" ? "asset.restore" : "asset.archive",
+      action: isArchived ? "asset.restore" : "asset.archive",
       entityId: asset?.id,
-      actor: app.user?.name,
+      actor: app.user?.name || app.user?.email || "System",
+      values: isArchived ? undefined : { reason: app.language === "nl" ? "Verwijderd vanuit middeldetail" : "Deleted from asset detail" },
     });
     setMessage(result.message);
     setConfirmArchive(false);
@@ -309,11 +312,13 @@ export default function AssetDetail() {
             )}
             {can(app.user?.role, "assets.archive") && (
               <Button
-                variant="secondary"
+                variant={asset.status === "Archived" ? "secondary" : "danger"}
                 onClick={() => setConfirmArchive(true)}
               >
-                {asset.status === "Archived" ? <RotateCcw /> : <Archive />}
-                {asset.status === "Archived" ? a("restore") : a("archive")}
+                {asset.status === "Archived" ? <RotateCcw /> : <Trash2 />}
+                {asset.status === "Archived"
+                  ? (app.language === "nl" ? "Herstellen uit prullenbak" : a("restore"))
+                  : (app.language === "nl" ? "Verwijderen naar prullenbak" : a("archive"))}
               </Button>
             )}
           </div>
@@ -448,11 +453,13 @@ export default function AssetDetail() {
                 )}
                 {can(app.user?.role, "assets.archive") && (
                   <Button
-                    variant="secondary"
+                    variant={asset.status === "Archived" ? "secondary" : "danger"}
                     onClick={() => setConfirmArchive(true)}
                   >
-                    {asset.status === "Archived" ? <RotateCcw /> : <Archive />}
-                    {asset.status === "Archived" ? a("restore") : a("archive")}
+                    {asset.status === "Archived" ? <RotateCcw /> : <Trash2 />}
+                    {asset.status === "Archived"
+                      ? (app.language === "nl" ? "Herstellen uit prullenbak" : a("restore"))
+                      : (app.language === "nl" ? "Verwijderen naar prullenbak" : a("archive"))}
                   </Button>
                 )}
               </div>
@@ -479,9 +486,25 @@ export default function AssetDetail() {
         </div>
         <ConfirmDialog
           open={confirmArchive}
-          title={asset.status === "Archived" ? a("restore") : a("archive")}
-          description={a("correctionWarning")}
-          confirmLabel={a("confirm")}
+          title={
+            asset.status === "Archived"
+              ? (app.language === "nl" ? "Middel herstellen" : a("restore"))
+              : (app.language === "nl" ? "Middel verwijderen naar prullenbak" : a("archive"))
+          }
+          description={
+            asset.status === "Archived"
+              ? (app.language === "nl"
+                  ? "Weet u zeker dat u dit middel wilt herstellen vanuit de prullenbak?"
+                  : "Are you sure you want to restore this asset from the recycle bin?")
+              : (app.language === "nl"
+                  ? "Weet u zeker dat u dit middel wilt verwijderen? Het middel wordt veilig verplaatst naar de prullenbak (Instellingen → Prullenbak) en blijft bewaard."
+                  : "Are you sure you want to delete this asset? It will be safely moved to the recycle bin (Settings → Recycle Bin) and preserved.")
+          }
+          confirmLabel={
+            asset.status === "Archived"
+              ? (app.language === "nl" ? "Herstellen" : a("confirm"))
+              : (app.language === "nl" ? "Verwijderen naar prullenbak" : a("confirm"))
+          }
           danger={asset.status !== "Archived"}
           onClose={() => setConfirmArchive(false)}
           onConfirm={toggleArchive}

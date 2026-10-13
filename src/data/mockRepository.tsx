@@ -621,22 +621,80 @@ const reportSeeds: ReportDefinition[] = [
   },
 ];
 
+export const ARCHIVED_ASSETS_STORAGE_KEY = "aims:archived-assets";
+
+export interface ArchivedAssetRecord {
+  id: string;
+  status: "Archived";
+  isArchived: true;
+  archivedAt: string;
+  archivedBy?: string;
+  deletionReason?: string;
+}
+
+export function loadArchivedAssetRecords(): Record<string, ArchivedAssetRecord> {
+  if (typeof window === "undefined" || !window.localStorage) return {};
+  try {
+    const raw = window.localStorage.getItem(ARCHIVED_ASSETS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveArchivedAssetRecord(record: ArchivedAssetRecord) {
+  if (typeof window === "undefined" || !window.localStorage) return;
+  try {
+    const existing = loadArchivedAssetRecords();
+    existing[record.id] = record;
+    window.localStorage.setItem(ARCHIVED_ASSETS_STORAGE_KEY, JSON.stringify(existing));
+  } catch {}
+}
+
+export function removeArchivedAssetRecord(assetId: string) {
+  if (typeof window === "undefined" || !window.localStorage) return;
+  try {
+    const existing = loadArchivedAssetRecords();
+    delete existing[assetId];
+    window.localStorage.setItem(ARCHIVED_ASSETS_STORAGE_KEY, JSON.stringify(existing));
+  } catch {}
+}
+
+export function applyArchivedAssetRecords<T extends { id: string; status?: string; isArchived?: boolean; archivedAt?: string; archivedBy?: string; deletionReason?: string }>(
+  assets: T[]
+): T[] {
+  const records = loadArchivedAssetRecords();
+  for (const asset of assets) {
+    const record = records[asset.id];
+    if (record) {
+      asset.status = "Archived";
+      asset.isArchived = true;
+      if (record.archivedAt) asset.archivedAt = record.archivedAt;
+      if (record.archivedBy) asset.archivedBy = record.archivedBy;
+      if (record.deletionReason) asset.deletionReason = record.deletionReason;
+    }
+  }
+  return assets;
+}
+
 export class WorkflowRepositoryEngine implements InventoryRepository {
   private listeners = new Set<() => void>();
   protected state: MockSnapshot = this.seed();
   private seed(): MockSnapshot {
+    const seededAssets = clone(seedAssets).map((asset) => {
+      const location = migratedReferenceSeeds.find(
+        (item) => item.kind === "location" && item.name === asset.location,
+      );
+      return {
+        ...asset,
+        currentLocationId: location?.id,
+        homeLocationId: location?.id,
+        mainLocationId: location?.mainLocationId || location?.id,
+      };
+    });
+    applyArchivedAssetRecords(seededAssets);
     return {
-      assets: clone(seedAssets).map((asset) => {
-        const location = migratedReferenceSeeds.find(
-          (item) => item.kind === "location" && item.name === asset.location,
-        );
-        return {
-          ...asset,
-          currentLocationId: location?.id,
-          homeLocationId: location?.id,
-          mainLocationId: location?.mainLocationId || location?.id,
-        };
-      }),
+      assets: seededAssets,
       inventory: clone(inventorySeeds),
       assignments: [],
       borrows: clone(seedBorrows),
@@ -676,7 +734,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
   async queryAssets(query: ListQuery) {
     await new Promise((resolve) => setTimeout(resolve, 80));
     return executeListQuery(
-      this.state.assets.filter((asset) => asset.status !== "Archived"),
+      this.state.assets.filter((asset) => asset.status !== "Archived" && !(asset as any).isArchived),
       query,
       {
         searchable: ["code", "name", "serialNumber", "brand", "model"],
@@ -1416,12 +1474,33 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
         case "asset.archive":
         case "asset.restore": {
           const a = this.asset(command.entityId);
-          a.status =
-            command.action === "asset.archive" ? "Archived" : "Available";
+          const isArchive = command.action === "asset.archive";
+          const archiveTime = now();
+          const archiveActor = command.actor || "User";
+          const reason = String(v.reason || "").trim() || undefined;
+          a.status = isArchive ? "Archived" : "Available";
+          (a as any).isArchived = isArchive;
+          (a as any).archivedAt = isArchive ? archiveTime : undefined;
+          (a as any).archivedBy = isArchive ? archiveActor : undefined;
+          (a as any).deletionReason = isArchive ? reason : undefined;
+          if (!isArchive) {
+            (a as any).restoredAt = archiveTime;
+            (a as any).restoredBy = archiveActor;
+            removeArchivedAssetRecord(a.id);
+          } else {
+            saveArchivedAssetRecord({
+              id: a.id,
+              status: "Archived",
+              isArchived: true,
+              archivedAt: archiveTime,
+              archivedBy: archiveActor,
+              deletionReason: reason,
+            });
+          }
           a.lastUpdated = today();
           result = {
             ok: true,
-            message: `${a.code} was ${command.action.endsWith("archive") ? "archived" : "restored"}.`,
+            message: `${a.code} was ${isArchive ? "archived" : "restored"}.`,
             entityId: a.id,
           };
           break;

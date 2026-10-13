@@ -42,7 +42,11 @@ import type {
   WorkflowCommand,
   WorkflowResult,
 } from "./contracts";
-import { WorkflowRepositoryEngine } from "./mockRepository";
+import {
+  WorkflowRepositoryEngine,
+  applyArchivedAssetRecords,
+  saveArchivedAssetRecord,
+} from "./mockRepository";
 import { allocateAssetCodeNumber } from "../domain/assetCode";
 import { generateQrToken } from "../domain/qrIdentity";
 import { RepositoryProvider } from "./repositoryContext";
@@ -306,9 +310,22 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
           } catch {
             result = await getDocs(coll);
           }
-          (next[key] as unknown) = result.docs.map((item) =>
-            deserialize({ id: item.id, ...item.data() }),
-          );
+          (next[key] as unknown) = result.docs.map((item) => {
+            const data = deserialize({ id: item.id, ...item.data() }) as any;
+            if (key === "assets" && (data.isArchived || data.status === "Archived")) {
+              data.status = "Archived";
+              data.isArchived = true;
+              saveArchivedAssetRecord({
+                id: data.id,
+                status: "Archived",
+                isArchived: true,
+                archivedAt: data.archivedAt || new Date().toISOString(),
+                archivedBy: data.archivedBy,
+                deletionReason: data.deletionReason,
+              });
+            }
+            return data;
+          });
         } catch (error) {
           if (!isPermissionDenied(error)) throw error;
           (next[key] as unknown) = [];
@@ -357,6 +374,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       // local-length-based sequence, same as before this fix.
     }
     this.replaceState(next);
+    applyArchivedAssetRecords(this.state.assets);
     this.initialized = true;
     this.notificationUnsubscribe?.();
     this.notificationUnsubscribe = onSnapshot(
@@ -525,6 +543,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
             old,
             data: {
               isArchived: true,
+              ...(key === "assets" ? { status: "Archived" } : {}),
               archivedAt: serverTimestamp(),
               archivedBy: actorName,
               updatedAt: serverTimestamp(),

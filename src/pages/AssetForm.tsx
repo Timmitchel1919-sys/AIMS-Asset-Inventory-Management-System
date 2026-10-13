@@ -1,4 +1,4 @@
-import { ArrowLeft, Save, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Save, ShieldAlert, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,10 +17,12 @@ import {
   TextAreaField,
 } from "../components/ui";
 import {
+  ConfirmDialog,
   MutationFeedback,
   OfflineGate,
   PageHeader,
 } from "../components/WorkflowUi";
+import { can } from "../auth/permissions";
 import { ClassificationFields } from "../components/ClassificationFields";
 import { useAssetTypes } from "../data/assetTypesStore";
 import { allowedStatusTargets } from "../domain/assetStatusTransitions";
@@ -201,9 +203,40 @@ export default function AssetForm() {
     addEventListener("beforeunload", warn);
     return () => removeEventListener("beforeunload", warn);
   }, [isDirty]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const leave = () => {
     if (!isDirty || window.confirm(a("unsaved")))
       navigate(existing ? `/assets/${existing.id}` : "/assets");
+  };
+  const handleDelete = async () => {
+    if (!existing) return;
+    setIsDeleting(true);
+    try {
+      const result = await repository.execute({
+        action: "asset.archive",
+        entityId: existing.id,
+        actor: app.user?.name || app.user?.email || "System",
+        values: {
+          reason:
+            app.language === "nl"
+              ? "Verwijderd vanuit middelformulier"
+              : "Deleted from asset form",
+        },
+      });
+      setConfirmDelete(false);
+      navigate("/assets", {
+        state: {
+          message:
+            result.message ||
+            (app.language === "nl"
+              ? "Middel verplaatst naar prullenbak"
+              : "Asset moved to recycle bin"),
+        },
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
   const submit = handleSubmit(async (values) => {
     const selectedLocation = snapshot.references.find(
@@ -284,7 +317,17 @@ export default function AssetForm() {
             <span className={`autosave-status ${draftAutosave.status}`} role="status">
               {recoveredDraft && isDirty ? "Draft recovered" : draftAutosave.status === "saving" ? "Saving draft…" : draftAutosave.status === "saved" ? "Draft saved" : draftAutosave.status === "error" ? "Draft save failed" : ""}
             </span>
-            <Button type="submit" form="asset-form" disabled={isSubmitting}>
+            {existing && can(app.user?.role, "assets.archive") && (
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => setConfirmDelete(true)}
+              >
+                <Trash2 />
+                {app.language === "nl" ? "Verwijderen naar prullenbak" : "Move to recycle bin"}
+              </Button>
+            )}
+            <Button type="submit" form="asset-form" disabled={isSubmitting || isDeleting}>
               <Save />
               {isSubmitting ? a("saving") : a("save")}
             </Button>
@@ -551,15 +594,48 @@ export default function AssetForm() {
             message={errorMessage}
           />
           <div className="form-actions">
+            {existing && can(app.user?.role, "assets.archive") && (
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => setConfirmDelete(true)}
+              >
+                <Trash2 />
+                {app.language === "nl" ? "Verwijderen naar prullenbak" : "Move to recycle bin"}
+              </Button>
+            )}
             <Button type="button" variant="ghost" onClick={leave}>
               {a("cancel")}
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || isDeleting}>
               {isSubmitting ? a("saving") : a("confirm")}
             </Button>
           </div>
         </form>
         </FormProvider>
+        {existing && (
+          <ConfirmDialog
+            open={confirmDelete}
+            title={
+              app.language === "nl"
+                ? "Middel verwijderen naar prullenbak"
+                : "Move asset to recycle bin"
+            }
+            description={
+              app.language === "nl"
+                ? "Weet u zeker dat u dit middel wilt verwijderen? Het middel wordt veilig verplaatst naar de prullenbak (Instellingen → Prullenbak) en blijft bewaard."
+                : "Are you sure you want to delete this asset? It will be safely moved to the recycle bin (Settings → Recycle Bin) and preserved."
+            }
+            confirmLabel={
+              app.language === "nl"
+                ? "Verwijderen naar prullenbak"
+                : "Move to recycle bin"
+            }
+            danger
+            onClose={() => setConfirmDelete(false)}
+            onConfirm={handleDelete}
+          />
+        )}
       </div>
     </OfflineGate>
   );

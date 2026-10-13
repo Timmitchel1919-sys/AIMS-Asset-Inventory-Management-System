@@ -30,7 +30,7 @@ export function RecycleBinSettings() {
       : base;
   const items: BinItem[] = [
     ...snapshot.assets
-      .filter((x) => x.status === "Archived")
+      .filter((x) => x.status === "Archived" || (x as { isArchived?: boolean }).isArchived)
       .map((x) => ({
         id: x.id,
         name: x.name,
