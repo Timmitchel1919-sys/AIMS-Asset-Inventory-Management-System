@@ -14,7 +14,19 @@ export const STARTER_DEPARTMENTS: readonly string[] = Array.from(
   (_, i) => `Lokaal ${STARTER_FIRST_ROOM + i}`,
 );
 
-const key = (value: string) => value.trim().replace(/\s+/g, " ").toLowerCase();
+export const normalizeDepartmentName = (value: string) =>
+  value.trim().replace(/\s+/g, " ").toLocaleLowerCase();
+
+/** True when a department belongs to this Main location, including legacy
+ * records that used a parent-id field before mainLocationId was introduced. */
+export const departmentBelongsToMainLocation = (
+  department: ReferenceRecord,
+  mainLocationId: string,
+) =>
+  department.kind === "department" &&
+  (department.mainLocationId === mainLocationId ||
+    department.parentLocationId === mainLocationId ||
+    department.parentId === mainLocationId);
 
 export interface StarterPlan {
   /** The Hoofdlocatie must be created (with this code). */
@@ -35,31 +47,31 @@ export function planStarterLocations(references: ReferenceRecord[]): StarterPlan
   const mains = references.filter(
     (r) => r.kind === "location" && r.type === "Main location" && r.status !== "Archived",
   );
-  const found = mains.find((r) => key(r.name) === key(STARTER_MAIN_LOCATION.name));
+  const found = mains.find((r) => normalizeDepartmentName(r.name) === normalizeDepartmentName(STARTER_MAIN_LOCATION.name));
   if (found && found.status !== "Active")
     return { mainInactive: true, mainLocationId: found.id, create: [], existing: [], noFreeCode: false };
 
   let createMain: StarterPlan["createMain"];
   let noFreeCode = false;
   if (!found) {
-    const used = new Set(mains.map((r) => key(String(r.details?.prefix ?? ""))));
-    const code = STARTER_MAIN_LOCATION.codes.find((c) => !used.has(key(c)));
+    const used = new Set(mains.map((r) => normalizeDepartmentName(String(r.details?.prefix ?? ""))));
+    const code = STARTER_MAIN_LOCATION.codes.find((c) => !used.has(normalizeDepartmentName(c)));
     if (code) createMain = { name: STARTER_MAIN_LOCATION.name, code };
     else noFreeCode = true;
   }
   const mainId = found?.id;
   const existing = new Set(
     references
-      .filter((r) => r.kind === "department" && r.status !== "Archived" && mainId && r.mainLocationId === mainId)
-      .map((r) => key(r.name)),
+      .filter((r) => r.status !== "Archived" && mainId && departmentBelongsToMainLocation(r, mainId))
+      .map((r) => normalizeDepartmentName(r.name)),
   );
   const names = noFreeCode ? [] : STARTER_DEPARTMENTS;
   return {
     createMain,
     mainLocationId: mainId,
     mainInactive: false,
-    create: names.filter((n) => !existing.has(key(n))),
-    existing: names.filter((n) => existing.has(key(n))),
+    create: names.filter((n) => !existing.has(normalizeDepartmentName(n))),
+    existing: names.filter((n) => existing.has(normalizeDepartmentName(n))),
     noFreeCode,
   };
 }

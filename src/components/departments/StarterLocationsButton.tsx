@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "../ui";
 import { ConfirmDialog, MutationFeedback } from "../WorkflowUi";
 import { useApp } from "../../context/AppContext";
-import { applyStarterLocations } from "../../data/starterLocations";
+import { applyStarterLocations, type StarterResult } from "../../data/starterLocations";
 import { useMockSnapshot, useRepository } from "../../data/repositoryContext";
 import {
   STARTER_DEPARTMENTS,
@@ -24,6 +24,7 @@ export function StarterLocationsButton() {
   const repository = useRepository();
   const [open, setOpen] = useState(false);
   const [feedback, setFeedback] = useState<{ status: "idle" | "loading" | "success" | "error"; message: string }>({ status: "idle", message: "" });
+  const [resultDetails, setResultDetails] = useState<StarterResult["details"]>([]);
   const plan = planStarterLocations(snapshot.references);
   const first = STARTER_DEPARTMENTS[0];
   const last = STARTER_DEPARTMENTS[STARTER_DEPARTMENTS.length - 1];
@@ -50,6 +51,7 @@ export function StarterLocationsButton() {
         title={nothingToDo ? (nl ? "Alles is al aanwezig." : "Everything is already present.") : undefined}
         onClick={() => {
           setFeedback({ status: "idle", message: "" });
+          setResultDetails([]);
           setOpen(true);
         }}
       >
@@ -65,10 +67,25 @@ export function StarterLocationsButton() {
         onConfirm={async () => {
           setFeedback({ status: "loading", message: nl ? "Toevoegen…" : "Adding…" });
           const result = await applyStarterLocations(repository, nl ? "nl" : "en");
+          setResultDetails(result.details);
           setFeedback({ status: result.ok ? "success" : "error", message: result.message });
         }}
       />
       <MutationFeedback {...feedback} />
+      {resultDetails.length > 0 && (
+        <section className="starter-location-results" aria-live="polite">
+          <h3>{nl ? "Resultaat per afdeling" : "Result per department"}</h3>
+          <ul>
+            {resultDetails.map((detail) => (
+              <li key={detail.name} data-status={detail.status}>
+                <strong>{detail.name}</strong>
+                <span>{detail.status}</span>
+                <small>{detail.message}</small>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </>
   );
 }

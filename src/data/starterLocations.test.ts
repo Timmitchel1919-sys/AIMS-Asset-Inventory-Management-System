@@ -27,6 +27,8 @@ describe("starter locations: Kangoeroe High and Lokaal 2 - 16", () => {
     expect(result.ok, result.message).toBe(true);
     expect(result.createdMain).toBe(false);
     expect(result.createdDepartments).toHaveLength(15);
+    expect(result.details).toHaveLength(15);
+    expect(result.details.every((detail) => detail.status === "Created")).toBe(true);
     expect(mains()).toHaveLength(before);
     for (const name of STARTER_DEPARTMENTS)
       expect(departments().find((d) => d.name === name)).toMatchObject({ mainLocationId: high.id, status: "Active" });
@@ -62,6 +64,8 @@ describe("starter locations: Kangoeroe High and Lokaal 2 - 16", () => {
     const second = await applyStarterLocations(repo, "en");
     expect(second.ok).toBe(true);
     expect(second.createdDepartments).toHaveLength(0);
+    expect(second.details).toHaveLength(15);
+    expect(second.details.every((detail) => detail.status === "Already Exists")).toBe(true);
     expect(JSON.stringify(repo.snapshot().references.map((r) => [r.id, r.name, r.status]))).toBe(afterFirst);
   });
 
@@ -72,6 +76,24 @@ describe("starter locations: Kangoeroe High and Lokaal 2 - 16", () => {
     expect(result.createdDepartments).toHaveLength(14);
     expect(result.createdDepartments).not.toContain("Lokaal 5");
     expect(departments().filter((d) => d.mainLocationId === high.id && d.name.trim().toLowerCase().replace(/\s+/g, " ") === "lokaal 5")).toHaveLength(1);
+    expect(result.details.find((detail) => detail.name === "Lokaal 5")?.status).toBe("Already Exists");
+  });
+
+  it("allows the same normalized department name under another Main location", async () => {
+    const high = mains().find((r) => r.name === "Kangoeroe High")!;
+    const other = await repo.execute({
+      action: "reference.create",
+      values: { kind: "location", name: "Other Main", type: "Main location", status: "Active" },
+    });
+    await repo.execute({
+      action: "reference.create",
+      values: { kind: "department", name: " lokaal  6 ", type: "Department", status: "Active", mainLocationId: other.entityId },
+    });
+    const result = await applyStarterLocations(repo, "en");
+    expect(result.ok, result.message).toBe(true);
+    expect(result.details.find((detail) => detail.name === "Lokaal 6")?.status).toBe("Created");
+    expect(departments().filter((d) => d.mainLocationId === high.id && d.name === "Lokaal 6")).toHaveLength(1);
+    expect(departments().filter((d) => d.mainLocationId === other.entityId && d.name.trim().toLowerCase().replace(/\s+/g, " ") === "lokaal 6")).toHaveLength(1);
   });
 
   it("does nothing when Kangoeroe High exists but is inactive (no silent reactivation)", async () => {

@@ -51,6 +51,7 @@ import { allocateAssetCodeNumber } from "../domain/assetCode";
 import { generateQrToken } from "../domain/qrIdentity";
 import { RepositoryProvider } from "./repositoryContext";
 import { useApp } from "../context/AppContext";
+import { editableAssetValues } from "./assetEditPayload";
 
 const collections = {
   assets: "assets",
@@ -129,6 +130,16 @@ export function firestoreErrorMessage(error: unknown) {
     code || "unknown",
     { cause: error },
   );
+}
+
+function actionablePermissionDeniedMessage(command: WorkflowCommand) {
+  if (command.action === "asset.edit")
+    return "Firestore denied the serialized-asset update. Confirm that your AIMS account is active and permitted to edit assets; no asset data was changed.";
+  if (command.action === "assignment.create" || command.action === "assignment.return")
+    return "Firestore denied Assignment Management synchronization. Confirm that your AIMS account is active and permitted to manage assignments; the asset record was not changed by this step.";
+  if (command.action === "reference.create" && command.values?.kind === "department")
+    return "Firestore denied department creation. Confirm that your AIMS account is active and permitted to manage Master Data.";
+  return "Firestore denied this action. Confirm that your AIMS account is active and has the required permission, then sign in again.";
 }
 
 function clean(value: unknown): unknown {
@@ -828,6 +839,11 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
         return { ok: false, message: firestoreErrorMessage(error).message };
       }
     }
+    // The edit form contains read-only identity values for display. They must
+    // not reach Firestore: Rules require code/codePrefix/codeNumber to remain
+    // immutable, and codeNumber from a HTML input is a string.
+    if (command.action === "asset.edit")
+      command = { ...command, values: editableAssetValues(command.values ?? {}) };
     const before = structuredClone(this.snapshot());
     const existingGroup = command.action === "codeGroup.edit" ? this.state.codeGroups.find((item) => item.id === command.entityId) : undefined;
     if (existingGroup && String(command.values?.prefix || existingGroup.prefix).trim().toUpperCase() !== existingGroup.prefix) {
@@ -909,6 +925,8 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
           message:
             "Voorraadimport is door Firebase geblokkeerd. Controleer of de nieuwste Firestore-regels zijn gedeployed en of je account de machtiging inventory.import heeft. Meld je daarna opnieuw aan.",
         };
+      if (normalized.code === "permission-denied")
+        return { ok: false, message: actionablePermissionDeniedMessage(command) };
       return { ok: false, message: normalized.message };
     }
   }

@@ -56,6 +56,21 @@
   font-size: 15px;
   margin: 0;
 }
+.starter-location-results {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-elevated);
+}
+.starter-location-results h3 { margin: 0 0 8px; font-size: 13px; }
+.starter-location-results ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.starter-location-results li { display: grid; grid-template-columns: minmax(90px, 1fr) auto; gap: 4px 10px; align-items: baseline; font-size: 12px; }
+.starter-location-results li > span { font-weight: 700; color: var(--color-text-secondary); }
+.starter-location-results li > small { grid-column: 1 / -1; color: var(--color-text-muted); }
+.starter-location-results li[data-status="Created"] > span { color: var(--color-success); }
+.starter-location-results li[data-status="Permission Denied"] > span,
+.starter-location-results li[data-status="Validation Failed"] > span { color: var(--color-danger); }
 .badge {
   display: inline-flex;
   align-items: center;
