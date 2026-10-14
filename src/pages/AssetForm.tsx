@@ -357,7 +357,12 @@ export default function AssetForm() {
                       <option value="">Select a code group</option>
                       {[...(snapshot.codeGroups || [])]
                         .filter((group) => group.isActive)
-                        .sort((a, b) => a.sortOrder - b.sortOrder)
+                        .sort((a, b) =>
+                          a.name.localeCompare(b.name, undefined, {
+                            numeric: true,
+                            sensitivity: "base",
+                          }),
+                        )
                         .map((group) => (
                           <option key={group.id} value={group.prefix}>
                             {group.name} ({group.prefix})

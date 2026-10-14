@@ -99,6 +99,29 @@ export function DataTable<T>({
   const [showColumns, setShowColumns] = useState(false);
   const [notice, setNotice] = useState("");
 
+  // Lists start in a predictable alphabetical order throughout AIMS. Prefer
+  // a human-facing identity column, then any sortable textual column. A user
+  // can still choose a different order from the column header.
+  const alphabeticalColumn = useMemo(
+    () =>
+      columns.find(
+        (column) =>
+          column.sortable &&
+          column.text &&
+          /name|title|code|asset|department|location|user|role|reference/i.test(
+            column.id,
+          ),
+      ) ??
+      columns.find(
+        (column) => column.sortable && column.text && column.id !== "actions",
+      ),
+    [columns],
+  );
+  const activeSort = sort ??
+    (alphabeticalColumn
+      ? { id: alphabeticalColumn.id, direction: "asc" as const }
+      : null);
+
   const searchable = useMemo(
     () =>
       rows.filter((row) =>
@@ -112,8 +135,8 @@ export function DataTable<T>({
     [columns, query, rows],
   );
   const sorted = useMemo(() => {
-    if (!sort) return searchable;
-    const column = columns.find((item) => item.id === sort.id);
+    if (!activeSort) return searchable;
+    const column = columns.find((item) => item.id === activeSort.id);
     if (!column) return searchable;
     return [...searchable].sort((a, b) => {
       const av = column.text?.(a) ?? "",
@@ -125,9 +148,9 @@ export function DataTable<T>({
               numeric: true,
               sensitivity: "base",
             });
-      return sort.direction === "asc" ? result : -result;
+      return activeSort.direction === "asc" ? result : -result;
     });
-  }, [columns, searchable, sort]);
+  }, [activeSort, columns, searchable]);
   // Every module table renders its full result set — scroll to reach the last
   // row. No fold-down preview.
   const totalCount = sorted.length;
@@ -314,8 +337,8 @@ export function DataTable<T>({
                           }
                         >
                           {column.label}
-                          {sort?.id === column.id
-                            ? sort.direction === "asc"
+                          {activeSort?.id === column.id
+                            ? activeSort.direction === "asc"
                               ? " ↑"
                               : " ↓"
                             : ""}

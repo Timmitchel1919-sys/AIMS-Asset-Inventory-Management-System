@@ -21,7 +21,6 @@ import type { ReferenceKind, ReferenceRecord } from "../data/contracts";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { LocationTypeForm } from "../components/settings/LocationTypesSettings";
 import { DepartmentIntelligencePanel } from "../components/departments/DepartmentIntelligencePanel";
-import { StarterLocationsButton } from "../components/departments/StarterLocationsButton";
 import { MainLocationForm } from "../components/settings/MainLocationForm";
 import { CodeGroupForm } from "../components/settings/CodeGroupForm";
 import { assetInDepartment } from "../domain/assetLookups";
@@ -942,7 +941,6 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
           description={labels[1]}
           actions={
             <>
-              {kind === "department" && <StarterLocationsButton />}
               <Button onClick={() => edit(null)}>
                 <Plus />
                 {labels[2]}
