@@ -1,5 +1,47 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { MockInventoryRepository } from "./mockRepository";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  MockInventoryRepository,
+  syncArchivedAssetRecordFromServer,
+} from "./mockRepository";
+
+describe("server asset archive reconciliation", () => {
+  it("clears a stale browser archive marker for an active Firestore asset", () => {
+    const save = vi.fn();
+    const remove = vi.fn();
+    const asset = { id: "ast-0001", status: "Available" };
+
+    expect(
+      syncArchivedAssetRecordFromServer(asset, { save, remove }),
+    ).toEqual(asset);
+    expect(remove).toHaveBeenCalledWith("ast-0001");
+    expect(save).not.toHaveBeenCalled();
+    expect(asset.status).toBe("Available");
+  });
+
+  it("keeps a Firestore-archived asset in the browser recycle-bin cache", () => {
+    const save = vi.fn();
+    const remove = vi.fn();
+    const asset = {
+      id: "ast-0002",
+      status: "Archived",
+      isArchived: false,
+      archivedAt: "2026-10-17T10:00:00.000Z",
+    };
+
+    syncArchivedAssetRecordFromServer(asset, { save, remove });
+
+    expect(save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "ast-0002",
+        status: "Archived",
+        isArchived: true,
+      }),
+    );
+    expect(remove).not.toHaveBeenCalled();
+    expect(asset.isArchived).toBe(true);
+  });
+});
+
 describe("mock workflow repository", () => {
   let repo: MockInventoryRepository;
   beforeEach(() => (repo = new MockInventoryRepository()));

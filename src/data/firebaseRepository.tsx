@@ -44,8 +44,7 @@ import type {
 } from "./contracts";
 import {
   WorkflowRepositoryEngine,
-  applyArchivedAssetRecords,
-  saveArchivedAssetRecord,
+  syncArchivedAssetRecordFromServer,
 } from "./mockRepository";
 import { allocateAssetCodeNumber } from "../domain/assetCode";
 import { generateQrToken } from "../domain/qrIdentity";
@@ -323,17 +322,11 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
           }
           (next[key] as unknown) = result.docs.map((item) => {
             const data = deserialize({ id: item.id, ...item.data() }) as any;
-            if (key === "assets" && (data.isArchived || data.status === "Archived")) {
-              data.status = "Archived";
-              data.isArchived = true;
-              saveArchivedAssetRecord({
-                id: data.id,
-                status: "Archived",
-                isArchived: true,
-                archivedAt: data.archivedAt || new Date().toISOString(),
-                archivedBy: data.archivedBy,
-                deletionReason: data.deletionReason,
-              });
+            if (key === "assets") {
+              // Firestore is authoritative in production. A stale browser
+              // marker can belong to an older/demo record that reused the
+              // same generated id and must never hide an active server asset.
+              syncArchivedAssetRecordFromServer(data);
             }
             return data;
           });
@@ -385,7 +378,6 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       // local-length-based sequence, same as before this fix.
     }
     this.replaceState(next);
-    applyArchivedAssetRecords(this.state.assets);
     this.initialized = true;
     this.notificationUnsubscribe?.();
     this.notificationUnsubscribe = onSnapshot(

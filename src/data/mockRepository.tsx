@@ -677,6 +677,47 @@ export function applyArchivedAssetRecords<T extends { id: string; status?: strin
   return assets;
 }
 
+/**
+ * Reconciles the browser recycle-bin cache with an asset freshly read from
+ * Firestore. The server record is authoritative: an active server asset must
+ * clear a stale local marker instead of being hidden by it.
+ */
+export function syncArchivedAssetRecordFromServer<
+  T extends {
+    id: string;
+    status?: string;
+    isArchived?: boolean;
+    archivedAt?: string;
+    archivedBy?: string;
+    deletionReason?: string;
+  },
+>(
+  asset: T,
+  storage: {
+    save: typeof saveArchivedAssetRecord;
+    remove: typeof removeArchivedAssetRecord;
+  } = {
+    save: saveArchivedAssetRecord,
+    remove: removeArchivedAssetRecord,
+  },
+): T {
+  if (asset.isArchived || asset.status === "Archived") {
+    asset.status = "Archived";
+    asset.isArchived = true;
+    storage.save({
+      id: asset.id,
+      status: "Archived",
+      isArchived: true,
+      archivedAt: asset.archivedAt || new Date().toISOString(),
+      archivedBy: asset.archivedBy,
+      deletionReason: asset.deletionReason,
+    });
+  } else {
+    storage.remove(asset.id);
+  }
+  return asset;
+}
+
 export class WorkflowRepositoryEngine implements InventoryRepository {
   private listeners = new Set<() => void>();
   protected state: MockSnapshot = this.seed();
