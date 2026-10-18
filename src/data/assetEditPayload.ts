@@ -16,6 +16,7 @@ export function editableAssetValues(
     previousCodes,
     codeCorrection,
     correctionReason,
+    allowDuplicateSerial,
     ...editable
   } = values;
   return editable;

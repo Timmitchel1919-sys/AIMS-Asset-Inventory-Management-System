@@ -1208,6 +1208,8 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           const a = this.asset(command.entityId);
           const serial = String(v.serialNumber ?? a.serialNumber ?? "");
           if (
+            v.serialNumber !== undefined &&
+            !v.allowDuplicateSerial &&
             this.state.assets.some(
               (asset) =>
                 asset.id !== a.id &&
@@ -1264,6 +1266,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           delete values.codePrefix;
           delete values.codeNumber;
           delete values.previousCodes;
+          delete values.allowDuplicateSerial;
           Object.assign(a, values, {
             serialNumber: serial,
             lastUpdated: today(),

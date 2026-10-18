@@ -111,6 +111,24 @@ function logDevelopmentError(stage: string, error: unknown) {
   if (error instanceof Error)
     console.error("Firebase error message:", error.message);
 }
+
+export const VERIFIED_TOKEN_SYNC_MESSAGE =
+  "Your email verification has not reached Firebase yet. Wait a moment, then sign in again.";
+
+/**
+ * Firestore Rules trust the ID token's `email_verified` claim, not the SDK's
+ * cached `user.emailVerified` property. Force a refresh before the first
+ * protected profile read so a recently verified user cannot be rejected by
+ * `users/{uid}` with a stale token.
+ */
+export async function refreshVerifiedTokenForFirestore(
+  user: Pick<FirebaseUser, "emailVerified" | "getIdTokenResult">,
+) {
+  if (DEMO_AUTH_MODE || !user.emailVerified) return;
+  const token = await user.getIdTokenResult(true);
+  if (token.claims.email_verified !== true)
+    throw new Error(VERIFIED_TOKEN_SYNC_MESSAGE);
+}
 export function validateRegistration(
   input: RegistrationInput,
   confirmPassword: string,
@@ -406,6 +424,9 @@ export async function ensureAimsUserProfile(
     throw new Error(AIMS_ACCESS_MESSAGE);
   if (isVerificationRequired() && !user.emailVerified)
     throw new Error("Verify your email address before accessing AIMS.");
+  await stage("refresh verified Firebase token", () =>
+    refreshVerifiedTokenForFirestore(user),
+  );
   const { db } = requireFirebase(),
     ref = doc(db, "users", user.uid),
     snapshot = await stage("read users/{uid}", () => getDoc(ref)),

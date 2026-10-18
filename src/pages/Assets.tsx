@@ -43,12 +43,14 @@ import {
   type SavedListView,
 } from "../data/listPreferences";
 import type { ListFilter, ListResult, ListSort } from "../data/listQuery";
+import type { WorkflowCommand } from "../data/contracts";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { runBulkCommands } from "../data/bulkActions";
 import type { Asset } from "../domain/types";
 import { useT } from "../i18n";
 import { ASSET_CONDITIONS } from "../domain/assetCondition";
 import { assetAssigneeName, assetDepartmentName } from "../domain/assetLookups";
+import { parentLocationIdOf, rootLocations } from "../domain/locationTree";
 
 const columnIds = [
   "code",
@@ -128,6 +130,54 @@ export default function Assets() {
     [bulkDialog, setBulkDialog] = useState(false),
     [bulkReason, setBulkReason] = useState(""),
     [bulkTarget, setBulkTarget] = useState("");
+  const [bulkData, setBulkData] = useState<{
+    codePrefix?: string;
+    codeStartNumber?: string;
+    codeDirect?: string;
+    brand?: string;
+    name?: string;
+    model?: string;
+    serialNumber?: string;
+    isSerialSequence?: boolean;
+    serialPrefix?: string;
+    serialStartNumber?: string;
+    location?: string;
+    department?: string;
+  }>({});
+
+  const brandSuggestions = useMemo(() => {
+    const set = new Set<string>();
+    (facets.brand || []).forEach((b) => b && set.add(b));
+    snapshot.assets.forEach((a) => a.brand && set.add(a.brand));
+    return Array.from(set).sort();
+  }, [facets.brand, snapshot.assets]);
+
+  const modelSuggestions = useMemo(() => {
+    const set = new Set<string>();
+    (facets.model || []).forEach((m) => m && set.add(m));
+    snapshot.assets.forEach((a) => a.model && set.add(a.model));
+    return Array.from(set).sort();
+  }, [facets.model, snapshot.assets]);
+
+  const nameSuggestions = useMemo(() => {
+    const set = new Set<string>();
+    snapshot.assets.forEach((a) => a.name && set.add(a.name));
+    return Array.from(set).sort();
+  }, [snapshot.assets]);
+
+  const mainLocationOptions = useMemo(() => {
+    const fromRefs = rootLocations(snapshot.references).map((r) => r.name);
+    const fromFacets = facets.location || [];
+    return Array.from(new Set([...fromRefs, ...fromFacets])).filter(Boolean).sort();
+  }, [snapshot.references, facets.location]);
+
+  const subLocationOptions = useMemo(() => {
+    const fromRefs = snapshot.references
+      .filter((r) => r.kind === "department" || (r.kind === "location" && parentLocationIdOf(r)))
+      .map((r) => r.name);
+    const fromFacets = facets.department || [];
+    return Array.from(new Set([...fromRefs, ...fromFacets])).filter(Boolean).sort();
+  }, [snapshot.references, facets.department]);
   const [mutation, setMutation] = useState<{
     status: "idle" | "loading" | "success" | "error";
     message: string;
@@ -392,16 +442,40 @@ export default function Assets() {
 
   const actions = [
     can(user?.role, "assets.edit") && {
+      id: "bulkEdit",
+      label: t("assets.bulk.editSelected"),
+    },
+    can(user?.role, "assets.edit") && {
+      id: "code",
+      label: t("assets.bulk.editInvCode"),
+    },
+    can(user?.role, "assets.edit") && {
+      id: "brand",
+      label: t("assets.bulk.brand"),
+    },
+    can(user?.role, "assets.edit") && {
+      id: "name",
+      label: t("assets.bulk.asset"),
+    },
+    can(user?.role, "assets.edit") && {
+      id: "model",
+      label: t("assets.bulk.model"),
+    },
+    can(user?.role, "assets.edit") && {
+      id: "serial",
+      label: t("assets.bulk.serial"),
+    },
+    can(user?.role, "assets.edit") && {
+      id: "mainLocation",
+      label: t("assets.bulk.mainLocation"),
+    },
+    can(user?.role, "assets.edit") && {
+      id: "subLocation",
+      label: t("assets.bulk.subLocation"),
+    },
+    can(user?.role, "assets.edit") && {
       id: "edit",
       label: t("assets.bulk.edit"),
-    },
-    can(user?.role, "assets.edit") && {
-      id: "location",
-      label: t("assets.bulk.location"),
-    },
-    can(user?.role, "assets.edit") && {
-      id: "department",
-      label: t("assets.bulk.department"),
     },
     can(user?.role, "assets.edit") && {
       id: "status",
@@ -425,6 +499,7 @@ export default function Assets() {
       label: t("assets.bulk.export"),
     },
   ].filter(Boolean) as { id: string; label: string }[];
+
   const beginBulk = (requestedAction = bulkAction) => {
     setBulkAction(requestedAction);
     if (requestedAction === "export") {
@@ -440,43 +515,248 @@ export default function Assets() {
       );
       return;
     }
+
+    const selectedAssets = snapshot.assets.filter((a) => selected.includes(a.id));
+    const commonBrand =
+      selectedAssets.length &&
+      selectedAssets.every((a) => a.brand === selectedAssets[0].brand)
+        ? selectedAssets[0].brand
+        : "";
+    const commonName =
+      selectedAssets.length &&
+      selectedAssets.every((a) => a.name === selectedAssets[0].name)
+        ? selectedAssets[0].name
+        : "";
+    const commonModel =
+      selectedAssets.length &&
+      selectedAssets.every((a) => a.model === selectedAssets[0].model)
+        ? selectedAssets[0].model
+        : "";
+    const commonSerial =
+      selectedAssets.length &&
+      selectedAssets.every(
+        (a) => a.serialNumber === selectedAssets[0].serialNumber,
+      )
+        ? selectedAssets[0].serialNumber
+        : "";
+    const commonLocation =
+      selectedAssets.length &&
+      selectedAssets.every((a) => a.location === selectedAssets[0].location)
+        ? selectedAssets[0].location
+        : "";
+    const commonDepartment =
+      selectedAssets.length &&
+      selectedAssets.every(
+        (a) => a.department === selectedAssets[0].department,
+      )
+        ? selectedAssets[0].department
+        : "";
+    const commonCodePrefix =
+      selectedAssets.length &&
+      selectedAssets.every(
+        (a) => a.codePrefix === selectedAssets[0].codePrefix,
+      )
+        ? selectedAssets[0].codePrefix
+        : "";
+    const commonCondition =
+      selectedAssets.length &&
+      selectedAssets.every((a) => a.condition === selectedAssets[0].condition)
+        ? selectedAssets[0].condition
+        : "";
+    const commonStatus =
+      selectedAssets.length &&
+      selectedAssets.every((a) => a.status === selectedAssets[0].status)
+        ? selectedAssets[0].status
+        : "";
+
+    setBulkData({
+      brand: commonBrand,
+      name: commonName,
+      model: commonModel,
+      serialNumber: commonSerial,
+      location: commonLocation,
+      department: commonDepartment,
+      codePrefix: commonCodePrefix,
+      codeDirect: selected.length === 1 ? selectedAssets[0]?.code : "",
+      codeStartNumber: "",
+      isSerialSequence: false,
+      serialPrefix: commonSerial ? commonSerial.replace(/\d+$/, "") : "",
+      serialStartNumber: "",
+    });
+
+    if (requestedAction === "brand") setBulkTarget(commonBrand);
+    else if (requestedAction === "name") setBulkTarget(commonName);
+    else if (requestedAction === "model") setBulkTarget(commonModel);
+    else if (requestedAction === "serial") setBulkTarget(commonSerial);
+    else if (
+      requestedAction === "mainLocation" ||
+      requestedAction === "location"
+    )
+      setBulkTarget(commonLocation);
+    else if (
+      requestedAction === "subLocation" ||
+      requestedAction === "department"
+    )
+      setBulkTarget(commonDepartment);
+    else if (requestedAction === "edit") setBulkTarget(commonCondition);
+    else if (requestedAction === "status") setBulkTarget(commonStatus);
+    else setBulkTarget("");
+
+    setBulkReason("");
     setBulkDialog(true);
   };
+
   const runBulk = async () => {
     if (!bulkReason.trim()) return;
-    if (
-      ["edit", "location", "department", "status"].includes(bulkAction) &&
-      !bulkTarget
-    )
-      return;
     setMutation({ status: "loading", message: t("common.working") });
-    const commands = selected.map((entityId) =>
-      ["archive", "delete"].includes(bulkAction)
-        ? {
-            action: "asset.archive" as const,
-            entityId,
-            values: {
-              reason:
-                bulkAction === "delete"
-                  ? `Verwijderen naar prullenbak: ${bulkReason}`
-                  : bulkReason,
-            },
+
+    const commands: WorkflowCommand[] = selected.map((entityId, idx) => {
+      const currentAsset = snapshot.assets.find((a) => a.id === entityId);
+
+      if (["archive", "delete"].includes(bulkAction)) {
+        return {
+          action: "asset.archive" as const,
+          entityId,
+          values: {
+            reason:
+              bulkAction === "delete"
+                ? `Verwijderen naar prullenbak: ${bulkReason}`
+                : bulkReason,
+          },
+        };
+      }
+
+      if (bulkAction === "disposal") {
+        return {
+          action: "disposal.create" as const,
+          entityId,
+          values: { reason: bulkReason },
+        };
+      }
+
+      const values: Record<string, any> = {
+        reason: bulkReason,
+        allowDuplicateSerial: true,
+      };
+
+      if (bulkAction === "bulkEdit") {
+        if (bulkData.brand !== undefined && bulkData.brand !== "")
+          values.brand = bulkData.brand;
+        if (bulkData.name !== undefined && bulkData.name !== "")
+          values.name = bulkData.name;
+        if (bulkData.model !== undefined && bulkData.model !== "")
+          values.model = bulkData.model;
+        if (bulkData.location !== undefined && bulkData.location !== "") {
+          values.location = bulkData.location;
+          const locRef = snapshot.references.find(
+            (r) => r.kind === "location" && r.name === bulkData.location,
+          );
+          if (locRef) {
+            values.currentLocationId = locRef.id;
+            values.homeLocationId = locRef.id;
+            values.mainLocationId = locRef.mainLocationId || locRef.id;
           }
-        : bulkAction === "disposal"
-          ? {
-              action: "disposal.create" as const,
-              entityId,
-              values: { reason: bulkReason },
-            }
-          : {
-              action: "asset.edit" as const,
-              entityId,
-              values: {
-                [bulkAction === "edit" ? "condition" : bulkAction]: bulkTarget,
-                reason: bulkReason,
-              },
-            },
-    );
+        }
+        if (bulkData.department !== undefined && bulkData.department !== "") {
+          values.department = bulkData.department;
+          const deptRef = snapshot.references.find(
+            (r) => r.kind === "department" && r.name === bulkData.department,
+          );
+          if (deptRef) values.departmentId = deptRef.id;
+        }
+        if (bulkData.isSerialSequence && bulkData.serialPrefix) {
+          const startNum =
+            parseInt(bulkData.serialStartNumber || "1", 10) || 1;
+          const num = startNum + idx;
+          values.serialNumber = `${bulkData.serialPrefix}${String(num).padStart(3, "0")}`;
+        } else if (
+          bulkData.serialNumber !== undefined &&
+          bulkData.serialNumber !== ""
+        ) {
+          values.serialNumber = bulkData.serialNumber;
+        }
+        if (bulkData.codePrefix) {
+          const prefix = bulkData.codePrefix.toUpperCase();
+          const startNum = bulkData.codeStartNumber
+            ? parseInt(bulkData.codeStartNumber, 10)
+            : undefined;
+          const num =
+            startNum !== undefined
+              ? startNum + idx
+              : (currentAsset?.codeNumber || idx + 1);
+          values.codeCorrection = `${prefix}-${num < 100 ? String(num).padStart(2, "0") : num}`;
+          values.correctionReason = bulkReason;
+          values.codePrefix = prefix;
+          values.codeNumber = num;
+        }
+      } else if (bulkAction === "brand") {
+        values.brand = bulkTarget || bulkData.brand;
+      } else if (bulkAction === "name") {
+        values.name = bulkTarget || bulkData.name;
+      } else if (bulkAction === "model") {
+        values.model = bulkTarget || bulkData.model;
+      } else if (bulkAction === "serial") {
+        if (bulkData.isSerialSequence && bulkData.serialPrefix) {
+          const startNum =
+            parseInt(bulkData.serialStartNumber || "1", 10) || 1;
+          const num = startNum + idx;
+          values.serialNumber = `${bulkData.serialPrefix}${String(num).padStart(3, "0")}`;
+        } else {
+          values.serialNumber = bulkTarget || bulkData.serialNumber;
+        }
+      } else if (bulkAction === "mainLocation" || bulkAction === "location") {
+        const locName = bulkTarget || bulkData.location;
+        values.location = locName;
+        const locRef = snapshot.references.find(
+          (r) => r.kind === "location" && r.name === locName,
+        );
+        if (locRef) {
+          values.currentLocationId = locRef.id;
+          values.homeLocationId = locRef.id;
+          values.mainLocationId = locRef.mainLocationId || locRef.id;
+        }
+      } else if (bulkAction === "subLocation" || bulkAction === "department") {
+        const deptName = bulkTarget || bulkData.department;
+        values.department = deptName;
+        const deptRef = snapshot.references.find(
+          (r) => r.kind === "department" && r.name === deptName,
+        );
+        if (deptRef) values.departmentId = deptRef.id;
+      } else if (bulkAction === "code") {
+        if (selected.length === 1 && (bulkTarget || bulkData.codeDirect)) {
+          values.codeCorrection = (
+            bulkTarget ||
+            bulkData.codeDirect ||
+            ""
+          ).toUpperCase();
+          values.correctionReason = bulkReason;
+        } else if (bulkData.codePrefix) {
+          const prefix = bulkData.codePrefix.toUpperCase();
+          const startNum = bulkData.codeStartNumber
+            ? parseInt(bulkData.codeStartNumber, 10)
+            : undefined;
+          const num =
+            startNum !== undefined
+              ? startNum + idx
+              : (currentAsset?.codeNumber || idx + 1);
+          values.codeCorrection = `${prefix}-${num < 100 ? String(num).padStart(2, "0") : num}`;
+          values.correctionReason = bulkReason;
+          values.codePrefix = prefix;
+          values.codeNumber = num;
+        }
+      } else if (bulkAction === "edit") {
+        values.condition = bulkTarget;
+      } else if (bulkAction === "status") {
+        values.status = bulkTarget;
+      }
+
+      return {
+        action: "asset.edit" as const,
+        entityId,
+        values,
+      };
+    });
+
     const outcome = await runBulkCommands(repository, commands);
     setMutation(
       outcome.failed
@@ -493,16 +773,44 @@ export default function Assets() {
     setSelected([]);
     setReload((value) => value + 1);
   };
+
+  const isApplyDisabled =
+    !bulkReason.trim() ||
+    (bulkAction === "bulkEdit" &&
+      !bulkData.brand &&
+      !bulkData.name &&
+      !bulkData.model &&
+      !bulkData.serialNumber &&
+      !bulkData.serialPrefix &&
+      !bulkData.location &&
+      !bulkData.department &&
+      !bulkData.codePrefix &&
+      !bulkData.codeDirect) ||
+    (["edit", "status"].includes(bulkAction) && !bulkTarget) ||
+    (bulkAction === "brand" && !bulkTarget && !bulkData.brand) ||
+    (bulkAction === "name" && !bulkTarget && !bulkData.name) ||
+    (bulkAction === "model" && !bulkTarget && !bulkData.model) ||
+    (bulkAction === "serial" &&
+      !bulkTarget &&
+      !bulkData.serialNumber &&
+      !(bulkData.isSerialSequence && bulkData.serialPrefix)) ||
+    ((bulkAction === "mainLocation" || bulkAction === "location") &&
+      !bulkTarget &&
+      !bulkData.location) ||
+    ((bulkAction === "subLocation" || bulkAction === "department") &&
+      !bulkTarget &&
+      !bulkData.department) ||
+    (bulkAction === "code" &&
+      !bulkTarget &&
+      !bulkData.codePrefix &&
+      !bulkData.codeDirect);
+
   const targetValues =
-    bulkAction === "location"
-      ? facets.location || []
-      : bulkAction === "department"
-        ? facets.department || []
-        : bulkAction === "status"
-          ? facets.status || []
-          : bulkAction === "edit"
-            ? [...ASSET_CONDITIONS]
-            : [];
+    bulkAction === "status"
+      ? facets.status || []
+      : bulkAction === "edit"
+        ? [...ASSET_CONDITIONS]
+        : [];
 
   return (
     <OfflineGate>
@@ -723,30 +1031,409 @@ export default function Assets() {
 
         <Dialog
           open={bulkDialog}
-          title={t("assets.bulk.confirm")}
-          description={t("assets.bulk.confirmHelp")}
+          title={
+            bulkAction === "bulkEdit"
+              ? t("assets.bulk.editSelected")
+              : bulkAction === "code"
+                ? t("assets.bulk.editInvCode")
+                : bulkAction === "brand"
+                  ? t("assets.bulk.brand")
+                  : bulkAction === "name"
+                    ? t("assets.bulk.asset")
+                    : bulkAction === "model"
+                      ? t("assets.bulk.model")
+                      : bulkAction === "serial"
+                        ? t("assets.bulk.serial")
+                        : bulkAction === "mainLocation" || bulkAction === "location"
+                          ? t("assets.bulk.mainLocation")
+                          : bulkAction === "subLocation" || bulkAction === "department"
+                            ? t("assets.bulk.subLocation")
+                            : t("assets.bulk.confirm")
+          }
+          description={
+            bulkAction === "bulkEdit"
+              ? `${selected.length} ${t("common.selected")}. ${t("assets.bulk.editSelectedHelp")}`
+              : `${selected.length} ${t("common.selected")}. ${t("assets.bulk.confirmHelp")}`
+          }
           onClose={() => setBulkDialog(false)}
           footer={
             <>
               <Button variant="ghost" onClick={() => setBulkDialog(false)}>
                 {t("common.cancel")}
               </Button>
-              <Button
-                onClick={runBulk}
-                disabled={
-                  !bulkReason.trim() ||
-                  (["edit", "location", "department", "status"].includes(
-                    bulkAction,
-                  ) &&
-                    !bulkTarget)
-                }
-              >
+              <Button onClick={runBulk} disabled={isApplyDisabled}>
                 {t("common.apply")}
               </Button>
             </>
           }
         >
           <div className="workflow-form">
+            <datalist id="bulk-brand-suggestions">
+              {brandSuggestions.map((b) => (
+                <option key={b} value={b} />
+              ))}
+            </datalist>
+            <datalist id="bulk-name-suggestions">
+              {nameSuggestions.map((n) => (
+                <option key={n} value={n} />
+              ))}
+            </datalist>
+            <datalist id="bulk-model-suggestions">
+              {modelSuggestions.map((m) => (
+                <option key={m} value={m} />
+              ))}
+            </datalist>
+
+            {bulkAction === "bulkEdit" && (
+              <>
+                <div className="field-with-hint">
+                  <SelectField
+                    label={t("assets.bulk.codePrefix")}
+                    value={bulkData.codePrefix || ""}
+                    onChange={(e) =>
+                      setBulkData((prev) => ({
+                        ...prev,
+                        codePrefix: e.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">(Geen wijziging / No change)</option>
+                    {[...(snapshot.codeGroups || [])]
+                      .filter((g) => g.isActive)
+                      .map((g) => (
+                        <option key={g.id} value={g.prefix}>
+                          {g.name} ({g.prefix})
+                        </option>
+                      ))}
+                  </SelectField>
+                  {bulkData.codePrefix && (
+                    <Field
+                      label={t("assets.bulk.codeStart")}
+                      type="number"
+                      min="1"
+                      placeholder="Bestaand volgnummer behouden / Keep existing sequence"
+                      value={bulkData.codeStartNumber || ""}
+                      onChange={(e) =>
+                        setBulkData((prev) => ({
+                          ...prev,
+                          codeStartNumber: e.target.value,
+                        }))
+                      }
+                    />
+                  )}
+                </div>
+
+                <Field
+                  label={t("assets.bulk.brand")}
+                  list="bulk-brand-suggestions"
+                  placeholder="(Geen wijziging / No change)"
+                  value={bulkData.brand || ""}
+                  onChange={(e) =>
+                    setBulkData((prev) => ({ ...prev, brand: e.target.value }))
+                  }
+                />
+
+                <Field
+                  label={t("assets.bulk.asset")}
+                  list="bulk-name-suggestions"
+                  placeholder="(Geen wijziging / No change)"
+                  value={bulkData.name || ""}
+                  onChange={(e) =>
+                    setBulkData((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                />
+
+                <Field
+                  label={t("assets.bulk.model")}
+                  list="bulk-model-suggestions"
+                  placeholder="(Geen wijziging / No change)"
+                  value={bulkData.model || ""}
+                  onChange={(e) =>
+                    setBulkData((prev) => ({ ...prev, model: e.target.value }))
+                  }
+                />
+
+                <div className="field-with-hint">
+                  <Field
+                    label={t("assets.bulk.serial")}
+                    placeholder="(Geen wijziging / No change)"
+                    value={bulkData.serialNumber || ""}
+                    onChange={(e) =>
+                      setBulkData((prev) => ({
+                        ...prev,
+                        serialNumber: e.target.value,
+                        isSerialSequence: false,
+                      }))
+                    }
+                  />
+                  {selected.length > 1 && (
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.25rem", fontSize: "0.85rem", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={!!bulkData.isSerialSequence}
+                        onChange={(e) =>
+                          setBulkData((prev) => ({
+                            ...prev,
+                            isSerialSequence: e.target.checked,
+                          }))
+                        }
+                      />
+                      <span>{t("assets.bulk.serialSequence")}</span>
+                    </label>
+                  )}
+                  {bulkData.isSerialSequence && (
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginTop: "0.5rem" }}>
+                      <Field
+                        label={t("assets.bulk.serialPrefix")}
+                        value={bulkData.serialPrefix || ""}
+                        onChange={(e) =>
+                          setBulkData((prev) => ({
+                            ...prev,
+                            serialPrefix: e.target.value,
+                          }))
+                        }
+                      />
+                      <Field
+                        label={t("assets.bulk.serialStart")}
+                        type="number"
+                        min="1"
+                        value={bulkData.serialStartNumber || "1"}
+                        onChange={(e) =>
+                          setBulkData((prev) => ({
+                            ...prev,
+                            serialStartNumber: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <SelectField
+                  label={t("assets.bulk.mainLocation")}
+                  value={bulkData.location || ""}
+                  onChange={(e) =>
+                    setBulkData((prev) => ({ ...prev, location: e.target.value }))
+                  }
+                >
+                  <option value="">(Geen wijziging / No change)</option>
+                  {mainLocationOptions.map((loc) => (
+                    <option key={loc} value={loc}>
+                      {loc}
+                    </option>
+                  ))}
+                </SelectField>
+
+                <SelectField
+                  label={t("assets.bulk.subLocation")}
+                  value={bulkData.department || ""}
+                  onChange={(e) =>
+                    setBulkData((prev) => ({
+                      ...prev,
+                      department: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="">(Geen wijziging / No change)</option>
+                  {subLocationOptions.map((dept) => (
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                </SelectField>
+              </>
+            )}
+
+            {bulkAction === "code" && (
+              <div className="field-with-hint">
+                {selected.length === 1 ? (
+                  <Field
+                    label={t("assets.bulk.editInvCode")}
+                    value={bulkData.codeDirect || bulkTarget}
+                    onChange={(e) => {
+                      setBulkTarget(e.target.value);
+                      setBulkData((prev) => ({ ...prev, codeDirect: e.target.value }));
+                    }}
+                    required
+                  />
+                ) : (
+                  <>
+                    <SelectField
+                      label={t("assets.bulk.codePrefix")}
+                      value={bulkData.codePrefix || ""}
+                      onChange={(e) =>
+                        setBulkData((prev) => ({
+                          ...prev,
+                          codePrefix: e.target.value,
+                        }))
+                      }
+                      required
+                    >
+                      <option value="">{t("common.chooseAction")}</option>
+                      {[...(snapshot.codeGroups || [])]
+                        .filter((g) => g.isActive)
+                        .map((g) => (
+                          <option key={g.id} value={g.prefix}>
+                            {g.name} ({g.prefix})
+                          </option>
+                        ))}
+                    </SelectField>
+                    <Field
+                      label={t("assets.bulk.codeStart")}
+                      type="number"
+                      min="1"
+                      placeholder="Bestaand volgnummer behouden / Keep existing sequence"
+                      value={bulkData.codeStartNumber || ""}
+                      onChange={(e) =>
+                        setBulkData((prev) => ({
+                          ...prev,
+                          codeStartNumber: e.target.value,
+                        }))
+                      }
+                    />
+                  </>
+                )}
+              </div>
+            )}
+
+            {bulkAction === "brand" && (
+              <Field
+                label={t("assets.bulk.brand")}
+                list="bulk-brand-suggestions"
+                value={bulkTarget}
+                onChange={(e) => {
+                  setBulkTarget(e.target.value);
+                  setBulkData((prev) => ({ ...prev, brand: e.target.value }));
+                }}
+                required
+              />
+            )}
+
+            {bulkAction === "name" && (
+              <Field
+                label={t("assets.bulk.asset")}
+                list="bulk-name-suggestions"
+                value={bulkTarget}
+                onChange={(e) => {
+                  setBulkTarget(e.target.value);
+                  setBulkData((prev) => ({ ...prev, name: e.target.value }));
+                }}
+                required
+              />
+            )}
+
+            {bulkAction === "model" && (
+              <Field
+                label={t("assets.bulk.model")}
+                list="bulk-model-suggestions"
+                value={bulkTarget}
+                onChange={(e) => {
+                  setBulkTarget(e.target.value);
+                  setBulkData((prev) => ({ ...prev, model: e.target.value }));
+                }}
+                required
+              />
+            )}
+
+            {bulkAction === "serial" && (
+              <div className="field-with-hint">
+                <Field
+                  label={t("assets.bulk.serial")}
+                  value={bulkTarget}
+                  onChange={(e) => {
+                    setBulkTarget(e.target.value);
+                    setBulkData((prev) => ({
+                      ...prev,
+                      serialNumber: e.target.value,
+                      isSerialSequence: false,
+                    }));
+                  }}
+                  required={!bulkData.isSerialSequence}
+                />
+                {selected.length > 1 && (
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.25rem", fontSize: "0.85rem", cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      checked={!!bulkData.isSerialSequence}
+                      onChange={(e) =>
+                        setBulkData((prev) => ({
+                          ...prev,
+                          isSerialSequence: e.target.checked,
+                        }))
+                      }
+                    />
+                    <span>{t("assets.bulk.serialSequence")}</span>
+                  </label>
+                )}
+                {bulkData.isSerialSequence && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginTop: "0.5rem" }}>
+                    <Field
+                      label={t("assets.bulk.serialPrefix")}
+                      value={bulkData.serialPrefix || ""}
+                      onChange={(e) =>
+                        setBulkData((prev) => ({
+                          ...prev,
+                          serialPrefix: e.target.value,
+                        }))
+                      }
+                      required
+                    />
+                    <Field
+                      label={t("assets.bulk.serialStart")}
+                      type="number"
+                      min="1"
+                      value={bulkData.serialStartNumber || "1"}
+                      onChange={(e) =>
+                        setBulkData((prev) => ({
+                          ...prev,
+                          serialStartNumber: e.target.value,
+                        }))
+                      }
+                      required
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {(bulkAction === "mainLocation" || bulkAction === "location") && (
+              <SelectField
+                label={t("assets.bulk.mainLocation")}
+                value={bulkTarget}
+                onChange={(e) => {
+                  setBulkTarget(e.target.value);
+                  setBulkData((prev) => ({ ...prev, location: e.target.value }));
+                }}
+                required
+              >
+                <option value="">{t("common.chooseAction")}</option>
+                {mainLocationOptions.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
+              </SelectField>
+            )}
+
+            {(bulkAction === "subLocation" || bulkAction === "department") && (
+              <SelectField
+                label={t("assets.bulk.subLocation")}
+                value={bulkTarget}
+                onChange={(e) => {
+                  setBulkTarget(e.target.value);
+                  setBulkData((prev) => ({ ...prev, department: e.target.value }));
+                }}
+                required
+              >
+                <option value="">{t("common.chooseAction")}</option>
+                {subLocationOptions.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))}
+              </SelectField>
+            )}
+
             {targetValues.length > 0 && (
               <SelectField
                 label={t("assets.bulk.target")}
@@ -766,6 +1453,7 @@ export default function Assets() {
                 ))}
               </SelectField>
             )}
+
             <Field
               label={t("assets.bulk.reason")}
               value={bulkReason}

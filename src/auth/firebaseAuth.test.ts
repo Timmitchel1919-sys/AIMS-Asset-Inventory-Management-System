@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   authErrorMessage,
+  refreshVerifiedTokenForFirestore,
   unverifiedAimsUserProfile,
   validateRegistration,
 } from "./firebaseAuth";
@@ -56,6 +57,31 @@ describe("Firebase failure messages", () => {
   ])("maps %s", (code, message) =>
     expect(authErrorMessage({ code })).toContain(message),
   );
+});
+describe("verified profile token refresh", () => {
+  it("refreshes the ID token before protected profile reads", async () => {
+    const getIdTokenResult = vi.fn().mockResolvedValue({
+      claims: { email_verified: true },
+    });
+
+    await refreshVerifiedTokenForFirestore({
+      emailVerified: true,
+      getIdTokenResult,
+    } as never);
+
+    expect(getIdTokenResult).toHaveBeenCalledWith(true);
+  });
+
+  it("stops before Firestore when the refreshed token is still unverified", async () => {
+    await expect(
+      refreshVerifiedTokenForFirestore({
+        emailVerified: true,
+        getIdTokenResult: vi.fn().mockResolvedValue({
+          claims: { email_verified: false },
+        }),
+      } as never),
+    ).rejects.toThrow("verification has not reached Firebase");
+  });
 });
 describe("unverifiedAimsUserProfile", () => {
   it("keeps an unverified school user on the verification flow without Firestore data", () => {
