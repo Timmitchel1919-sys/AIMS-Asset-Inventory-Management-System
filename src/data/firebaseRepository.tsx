@@ -224,6 +224,7 @@ function writeData(
 
 export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
   private initialized = false;
+  private deferPersistence = false;
   private notificationUnsubscribe?: () => void;
 
   constructor(
@@ -900,7 +901,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
           );
         codeReservation = { groupId: allocation.group.id, code: asset.code };
       }
-      await this.persist(before, this.snapshot(), codeReservation);
+      if (!this.deferPersistence) await this.persist(before, this.snapshot(), codeReservation);
       return result;
     } catch (error) {
       this.replaceState(before);
@@ -920,6 +921,31 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
       if (normalized.code === "permission-denied")
         return { ok: false, message: actionablePermissionDeniedMessage(command) };
       return { ok: false, message: normalized.message };
+    }
+  }
+
+  /** Persist asset/assignment synchronization as one Firestore transaction. */
+  async executeAtomically(commands: WorkflowCommand[]): Promise<WorkflowResult> {
+    const before = structuredClone(this.snapshot());
+    this.deferPersistence = true;
+    try {
+      let result: WorkflowResult = { ok: true, message: "" };
+      for (const command of commands) {
+        result = await FirebaseInventoryRepository.prototype.execute.call(this, command);
+        if (!result.ok) {
+          this.replaceState(before);
+          return result;
+        }
+      }
+      this.deferPersistence = false;
+      await this.persist(before, this.snapshot());
+      return result;
+    } catch (error) {
+      this.replaceState(before);
+      const normalized = error instanceof FirebaseRepositoryError ? error : firestoreErrorMessage(error);
+      return { ok: false, message: normalized.message };
+    } finally {
+      this.deferPersistence = false;
     }
   }
 

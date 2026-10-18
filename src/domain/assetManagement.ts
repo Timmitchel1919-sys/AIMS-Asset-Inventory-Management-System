@@ -80,22 +80,23 @@ export type ValidationMessages = {
   price: string;
 };
 export function assetFormSchema(messages: ValidationMessages, isEdit = false) {
+  const requiredText = (minimum = 1) => isEdit ? z.string() : z.string().trim().min(minimum, messages.required);
   return z
     .object({
-      codeNumber: z.string().trim().regex(/^\d+$/, { message: messages.required }).refine((value) => Number(value) >= 1 && Number(value) <= 1000000000, { message: messages.required }),
-      codePrefix: z
+      codeNumber: isEdit ? z.string() : z.string().trim().regex(/^\d+$/, { message: messages.required }).refine((value) => Number(value) >= 1 && Number(value) <= 1000000000, { message: messages.required }),
+      codePrefix: isEdit ? z.string() : z
         .string()
         .trim()
         .regex(/^[A-Z][A-Z0-9]{1,11}$/, { message: messages.prefix }),
-      name: z.string().trim().min(2, messages.required),
+      name: requiredText(2),
       description: z.string(),
-      category: z.string().min(1, messages.required),
+      category: requiredText(),
       subcategory: z.string(),
       assetTypeId: z.string(),
-      type: z.string().min(1, messages.required),
+      type: requiredText(),
       brand: z.string(),
       model: z.string(),
-      serialNumber: z.string().trim().min(3, messages.serial),
+      serialNumber: isEdit ? z.string() : z.string().trim().min(3, messages.serial),
       barcode: z.string(),
       status: z.enum([
         "Available",
@@ -113,7 +114,7 @@ export function assetFormSchema(messages: ValidationMessages, isEdit = false) {
       condition: z.enum(ASSET_CONDITIONS),
       location: z.string(),
       currentLocationId: z.string().default(""),
-      department: z.string().min(1, messages.required),
+      department: requiredText(),
       assignedTo: z.string(),
       responsibleEmployee: z.string(),
       purchaseDate: z.string(),
@@ -132,7 +133,7 @@ export function assetFormSchema(messages: ValidationMessages, isEdit = false) {
       correctionReason: z.string(),
     })
     .superRefine((value, context) => {
-      if(!value.currentLocationId&&!value.location)context.addIssue({code:"custom",path:["currentLocationId"],message:messages.required});
+      if(!isEdit&&!value.currentLocationId&&!value.location)context.addIssue({code:"custom",path:["currentLocationId"],message:messages.required});
       if (
         isEdit &&
         value.codeCorrection &&

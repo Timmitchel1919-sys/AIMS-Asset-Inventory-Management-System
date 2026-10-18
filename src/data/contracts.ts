@@ -638,6 +638,8 @@ export interface InventoryRepository {
   subscribe(listener: () => void): () => void;
   snapshot(): MockSnapshot;
   execute(command: WorkflowCommand): Promise<WorkflowResult>;
+  /** Execute related workflow commands as one persisted unit when supported. */
+  executeAtomically?(commands: WorkflowCommand[]): Promise<WorkflowResult>;
   queryAssets(query: ListQuery): Promise<ListResult<Asset>>;
   assetFacets(): Promise<Record<string, string[]>>;
   queryInventory(query: ListQuery): Promise<ListResult<InventoryItem>>;

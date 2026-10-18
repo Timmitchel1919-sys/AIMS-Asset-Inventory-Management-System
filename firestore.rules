@@ -309,11 +309,10 @@ service cloud.firestore {
         && request.resource.data.get('createdBy', null) == resource.data.get('createdBy', null)
         && request.resource.data.get('sourceData', null) == resource.data.get('sourceData', null)
         && request.resource.data.get('importMetadata', null) == resource.data.get('importMetadata', null)
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 200
-        && request.resource.data.serialNumber is string
-        && request.resource.data.serialNumber.size() <= 200
+        // Legacy assets may be incomplete. Authorized users can repair one
+        // ordinary field at a time; new assets still use validAsset().
+        && shortString(request.resource.data, 'name', 200)
+        && shortString(request.resource.data, 'serialNumber', 200)
         && shortString(request.resource.data, 'description', 4000)
         && shortString(request.resource.data, 'notes', 4000)
         && shortString(request.resource.data, 'currentLocationPath', 500)

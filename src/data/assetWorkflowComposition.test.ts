@@ -151,6 +151,17 @@ describe("asset <-> assignment composition", () => {
     expect(result.ok, result.message).toBe(true);
   });
 
+  it("repairs a legacy Assigned asset without an assignment and synchronizes the new assignee", async () => {
+    const [ann] = users();
+    const id = await make();
+    asset(id).status = "Assigned";
+    delete asset(id).assignedTo;
+    const result = await repo.execute({ action: "asset.edit", entityId: id, values: { assignedTo: ann.name, notes: "legacy record repaired" } });
+    expect(result.ok, result.message).toBe(true);
+    expect(asset(id)).toMatchObject({ status: "Assigned", assignedTo: ann.name, notes: "legacy record repaired" });
+    expect(active(id)).toHaveLength(1);
+  });
+
   it("messages follow the interface language", async () => {
     localStorage.setItem("kcs-language", "nl");
     const result = await repo.execute({ action: "asset.create", values: { name: "X", serialNumber: "NL-1", status: "Assigned" } });

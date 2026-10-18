@@ -51,7 +51,7 @@ export const uiLanguage = (): "nl" | "en" => {
 const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
 export async function composeAssetCommand(
-  repository: Pick<InventoryRepository, "snapshot">,
+  repository: Pick<InventoryRepository, "snapshot" | "executeAtomically">,
   execute: Execute,
   command: WorkflowCommand,
 ): Promise<WorkflowResult> {
@@ -113,31 +113,41 @@ export async function composeAssetCommand(
   // A defective device is marked Damaged when it is returned and could then not
   // be re-assigned: refuse up front instead of leaving the change half done.
   if (active && next && asset.condition === "Defective") return fail(NOT_ASSIGNABLE[lang]);
+  const commands: WorkflowCommand[] = [];
   if (active) {
-    const returned = await execute({
+    commands.push({
       action: "assignment.return",
       entityId: active.id,
       ...meta,
       values: { returnedBy: previous, outcome: "Available", destination: asset.location },
     });
-    if (!returned.ok) return returned;
   }
   if (next) {
-    const assigned = await execute({
+    // Repair legacy "Assigned without an active assignment" state inside the
+    // same atomic unit before the assignment engine checks eligibility.
+    if (!active && asset.status === "Assigned")
+      commands.push({ ...command, values: { status: "Available" } });
+    commands.push({
       action: "assignment.create",
       entityId: asset.id,
       ...meta,
       values: assignmentValues(next, v, asset),
     });
-    if (!assigned.ok) return assigned;
   }
   // Everything else on the form, without the assignee the workflow already handled.
   const { assignedTo: _skip, status: _status, ...rest } = v;
   const settled: AssetStatus = next ? "Assigned" : "Available";
-  return execute({
+  commands.push({
     ...command,
     values: { ...rest, ...(target !== settled ? { status: target } : {}) },
   });
+  if (repository.executeAtomically) return repository.executeAtomically(commands);
+  let result: WorkflowResult = { ok: true, message: "" };
+  for (const item of commands) {
+    result = await execute(item);
+    if (!result.ok) return result;
+  }
+  return result;
 }
 
 const CORRECTION = {
