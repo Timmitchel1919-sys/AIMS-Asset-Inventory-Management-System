@@ -469,7 +469,7 @@ export default function AssetForm() {
                   ))}
                 </SelectField>
                 <SelectField
-                  label={a("location")}
+                  label={app.language === "nl" ? "Hoofdlocatie" : "Main location"}
                   required
                   error={errors.currentLocationId?.message}
                   {...register("currentLocationId")}
@@ -488,14 +488,14 @@ export default function AssetForm() {
                     ))}
                 </SelectField>
                 <Field
-                  label={a("department")}
+                  label={app.language === "nl" ? "Sublocatie" : "Sub-location"}
                   required
                   error={errors.department?.message}
                   {...register("department")}
                 />
                 <Field label={a("assignedUser")} {...register("assignedTo")} />
                 <Field
-                  label={a("responsible")}
+                  label={app.language === "nl" ? "Afdeling" : "Department"}
                   {...register("responsibleEmployee")}
                 />
               </div>

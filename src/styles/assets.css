@@ -21,15 +21,15 @@
 }
 .asset-identity-barcode {
   grid-column: 2;
-  grid-row: 2;
+  grid-row: 1;
 }
 .asset-identity-name {
-  grid-column: 1;
-  grid-row: 3;
+  grid-column: 2;
+  grid-row: 2;
 }
 .asset-identity-description {
   grid-column: 1 / -1;
-  grid-row: 4;
+  grid-row: 3;
 }
 /* Ensure category dropdown popover is solid white across every theme */
 html .asset-category-dropdown,
