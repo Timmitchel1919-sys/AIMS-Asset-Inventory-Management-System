@@ -277,6 +277,16 @@ describe("operational lifecycle", () => {
       expect(block).toContain("allow delete: if false;");
     });
 
+    it("lets legacy imports edit business fields without weakening identity or provenance", () => {
+      const block = rule("match /assets/{id}");
+      expect(block).toContain("validLegacyAssetEdit()");
+      expect(rules).toContain("affectedKeys().hasOnly");
+      expect(rules).toContain("request.resource.data.code == resource.data.code");
+      expect(rules).toContain("request.resource.data.get('sourceData', null) == resource.data.get('sourceData', null)");
+      expect(rules).toContain("request.resource.data.get('importMetadata', null) == resource.data.get('importMetadata', null)");
+      expect(rules).toContain("'currentLocationPath','currentBin'");
+    });
+
     it("the engine offers no way to remove a movement, audit entry or asset", async () => {
       const actions = readFileSync(resolve(process.cwd(), "src/data/contracts.ts"), "utf8");
       for (const forbidden of ["movement.delete", "audit.delete", "activity.delete", "asset.delete", "movement.remove"])

@@ -974,6 +974,9 @@ td small {
 }
 .asset-code {
   color: var(--color-primary);
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 .pagination {
   display: flex;

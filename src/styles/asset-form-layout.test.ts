@@ -22,4 +22,14 @@ describe("serialized asset edit form presentation", () => {
     expect(source).toMatch(/label=\{app\.language === "nl" \? "Afdeling" : "Department"\}[\s\S]*register\("responsibleEmployee"\)/);
     expect(source).toMatch(/label=\{app\.language === "nl" \? "Sublocatie" : "Sub-location"\}[\s\S]*register\("department"\)/);
   });
+
+  it("keeps inventory codes on one line in the ICT asset list", () => {
+    const componentCss = readFileSync(
+      new URL("./components.css", import.meta.url),
+      "utf8",
+    );
+    expect(componentCss).toMatch(
+      /\.asset-code\s*\{[^}]*white-space:\s*nowrap;[^}]*word-break:\s*keep-all;/s,
+    );
+  });
 });

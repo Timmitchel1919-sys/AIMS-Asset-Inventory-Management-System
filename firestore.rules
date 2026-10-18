@@ -249,6 +249,7 @@ service cloud.firestore {
           'code','codePrefix','codeNumber','previousCodes','name','description',
           'category','subcategory','type','brand','model','serialNumber','barcode',
           'location','currentLocationId','homeLocationId','mainLocationId',
+          'currentLocationPath','currentBin',
           'lastMovementAt','department','assignedTo','responsibleEmployee',
           'supplier','manufacturer','status','condition','purchaseDate',
           'purchasePrice','warrantyStart','warrantyExpiry','dateAdded','createdBy',
@@ -282,6 +283,48 @@ service cloud.firestore {
         && (!('qrUpdatedAt' in data) || data.qrUpdatedAt is timestamp)
         && auditMetadataValid(data)
         && noPrivilegeFields(data);
+    }
+
+    // Historical Drive imports have a different provenance map and sometimes
+    // an ISO-string createdAt. They may be edited only through the same narrow
+    // business-field surface as current assets; identifiers, provenance,
+    // creation metadata and privilege fields remain immutable.
+    function validLegacyAssetEdit() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name','description','category','subcategory','type','brand','model',
+          'serialNumber','barcode','location','currentLocationId','homeLocationId',
+          'mainLocationId','currentLocationPath','currentBin','lastMovementAt',
+          'department','assignedTo','responsibleEmployee','supplier','manufacturer',
+          'status','condition','purchaseDate','purchasePrice','warrantyStart',
+          'warrantyExpiry','dateAdded','lastUpdated','lastModifiedBy',
+          'maintenanceRequired','usefulLifeEnd','technicalSpecifications',
+          'remoteAccess','attachments','photos','notes','qr','qrToken','qrUpdatedAt',
+          'categoryId','assetTypeId','codeGroupId','departmentId','assignedUserId',
+          'updatedAt','updatedBy','isArchived','archivedAt','archivedBy'
+        ])
+        && request.resource.data.code == resource.data.code
+        && request.resource.data.codePrefix == resource.data.codePrefix
+        && request.resource.data.codeNumber == resource.data.codeNumber
+        && request.resource.data.get('createdAt', null) == resource.data.get('createdAt', null)
+        && request.resource.data.get('createdBy', null) == resource.data.get('createdBy', null)
+        && request.resource.data.get('sourceData', null) == resource.data.get('sourceData', null)
+        && request.resource.data.get('importMetadata', null) == resource.data.get('importMetadata', null)
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 200
+        && request.resource.data.serialNumber is string
+        && request.resource.data.serialNumber.size() <= 200
+        && shortString(request.resource.data, 'description', 4000)
+        && shortString(request.resource.data, 'notes', 4000)
+        && shortString(request.resource.data, 'currentLocationPath', 500)
+        && shortString(request.resource.data, 'currentBin', 200)
+        && boundedList(request.resource.data, 'attachments', 50)
+        && boundedList(request.resource.data, 'photos', 50)
+        && request.resource.data.updatedAt is timestamp
+        && request.resource.data.updatedBy is string
+        && request.resource.data.updatedBy.size() > 0
+        && request.resource.data.updatedBy.size() <= 128
+        && noPrivilegeFields(request.resource.data);
     }
 
     function validInventory(data) {
@@ -605,7 +648,8 @@ service cloud.firestore {
         || (hasPermission('assets.create') && validAsset(request.resource.data));
       // Asset identifiers are client-immutable. A code-group prefix migration
       // is performed exclusively by the trusted renameCodeGroupPrefix Function.
-      allow update: if hasAnyPermission(['assets.edit','assets.archive','movements.create']) && validAsset(request.resource.data) && immutableAuditFields()
+      allow update: if hasAnyPermission(['assets.edit','assets.archive','movements.create'])
+        && ((validAsset(request.resource.data) && immutableAuditFields()) || validLegacyAssetEdit())
         && request.resource.data.code == resource.data.code
         && request.resource.data.codePrefix == resource.data.codePrefix
         && request.resource.data.codeNumber == resource.data.codeNumber;
