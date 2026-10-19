@@ -495,7 +495,7 @@ export default function AssetForm() {
                     ))}
                 </SelectField>
                 <SelectField
-                  label={app.language === "nl" ? "Afdeling" : "Department"}
+                  label={app.language === "nl" ? "Sublocatie" : "Sub-location"}
                   required
                   error={errors.department?.message}
                   {...register("department")}
@@ -521,12 +521,12 @@ export default function AssetForm() {
                     )}
                 </SelectField>
                 <Field
-                  label={app.language === "nl" ? "Sublocatie / Ruimte" : "Sub-location / Room"}
+                  label={app.language === "nl" ? "Ruimte" : "Room"}
                   {...register("location")}
                 />
                 <Field label={a("assignedUser")} {...register("assignedTo")} />
                 <Field
-                  label={app.language === "nl" ? "Verantwoordelijke medewerker" : "Responsible employee"}
+                  label={app.language === "nl" ? "Afdeling" : "Department"}
                   {...register("responsibleEmployee")}
                 />
               </div>

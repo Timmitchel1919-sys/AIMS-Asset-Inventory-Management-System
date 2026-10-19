@@ -12,6 +12,7 @@
     "demo:reset": "node scripts/demo-reset.mjs",
     "demo:seed": "node scripts/demo-reset.mjs",
     "demo:validate": "vitest run src/data/demoData.test.ts --configLoader runner",
+    "history-log:dry-run": "node scripts/import-history-log.mjs",
     "typecheck": "tsc -p tsconfig.app.json --noEmit --pretty false",
     "lint": "eslint .",
     "test": "vitest run --configLoader runner",
