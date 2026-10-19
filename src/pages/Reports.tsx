@@ -27,6 +27,22 @@ import {
   type ReportFilterOptions,
 } from "../domain/reports";
 
+const CATEGORY_OPTIONS: { id: ReportCategory | "all"; en: string; nl: string }[] = [
+  { id: "all", en: "All Categories", nl: "Alle Categorieën" },
+  { id: "assets", en: "Assets", nl: "Middelen" },
+  { id: "inventory", en: "Inventory & Status", nl: "Voorraad & Status" },
+  { id: "locations", en: "Locations", nl: "Locaties" },
+  { id: "assignments", en: "Assignments", nl: "Toewijzingen" },
+  { id: "loans", en: "Loans", nl: "Uitleen" },
+  { id: "repairs", en: "Repairs", nl: "Reparaties" },
+  { id: "maintenance", en: "Maintenance", nl: "Onderhoud" },
+  { id: "movements", en: "Movements", nl: "Mutaties" },
+  { id: "audits", en: "Audits", nl: "Controles" },
+  { id: "audit-logs", en: "Audit Trail", nl: "Audittrail" },
+  { id: "warehouse", en: "Warehouse", nl: "Magazijn" },
+  { id: "devices", en: "Devices", nl: "Apparaten" },
+];
+
 export default function ReportsPage() {
   const { language, user, formatDateTime } = useApp();
   const nl = language === "nl";
@@ -50,6 +66,28 @@ export default function ReportsPage() {
     if (activeCategory === "all") return REPORT_DEFINITIONS;
     return REPORT_DEFINITIONS.filter((r) => r.category === activeCategory);
   }, [activeCategory]);
+
+  const handleCategoryChange = (newCat: ReportCategory | "all") => {
+    setActiveCategory(newCat);
+    const reportsForCat =
+      newCat === "all"
+        ? REPORT_DEFINITIONS
+        : REPORT_DEFINITIONS.filter((r) => r.category === newCat);
+    if (
+      !reportsForCat.some((r) => r.id === selectedReportId) &&
+      reportsForCat.length > 0
+    ) {
+      setSelectedReportId(reportsForCat[0].id);
+    }
+  };
+
+  const handleReportChange = (newId: string) => {
+    setSelectedReportId(newId);
+    const rep = REPORT_DEFINITIONS.find((r) => r.id === newId);
+    if (rep && activeCategory !== "all" && rep.category !== activeCategory) {
+      setActiveCategory(rep.category);
+    }
+  };
 
   const currentReportConfig = useMemo(() => {
     return (
@@ -210,58 +248,72 @@ export default function ReportsPage() {
           </div>
         )}
 
-        {/* Report Category Switcher */}
-        <section className="card reports-category-card">
-          <div className="reports-category-list">
-            <span className="text-xs font-bold text-slate-500 uppercase mr-1">
-              {nl ? "Categorieën:" : "Categories:"}
-            </span>
-            {(
-              [
-                ["all", nl ? "Alle Rapporten" : "All Reports"],
-                ["assets", nl ? "Middelen" : "Assets"],
-                ["inventory", nl ? "Voorraad & Status" : "Inventory & Status"],
-                ["locations", nl ? "Locaties" : "Locations"],
-                ["assignments", nl ? "Toewijzingen" : "Assignments"],
-                ["loans", nl ? "Uitleen" : "Loans"],
-                ["repairs", nl ? "Reparaties" : "Repairs"],
-                ["maintenance", nl ? "Onderhoud" : "Maintenance"],
-                ["movements", nl ? "Mutaties" : "Movements"],
-                ["audits", nl ? "Controles" : "Audits"],
-                ["audit-logs", nl ? "Audittrail" : "Audit Trail"],
-                ["warehouse", nl ? "Magazijn" : "Warehouse"],
-                ["devices", nl ? "Apparaten" : "Devices"],
-              ] as const
-            ).map(([catKey, catLabel]) => (
-              <button
-                key={catKey}
-                type="button"
-                className={`btn btn-sm ${activeCategory === catKey ? "btn-primary font-bold" : "btn-secondary"}`}
-                onClick={() => {
-                  setActiveCategory(catKey);
-                  const firstInCat =
-                    catKey === "all"
-                      ? REPORT_DEFINITIONS[0]
-                      : REPORT_DEFINITIONS.find((r) => r.category === catKey);
-                  if (firstInCat) setSelectedReportId(firstInCat.id);
-                }}
-              >
-                {catLabel}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* Active Report Selector & Filters */}
+        {/* Unified Report Definition, KPIs & Filter Toolbar */}
         <section className="card reports-control-card">
+          <div className="reports-control-header">
+            <div className="reports-identity">
+              <div className="reports-identity-icon" aria-hidden="true">
+                <FileSpreadsheet className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="reports-title">
+                  {nl ? currentReportConfig.nameNl : currentReportConfig.name}
+                </h2>
+                <p className="reports-description">
+                  {nl
+                    ? currentReportConfig.descriptionNl
+                    : currentReportConfig.description}
+                </p>
+              </div>
+            </div>
+
+            <div
+              className="reports-metrics-inline"
+              aria-label={nl ? "Rapportstatistieken" : "Report summary metrics"}
+            >
+              {generated.metrics.map((m, idx) => (
+                <div key={idx} className="reports-metric-pill">
+                  <span className="reports-metric-pill-label">
+                    {nl ? m.labelNl : m.label}
+                  </span>
+                  <strong className="reports-metric-pill-value">{m.value}</strong>
+                </div>
+              ))}
+              <div className="reports-metric-pill reports-metric-pill--count">
+                <span className="reports-metric-pill-label">
+                  {nl ? "Records" : "Records"}
+                </span>
+                <strong className="reports-metric-pill-value">
+                  {generated.totalRecords}
+                </strong>
+              </div>
+            </div>
+          </div>
+
           <div className="reports-filter-grid">
+            <div className="reports-category-select">
+              <SelectField
+                label={nl ? "Categorie" : "Category"}
+                value={activeCategory}
+                onChange={(e) =>
+                  handleCategoryChange(e.target.value as ReportCategory | "all")
+                }
+              >
+                {CATEGORY_OPTIONS.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {nl ? cat.nl : cat.en}
+                  </option>
+                ))}
+              </SelectField>
+            </div>
+
             <div className="reports-report-select">
               <SelectField
                 label={
                   nl ? "Selecteer Rapportdefinitie" : "Select Report Definition"
                 }
                 value={selectedReportId}
-                onChange={(e) => setSelectedReportId(e.target.value)}
+                onChange={(e) => handleReportChange(e.target.value)}
               >
                 {availableReports.map((r) => (
                   <option key={r.id} value={r.id}>
@@ -271,7 +323,7 @@ export default function ReportsPage() {
               </SelectField>
             </div>
 
-            <div>
+            <div className="reports-search-field">
               <Field
                 label={nl ? "Snel Zoeken" : "Quick Search"}
                 type="text"
@@ -281,7 +333,7 @@ export default function ReportsPage() {
               />
             </div>
 
-            <div>
+            <div className="reports-location-select">
               <SelectField
                 label={nl ? "Locatiefilter" : "Location Filter"}
                 value={filterLocation}
@@ -300,39 +352,8 @@ export default function ReportsPage() {
           </div>
         </section>
 
-        {/* Real-Time KPI Metrics from Canonical Data */}
-        {generated.metrics.length > 0 && (
-          <section
-            className="reports-metric-grid"
-            aria-label={nl ? "Rapportoverzicht" : "Report summary"}
-          >
-            {generated.metrics.map((m, idx) => (
-              <article key={idx} className="card reports-metric-card">
-                <span>{nl ? m.labelNl : m.label}</span>
-                <strong>{m.value}</strong>
-              </article>
-            ))}
-          </section>
-        )}
-
-        {/* Dynamic Report Data Table */}
+        {/* Dynamic Report Data Table ("element tree" elevated right below) */}
         <section className="card data-card reports-results-card">
-          <div className="reports-results-header">
-            <div>
-              <h2 className="text-base font-bold text-slate-800">
-                {nl ? currentReportConfig.nameNl : currentReportConfig.name}
-              </h2>
-              <p className="text-xs text-slate-500">
-                {nl
-                  ? currentReportConfig.descriptionNl
-                  : currentReportConfig.description}
-              </p>
-            </div>
-            <span className="text-xs bg-slate-200 px-2.5 py-1 rounded-full font-semibold text-slate-700">
-              {generated.totalRecords}{" "}
-              {nl ? "records gevonden" : "records found"}
-            </span>
-          </div>
 
           <DataTable
             id={`report-${selectedReportId}`}
