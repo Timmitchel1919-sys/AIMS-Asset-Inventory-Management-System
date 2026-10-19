@@ -33,8 +33,11 @@ export default function ReportsPage() {
   const snapshot = useMockSnapshot();
   const repository = useRepository();
 
-  const [selectedReportId, setSelectedReportId] = useState<string>("assets-master");
-  const [activeCategory, setActiveCategory] = useState<ReportCategory | "all">("all");
+  const [selectedReportId, setSelectedReportId] =
+    useState<string>("assets-master");
+  const [activeCategory, setActiveCategory] = useState<ReportCategory | "all">(
+    "all",
+  );
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterLocation, setFilterLocation] = useState("");
@@ -142,7 +145,9 @@ export default function ReportsPage() {
               tone={
                 val === "Available" || val === "Active" || val === "Completed"
                   ? "success"
-                  : val === "Under Repair" || val === "Overdue" || val === "Defective"
+                  : val === "Under Repair" ||
+                      val === "Overdue" ||
+                      val === "Defective"
                     ? "danger"
                     : "neutral"
               }
@@ -206,8 +211,8 @@ export default function ReportsPage() {
         )}
 
         {/* Report Category Switcher */}
-        <section className="card p-3 mb-4">
-          <div className="flex flex-wrap items-center gap-2">
+        <section className="card reports-category-card">
+          <div className="reports-category-list">
             <span className="text-xs font-bold text-slate-500 uppercase mr-1">
               {nl ? "Categorieën:" : "Categories:"}
             </span>
@@ -248,66 +253,71 @@ export default function ReportsPage() {
         </section>
 
         {/* Active Report Selector & Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <div className="md:col-span-2">
-            <SelectField
-              label={nl ? "Selecteer Rapportdefinitie" : "Select Report Definition"}
-              value={selectedReportId}
-              onChange={(e) => setSelectedReportId(e.target.value)}
-            >
-              {availableReports.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {nl ? r.nameNl : r.name}
-                </option>
-              ))}
-            </SelectField>
-          </div>
+        <section className="card reports-control-card">
+          <div className="reports-filter-grid">
+            <div className="reports-report-select">
+              <SelectField
+                label={
+                  nl ? "Selecteer Rapportdefinitie" : "Select Report Definition"
+                }
+                value={selectedReportId}
+                onChange={(e) => setSelectedReportId(e.target.value)}
+              >
+                {availableReports.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {nl ? r.nameNl : r.name}
+                  </option>
+                ))}
+              </SelectField>
+            </div>
 
-          <div>
-            <Field
-              label={nl ? "Snel Zoeken" : "Quick Search"}
-              type="text"
-              placeholder={nl ? "Filter records…" : "Filter records…"}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+            <div>
+              <Field
+                label={nl ? "Snel Zoeken" : "Quick Search"}
+                type="text"
+                placeholder={nl ? "Filter records…" : "Filter records…"}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
 
-          <div>
-            <SelectField
-              label={nl ? "Locatiefilter" : "Location Filter"}
-              value={filterLocation}
-              onChange={(e) => setFilterLocation(e.target.value)}
-            >
-              <option value="">{nl ? "Alle Locaties" : "All Locations"}</option>
-              {uniqueLocations.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
+            <div>
+              <SelectField
+                label={nl ? "Locatiefilter" : "Location Filter"}
+                value={filterLocation}
+                onChange={(e) => setFilterLocation(e.target.value)}
+              >
+                <option value="">
+                  {nl ? "Alle Locaties" : "All Locations"}
                 </option>
-              ))}
-            </SelectField>
+                {uniqueLocations.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
+              </SelectField>
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* Real-Time KPI Metrics from Canonical Data */}
         {generated.metrics.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4">
+          <section
+            className="reports-metric-grid"
+            aria-label={nl ? "Rapportoverzicht" : "Report summary"}
+          >
             {generated.metrics.map((m, idx) => (
-              <div key={idx} className="card p-3 border text-center">
-                <span className="text-xs text-slate-500 font-semibold block mb-1">
-                  {nl ? m.labelNl : m.label}
-                </span>
-                <strong className="text-xl font-bold text-slate-800">
-                  {m.value}
-                </strong>
-              </div>
+              <article key={idx} className="card reports-metric-card">
+                <span>{nl ? m.labelNl : m.label}</span>
+                <strong>{m.value}</strong>
+              </article>
             ))}
-          </div>
+          </section>
         )}
 
         {/* Dynamic Report Data Table */}
-        <section className="card data-card mb-6">
-          <div className="p-3 bg-slate-50 border-b flex justify-between items-center">
+        <section className="card data-card reports-results-card">
+          <div className="reports-results-header">
             <div>
               <h2 className="text-base font-bold text-slate-800">
                 {nl ? currentReportConfig.nameNl : currentReportConfig.name}
@@ -328,8 +338,12 @@ export default function ReportsPage() {
             id={`report-${selectedReportId}`}
             rows={generated.rows}
             columns={tableColumns}
-            rowKey={(item: Record<string, any>) => `${item.code || item.id || item.reference || item.auditId || item.assetCode || JSON.stringify(item)}`}
-            searchPlaceholder={nl ? "Zoek in resultaten…" : "Search within results…"}
+            rowKey={(item: Record<string, any>) =>
+              `${item.code || item.id || item.reference || item.auditId || item.assetCode || JSON.stringify(item)}`
+            }
+            searchPlaceholder={
+              nl ? "Zoek in resultaten…" : "Search within results…"
+            }
             emptyTitle={nl ? "Geen records gevonden" : "No records found"}
             emptyDescription={
               nl
@@ -352,8 +366,8 @@ export default function ReportsPage() {
         >
           <div className="print-controls flex justify-between items-center mb-4">
             <span className="text-xs text-slate-500">
-              {nl ? "Gegenereerd door: " : "Generated by: "} {user?.name || "AIMS"} (
-              {formatDateTime(new Date())})
+              {nl ? "Gegenereerd door: " : "Generated by: "}{" "}
+              {user?.name || "AIMS"} ({formatDateTime(new Date())})
             </span>
             <Button onClick={() => window.print()}>
               <Printer className="w-4 h-4 mr-1" />
@@ -390,7 +404,10 @@ export default function ReportsPage() {
               <thead>
                 <tr className="border-b bg-slate-100">
                   {generated.columns.slice(0, 6).map((col) => (
-                    <th key={col.key} className="py-2 px-2 font-bold text-slate-700">
+                    <th
+                      key={col.key}
+                      className="py-2 px-2 font-bold text-slate-700"
+                    >
                       {nl ? col.labelNl : col.label}
                     </th>
                   ))}
@@ -503,4 +520,3 @@ export function AuditTrailPage() {
     </OfflineGate>
   );
 }
-

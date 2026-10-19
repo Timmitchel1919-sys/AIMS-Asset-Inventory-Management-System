@@ -1,7 +1,12 @@
 import { Plus } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { emptyMovementFilters, filterMovements, invalidDateRange, type MovementFilters } from "../domain/movementFilters";
+import {
+  emptyMovementFilters,
+  filterMovements,
+  invalidDateRange,
+  type MovementFilters,
+} from "../domain/movementFilters";
 import {
   Badge,
   Button,
@@ -108,22 +113,39 @@ export default function MovementsPage() {
       text: (item) => item.by,
     },
   ];
-  const movementTypes = [...new Set(snapshot.movements.map((item) => item.type))].sort();
+  const movementTypes = [
+    ...new Set(snapshot.movements.map((item) => item.type)),
+  ].sort();
   const departmentNames = [
     ...new Set(
-      snapshot.movements.flatMap((item) => [item.sourceDepartment, item.destinationDepartment, item.relatedDepartment]).filter((v): v is string => Boolean(v)),
+      snapshot.movements
+        .flatMap((item) => [
+          item.sourceDepartment,
+          item.destinationDepartment,
+          item.relatedDepartment,
+        ])
+        .filter((v): v is string => Boolean(v)),
     ),
   ].sort();
   const dateProblem = invalidDateRange(filters);
-  const visibleMovements = useMemo(() => filterMovements(snapshot.movements, filters), [snapshot.movements, filters]);
+  const visibleMovements = useMemo(
+    () => filterMovements(snapshot.movements, filters),
+    [snapshot.movements, filters],
+  );
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const values: Record<string, unknown> = Object.fromEntries(
       new FormData(event.currentTarget).entries(),
     );
     values.quantity = Number(values.quantity);
-    const source=snapshot.references.find(item=>item.id===values.sourceLocationId),destination=snapshot.references.find(item=>item.id===values.destinationLocationId);
-    values.from=source?.name||"";values.to=destination?.name||"";
+    const source = snapshot.references.find(
+        (item) => item.id === values.sourceLocationId,
+      ),
+      destination = snapshot.references.find(
+        (item) => item.id === values.destinationLocationId,
+      );
+    values.from = source?.name || "";
+    values.to = destination?.name || "";
     setPending(values);
     if (
       ["Stock correction", "Loss", "Disposal", "Audit adjustment"].includes(
@@ -150,7 +172,7 @@ export default function MovementsPage() {
   }
   return (
     <OfflineGate>
-      <div className="page">
+      <div className="page movements-page">
         <PageHeader
           title={nl ? "Voorraadmutaties" : "Inventory movements"}
           description={
@@ -165,22 +187,69 @@ export default function MovementsPage() {
             </Button>
           }
         />
-        <section className="card data-card">
+        <section className="card data-card movement-workspace-card">
           <DataTable
             id="movements"
             rows={visibleMovements}
             columns={columns}
             filters={
-              <div className="movement-filters" role="group" aria-label={nl ? "Filters" : "Filters"}>
-                <SelectField label="Type" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
+              <div
+                className="movement-filters"
+                role="group"
+                aria-label={nl ? "Filters" : "Filters"}
+              >
+                <SelectField
+                  label="Type"
+                  value={filters.type}
+                  onChange={(e) =>
+                    setFilters({ ...filters, type: e.target.value })
+                  }
+                >
                   <option value="">{nl ? "Alle typen" : "All types"}</option>
-                  {movementTypes.map((value) => <option key={value} value={value}>{value}</option>)}
+                  {movementTypes.map((value) => (
+                    <option key={value} value={value}>
+                      {value}
+                    </option>
+                  ))}
                 </SelectField>
-                <Field label={nl ? "Van" : "From"} type="date" value={filters.from} onChange={(e) => setFilters({ ...filters, from: e.target.value })} error={dateProblem ? (nl ? "De einddatum ligt vóór de begindatum." : "The end date is before the start date.") : undefined} />
-                <Field label={nl ? "Tot" : "To"} type="date" value={filters.to} onChange={(e) => setFilters({ ...filters, to: e.target.value })} />
-                <SelectField label={nl ? "Afdeling" : "Department"} value={filters.department} onChange={(e) => setFilters({ ...filters, department: e.target.value })}>
-                  <option value="">{nl ? "Alle afdelingen" : "All departments"}</option>
-                  {departmentNames.map((value) => <option key={value} value={value}>{value}</option>)}
+                <Field
+                  label={nl ? "Van" : "From"}
+                  type="date"
+                  value={filters.from}
+                  onChange={(e) =>
+                    setFilters({ ...filters, from: e.target.value })
+                  }
+                  error={
+                    dateProblem
+                      ? nl
+                        ? "De einddatum ligt vóór de begindatum."
+                        : "The end date is before the start date."
+                      : undefined
+                  }
+                />
+                <Field
+                  label={nl ? "Tot" : "To"}
+                  type="date"
+                  value={filters.to}
+                  onChange={(e) =>
+                    setFilters({ ...filters, to: e.target.value })
+                  }
+                />
+                <SelectField
+                  label={nl ? "Afdeling" : "Department"}
+                  value={filters.department}
+                  onChange={(e) =>
+                    setFilters({ ...filters, department: e.target.value })
+                  }
+                >
+                  <option value="">
+                    {nl ? "Alle afdelingen" : "All departments"}
+                  </option>
+                  {departmentNames.map((value) => (
+                    <option key={value} value={value}>
+                      {value}
+                    </option>
+                  ))}
                 </SelectField>
               </div>
             }
@@ -250,8 +319,40 @@ export default function MovementsPage() {
               label={nl ? "Aantal" : "Quantity"}
               required
             />
-            <SelectField name="sourceLocationId" label={nl ? "Bron" : "Source"} required><option value="">Select location</option>{snapshot.references.filter(item=>item.kind==="location"&&item.status==="Active").map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</SelectField>
-            <SelectField name="destinationLocationId" label={nl ? "Bestemming" : "Destination"} required><option value="">Select location</option>{snapshot.references.filter(item=>item.kind==="location"&&item.status==="Active").map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</SelectField>
+            <SelectField
+              name="sourceLocationId"
+              label={nl ? "Bron" : "Source"}
+              required
+            >
+              <option value="">Select location</option>
+              {snapshot.references
+                .filter(
+                  (item) =>
+                    item.kind === "location" && item.status === "Active",
+                )
+                .map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+            </SelectField>
+            <SelectField
+              name="destinationLocationId"
+              label={nl ? "Bestemming" : "Destination"}
+              required
+            >
+              <option value="">Select location</option>
+              {snapshot.references
+                .filter(
+                  (item) =>
+                    item.kind === "location" && item.status === "Active",
+                )
+                .map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+            </SelectField>
             <TextAreaField
               name="reason"
               className="wide"

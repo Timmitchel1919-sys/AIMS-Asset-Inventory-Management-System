@@ -1,0 +1,221 @@
+/* Compact, page-scoped workspaces for movement history and reporting. */
+.movement-workspace-card .data-toolbar {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.8fr) auto minmax(600px, 3fr) auto;
+  align-items: end;
+  gap: 10px;
+  padding: 12px;
+}
+
+.movement-workspace-card .search {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+.movement-workspace-card .movement-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(130px, 1fr));
+  align-items: end;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+}
+
+.movement-workspace-card .movement-filters label,
+.movement-workspace-card .movement-filters :is(input, select) {
+  min-width: 0;
+  width: 100%;
+}
+
+.movement-workspace-card .table-actions {
+  align-self: end;
+}
+
+.reports-page {
+  gap: 12px;
+}
+
+.reports-category-card,
+.reports-control-card {
+  padding: 12px;
+}
+
+.reports-category-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.reports-category-list > span {
+  margin-right: 4px;
+}
+
+.reports-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 2fr) repeat(2, minmax(180px, 1fr));
+  align-items: end;
+  gap: 12px;
+}
+
+.reports-filter-grid > div,
+.reports-filter-grid :is(input, select) {
+  min-width: 0;
+  width: 100%;
+}
+
+.reports-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.reports-metric-card {
+  display: flex;
+  min-height: 72px;
+  padding: 12px 14px;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+}
+
+.reports-metric-card span {
+  color: var(--color-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.reports-metric-card strong {
+  margin-top: 4px;
+  color: var(--color-text-primary);
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.reports-results-card {
+  margin: 0 0 24px;
+}
+
+.reports-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-background-secondary);
+}
+
+.reports-results-header > div {
+  min-width: 0;
+}
+
+.reports-results-header h2,
+.reports-results-header p {
+  margin: 0;
+}
+
+.reports-results-header p {
+  margin-top: 3px;
+}
+
+.reports-results-header > span {
+  flex: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 1500px) {
+  .movement-workspace-card .data-toolbar {
+    grid-template-columns: minmax(260px, 1fr) auto auto;
+  }
+
+  .movement-workspace-card .movement-filters {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .movement-workspace-card .table-actions {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+@media (max-width: 820px) {
+  .movement-workspace-card .data-toolbar,
+  .reports-filter-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .movement-workspace-card .search,
+  .movement-workspace-card .movement-filters,
+  .reports-report-select {
+    grid-column: 1 / -1;
+  }
+
+  .movement-workspace-card .movement-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .movement-workspace-card .table-actions {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 560px) {
+  .movement-workspace-card .data-toolbar,
+  .movement-workspace-card .movement-filters,
+  .reports-filter-grid,
+  .reports-metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .movement-workspace-card .data-toolbar > *,
+  .movement-workspace-card .movement-filters,
+  .movement-workspace-card .table-actions,
+  .reports-report-select {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .movement-workspace-card .search {
+    order: 1;
+  }
+
+  .movement-workspace-card .data-toolbar__count {
+    order: 2;
+  }
+
+  .movement-workspace-card .movement-filters {
+    order: 3;
+  }
+
+  .movement-workspace-card .table-actions {
+    order: 4;
+  }
+
+  .movement-workspace-card .data-toolbar__count,
+  .movement-workspace-card .table-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .reports-category-list {
+    align-items: stretch;
+  }
+
+  .reports-category-list > span {
+    width: 100%;
+  }
+
+  .reports-category-list .btn {
+    flex: 1 1 calc(50% - 7px);
+  }
+
+  .reports-results-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
