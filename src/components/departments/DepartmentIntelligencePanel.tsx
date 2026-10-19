@@ -284,9 +284,10 @@ function AddAssetToDeptDialog({
           : "Select assets to assign to this department. Optionally filter by location."
       }
       onClose={onClose}
+      className="department-add-dialog"
     >
-      <form onSubmit={handleAdd} className="workflow-form">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", width: "100%" }}>
+      <form onSubmit={handleAdd} className="dept-add-form">
+        <div className="dept-add-form__filters">
           <SelectField
             name="locFilter"
             label={nl ? "Filter op locatie" : "Filter by location"}
@@ -309,7 +310,7 @@ function AddAssetToDeptDialog({
           />
         </div>
 
-        <div style={{ marginTop: "12px", width: "100%" }}>
+        <div className="dept-add-form__table-container">
           <div
             style={{
               display: "flex",
@@ -318,7 +319,7 @@ function AddAssetToDeptDialog({
               marginBottom: "8px",
             }}
           >
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontWeight: 600 }}>
+            <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", cursor: "pointer", fontWeight: 600 }}>
               <input
                 type="checkbox"
                 checked={selectedIds.length === filteredCandidates.length && filteredCandidates.length > 0}
@@ -335,29 +336,21 @@ function AddAssetToDeptDialog({
             </span>
           </div>
 
-          <div
-            style={{
-              maxHeight: "260px",
-              overflowY: "auto",
-              border: "1px solid var(--color-border)",
-              borderRadius: "var(--radius-sm)",
-              padding: "4px",
-            }}
-          >
+          <div className="dept-add-form__table-wrapper">
             {filteredCandidates.length === 0 ? (
-              <p style={{ padding: "16px", textAlign: "center", color: "var(--color-text-muted)" }}>
+              <p style={{ padding: "24px", textAlign: "center", color: "var(--color-text-muted)" }}>
                 {nl ? "Geen beschikbare middelen gevonden." : "No available assets found."}
               </p>
             ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+              <table className="dept-add-table">
                 <thead>
-                  <tr style={{ borderBottom: "1px solid var(--color-border)", textAlign: "left" }}>
-                    <th style={{ padding: "6px 8px", width: "30px" }}></th>
-                    <th style={{ padding: "6px 8px" }}>Inv.code</th>
-                    <th style={{ padding: "6px 8px" }}>{nl ? "Middel" : "Asset"}</th>
-                    <th style={{ padding: "6px 8px" }}>{nl ? "Huidige afdeling" : "Current Dept"}</th>
-                    <th style={{ padding: "6px 8px" }}>{nl ? "Locatie" : "Location"}</th>
-                    <th style={{ padding: "6px 8px" }}>Status</th>
+                  <tr>
+                    <th style={{ width: "36px", textAlign: "center" }}></th>
+                    <th style={{ width: "120px" }}>Inv.code</th>
+                    <th>{nl ? "Middel" : "Asset"}</th>
+                    <th>{nl ? "Huidige afdeling" : "Current Dept"}</th>
+                    <th>{nl ? "Locatie" : "Location"}</th>
+                    <th style={{ width: "140px" }}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -367,13 +360,10 @@ function AddAssetToDeptDialog({
                       <tr
                         key={a.id}
                         onClick={() => toggleSelect(a.id)}
-                        style={{
-                          cursor: "pointer",
-                          backgroundColor: isSelected ? "var(--color-primary-light, #e8f5e9)" : "transparent",
-                          borderBottom: "1px solid var(--color-border)",
-                        }}
+                        className={isSelected ? "is-selected" : ""}
+                        style={{ cursor: "pointer" }}
                       >
-                        <td style={{ padding: "6px 8px" }}>
+                        <td style={{ textAlign: "center" }}>
                           <input
                             type="checkbox"
                             checked={isSelected}
@@ -381,11 +371,18 @@ function AddAssetToDeptDialog({
                             onClick={(e) => e.stopPropagation()}
                           />
                         </td>
-                        <td style={{ padding: "6px 8px", fontWeight: "bold" }}>{a.code}</td>
-                        <td style={{ padding: "6px 8px" }}>{a.name}</td>
-                        <td style={{ padding: "6px 8px" }}>{a.department || "—"}</td>
-                        <td style={{ padding: "6px 8px" }}>{a.location || "—"}</td>
-                        <td style={{ padding: "6px 8px" }}>
+                        <td style={{ fontWeight: 700, fontFamily: "monospace" }}>{a.code}</td>
+                        <td>
+                          <strong>{a.name}</strong>
+                          {(a.brand || a.model) && (
+                            <span style={{ display: "block", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
+                              {[a.brand, a.model].filter(Boolean).join(" ")}
+                            </span>
+                          )}
+                        </td>
+                        <td>{a.department || "—"}</td>
+                        <td>{a.location || "—"}</td>
+                        <td>
                           <StatusBadge status={a.status} size="compact" />
                         </td>
                       </tr>
@@ -397,7 +394,7 @@ function AddAssetToDeptDialog({
           </div>
         </div>
 
-        <div className="wide" style={{ marginTop: "14px" }}>
+        <div style={{ marginTop: "14px", width: "100%" }}>
           <MutationFeedback {...feedback} />
           <div className="actions" style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
             <Button type="button" variant="ghost" onClick={onClose}>
@@ -511,8 +508,9 @@ function EditAssetInDeptDialog({
       title={nl ? `Middel bewerken: ${name}` : `Edit asset: ${name}`}
       description={`${asset.code} · ${serialNumber || "Geen serienummer"}`}
       onClose={onClose}
+      className="department-add-dialog"
     >
-      <form onSubmit={handleSave} className="workflow-form">
+      <form onSubmit={handleSave} className="dept-add-form">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", width: "100%" }}>
           <Field
             name="name"
@@ -631,7 +629,7 @@ function EditAssetInDeptDialog({
           onChange={(e) => setNotes(e.target.value)}
         />
 
-        <div className="wide">
+        <div style={{ width: "100%" }}>
           <MutationFeedback {...feedback} />
           <div className="actions" style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
             <Button type="button" variant="ghost" onClick={onClose}>
