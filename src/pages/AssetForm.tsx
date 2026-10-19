@@ -259,12 +259,19 @@ export default function AssetForm() {
       uploadAimsFiles(attachmentFiles, "assets", uploadId),
       uploadAimsFiles(photoFiles, "assets", uploadId),
     ]);
+    const deptRef = (snapshot.references || []).find(
+      (item) =>
+        item.kind === "department" &&
+        (item.name === values.department || item.id === values.department),
+    );
     const result = await repository.execute({
       action: existing ? "asset.edit" : "asset.create",
       entityId: existing?.id,
       actor: app.user?.name,
       values: {
         ...values,
+        department: deptRef?.name || values.department,
+        departmentId: deptRef?.id || existing?.departmentId || null,
         location: selectedLocation?.name || values.location,
         currentLocationId: selectedLocation?.id || null,
         homeLocationId: selectedLocation?.id || null,
@@ -487,15 +494,39 @@ export default function AssetForm() {
                       </option>
                     ))}
                 </SelectField>
-                <Field
-                  label={app.language === "nl" ? "Sublocatie" : "Sub-location"}
+                <SelectField
+                  label={app.language === "nl" ? "Afdeling" : "Department"}
                   required
                   error={errors.department?.message}
                   {...register("department")}
+                >
+                  <option value="">
+                    {app.language === "nl" ? "Selecteer een afdeling" : "Select a department"}
+                  </option>
+                  {(snapshot.references || [])
+                    .filter(
+                      (item) => item.kind === "department" && item.status === "Active",
+                    )
+                    .sort((x, y) => x.name.localeCompare(y.name))
+                    .map((dept) => (
+                      <option key={dept.id} value={dept.name}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  {existing?.department &&
+                    !(snapshot.references || []).some(
+                      (item) => item.kind === "department" && item.name === existing.department,
+                    ) && (
+                      <option value={existing.department}>{existing.department}</option>
+                    )}
+                </SelectField>
+                <Field
+                  label={app.language === "nl" ? "Sublocatie / Ruimte" : "Sub-location / Room"}
+                  {...register("location")}
                 />
                 <Field label={a("assignedUser")} {...register("assignedTo")} />
                 <Field
-                  label={app.language === "nl" ? "Afdeling" : "Department"}
+                  label={app.language === "nl" ? "Verantwoordelijke medewerker" : "Responsible employee"}
                   {...register("responsibleEmployee")}
                 />
               </div>

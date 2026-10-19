@@ -39,10 +39,15 @@ export function assetAssigneeName(asset: Asset, users: SystemUser[]) {
 export function assetInDepartment(
   asset: Asset,
   department: { id: string; name: string },
-) {
-  return asset.departmentId
-    ? asset.departmentId === department.id
-    : asset.department === department.name;
+): boolean {
+  if (asset.departmentId && department.id) {
+    return asset.departmentId === department.id;
+  }
+  const normDept = (department.name || "").trim().toLowerCase();
+  return Boolean(
+    (asset.department && asset.department.trim().toLowerCase() === normDept) ||
+    (asset.responsibleEmployee && asset.responsibleEmployee.trim().toLowerCase() === normDept)
+  );
 }
 
 export function assetInCategory(

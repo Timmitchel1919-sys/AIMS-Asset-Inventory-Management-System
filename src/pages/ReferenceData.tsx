@@ -261,6 +261,11 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     ),
     [selectedCodeGroup, setSelectedCodeGroup] = useState(
       String(initialRecord?.details?.codeGroup || "")
+    ),
+    [selectedSubLocationId, setSelectedSubLocationId] = useState(
+      initialRecord?.containerLocationId ||
+        (initialRecord?.details?.subLocationId as string) ||
+        "",
     );
 
   const [feedback, setFeedback] = useState<{
@@ -275,6 +280,31 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       (item) => item.kind === "location",
     ),
     mainLocations = locations.filter((item) => item.type === "Main location");
+  const availableSubLocations = useMemo(() => {
+    const allSub = snapshot.references.filter(
+      (x) =>
+        x.kind === "location" &&
+        x.status === "Active" &&
+        x.type !== "Main location",
+    );
+    if (selectedMainLocationId) {
+      return [...allSub].sort((a, b) => {
+        const aMatch =
+          a.mainLocationId === selectedMainLocationId ||
+          a.containerLocationId === selectedMainLocationId
+            ? 0
+            : 1;
+        const bMatch =
+          b.mainLocationId === selectedMainLocationId ||
+          b.containerLocationId === selectedMainLocationId
+            ? 0
+            : 1;
+        if (aMatch !== bMatch) return aMatch - bMatch;
+        return a.name.localeCompare(b.name);
+      });
+    }
+    return allSub.sort((a, b) => a.name.localeCompare(b.name));
+  }, [snapshot.references, selectedMainLocationId]);
   const resolveMain = (item: ReferenceRecord) =>
     mainLocations.find(
       (main) =>
@@ -786,6 +816,11 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     setFeedback({ status: "idle", message: "" });
     setSelectedParentId(value?.parentLocationId || value?.parentId || "");
     setSelectedMainLocationId(value?.mainLocationId || "");
+    setSelectedSubLocationId(
+      value?.containerLocationId ||
+        (value?.details?.subLocationId as string) ||
+        "",
+    );
     setSelectedCodeGroup(String(value?.details?.codeGroup || ""));
     setDialog(true);
   }
@@ -795,7 +830,10 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       selectedType = snapshot.locationTypes.find(
         (x) => x.id === selectedTypeId,
       ),
-      parent = snapshot.references.find((x) => x.id === selectedParentId);
+      parent = snapshot.references.find((x) => x.id === selectedParentId),
+      selectedSubLoc = snapshot.references.find(
+        (x) => x.id === selectedSubLocationId || x.name === selectedSubLocationId,
+      );
     const details: ReferenceRecord["details"] = {
       manager: String(data.get("manager") || ""),
       codeGroup: String(data.get("codeGroup") || ""),
@@ -808,6 +846,8 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         .split(",")
         .map((value) => value.trim())
         .filter(Boolean),
+      subLocation: kind === "department" ? (selectedSubLoc?.name || "") : "",
+      subLocationId: kind === "department" ? (selectedSubLoc?.id || "") : "",
     };
     if (kind === "department" && !selectedMainLocationId) {
       setFeedback({status:"error",message:nl?"Selecteer een hoofdlocatie.":"Please select a Main location."});
@@ -880,13 +920,13 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       values: {
         kind,
         name: data.get("name"),
-        type: kind === "location" ? selectedType?.name : data.get("type"),
+        type: kind === "location" ? selectedType?.name : (data.get("type") || (kind === "department" ? "Department" : "General")),
         typeId: kind === "location" ? selectedTypeId : undefined,
-        parent: parent?.name || String(data.get("parent") || ""),
-        parentId: parent?.id,
-        parentLocationId: parent?.id || null,
+        parent: kind === "department" ? (selectedSubLoc?.name || parent?.name || String(data.get("parent") || "")) : (parent?.name || String(data.get("parent") || "")),
+        parentId: kind === "department" ? (selectedSubLoc?.id || parent?.id) : parent?.id,
+        parentLocationId: kind === "department" ? (selectedSubLoc?.id || null) : (parent?.id || null),
         mainLocationId: isTopLevel ? null : selectedMainLocationId,
-        containerLocationId: parent?.id || null,
+        containerLocationId: kind === "department" ? (selectedSubLoc?.id || null) : (parent?.id || null),
         managerId: data.get("manager") || null,
         details,
         status: data.get("status"),
@@ -1179,6 +1219,15 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                   </option>
                 )}
               </SelectField>
+            ) : kind === "department" ? (
+              <>
+                <input type="hidden" name="type" value="Department" />
+                <Field
+                  name="manager"
+                  label={nl ? "Verantwoordelijke" : "Manager"}
+                  defaultValue={String(record?.details.manager || "")}
+                />
+              </>
             ) : (
               <SelectField
                 name="type"
@@ -1186,10 +1235,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 defaultValue={record?.type}
                 required
               >
-                {(kind === "category"
-                  ? ["Serialized", "Quantity-based", "Mixed"]
-                  : ["Department"]
-                ).map((value) => (
+                {["Serialized", "Quantity-based", "Mixed"].map((value) => (
                   <option key={value} value={value}>
                     {typeOptionLabel(value)}
                   </option>
@@ -1258,16 +1304,43 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 </SelectField>
               </>
             ) : kind === "department" ? (
-              <SelectField
-                name="mainLocationId"
-                label={nl ? "Hoofdlocatie" : "Main location"}
-                value={selectedMainLocationId}
-                onChange={(event) => setSelectedMainLocationId(event.target.value)}
-                required
-              >
-
-                {mainLocations.filter(main=>main.status==="Active"||main.id===selectedMainLocationId).map(main=><option key={main.id} value={main.id}>{main.name}</option>)}
-              </SelectField>
+              <>
+                <SelectField
+                  name="mainLocationId"
+                  label={nl ? "Hoofdlocatie" : "Main location"}
+                  value={selectedMainLocationId}
+                  onChange={(event) => setSelectedMainLocationId(event.target.value)}
+                  required
+                >
+                  <option value="">
+                    {nl ? "Selecteer een hoofdlocatie" : "Select a Main location"}
+                  </option>
+                  {mainLocations
+                    .filter((main) => main.status === "Active" || main.id === selectedMainLocationId)
+                    .map((main) => (
+                      <option key={main.id} value={main.id}>
+                        {main.name}
+                      </option>
+                    ))}
+                </SelectField>
+                <SelectField
+                  name="subLocationId"
+                  label={nl ? "Sub locatie" : "Sub-location"}
+                  value={selectedSubLocationId}
+                  onChange={(event) => setSelectedSubLocationId(event.target.value)}
+                >
+                  <option value="">
+                    {nl
+                      ? "Selecteer een sublocatie (optioneel)"
+                      : "Select a sub-location (optional)"}
+                  </option>
+                  {availableSubLocations.map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.name}{sub.parent ? ` (${sub.parent})` : ""}
+                    </option>
+                  ))}
+                </SelectField>
+              </>
             ) : (
               <Field
                 name="parent"
@@ -1275,11 +1348,13 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                 defaultValue={record?.parent}
               />
             )}
-            <Field
-              name="manager"
-              label={nl ? "Verantwoordelijke" : "Manager"}
-              defaultValue={String(record?.details.manager || "")}
-            />
+            {kind !== "department" && (
+              <Field
+                name="manager"
+                label={nl ? "Verantwoordelijke" : "Manager"}
+                defaultValue={String(record?.details.manager || "")}
+              />
+            )}
             {kind === "location" && (
               <>
                 <SelectField
