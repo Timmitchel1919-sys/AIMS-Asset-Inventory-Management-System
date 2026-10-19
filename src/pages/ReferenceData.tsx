@@ -280,15 +280,47 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       (item) => item.kind === "location",
     ),
     mainLocations = locations.filter((item) => item.type === "Main location");
-  const availableSubLocations = useMemo(() => {
-    const allSub = snapshot.references.filter(
-      (x) =>
-        x.kind === "location" &&
-        x.status === "Active" &&
-        x.type !== "Main location",
+  const resolveMain = (item: ReferenceRecord) =>
+    mainLocations.find(
+      (main) =>
+        main.id ===
+        (item.type === "Main location" ? item.id : item.mainLocationId),
     );
+  const availableSubLocations = useMemo(() => {
+    // 1. All active departments (such as classes, rooms, and departments)
+    const departments = snapshot.references
+      .filter((x) => x.kind === "department" && x.status === "Active")
+      .map((d) => ({
+        id: d.id,
+        name: d.name,
+        parent: resolveMain(d)?.name || d.parent || "",
+        kind: "department" as const,
+        mainLocationId: d.mainLocationId,
+        containerLocationId: d.containerLocationId,
+      }));
+
+    // 2. Dedicated sublocations from location records
+    const subLocs = snapshot.references
+      .filter(
+        (x) =>
+          x.kind === "location" &&
+          x.status === "Active" &&
+          x.type !== "Main location",
+      )
+      .filter((s) => !departments.some((d) => d.id === s.id || d.name === s.name))
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        parent: s.parent || "",
+        kind: "location" as const,
+        mainLocationId: s.mainLocationId,
+        containerLocationId: s.containerLocationId,
+      }));
+
+    const combined = [...departments, ...subLocs];
+
     if (selectedMainLocationId) {
-      return [...allSub].sort((a, b) => {
+      return combined.sort((a, b) => {
         const aMatch =
           a.mainLocationId === selectedMainLocationId ||
           a.containerLocationId === selectedMainLocationId
@@ -303,14 +335,8 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         return a.name.localeCompare(b.name);
       });
     }
-    return allSub.sort((a, b) => a.name.localeCompare(b.name));
-  }, [snapshot.references, selectedMainLocationId]);
-  const resolveMain = (item: ReferenceRecord) =>
-    mainLocations.find(
-      (main) =>
-        main.id ===
-        (item.type === "Main location" ? item.id : item.mainLocationId),
-    );
+    return combined.sort((a, b) => a.name.localeCompare(b.name));
+  }, [snapshot.references, selectedMainLocationId, mainLocations]);
   const locationHierarchyLabel = (item: ReferenceRecord) =>
     item.type === "Main location" && String(item.details.prefix || "").trim()
       ? String(item.details.prefix).trim().toUpperCase()
@@ -1323,23 +1349,38 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                       </option>
                     ))}
                 </SelectField>
-                <SelectField
-                  name="subLocationId"
-                  label={nl ? "Sub locatie" : "Sub-location"}
-                  value={selectedSubLocationId}
-                  onChange={(event) => setSelectedSubLocationId(event.target.value)}
-                >
-                  <option value="">
-                    {nl
-                      ? "Selecteer een sublocatie (optioneel)"
-                      : "Select a sub-location (optional)"}
-                  </option>
-                  {availableSubLocations.map((sub) => (
-                    <option key={sub.id} value={sub.id}>
-                      {sub.name}{sub.parent ? ` (${sub.parent})` : ""}
+                <div>
+                  <SelectField
+                    name="subLocationId"
+                    label={nl ? "Sub locatie" : "Sub-location"}
+                    value={selectedSubLocationId}
+                    onChange={(event) => setSelectedSubLocationId(event.target.value)}
+                  >
+                    <option value="">
+                      {nl
+                        ? "Selecteer een afdeling / sublocatie (optioneel)"
+                        : "Select a department / sub-location (optional)"}
                     </option>
-                  ))}
-                </SelectField>
+                    {availableSubLocations.map((sub) => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.name}{sub.parent ? ` (${sub.parent})` : ""}
+                      </option>
+                    ))}
+                  </SelectField>
+                  <small
+                    style={{
+                      display: "block",
+                      marginTop: "4px",
+                      color: "var(--color-text-muted)",
+                      fontSize: "0.76rem",
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {nl
+                      ? "Afdelingen worden live gesynchroniseerd: bij toevoegen of verwijderen van een afdeling wordt deze lijst automatisch direct bijgewerkt."
+                      : "Departments are live-synced: newly added or removed departments automatically update in this list."}
+                  </small>
+                </div>
               </>
             ) : (
               <Field
