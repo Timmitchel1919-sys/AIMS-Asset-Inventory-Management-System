@@ -82,7 +82,7 @@ service cloud.firestore {
         || (hasAccessAssignment() && get(accessAssignmentPath()).data.denials.hasAny(values))
       ));
     }
-    function isOwnUser(uid) { return isVerified() && request.auth.uid == uid; }
+    function isOwnUser(uid) { return isSignedIn() && request.auth.uid == uid; }
     function shortString(data, field, maximum) {
       return !(field in data)
         || (data[field] is string && data[field].size() <= maximum);
@@ -592,12 +592,12 @@ service cloud.firestore {
 
     match /users/{uid} {
       allow read: if isOwnUser(uid);
-      allow create: if isOwnUser(uid) && validUser(request.resource.data)
+      allow create: if isVerified() && request.auth.uid == uid && validUser(request.resource.data)
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
         && request.resource.data.firstLoginAt == request.time
         && request.resource.data.lastLoginAt == request.time;
-      allow update: if isOwnUser(uid) && validUser(request.resource.data)
+      allow update: if isVerified() && request.auth.uid == uid && validUser(request.resource.data)
         && immutableUserCreatedAt()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','preferences','authProvider','emailVerified','updatedAt','lastLoginAt'])
         && request.resource.data.updatedAt == request.time;
