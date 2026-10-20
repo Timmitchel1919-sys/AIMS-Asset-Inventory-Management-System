@@ -216,15 +216,27 @@ export default function ReportsPage() {
   return (
     <OfflineGate>
       <div className="page reports-page">
-        <PageHeader
-          title={nl ? "Rapporten & Exportcentrum" : "Reporting & Export Center"}
-          description={
-            nl
-              ? "Geautoriseerde operationele rapporten, auditoverzichten en exports direct vanuit de canonieke AIMS-gegevens."
-              : "Authorized operational reports, audit summaries, and data exports directly from canonical AIMS data."
-          }
-          actions={
-            <div className="actions">
+        {exportNotice && (
+          <div className="alert alert-success mb-4 flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <span>{exportNotice}</span>
+          </div>
+        )}
+
+        {/* Unified Top Card: Reporting & Export Center Panel + Filter Controls */}
+        <section className="card reports-panel-card">
+          <div className="reports-panel-header">
+            <div>
+              <h1 className="reports-panel-title">
+                {nl ? "Rapporten & Exportcentrum" : "Reporting & Export Center"}
+              </h1>
+              <p className="reports-panel-subtitle">
+                {nl
+                  ? "Geautoriseerde operationele rapporten, auditoverzichten en exports direct vanuit de canonieke AIMS-gegevens."
+                  : "Authorized operational reports, audit summaries, and data exports directly from canonical AIMS data."}
+              </p>
+            </div>
+            <div className="reports-panel-actions">
               <Button variant="secondary" onClick={handleOpenPrintPreview}>
                 <Printer className="w-4 h-4 mr-1" />
                 {nl ? "Afdrukken / PDF" : "Print / PDF"}
@@ -237,56 +249,6 @@ export default function ReportsPage() {
                 <FileSpreadsheet className="w-4 h-4 mr-1" />
                 Excel (XLSX)
               </Button>
-            </div>
-          }
-        />
-
-        {exportNotice && (
-          <div className="alert alert-success mb-4 flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            <span>{exportNotice}</span>
-          </div>
-        )}
-
-        {/* Unified Report Definition, KPIs & Filter Toolbar */}
-        <section className="card reports-control-card">
-          <div className="reports-control-header">
-            <div className="reports-identity">
-              <div className="reports-identity-icon" aria-hidden="true">
-                <FileSpreadsheet className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="reports-title">
-                  {nl ? currentReportConfig.nameNl : currentReportConfig.name}
-                </h2>
-                <p className="reports-description">
-                  {nl
-                    ? currentReportConfig.descriptionNl
-                    : currentReportConfig.description}
-                </p>
-              </div>
-            </div>
-
-            <div
-              className="reports-metrics-inline"
-              aria-label={nl ? "Rapportstatistieken" : "Report summary metrics"}
-            >
-              {generated.metrics.map((m, idx) => (
-                <div key={idx} className="reports-metric-pill">
-                  <span className="reports-metric-pill-label">
-                    {nl ? m.labelNl : m.label}
-                  </span>
-                  <strong className="reports-metric-pill-value">{m.value}</strong>
-                </div>
-              ))}
-              <div className="reports-metric-pill reports-metric-pill--count">
-                <span className="reports-metric-pill-label">
-                  {nl ? "Records" : "Records"}
-                </span>
-                <strong className="reports-metric-pill-value">
-                  {generated.totalRecords}
-                </strong>
-              </div>
             </div>
           </div>
 
@@ -352,13 +314,39 @@ export default function ReportsPage() {
           </div>
         </section>
 
-        {/* Dynamic Report Data Table ("element tree" elevated right below) */}
+        {/* Dynamic Report Data Table Card with Metrics and Compact Search on same toolbar */}
         <section className="card data-card reports-results-card">
-
           <DataTable
             id={`report-${selectedReportId}`}
             rows={generated.rows}
             columns={tableColumns}
+            filters={
+              <div
+                className="reports-toolbar-metrics"
+                aria-label={
+                  nl ? "Rapportstatistieken" : "Report summary metrics"
+                }
+              >
+                {generated.metrics.map((m, idx) => (
+                  <div key={idx} className="reports-metric-pill">
+                    <span className="reports-metric-pill-label">
+                      {nl ? m.labelNl : m.label}
+                    </span>
+                    <strong className="reports-metric-pill-value">
+                      {m.value}
+                    </strong>
+                  </div>
+                ))}
+                <div className="reports-metric-pill reports-metric-pill--count">
+                  <span className="reports-metric-pill-label">
+                    {nl ? "Records" : "Records"}
+                  </span>
+                  <strong className="reports-metric-pill-value">
+                    {generated.totalRecords}
+                  </strong>
+                </div>
+              </div>
+            }
             rowKey={(item: Record<string, any>) =>
               `${item.code || item.id || item.reference || item.auditId || item.assetCode || JSON.stringify(item)}`
             }
