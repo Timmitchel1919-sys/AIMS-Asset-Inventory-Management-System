@@ -264,62 +264,6 @@ export default function ReportsPage() {
             hideExport
             filters={
               <div className="reports-unified-filters">
-                <div className="reports-toolbar-filter reports-toolbar-filter--category">
-                  <label className="reports-toolbar-filter-label">
-                    {nl ? "Categorie" : "Category"}
-                  </label>
-                  <select
-                    className="reports-toolbar-filter-select"
-                    value={activeCategory}
-                    onChange={(e) =>
-                      handleCategoryChange(e.target.value as ReportCategory | "all")
-                    }
-                  >
-                    {CATEGORY_OPTIONS.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {nl ? cat.nl : cat.en}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="reports-toolbar-filter reports-toolbar-filter--report">
-                  <label className="reports-toolbar-filter-label">
-                    {nl ? "Rapport" : "Report"}
-                  </label>
-                  <select
-                    className="reports-toolbar-filter-select"
-                    value={selectedReportId}
-                    onChange={(e) => handleReportChange(e.target.value)}
-                  >
-                    {availableReports.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {nl ? r.nameNl : r.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="reports-toolbar-filter reports-toolbar-filter--location">
-                  <label className="reports-toolbar-filter-label">
-                    {nl ? "Locatie" : "Location"}
-                  </label>
-                  <select
-                    className="reports-toolbar-filter-select"
-                    value={filterLocation}
-                    onChange={(e) => setFilterLocation(e.target.value)}
-                  >
-                    <option value="">
-                      {nl ? "Alle Locaties" : "All Locations"}
-                    </option>
-                    {uniqueLocations.map((loc) => (
-                      <option key={loc} value={loc}>
-                        {loc}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
                 <div
                   className="reports-toolbar-metrics"
                   aria-label={
@@ -343,6 +287,64 @@ export default function ReportsPage() {
                     <strong className="reports-metric-pill-value">
                       {generated.totalRecords}
                     </strong>
+                  </div>
+                </div>
+
+                <div className="reports-toolbar-controls">
+                  <div className="reports-toolbar-filter reports-toolbar-filter--category">
+                    <label className="reports-toolbar-filter-label">
+                      {nl ? "Categorie" : "Category"}
+                    </label>
+                    <select
+                      className="reports-toolbar-filter-select"
+                      value={activeCategory}
+                      onChange={(e) =>
+                        handleCategoryChange(e.target.value as ReportCategory | "all")
+                      }
+                    >
+                      {CATEGORY_OPTIONS.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {nl ? cat.nl : cat.en}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="reports-toolbar-filter reports-toolbar-filter--report">
+                    <label className="reports-toolbar-filter-label">
+                      {nl ? "Rapport" : "Report"}
+                    </label>
+                    <select
+                      className="reports-toolbar-filter-select"
+                      value={selectedReportId}
+                      onChange={(e) => handleReportChange(e.target.value)}
+                    >
+                      {availableReports.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {nl ? r.nameNl : r.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="reports-toolbar-filter reports-toolbar-filter--location">
+                    <label className="reports-toolbar-filter-label">
+                      {nl ? "Locatie" : "Location"}
+                    </label>
+                    <select
+                      className="reports-toolbar-filter-select"
+                      value={filterLocation}
+                      onChange={(e) => setFilterLocation(e.target.value)}
+                    >
+                      <option value="">
+                        {nl ? "Alle Locaties" : "All Locations"}
+                      </option>
+                      {uniqueLocations.map((loc) => (
+                        <option key={loc} value={loc}>
+                          {loc}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </div>

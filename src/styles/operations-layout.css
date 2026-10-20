@@ -93,26 +93,54 @@
   border: none;
 }
 
-/* Single Unified Toolbar: Compact Search on Left, 4 Filters & Metrics on Same Bar */
+/* Single Unified Toolbar: Expanded Search on Left, Metrics on Top, Filters on Bottom on Same Bar */
 .reports-results-card .data-toolbar {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 14px;
+  padding: 8px 14px;
+  flex-wrap: nowrap;
 }
 
 .reports-results-card .data-toolbar .search {
-  width: 180px;
-  min-width: 140px;
-  max-width: 200px;
-  flex: none;
-  height: 32px;
+  width: 280px;
+  min-width: 220px;
+  max-width: 340px;
+  flex: 0 0 280px;
+  height: auto;
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border-subtle, #cbd5e1);
+  border-radius: 8px;
+  background: var(--color-surface, #ffffff);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.reports-results-card .data-toolbar .search:focus-within {
+  border-color: var(--color-primary, #2c7ef4);
+  box-shadow: 0 0 0 3px rgba(44, 126, 244, 0.15);
+}
+
+.reports-results-card .data-toolbar .search svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--color-text-muted, #94a3b8);
 }
 
 .reports-results-card .data-toolbar .search input {
-  height: 32px;
-  font-size: 0.8rem;
+  height: 100%;
+  width: 100%;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 0 !important;
+  background: transparent !important;
+  outline: 0 !important;
+  color: var(--color-text-primary, #0f172a);
 }
 
 .reports-results-card .data-toolbar__count {
@@ -121,59 +149,25 @@
 
 .reports-unified-filters {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
   gap: 8px;
-  flex-wrap: wrap;
   flex: 1;
   min-width: 0;
 }
 
-.reports-toolbar-filter {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.reports-toolbar-filter-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--color-text-secondary, #64748b);
-  white-space: nowrap;
-}
-
-.reports-toolbar-filter-select {
-  height: 32px;
-  padding: 0 24px 0 8px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border: 1px solid var(--color-border-subtle, #cbd5e1);
-  border-radius: 6px;
-  background: var(--color-surface, #ffffff);
-  color: var(--color-text-primary, #0f172a);
-  outline: none;
-  cursor: pointer;
-  max-width: 170px;
-}
-
-.reports-toolbar-filter--report .reports-toolbar-filter-select {
-  max-width: 200px;
-}
-
 .reports-toolbar-metrics {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  flex-wrap: nowrap;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .reports-metric-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 10px;
+  padding: 3px 12px;
   height: 28px;
   border-radius: 9999px;
   background: var(--color-surface-secondary, var(--color-background-secondary, #f8fafc));
@@ -200,6 +194,52 @@
 
 .reports-metric-pill--count .reports-metric-pill-value {
   color: var(--color-primary, #2c7ef4);
+}
+
+.reports-toolbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reports-toolbar-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reports-toolbar-filter-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-secondary, #64748b);
+  white-space: nowrap;
+}
+
+.reports-toolbar-filter-select {
+  height: 32px;
+  padding: 0 24px 0 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid var(--color-border-subtle, #cbd5e1);
+  border-radius: 6px;
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text-primary, #0f172a);
+  outline: none;
+  cursor: pointer;
+  max-width: 170px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.reports-toolbar-filter-select:focus {
+  border-color: var(--color-primary, #2c7ef4);
+  box-shadow: 0 0 0 2px rgba(44, 126, 244, 0.15);
+}
+
+.reports-toolbar-filter--report .reports-toolbar-filter-select {
+  max-width: 220px;
 }
 
 .reports-results-card .data-toolbar .table-actions {
@@ -245,6 +285,8 @@
   .reports-results-card .data-toolbar .search {
     width: 100%;
     max-width: none;
+    min-height: 44px;
+    flex: 1 1 100%;
   }
 
   .reports-unified-filters {

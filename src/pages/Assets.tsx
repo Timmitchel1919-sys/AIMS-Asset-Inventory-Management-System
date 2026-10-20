@@ -74,7 +74,7 @@ const emptyResult: ListResult<Asset> = {
   hasPrevious: false,
 };
 
-function formatIctData(value: string | undefined | null, column: string): string {
+export function formatIctData(value: string | undefined | null, column: string): string {
   if (!value) return "—";
   const trimmed = value.trim();
   if (!trimmed || trimmed === "—") return "—";
@@ -85,8 +85,32 @@ function formatIctData(value: string | undefined | null, column: string): string
   if (column === "code" || column === "codeGroup") {
     return trimmed;
   }
-  if (/^sharp(\s.*)?$/i.test(trimmed) && column === "brand") {
-    return "Sharp";
+  if (/^hp$/i.test(trimmed)) {
+    return "HP";
+  }
+  if (/^hs-p010k$/i.test(trimmed)) {
+    return "HS-P010K";
+  }
+  if (/^pn-l862b$/i.test(trimmed)) {
+    return "PN-L862B";
+  }
+  if (column === "brand") {
+    if (/^sharp(\s.*)?$/i.test(trimmed)) return "Sharp";
+    if (/^apc$/i.test(trimmed)) return "APC";
+    if (/^ibm$/i.test(trimmed)) return "IBM";
+  }
+  if (column === "model") {
+    return trimmed;
+  }
+  if (/^kh\s*nieuw\s*bouw/i.test(trimmed) || /^kangoeroe\s*high\s*nieuw\s*bouw/i.test(trimmed)) {
+    return trimmed
+      .replace(/^kangoeroe\s*high\s*nieuw\s*bouw/i, "KH nieuw bouw")
+      .replace(/^kh\s*nieuw\s*bouw/i, "KH nieuw bouw")
+      .replace(/\/\s*computer\s*lokaal/i, "/ Computer lokaal")
+      .replace(/\/\s*ict-?storage/i, "/ ICT-Storage");
+  }
+  if (/^computer\s*lokaal$/i.test(trimmed)) {
+    return "Computer lokaal";
   }
   if (/^kcs\s*basis$/i.test(trimmed)) {
     return "KCS Basis";
