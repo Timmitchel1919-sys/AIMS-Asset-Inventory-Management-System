@@ -825,6 +825,24 @@ td[data-column-id="code"] {
   white-space: normal;
   overflow-wrap: break-word;
 }
+/* Automatic Column Width Adjustment & Word Wrapping for Assets */
+.data-table-assets table {
+  table-layout: auto;
+  width: 100%;
+}
+.data-table-assets th,
+.data-table-assets td {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+.data-table-assets th[data-column-id="serial"],
+.data-table-assets td[data-column-id="serial"] {
+  white-space: nowrap;
+  word-break: keep-all;
+  text-transform: uppercase;
+}
 td strong,
 td b {
   color: var(--color-text-primary);

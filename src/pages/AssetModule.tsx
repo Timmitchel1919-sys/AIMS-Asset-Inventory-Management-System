@@ -391,7 +391,7 @@ export function AssetHistory() {
             id: `created-${current.id}`,
             type: "creation",
             date: current.dateAdded || current.purchaseDate,
-            user: current.createdBy || "Naomi Williams",
+            user: current.createdBy || "Shaquil Alienda",
             detail: `${current.code} · ${current.name}`,
             before: "—",
             after: current.status,

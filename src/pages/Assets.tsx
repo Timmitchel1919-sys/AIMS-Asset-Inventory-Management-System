@@ -73,6 +73,46 @@ const emptyResult: ListResult<Asset> = {
   hasNext: false,
   hasPrevious: false,
 };
+
+function formatIctData(value: string | undefined | null, column: string): string {
+  if (!value) return "—";
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "—") return "—";
+
+  if (column === "serial") {
+    return trimmed.toUpperCase();
+  }
+  if (column === "code" || column === "codeGroup") {
+    return trimmed;
+  }
+  if (/^sharp(\s.*)?$/i.test(trimmed) && column === "brand") {
+    return "Sharp";
+  }
+  if (/^kcs\s*basis$/i.test(trimmed)) {
+    return "KCS Basis";
+  }
+  if (/^kcs\s*boven\s*bouw$/i.test(trimmed) || /^kcs\s*bovenbouw$/i.test(trimmed)) {
+    return "KCS Boven bouw";
+  }
+  if (/^cabin$/i.test(trimmed)) {
+    return "Cabin";
+  }
+  if (/^ict\s*kantoor$/i.test(trimmed)) {
+    return "ICT Kantoor";
+  }
+  if (/^\d+[a-zA-Z]$/.test(trimmed)) {
+    return trimmed.toUpperCase();
+  }
+  if (column === "assignee") {
+    return trimmed
+      .split(/\s+/)
+      .map((part) => (part ? part.charAt(0).toUpperCase() + part.slice(1).toLowerCase() : ""))
+      .join(" ");
+  }
+
+  // Capitalize first letter, rest lowercase (preserve words >10 chars for wrapping)
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+}
 const filterDefinitions = [
   ["codePrefix", "assets.codeGroup"],
   ["category", "assets.category"],
@@ -322,16 +362,16 @@ export default function Assets() {
         id: "brand",
         label: t("assets.brand"),
         sortable: true,
-        render: (asset) => asset.brand,
-        value: (asset) => asset.brand,
+        render: (asset) => formatIctData(asset.brand, "brand"),
+        value: (asset) => formatIctData(asset.brand, "brand"),
       },
       {
         id: "name",
         label: t("assets.asset"),
         required: true,
         sortable: true,
-        render: (asset) => <strong>{asset.name}</strong>,
-        value: (asset) => asset.name,
+        render: (asset) => <strong>{formatIctData(asset.name, "name")}</strong>,
+        value: (asset) => formatIctData(asset.name, "name"),
       },
       {
         id: "codeGroup",
@@ -344,39 +384,51 @@ export default function Assets() {
         id: "model",
         label: t("assets.model"),
         sortable: true,
-        render: (asset) => asset.model,
-        value: (asset) => asset.model,
+        render: (asset) => formatIctData(asset.model, "model"),
+        value: (asset) => formatIctData(asset.model, "model"),
       },
       {
         id: "serial",
         label: t("assets.serial"),
         sortable: true,
-        render: (asset) => asset.serialNumber || "—",
-        value: (asset) => asset.serialNumber,
+        render: (asset) => (
+          <span style={{ fontFamily: "var(--font-mono, monospace)", textTransform: "uppercase" }}>
+            {formatIctData(asset.serialNumber, "serial")}
+          </span>
+        ),
+        value: (asset) => formatIctData(asset.serialNumber, "serial"),
       },
       {
         id: "location",
         label: t("assets.location"),
         sortable: true,
-        render: (asset) => asset.location,
-        value: (asset) => asset.location,
+        render: (asset) => formatIctData(asset.location, "location"),
+        value: (asset) => formatIctData(asset.location, "location"),
       },
       {
         id: "department",
         label: t("assets.department"),
         sortable: true,
         // Read through the canonical id so a renamed department shows everywhere.
-        render: (asset) => assetDepartmentName(asset, snapshot.references),
-        value: (asset) => assetDepartmentName(asset, snapshot.references),
+        render: (asset) =>
+          formatIctData(assetDepartmentName(asset, snapshot.references), "department"),
+        value: (asset) =>
+          formatIctData(assetDepartmentName(asset, snapshot.references), "department"),
       },
       {
         id: "assignee",
         label: t("assets.assignee"),
         sortable: true,
         render: (asset) =>
-          assetAssigneeName(asset, snapshot.users) || asset.responsibleEmployee,
+          formatIctData(
+            assetAssigneeName(asset, snapshot.users) || asset.responsibleEmployee,
+            "assignee",
+          ),
         value: (asset) =>
-          assetAssigneeName(asset, snapshot.users) || asset.responsibleEmployee,
+          formatIctData(
+            assetAssigneeName(asset, snapshot.users) || asset.responsibleEmployee,
+            "assignee",
+          ),
       },
       {
         id: "condition",

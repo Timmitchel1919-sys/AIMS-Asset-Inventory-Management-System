@@ -433,7 +433,7 @@ export function ResponsiveDataList<T>({
           ),
     );
   return (
-    <div className="data-table" data-testid={`table-${id}`}>
+    <div className={`data-table data-table-${id}`} data-testid={`table-${id}`}>
       <div className="table-scroll desktop-table">
         <table>
           <thead>

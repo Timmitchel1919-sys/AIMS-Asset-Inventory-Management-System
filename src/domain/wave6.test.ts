@@ -32,8 +32,8 @@ describe('Wave 6 audit execution rules',()=>{
     {id:'2',recordId:'b',recordType:'inventory',code:'INV-1',name:'B',category:'Stock',location:'Store',department:'ICT',expectedStatus:'In stock',expectedQuantity:10,countedQuantity:8,variance:-2,result:'Quantity Shortage'}
   ];
   it('validates configuration and deadline order',()=>{
-    expect(auditConfigurationValid({deadline:'2026-08-31',auditors:['Naomi'],method:'Percentage',value:20})).toBe(true);
-    expect(auditConfigurationValid({start:'2026-09-01',deadline:'2026-08-31',auditors:['Naomi'],method:'Fixed count',value:2})).toBe(false);
+    expect(auditConfigurationValid({deadline:'2026-08-31',auditors:['Shaquil'],method:'Percentage',value:20})).toBe(true);
+    expect(auditConfigurationValid({start:'2026-09-01',deadline:'2026-08-31',auditors:['Shaquil'],method:'Fixed count',value:2})).toBe(false);
   });
   it('enforces audit transitions and closure immutability',()=>{
     expect(canTransitionAudit('Prepared','In Progress')).toBe(true);

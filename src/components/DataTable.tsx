@@ -35,6 +35,9 @@ export interface DataTableProps<T> {
   ) => Promise<void> | void;
   filters?: ReactNode;
   totalLabel?: string;
+  hideExport?: boolean;
+  query?: string;
+  onQueryChange?: (query: string) => void;
 }
 
 const quote = (value: string) => `"${value.replaceAll('"', '""')}"`;
@@ -57,6 +60,9 @@ export function DataTable<T>({
   onBulkAction,
   filters,
   totalLabel,
+  hideExport = false,
+  query: externalQuery,
+  onQueryChange,
 }: DataTableProps<T>) {
   const { language, formatDate, formatDateTime } = useApp();
   const nl = language === "nl";
@@ -76,7 +82,15 @@ export function DataTable<T>({
     const shown = toDisplay(column.id, column.text ? String(column.text(row)) : column.render(row));
     return typeof shown === "string" && shown !== raw ? `${raw} ${shown}` : raw;
   };
-  const [query, setQuery] = useState("");
+  const isControlledQuery = typeof externalQuery === "string";
+  const [internalQuery, setInternalQuery] = useState("");
+  const query = isControlledQuery ? externalQuery : internalQuery;
+  const setQuery = (value: string) => {
+    if (!isControlledQuery) {
+      setInternalQuery(value);
+    }
+    onQueryChange?.(value);
+  };
   const [selected, setSelected] = useState<string[]>([]);
   const [visible, setVisible] = useState<string[]>(() => {
     try {
@@ -259,12 +273,14 @@ export function DataTable<T>({
           {totalLabel ?? (nl ? "totaal records" : "total records")}
         </span>
         {filters}
-        <div className="table-actions">
-          <Button variant="secondary" onClick={exportCsv}>
-            <Download />
-            {nl ? "Exporteren" : "Export"}
-          </Button>
-        </div>
+        {!hideExport && (
+          <div className="table-actions">
+            <Button variant="secondary" onClick={exportCsv}>
+              <Download />
+              {nl ? "Exporteren" : "Export"}
+            </Button>
+          </div>
+        )}
       </div>
       {query && (
         <div className="filter-chips">

@@ -62,7 +62,7 @@ const demoUsers: Record<Role, User> = {
   },
   administrator: {
     id: "u1",
-    name: "Naomi Williams",
+    name: "Shaquil Alienda",
     email: "admin@kcs.example",
     role: "administrator",
     department: "ICT",

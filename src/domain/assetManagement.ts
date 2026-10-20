@@ -93,7 +93,7 @@ export function assetFormSchema(messages: ValidationMessages, isEdit = false) {
       category: requiredText(),
       subcategory: z.string(),
       assetTypeId: z.string(),
-      type: requiredText(),
+      type: z.string(),
       brand: z.string(),
       model: z.string(),
       serialNumber: isEdit ? z.string() : z.string().trim().min(3, messages.serial),

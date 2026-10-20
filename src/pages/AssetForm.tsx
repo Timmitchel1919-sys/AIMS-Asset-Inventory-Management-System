@@ -64,7 +64,9 @@ const statuses: AssetStatus[] = [
   "Disposed",
   "Archived",
 ];
-const conditions: readonly Condition[] = ASSET_CONDITIONS;
+const conditions: readonly Condition[] = ASSET_CONDITIONS.filter(
+  (c) => c !== "Excellent" && c !== "Poor",
+);
 const split = (value?: string) =>
   (value || "")
     .split(",")
@@ -108,7 +110,7 @@ export default function AssetForm() {
         brand: existing.brand,
         model: existing.model,
         serialNumber: existing.serialNumber,
-        barcode: existing.barcode || "",
+        barcode: existing.barcode || existing.code,
         status: existing.status,
         condition: existing.condition,
         location: existing.location,
@@ -189,6 +191,16 @@ export default function AssetForm() {
     if (chosen && !assetTypeAllowed(chosen, relations))
       setValue("assetTypeId", "", { shouldDirty: true });
   }, [watchedValues.category, relations, existing, setValue, getValues]);
+
+  // Barcode rule: When adding a new asset, automatically set barcode to matching inv.code
+  useEffect(() => {
+    if (!existing && watchedValues.codePrefix && watchedValues.codeNumber) {
+      const computedCode = `${watchedValues.codePrefix}-${watchedValues.codeNumber}`;
+      if (!watchedValues.barcode || watchedValues.barcode.startsWith(watchedValues.codePrefix)) {
+        setValue("barcode", computedCode, { shouldValidate: true });
+      }
+    }
+  }, [watchedValues.codePrefix, watchedValues.codeNumber, existing, setValue, watchedValues.barcode]);
   const draftAutosave = useAutosaveDraft({
     key: draftKey,
     value: watchedValues,
@@ -264,12 +276,15 @@ export default function AssetForm() {
         item.kind === "department" &&
         (item.name === values.department || item.id === values.department),
     );
+    const invCode = existing ? existing.code : `${values.codePrefix}-${values.codeNumber}`;
+    const finalBarcode = values.barcode?.trim() || invCode;
     const result = await repository.execute({
       action: existing ? "asset.edit" : "asset.create",
       entityId: existing?.id,
       actor: app.user?.name,
       values: {
         ...values,
+        barcode: finalBarcode,
         department: deptRef?.name || values.department,
         departmentId: deptRef?.id || existing?.departmentId || null,
         location: selectedLocation?.name || values.location,
@@ -441,12 +456,6 @@ export default function AssetForm() {
                       ))}
                   </SelectField>
                 )}
-                <Field
-                  label={a("itemType")}
-                  required
-                  error={errors.type?.message}
-                  {...register("type")}
-                />
                 <Field label={a("brand")} {...register("brand")} />
                 <Field label={a("model")} {...register("model")} />
                 <Field
@@ -513,17 +522,18 @@ export default function AssetForm() {
                         {dept.name}
                       </option>
                     ))}
-                  {existing?.department &&
+                    {existing?.department &&
                     !(snapshot.references || []).some(
                       (item) => item.kind === "department" && item.name === existing.department,
                     ) && (
                       <option value={existing.department}>{existing.department}</option>
                     )}
+                  {!(snapshot.references || []).some(
+                    (item) => item.kind === "department" && item.name === "Groep 4B",
+                  ) && existing?.department !== "Groep 4B" && (
+                    <option value="Groep 4B">Groep 4B</option>
+                  )}
                 </SelectField>
-                <Field
-                  label={app.language === "nl" ? "Ruimte" : "Room"}
-                  {...register("location")}
-                />
                 <Field label={a("assignedUser")} {...register("assignedTo")} />
                 <Field
                   label={app.language === "nl" ? "Afdeling" : "Department"}

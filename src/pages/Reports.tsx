@@ -223,7 +223,7 @@ export default function ReportsPage() {
           </div>
         )}
 
-        {/* Unified Top Card: Reporting & Export Center Panel + Filter Controls */}
+        {/* Sleek Top Panel: Reporting & Export Center */}
         <section className="card reports-panel-card">
           <div className="reports-panel-header">
             <div>
@@ -251,99 +251,99 @@ export default function ReportsPage() {
               </Button>
             </div>
           </div>
-
-          <div className="reports-filter-grid">
-            <div className="reports-category-select">
-              <SelectField
-                label={nl ? "Categorie" : "Category"}
-                value={activeCategory}
-                onChange={(e) =>
-                  handleCategoryChange(e.target.value as ReportCategory | "all")
-                }
-              >
-                {CATEGORY_OPTIONS.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {nl ? cat.nl : cat.en}
-                  </option>
-                ))}
-              </SelectField>
-            </div>
-
-            <div className="reports-report-select">
-              <SelectField
-                label={
-                  nl ? "Selecteer Rapportdefinitie" : "Select Report Definition"
-                }
-                value={selectedReportId}
-                onChange={(e) => handleReportChange(e.target.value)}
-              >
-                {availableReports.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {nl ? r.nameNl : r.name}
-                  </option>
-                ))}
-              </SelectField>
-            </div>
-
-            <div className="reports-search-field">
-              <Field
-                label={nl ? "Snel Zoeken" : "Quick Search"}
-                type="text"
-                placeholder={nl ? "Filter records…" : "Filter records…"}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-
-            <div className="reports-location-select">
-              <SelectField
-                label={nl ? "Locatiefilter" : "Location Filter"}
-                value={filterLocation}
-                onChange={(e) => setFilterLocation(e.target.value)}
-              >
-                <option value="">
-                  {nl ? "Alle Locaties" : "All Locations"}
-                </option>
-                {uniqueLocations.map((loc) => (
-                  <option key={loc} value={loc}>
-                    {loc}
-                  </option>
-                ))}
-              </SelectField>
-            </div>
-          </div>
         </section>
 
-        {/* Dynamic Report Data Table Card with Metrics and Compact Search on same toolbar */}
+        {/* Dynamic Report Data Table Card with Unified Filters, Metrics and Compact Search on Same Horizontal Bar */}
         <section className="card data-card reports-results-card">
           <DataTable
             id={`report-${selectedReportId}`}
             rows={generated.rows}
             columns={tableColumns}
+            query={search}
+            onQueryChange={setSearch}
+            hideExport
             filters={
-              <div
-                className="reports-toolbar-metrics"
-                aria-label={
-                  nl ? "Rapportstatistieken" : "Report summary metrics"
-                }
-              >
-                {generated.metrics.map((m, idx) => (
-                  <div key={idx} className="reports-metric-pill">
+              <div className="reports-unified-filters">
+                <div className="reports-toolbar-filter reports-toolbar-filter--category">
+                  <label className="reports-toolbar-filter-label">
+                    {nl ? "Categorie" : "Category"}
+                  </label>
+                  <select
+                    className="reports-toolbar-filter-select"
+                    value={activeCategory}
+                    onChange={(e) =>
+                      handleCategoryChange(e.target.value as ReportCategory | "all")
+                    }
+                  >
+                    {CATEGORY_OPTIONS.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {nl ? cat.nl : cat.en}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="reports-toolbar-filter reports-toolbar-filter--report">
+                  <label className="reports-toolbar-filter-label">
+                    {nl ? "Rapport" : "Report"}
+                  </label>
+                  <select
+                    className="reports-toolbar-filter-select"
+                    value={selectedReportId}
+                    onChange={(e) => handleReportChange(e.target.value)}
+                  >
+                    {availableReports.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {nl ? r.nameNl : r.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="reports-toolbar-filter reports-toolbar-filter--location">
+                  <label className="reports-toolbar-filter-label">
+                    {nl ? "Locatie" : "Location"}
+                  </label>
+                  <select
+                    className="reports-toolbar-filter-select"
+                    value={filterLocation}
+                    onChange={(e) => setFilterLocation(e.target.value)}
+                  >
+                    <option value="">
+                      {nl ? "Alle Locaties" : "All Locations"}
+                    </option>
+                    {uniqueLocations.map((loc) => (
+                      <option key={loc} value={loc}>
+                        {loc}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div
+                  className="reports-toolbar-metrics"
+                  aria-label={
+                    nl ? "Rapportstatistieken" : "Report summary metrics"
+                  }
+                >
+                  {generated.metrics.map((m, idx) => (
+                    <div key={idx} className="reports-metric-pill">
+                      <span className="reports-metric-pill-label">
+                        {nl ? m.labelNl : m.label}
+                      </span>
+                      <strong className="reports-metric-pill-value">
+                        {m.value}
+                      </strong>
+                    </div>
+                  ))}
+                  <div className="reports-metric-pill reports-metric-pill--count">
                     <span className="reports-metric-pill-label">
-                      {nl ? m.labelNl : m.label}
+                      {nl ? "Records" : "Records"}
                     </span>
                     <strong className="reports-metric-pill-value">
-                      {m.value}
+                      {generated.totalRecords}
                     </strong>
                   </div>
-                ))}
-                <div className="reports-metric-pill reports-metric-pill--count">
-                  <span className="reports-metric-pill-label">
-                    {nl ? "Records" : "Records"}
-                  </span>
-                  <strong className="reports-metric-pill-value">
-                    {generated.totalRecords}
-                  </strong>
                 </div>
               </div>
             }
@@ -351,7 +351,7 @@ export default function ReportsPage() {
               `${item.code || item.id || item.reference || item.auditId || item.assetCode || JSON.stringify(item)}`
             }
             searchPlaceholder={
-              nl ? "Zoek in resultaten…" : "Search within results…"
+              nl ? "Snel zoeken…" : "Quick search…"
             }
             emptyTitle={nl ? "Geen records gevonden" : "No records found"}
             emptyDescription={

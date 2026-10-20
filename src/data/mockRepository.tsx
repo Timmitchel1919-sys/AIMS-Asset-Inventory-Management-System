@@ -129,9 +129,9 @@ const inventorySeeds: InventoryItem[] = [
     lastPurchaseDate: "2026-06-14",
     unitCost: 4.25,
     currency: "SRD",
-    createdBy: "Naomi Williams",
+    createdBy: "Shaquil Alienda",
     createdAt: "2026-01-10",
-    modifiedBy: "Naomi Williams",
+    modifiedBy: "Shaquil Alienda",
     lastUpdated: "2026-07-29",
     archived: false,
   },
@@ -159,7 +159,7 @@ const inventorySeeds: InventoryItem[] = [
     location: "Kangoeroe School Bovenbouw",
     department: "Rack B-02",
     expirationDate: "2028-05-01",
-    createdBy: "Naomi Williams",
+    createdBy: "Shaquil Alienda",
     createdAt: "2026-02-11",
     modifiedBy: "Michael King",
     lastUpdated: "2026-07-28",
@@ -188,9 +188,9 @@ const inventorySeeds: InventoryItem[] = [
     shelf: "C-11",
     location: "Kangoeroe School Bovenbouw",
     department: "Shelf C-11",
-    createdBy: "Naomi Williams",
+    createdBy: "Shaquil Alienda",
     createdAt: "2026-03-04",
-    modifiedBy: "Naomi Williams",
+    modifiedBy: "Shaquil Alienda",
     lastUpdated: "2026-07-27",
     archived: false,
   },
@@ -280,7 +280,7 @@ const referenceSeeds: ReferenceRecord[] = [
     type: "Campus",
     status: "Active",
     relatedCount: 6,
-    details: { manager: "Naomi Williams" },
+    details: { manager: "Shaquil Alienda" },
   },
   {
     id: "loc-2",
@@ -417,7 +417,7 @@ const officialMainLocations: ReferenceRecord[] = [
     containerLocationId: null,
     status: "Active",
     relatedCount: 0,
-    details: { manager: "Naomi Williams" },
+    details: { manager: "Shaquil Alienda" },
     createdAt: "2026-08-06T00:00:00.000Z",
     updatedAt: "2026-08-06T00:00:00.000Z",
   },
@@ -445,7 +445,7 @@ const officialMainLocations: ReferenceRecord[] = [
     containerLocationId: null,
     status: "Active",
     relatedCount: 0,
-    details: { manager: "Naomi Williams" },
+    details: { manager: "Shaquil Alienda" },
     createdAt: "2026-08-06T00:00:00.000Z",
     updatedAt: "2026-08-06T00:00:00.000Z",
   },
@@ -473,7 +473,7 @@ const migratedReferenceSeeds: ReferenceRecord[] = [
 const userSeeds: SystemUser[] = [
   {
     id: "u1",
-    name: "Naomi Williams",
+    name: "Shaquil Alienda",
     email: "admin@kcs.example",
     role: "Administrator",
     department: "ICT",
@@ -906,7 +906,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
       : [];
     const base = {
       at: now(),
-      user: command.actor || "Naomi Williams",
+      user: command.actor || "Shaquil Alienda",
       action: command.action,
       entityType: command.action.split(".")[0],
       entityId: result.entityId || command.entityId || "batch",
@@ -993,7 +993,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
     const asset = this.historyAsset(command, result);
     if (!asset) return;
     const previousAsset = before.assets.find((item) => item.id === asset.id);
-    const actor = command.actor || "Naomi Williams";
+    const actor = command.actor || "Shaquil Alienda";
     const event: AssetHistoryEvent = {
       id: this.nextHistoryId(),
       assetId: asset.id,
@@ -1164,9 +1164,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             warrantyStart: String(v.warrantyStart || ""),
             warrantyExpiry: String(v.warrantyExpiry || today()),
             dateAdded: today(),
-            createdBy: command.actor || "Naomi Williams",
+            createdBy: command.actor || "Shaquil Alienda",
             lastUpdated: today(),
-            lastModifiedBy: command.actor || "Naomi Williams",
+            lastModifiedBy: command.actor || "Shaquil Alienda",
             maintenanceRequired: false,
             technicalSpecifications: (v.technicalSpecifications ||
               {}) as Record<string, string>,
@@ -1193,7 +1193,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               status: "ACTIVE",
               source: "created",
               createdAt: today(),
-              createdBy: command.actor || "Naomi Williams",
+              createdBy: command.actor || "Shaquil Alienda",
             },
             ...this.state.qrIdentities,
           ];
@@ -1270,7 +1270,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           Object.assign(a, values, {
             serialNumber: serial,
             lastUpdated: today(),
-            lastModifiedBy: command.actor || "Naomi Williams",
+            lastModifiedBy: command.actor || "Shaquil Alienda",
           });
           this.syncAssetReferences(a);
           result = {
@@ -1300,7 +1300,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           const destPath = locationPath(this.state.references, destId, {
             bin: String(v.destinationBin || "") || undefined,
           });
-          const actor = command.actor || "Naomi Williams";
+          const actor = command.actor || "Shaquil Alienda";
           let moved = 0;
           for (const assetId of assetIds) {
             const a = this.state.assets.find((x) => x.id === assetId);
@@ -1362,7 +1362,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           ).filter((id) => this.state.assets.some((asset) => asset.id === id));
           if (!assetIds.length)
             throw new Error("Select at least one asset to provision.");
-          const actor = command.actor || "Naomi Williams";
+          const actor = command.actor || "Shaquil Alienda";
           let provisioned = 0;
           let repaired = 0;
           for (const assetId of assetIds) {
@@ -1442,7 +1442,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             throw new Error("This QR identity is already revoked.");
           identity.status = "REVOKED";
           identity.revokedAt = today();
-          identity.revokedBy = command.actor || "Naomi Williams";
+          identity.revokedBy = command.actor || "Shaquil Alienda";
           if (a.qrToken === token) {
             a.qrToken = undefined;
             a.qr = false;
@@ -1466,7 +1466,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           if (identity.status === "ACTIVE") {
             identity.status = "REVOKED";
             identity.revokedAt = today();
-            identity.revokedBy = command.actor || "Naomi Williams";
+            identity.revokedBy = command.actor || "Shaquil Alienda";
           }
           let replacement = generateQrToken();
           while (
@@ -1485,7 +1485,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               status: "ACTIVE",
               source: "rotated",
               createdAt: today(),
-              createdBy: command.actor || "Naomi Williams",
+              createdBy: command.actor || "Shaquil Alienda",
             },
             ...this.state.qrIdentities,
           ];
@@ -1506,7 +1506,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             a,
             command.action === "asset.return",
             v as Record<string, unknown>,
-            command.actor || "Naomi Williams",
+            command.actor || "Shaquil Alienda",
           );
           result = {
             ok: true,
@@ -1644,9 +1644,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             source: "manual",
             createdAt: existing?.createdAt || timestamp,
             occurredAt: String(v.occurredAt || timestamp),
-            createdBy: existing?.createdBy || command.actor || "Naomi Williams",
+            createdBy: existing?.createdBy || command.actor || "Shaquil Alienda",
             performedBy: String(
-              v.performedBy || command.actor || "Naomi Williams",
+              v.performedBy || command.actor || "Shaquil Alienda",
             ),
             isLegacyImport: false,
             isManual: true,
@@ -1690,7 +1690,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             throw new Error("Only manual drafts may be deleted.");
           event.isArchived = true;
           event.archivedAt = now();
-          event.archivedBy = command.actor || "Naomi Williams";
+          event.archivedBy = command.actor || "Shaquil Alienda";
           event.updatedAt = now();
           event.version += 1;
           result = {
@@ -1720,8 +1720,8 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             sourceRecordId: original.id,
             createdAt: now(),
             occurredAt: now(),
-            createdBy: command.actor || "Naomi Williams",
-            performedBy: command.actor || "Naomi Williams",
+            createdBy: command.actor || "Shaquil Alienda",
+            performedBy: command.actor || "Shaquil Alienda",
             isManual: true,
             version: 1,
           };
@@ -1935,9 +1935,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             expirationDate: String(v.expirationDate || ""),
             notes: String(v.notes || ""),
             attachments: [],
-            createdBy: command.actor || "Naomi Williams",
+            createdBy: command.actor || "Shaquil Alienda",
             createdAt: now(),
-            modifiedBy: command.actor || "Naomi Williams",
+            modifiedBy: command.actor || "Shaquil Alienda",
             lastUpdated: now(),
             archived: false,
           };
@@ -1965,7 +1965,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           const protectedFields = ["onHand", "reserved"];
           protectedFields.forEach((field) => delete v[field]);
           Object.assign(item, v, {
-            modifiedBy: command.actor || "Naomi Williams",
+            modifiedBy: command.actor || "Shaquil Alienda",
             lastUpdated: now(),
           });
           result = {
@@ -2053,7 +2053,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             quantity,
             fulfilledQuantity: 0,
             requestedBy: String(
-              v.requestedBy || command.actor || "Naomi Williams",
+              v.requestedBy || command.actor || "Shaquil Alienda",
             ),
             beneficiary: String(v.beneficiary || v.department || "ICT"),
             purpose: String(v.purpose || v.reason || "Operational requirement"),
@@ -2061,7 +2061,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             expirationDate: String(v.expirationDate || today()),
             approvedBy:
               command.action === "stock.reserve"
-                ? command.actor || "Naomi Williams"
+                ? command.actor || "Shaquil Alienda"
                 : undefined,
             status: command.action === "stock.reserve" ? "Active" : "Pending",
             notes: String(v.notes || ""),
@@ -2127,7 +2127,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           if (command.action === "reservation.approve") {
             item.reserved = reserveStock(item, quantity);
             reservation.status = "Active";
-            reservation.approvedBy = command.actor || "Naomi Williams";
+            reservation.approvedBy = command.actor || "Shaquil Alienda";
           } else if (command.action === "reservation.fulfill") {
             const next = fulfillReservation(
               item.onHand,
@@ -2203,17 +2203,17 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             assetCode: a.code,
             assetName: a.name,
             category: a.category,
-            assignee: String(v.assignee || "Naomi Williams"),
+            assignee: String(v.assignee || "Shaquil Alienda"),
             assigneeUserId:
               String(v.assigneeUserId || "") ||
-              this.userIdFor(String(v.assignee || "Naomi Williams")),
+              this.userIdFor(String(v.assignee || "Shaquil Alienda")),
             assigneeType: String(v.assigneeType || "Employee"),
             department: String(v.department || "ICT"),
             location: String(v.location || a.location),
             assignedAt: at,
             expectedReturn: expected,
             assignedBy: String(
-              v.assignedBy || command.actor || "Naomi Williams",
+              v.assignedBy || command.actor || "Shaquil Alienda",
             ),
             approvedBy: String(v.approvedBy || ""),
             status: "Active",
@@ -2234,15 +2234,15 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             signature: String(
               v.signature || v.assigneeSignature || "Mock signature captured",
             ),
-            createdBy: command.actor || "Naomi Williams",
+            createdBy: command.actor || "Shaquil Alienda",
             createdAt: now(),
-            modifiedBy: command.actor || "Naomi Williams",
+            modifiedBy: command.actor || "Shaquil Alienda",
             lastUpdated: now(),
             history: [
               {
                 id: "h-1",
                 at: now(),
-                user: command.actor || "Naomi Williams",
+                user: command.actor || "Shaquil Alienda",
                 type: "Creation",
                 description: "Assignment created and activated.",
                 next: { status: "Active" },
@@ -2304,12 +2304,12 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               v.department || assignment.department,
             );
           } else assignment.status = next;
-          assignment.modifiedBy = command.actor || "Naomi Williams";
+          assignment.modifiedBy = command.actor || "Shaquil Alienda";
           assignment.lastUpdated = now();
           assignment.history.unshift({
             id: id("h", assignment.history.length),
             at: now(),
-            user: command.actor || "Naomi Williams",
+            user: command.actor || "Shaquil Alienda",
             type: command.action,
             description: `Assignment changed from ${previous} to ${assignment.status}.`,
             previous: { status: previous },
@@ -2335,7 +2335,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           assignment.returnedAt = returnDate;
           assignment.returnedBy = String(v.returnedBy || assignment.assignee);
           assignment.receivedBy = String(
-            v.receivedBy || command.actor || "Naomi Williams",
+            v.receivedBy || command.actor || "Shaquil Alienda",
           );
           assignment.conditionAtReturn = String(
             v.condition || assignment.conditionAtIssue,
@@ -2357,7 +2357,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           assignment.history.unshift({
             id: id("h", assignment.history.length),
             at: now(),
-            user: command.actor || "Naomi Williams",
+            user: command.actor || "Shaquil Alienda",
             type: "Return",
             description:
               "Assignment returned with explicit condition and accessory comparison.",
@@ -2444,14 +2444,14 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               {
                 id: "h-1",
                 at: now(),
-                user: command.actor || "Naomi Williams",
+                user: command.actor || "Shaquil Alienda",
                 type: "Request",
                 description: "Borrow request submitted.",
               },
             ],
-            createdBy: command.actor || "Naomi Williams",
+            createdBy: command.actor || "Shaquil Alienda",
             createdAt: now(),
-            modifiedBy: command.actor || "Naomi Williams",
+            modifiedBy: command.actor || "Shaquil Alienda",
             lastUpdated: now(),
           };
           this.state.borrows = [borrow, ...this.state.borrows];
@@ -2485,7 +2485,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               {
                 id: id("h", (b.history || []).length),
                 at: now(),
-                user: command.actor || "Naomi Williams",
+                user: command.actor || "Shaquil Alienda",
                 type: "Edit",
                 description: "Borrow request edited.",
                 reason: String(v.changeReason || "Administrative update"),
@@ -2556,13 +2556,13 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                 : b.approvalStatus;
           b.approvedBy =
             next === "Approved"
-              ? command.actor || "Naomi Williams"
+              ? command.actor || "Shaquil Alienda"
               : b.approvedBy;
           b.approvalDate = next === "Approved" ? today() : b.approvalDate;
           b.rejectionReason =
             next === "Rejected" ? String(v.reason) : b.rejectionReason;
           b.issuedBy =
-            next === "Issued" ? command.actor || "Naomi Williams" : b.issuedBy;
+            next === "Issued" ? command.actor || "Shaquil Alienda" : b.issuedBy;
           b.issueDate = next === "Issued" ? today() : b.issueDate;
           b.returnCondition = String(
             v.condition || b.returnCondition || b.condition,
@@ -2593,7 +2593,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             String(v.damageFound) === "true";
           b.receivedBy =
             command.action === "borrow.return"
-              ? String(v.receivedBy || command.actor || "Naomi Williams")
+              ? String(v.receivedBy || command.actor || "Shaquil Alienda")
               : b.receivedBy;
           b.actualReturnDate =
             next === "Returned"
@@ -2613,7 +2613,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             {
               id: id("h", (b.history || []).length),
               at: now(),
-              user: command.actor || "Naomi Williams",
+              user: command.actor || "Shaquil Alienda",
               type: command.action,
               description: `Borrow changed to ${next}.`,
               reason: String(v.reason || ""),
@@ -2677,7 +2677,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               v.problemTitle || v.issue || "Technical fault",
             ),
             reportedBy: String(
-              v.reportedBy || command.actor || "Naomi Williams",
+              v.reportedBy || command.actor || "Shaquil Alienda",
             ),
             reportedAt: now(),
             priority: (v.priority || "Medium") as Repair["priority"],
@@ -2694,12 +2694,12 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               {
                 id: "h-1",
                 at: now(),
-                user: command.actor || "Naomi Williams",
+                user: command.actor || "Shaquil Alienda",
                 type: "Reported",
                 description: "Repair reported.",
               },
             ],
-            createdBy: command.actor || "Naomi Williams",
+            createdBy: command.actor || "Shaquil Alienda",
             createdAt: now(),
             lastUpdated: now(),
             previousAssetStatus: a.status,
@@ -2800,7 +2800,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             {
               id: id("h", (r.history || []).length),
               at: now(),
-              user: command.actor || "Naomi Williams",
+              user: command.actor || "Shaquil Alienda",
               type: command.action,
               description: `Repair changed from ${previous} to ${next}.`,
               previous: { status: previous },
@@ -2820,7 +2820,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             r.finalAssetStatus = a.status;
             r.finalAssetCondition = a.condition;
             r.completedAt = now();
-            r.completedBy = command.actor || "Naomi Williams";
+            r.completedBy = command.actor || "Shaquil Alienda";
           }
           if (a && command.action === "repair.return")
             a.location = String(v.returnLocation || a.location);
@@ -2850,7 +2850,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             type: String(v.type || "Preventive inspection"),
             frequency,
             nextDate,
-            assignee: String(v.assignee || "Naomi Williams"),
+            assignee: String(v.assignee || "Shaquil Alienda"),
             status: "Scheduled",
             checklist: String(
               v.checklist ||
@@ -2865,13 +2865,13 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               {
                 id: "h-1",
                 at: now(),
-                user: command.actor || "Naomi Williams",
+                user: command.actor || "Shaquil Alienda",
                 type: "Schedule",
                 description: "Maintenance scheduled.",
               },
             ],
             active: true,
-            createdBy: command.actor || "Naomi Williams",
+            createdBy: command.actor || "Shaquil Alienda",
             createdAt: now(),
             lastUpdated: now(),
           };
@@ -3007,7 +3007,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             {
               id: id("h", (m.history || []).length),
               at: now(),
-              user: command.actor || "Naomi Williams",
+              user: command.actor || "Shaquil Alienda",
               type: command.action,
               description: `Maintenance changed from ${previous} to ${next}.`,
               previous: { status: previous },
@@ -3096,7 +3096,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           );
           if (!movement) throw new Error("Movement not found.");
           movement.approvedBy = String(
-            v.approvedBy || command.actor || "Naomi Williams",
+            v.approvedBy || command.actor || "Shaquil Alienda",
           );
           result = {
             ok: true,
@@ -3113,9 +3113,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             description: String(v.description || ""),
             auditType: String(v.auditType || "Random sample audit"),
             scope: String(v.scope || "Mixed inventory"),
-            assignee: String(v.assignee || command.actor || "Naomi Williams"),
+            assignee: String(v.assignee || command.actor || "Shaquil Alienda"),
             assignedAuditors: String(
-              v.assignee || command.actor || "Naomi Williams",
+              v.assignee || command.actor || "Shaquil Alienda",
             )
               .split(",")
               .map((x) => x.trim()),
@@ -3141,12 +3141,12 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               {
                 id: "h-1",
                 at: now(),
-                user: command.actor || "Naomi Williams",
+                user: command.actor || "Shaquil Alienda",
                 type: "Creation",
                 description: "Audit configuration created.",
               },
             ],
-            createdBy: command.actor || "Naomi Williams",
+            createdBy: command.actor || "Shaquil Alienda",
             createdAt: now(),
             lastUpdated: now(),
           };
@@ -3185,8 +3185,8 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               reference: `AUD-2026-${String(this.state.audits.length + 28).padStart(4, "0")}`,
               name: String(v.name || "Random inventory audit"),
               scope: `${selected.length} deterministic random candidates`,
-              assignee: String(v.assignee || "Naomi Williams"),
-              assignedAuditors: String(v.assignee || "Naomi Williams").split(
+              assignee: String(v.assignee || "Shaquil Alienda"),
+              assignedAuditors: String(v.assignee || "Shaquil Alienda").split(
                 ",",
               ),
               deadline: String(v.deadline || today()),
@@ -3205,7 +3205,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           }
           audit.randomSeed = seed;
           audit.strategyVersion = "seeded-fisher-yates-v1";
-          audit.generatedBy = command.actor || "Naomi Williams";
+          audit.generatedBy = command.actor || "Shaquil Alienda";
           audit.generatedAt = now();
           audit.frozenItemIds = selected.map((asset) => asset.id);
           audit.sampleItems = selected.map((asset, index) => ({
@@ -3227,7 +3227,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             {
               id: id("h", (audit.history || []).length),
               at: now(),
-              user: command.actor || "Naomi Williams",
+              user: command.actor || "Shaquil Alienda",
               type: "Sample generation",
               description: `Generated ${selected.length} items with seed ${seed}.`,
             },
@@ -3308,7 +3308,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             {
               id: id("h", (audit.history || []).length),
               at: now(),
-              user: command.actor || "Naomi Williams",
+              user: command.actor || "Shaquil Alienda",
               type: command.action,
               description: `Audit changed from ${previous} to ${next}.`,
               previous: { status: previous },
@@ -3343,7 +3343,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           }
           const outcome = String(v.outcome || "Verified");
           item.result = outcome;
-          item.auditor = command.actor || "Naomi Williams";
+          item.auditor = command.actor || "Shaquil Alienda";
           item.verifiedAt = now();
           item.notes = String(v.notes || "");
           if (v.countedQuantity !== undefined) {
@@ -3382,7 +3382,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                   ? String(v.observedLocation || "Not confirmed")
                   : String(item.countedQuantity),
               variance: item.variance,
-              detectedBy: command.actor || "Naomi Williams",
+              detectedBy: command.actor || "Shaquil Alienda",
               detectedAt: now(),
               evidence: [],
               notes: item.notes,
@@ -3434,7 +3434,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                       ? "Closed"
                       : discrepancy.status;
           discrepancy.assignedTo = String(
-            v.assignedTo || discrepancy.assignedTo || "Naomi Williams",
+            v.assignedTo || discrepancy.assignedTo || "Shaquil Alienda",
           );
           discrepancy.resolution = String(
             v.resolution || discrepancy.resolution || "",
@@ -3458,7 +3458,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             discrepancyId: discrepancy.id,
             type: String(v.type || "Correct record"),
             description: String(v.description || "Resolve audit discrepancy"),
-            owner: String(v.owner || "Naomi Williams"),
+            owner: String(v.owner || "Shaquil Alienda"),
             dueDate: String(v.dueDate || today()),
             priority: String(v.priority || discrepancy.severity),
             approvalRequired: String(v.approvalRequired) === "true",
@@ -3473,7 +3473,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                     throw new Error("A reason is required for a proposed correction.");
                   return {
                     proposedChange: { field, value },
-                    proposedBy: command.actor || "Naomi Williams",
+                    proposedBy: command.actor || "Shaquil Alienda",
                     // A change to authoritative asset data always needs review.
                     approvalRequired: true,
                   };
@@ -3534,7 +3534,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             action.appliedChange = v.appliedChange as CorrectiveAction["appliedChange"];
           action.verifiedBy =
             next === "Verified"
-              ? command.actor || "Naomi Williams"
+              ? command.actor || "Shaquil Alienda"
               : action.verifiedBy;
           result = {
             ok: true,
@@ -3563,7 +3563,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             ),
             status: "Requested",
             requestedBy: String(
-              v.requestedBy || command.actor || "Naomi Williams",
+              v.requestedBy || command.actor || "Shaquil Alienda",
             ),
             requestedAt: today(),
             technicalAssessment: String(v.technicalAssessment || ""),
@@ -3574,7 +3574,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           };
           a.status = "Reserved";
           a.lastUpdated = today();
-          a.lastModifiedBy = command.actor || "Naomi Williams";
+          a.lastModifiedBy = command.actor || "Shaquil Alienda";
           this.state.disposals = [d, ...this.state.disposals];
           result = {
             ok: true,
@@ -3725,8 +3725,8 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             details: (v.details || {}) as ReferenceRecord["details"],
             createdAt: now(),
             updatedAt: now(),
-            createdBy: command.actor || "Naomi Williams",
-            updatedBy: command.actor || "Naomi Williams",
+            createdBy: command.actor || "Shaquil Alienda",
+            updatedBy: command.actor || "Shaquil Alienda",
           };
           this.state.references = [record, ...this.state.references];
           result = {
@@ -3830,7 +3830,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             parentLocationId,
             containerLocationId: parentLocationId,
             updatedAt: now(),
-            updatedBy: command.actor || "Naomi Williams",
+            updatedBy: command.actor || "Shaquil Alienda",
           });
           result = {
             ok: true,
@@ -3898,7 +3898,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           }
           if (command.action === "reference.archive") {
             record.archivedAt = now();
-            record.archivedBy = command.actor || "Naomi Williams";
+            record.archivedBy = command.actor || "Shaquil Alienda";
             record.deletionReason = String(v.reason || "").trim() || undefined;
             record.restoredAt = undefined;
             record.restoredBy = undefined;
@@ -3907,12 +3907,12 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             record.archivedBy = undefined;
             record.deletionReason = undefined;
             record.restoredAt = now();
-            record.restoredBy = command.actor || "Naomi Williams";
+            record.restoredBy = command.actor || "Shaquil Alienda";
           }
           record.status =
             command.action === "reference.archive" ? "Archived" : "Active";
           record.updatedAt = now();
-          record.updatedBy = command.actor || "Naomi Williams";
+          record.updatedBy = command.actor || "Shaquil Alienda";
           result = {
             ok: true,
             message: `${record.name} was ${record.status.toLowerCase()}.`,
@@ -4062,8 +4062,8 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             sortOrder: this.state.codeGroups.length + 1,
             createdAt: now(),
             updatedAt: now(),
-            createdBy: command.actor || "Naomi Williams",
-            updatedBy: command.actor || "Naomi Williams",
+            createdBy: command.actor || "Shaquil Alienda",
+            updatedBy: command.actor || "Shaquil Alienda",
           };
           this.state.codeGroups = [...this.state.codeGroups, group];
           result = {
@@ -4133,7 +4133,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               asset.code = code;
               asset.codePrefix = prefix;
               asset.lastUpdated = today();
-              asset.lastModifiedBy = command.actor || "Naomi Williams";
+              asset.lastModifiedBy = command.actor || "Shaquil Alienda";
             }
             for (const reference of this.state.references) {
               if (reference.kind !== "category") continue;
@@ -4154,7 +4154,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             maximumNumber,
             nextAvailableNumber,
             updatedAt: now(),
-            updatedBy: command.actor || "Naomi Williams",
+            updatedBy: command.actor || "Shaquil Alienda",
           });
           result = {
             ok: true,
@@ -4168,7 +4168,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           const group = this.codeGroup(command.entityId);
           group.isActive = command.action === "codeGroup.activate";
           group.updatedAt = now();
-          group.updatedBy = command.actor || "Naomi Williams";
+          group.updatedBy = command.actor || "Shaquil Alienda";
           result = {
             ok: true,
             message: `${group.name} was ${group.isActive ? "activated" : "deactivated"}.`,
@@ -4191,8 +4191,8 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             ];
             group.updatedAt = now();
             swap.updatedAt = now();
-            group.updatedBy = command.actor || "Naomi Williams";
-            swap.updatedBy = command.actor || "Naomi Williams";
+            group.updatedBy = command.actor || "Shaquil Alienda";
+            swap.updatedBy = command.actor || "Shaquil Alienda";
           }
           result = {
             ok: true,
@@ -4213,9 +4213,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           group.isActive = false;
           group.deletionReason = String(v.reason || "").trim();
           group.archivedAt = now();
-          group.archivedBy = command.actor || "Naomi Williams";
+          group.archivedBy = command.actor || "Shaquil Alienda";
           group.updatedAt = now();
-          group.updatedBy = command.actor || "Naomi Williams";
+          group.updatedBy = command.actor || "Shaquil Alienda";
           result = {
             ok: true,
             message: `${group.name} was moved to the recycle bin.`,
@@ -4231,7 +4231,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           group.archivedAt = undefined;
           group.archivedBy = undefined;
           group.updatedAt = now();
-          group.updatedBy = command.actor || "Naomi Williams";
+          group.updatedBy = command.actor || "Shaquil Alienda";
           result = {
             ok: true,
             message: `${group.name} was restored.`,
@@ -4330,7 +4330,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             exportFormats: ["CSV", "Excel", "Print"],
             requiredPermissions: ["reports.view"],
             shared: String(v.shared) === "true",
-            createdBy: command.actor || "Naomi Williams",
+            createdBy: command.actor || "Shaquil Alienda",
             createdAt: now(),
             lastUpdated: now(),
           };
@@ -4379,7 +4379,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
             filters: report.filters || {},
             grouping: report.grouping,
             snapshotAt: generatedAt,
-            generatedBy: command.actor || "Naomi Williams",
+            generatedBy: command.actor || "Shaquil Alienda",
             generatedAt,
             recordCount: rows.length,
             metrics: {
@@ -4439,7 +4439,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               .map((x) => x.trim())
               .filter(Boolean),
             active: true,
-            createdBy: command.actor || "Naomi Williams",
+            createdBy: command.actor || "Shaquil Alienda",
           };
           if (!schedule.recipients.length)
             throw new Error("At least one valid recipient is required.");
@@ -4982,7 +4982,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
       assetCode,
       from,
       to,
-      by: "Naomi Williams",
+      by: "Shaquil Alienda",
       date: now(),
       quantity,
       reason,
@@ -5028,7 +5028,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
       destination,
       reason,
       date: now(),
-      performedBy: "Naomi Williams",
+      performedBy: "Shaquil Alienda",
     };
     this.state.inventoryMovements = [
       movement,

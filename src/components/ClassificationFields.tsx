@@ -28,12 +28,42 @@ export function ClassificationFields() {
   const [categoryError, setCategoryError] = useState("");
 
   const categories = useMemo(() => {
-    return (snapshot.references || [])
+    const OFFICIAL_CATEGORIES = [
+      "Computers",
+      "Display & Presentation",
+      "Network & Internet",
+      "Peripherals",
+      "Power & Electrical",
+      "Print & Scan",
+      "Mobile Devices",
+      "Telephony",
+      "Cables",
+      "Adapters",
+      "Servers & Infrastructure",
+      "Storage Media",
+      "Audio Visual Equipment",
+      "Security",
+    ];
+
+    const refMap = new Map<string, string>();
+    OFFICIAL_CATEGORIES.forEach((name) => {
+      refMap.set(name.toLowerCase(), name);
+    });
+
+    (snapshot.references || [])
       .filter((ref) => ref.kind === "category" && ref.status === "Active")
-      .map((ref) => ({
-        id: ref.id,
-        name: ref.name,
-      }))
+      .forEach((ref) => {
+        // Only include if recognized as an official category or top-level module category
+        const lower = ref.name.toLowerCase();
+        if (refMap.has(lower)) {
+          refMap.set(lower, ref.name);
+        } else if (ref.details?.level === "category") {
+          refMap.set(lower, ref.name);
+        }
+      });
+
+    return Array.from(refMap.values())
+      .map((name) => ({ id: name, name }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [snapshot.references]);
 
