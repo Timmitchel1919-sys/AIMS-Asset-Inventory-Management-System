@@ -42,4 +42,11 @@ describe("formatIctData in ICT Asset Module", () => {
     expect(formatIctData("Groep 1D", "department")).toBe("Groep 1D");
     expect(formatIctData("practicum lokaal", "department")).toBe("Practicum lokaal");
   });
+
+  it("preserves user-specified uppercase and lowercase letters when updating data", () => {
+    expect(formatIctData("MacBook Pro 16", "name")).toBe("MacBook Pro 16");
+    expect(formatIctData("SmartBoard MX275", "name")).toBe("SmartBoard MX275");
+    expect(formatIctData("Groep 6B", "department")).toBe("Groep 6B");
+    expect(formatIctData("Custom Location XYZ", "location")).toBe("Custom Location XYZ");
+  });
 });

@@ -51,21 +51,29 @@ export function ClassificationFields() {
     });
 
     (snapshot.references || [])
-      .filter((ref) => ref.kind === "category" && ref.status === "Active")
+      .filter((ref) => ref.kind === "category" && ref.status !== "Archived")
       .forEach((ref) => {
-        // Only include if recognized as an official category or top-level module category
-        const lower = ref.name.toLowerCase();
-        if (refMap.has(lower)) {
-          refMap.set(lower, ref.name);
-        } else if (ref.details?.level === "category") {
-          refMap.set(lower, ref.name);
+        if (ref.name && ref.name.trim()) {
+          const trimmed = ref.name.trim();
+          const lower = trimmed.toLowerCase();
+          if (!refMap.has(lower)) {
+            refMap.set(lower, trimmed);
+          }
         }
       });
+
+    if (currentCategory && currentCategory.trim()) {
+      const trimmed = currentCategory.trim();
+      const lower = trimmed.toLowerCase();
+      if (!refMap.has(lower)) {
+        refMap.set(lower, trimmed);
+      }
+    }
 
     return Array.from(refMap.values())
       .map((name) => ({ id: name, name }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [snapshot.references]);
+  }, [snapshot.references, currentCategory]);
 
   const filteredCategories = useMemo(() => {
     return categories.filter((c) =>

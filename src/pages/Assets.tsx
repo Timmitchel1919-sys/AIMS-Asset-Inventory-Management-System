@@ -156,8 +156,8 @@ export function formatIctData(value: string | undefined | null, column: string):
       .join(" ");
   }
 
-  // Capitalize first letter, rest lowercase (preserve words >10 chars for wrapping)
-  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+  // Preserve user-specified uppercase and lowercase letters
+  return trimmed;
 }
 const filterDefinitions = [
   ["codePrefix", "assets.codeGroup"],

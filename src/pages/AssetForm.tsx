@@ -201,6 +201,51 @@ export default function AssetForm() {
       }
     }
   }, [watchedValues.codePrefix, watchedValues.codeNumber, existing, setValue, watchedValues.barcode]);
+
+  const subLocationOptions = useMemo(() => {
+    const map = new Map<string, string>();
+
+    // 1. Any department reference in snapshot.references (Active or not archived)
+    (snapshot.references || [])
+      .filter((item) => item.kind === "department" && item.status !== "Archived")
+      .forEach((item) => {
+        if (item.name && item.name.trim()) {
+          map.set(item.name.trim().toLowerCase(), item.name.trim());
+        }
+      });
+
+    // 2. Any sublocation / child location in snapshot.references
+    (snapshot.references || [])
+      .filter(
+        (item) =>
+          item.kind === "location" &&
+          item.status !== "Archived" &&
+          Boolean(item.mainLocationId || item.parentId || item.parentLocationId),
+      )
+      .forEach((item) => {
+        if (item.name && item.name.trim()) {
+          map.set(item.name.trim().toLowerCase(), item.name.trim());
+        }
+      });
+
+    // 3. Departments from existing assets in snapshot
+    (snapshot.assets || []).forEach((a) => {
+      if (a.department && a.department.trim()) {
+        map.set(a.department.trim().toLowerCase(), a.department.trim());
+      }
+    });
+
+    // 4. Always ensure Groep 6B and Groep 4B exist
+    if (!map.has("groep 6b")) map.set("groep 6b", "Groep 6B");
+    if (!map.has("groep 4b")) map.set("groep 4b", "Groep 4B");
+
+    // 5. Existing asset department if present
+    if (existing?.department && existing.department.trim()) {
+      map.set(existing.department.trim().toLowerCase(), existing.department.trim());
+    }
+
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+  }, [snapshot.references, snapshot.assets, existing?.department]);
   const draftAutosave = useAutosaveDraft({
     key: draftKey,
     value: watchedValues,
@@ -509,29 +554,13 @@ export default function AssetForm() {
                   {...register("department")}
                 >
                   <option value="">
-                    {app.language === "nl" ? "Selecteer een afdeling" : "Select a department"}
+                    {app.language === "nl" ? "Selecteer een sublocatie" : "Select a sub-location"}
                   </option>
-                  {(snapshot.references || [])
-                    .filter(
-                      (item) => item.kind === "department" && item.status === "Active",
-                    )
-                    .sort((x, y) => x.name.localeCompare(y.name))
-                    .map((dept) => (
-                      <option key={dept.id} value={dept.name}>
-                        {dept.name}
-                      </option>
-                    ))}
-                    {existing?.department &&
-                    !(snapshot.references || []).some(
-                      (item) => item.kind === "department" && item.name === existing.department,
-                    ) && (
-                      <option value={existing.department}>{existing.department}</option>
-                    )}
-                  {!(snapshot.references || []).some(
-                    (item) => item.kind === "department" && item.name === "Groep 4B",
-                  ) && existing?.department !== "Groep 4B" && (
-                    <option value="Groep 4B">Groep 4B</option>
-                  )}
+                  {subLocationOptions.map((sub) => (
+                    <option key={sub} value={sub}>
+                      {sub}
+                    </option>
+                  ))}
                 </SelectField>
                 <Field label={a("assignedUser")} {...register("assignedTo")} />
                 <Field
