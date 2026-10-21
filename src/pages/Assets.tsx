@@ -14,6 +14,7 @@ import {
   FilterInput,
   FilterPanel,
   ResponsiveDataList,
+  SavedViewSelector,
   type ListColumn,
 } from "../components/data-list/ListInfrastructure";
 import {
@@ -79,7 +80,7 @@ export function formatIctData(value: string | undefined | null, column: string):
   const trimmed = value.trim();
   if (!trimmed || trimmed === "—") return "—";
 
-  if (column === "serial") {
+  if (column === "serial" || column === "serialNumber") {
     return trimmed.toUpperCase();
   }
   if (column === "code" || column === "codeGroup") {
@@ -87,6 +88,9 @@ export function formatIctData(value: string | undefined | null, column: string):
   }
   if (/^hp$/i.test(trimmed)) {
     return "HP";
+  }
+  if (/^apc$/i.test(trimmed)) {
+    return "APC";
   }
   if (/^hs-p010k$/i.test(trimmed)) {
     return "HS-P010K";
@@ -97,20 +101,38 @@ export function formatIctData(value: string | undefined | null, column: string):
   if (column === "brand") {
     if (/^sharp(\s.*)?$/i.test(trimmed)) return "Sharp";
     if (/^apc$/i.test(trimmed)) return "APC";
+    if (/^hp$/i.test(trimmed)) return "HP";
     if (/^ibm$/i.test(trimmed)) return "IBM";
   }
   if (column === "model") {
     return trimmed;
   }
-  if (/^kh\s*nieuw\s*bouw/i.test(trimmed) || /^kangoeroe\s*high\s*nieuw\s*bouw/i.test(trimmed)) {
-    return trimmed
-      .replace(/^kangoeroe\s*high\s*nieuw\s*bouw/i, "KH nieuw bouw")
-      .replace(/^kh\s*nieuw\s*bouw/i, "KH nieuw bouw")
-      .replace(/\/\s*computer\s*lokaal/i, "/ Computer lokaal")
-      .replace(/\/\s*ict-?storage/i, "/ ICT-Storage");
+  if (/^(kh|kangoeroe\s*high)\s*nieuw\s*bouw/i.test(trimmed)) {
+    const parts = trimmed.split(/\s*\/\s*/);
+    const main = "KH nieuw bouw";
+    if (parts.length > 1) {
+      const sub = parts.slice(1).map((p) => {
+        if (/^computer\s*lokaal$/i.test(p)) return "Computer lokaal";
+        if (/^ict[- ]?storage$/i.test(p)) return "ICT-Storage";
+        if (/^practicum\s*lokaal$/i.test(p)) return "Practicum lokaal";
+        if (/^groep\s*1d$/i.test(p)) return "Groep 1D";
+        return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase();
+      }).join(" / ");
+      return `${main} / ${sub}`;
+    }
+    return main;
   }
   if (/^computer\s*lokaal$/i.test(trimmed)) {
     return "Computer lokaal";
+  }
+  if (/^practicum\s*lokaal$/i.test(trimmed)) {
+    return "Practicum lokaal";
+  }
+  if (/^ict[- ]?storage$/i.test(trimmed)) {
+    return "ICT-Storage";
+  }
+  if (/^groep\s*1d$/i.test(trimmed)) {
+    return "Groep 1D";
   }
   if (/^kcs\s*basis$/i.test(trimmed)) {
     return "KCS Basis";
@@ -189,6 +211,8 @@ export default function Assets() {
   const [preferences, setPreferences] = useState(() =>
     loadListPreferences(localStorage, preferenceKey, columnIds),
   );
+  const [viewDialog, setViewDialog] = useState(false);
+  const [viewName, setViewName] = useState("");
 
   const [bulkAction, setBulkAction] = useState(""),
     [bulkDialog, setBulkDialog] = useState(false),
@@ -485,6 +509,51 @@ export default function Assets() {
   useEffect(() => {
     saveListPreferences(localStorage, preferenceKey, preferences);
   }, [preferences]);
+
+  const saveView = () => {
+    if (!viewName.trim()) return;
+    const view: SavedListView = {
+      id: `view-${Date.now()}`,
+      name: viewName.trim(),
+      search,
+      filters: queryFilters,
+      sort: [sort],
+      pageSize,
+      visibleColumns: visible,
+      ownerId: user?.id || "anonymous",
+      isShared: false,
+      version: LIST_PREFERENCES_VERSION,
+    };
+    setPreferences((current) => upsertSavedView(current, view));
+    setViewName("");
+    setViewDialog(false);
+  };
+
+  const applyView = (id: string) => {
+    const view = preferences.savedViews.find((item) => item.id === id);
+    if (!view) return;
+    setSearch(view.search);
+    setFilters(
+      Object.fromEntries(
+        view.filters.map((filter) => [
+          filter.field === "dateAdded"
+            ? filter.operator === "gte"
+              ? "dateAddedFrom"
+              : "dateAddedTo"
+            : filter.field === "lastUpdated"
+              ? filter.operator === "gte"
+                ? "updatedFrom"
+                : "updatedTo"
+              : filter.field,
+          String(filter.value ?? ""),
+        ]),
+      ),
+    );
+    setSort(view.sort[0] || { field: "code", direction: "asc" });
+    setVisible(view.visibleColumns);
+    setCursor(undefined);
+    setSelected([]);
+  };
 
 
   const exportColumns: ExportColumn<Asset>[] = columns
@@ -945,6 +1014,16 @@ export default function Assets() {
             count={result.totalCount}
             filterCount={activeFilters.length}
             onToggleFilters={toggleFilters}
+            savedViews={
+              <SavedViewSelector
+                views={preferences.savedViews}
+                onApply={applyView}
+                onSave={() => setViewDialog(true)}
+                onDelete={(id) =>
+                  setPreferences((current) => removeSavedView(current, id))
+                }
+              />
+            }
             columnSelector={
               <ColumnSelector
                 columns={columns}
@@ -1537,6 +1616,28 @@ export default function Assets() {
               required
             />
           </div>
+        </Dialog>
+        <Dialog
+          open={viewDialog}
+          title={t("assets.saveView")}
+          onClose={() => setViewDialog(false)}
+          footer={
+            <>
+              <Button variant="ghost" onClick={() => setViewDialog(false)}>
+                {t("common.cancel")}
+              </Button>
+              <Button onClick={saveView} disabled={!viewName.trim()}>
+                {t("common.save")}
+              </Button>
+            </>
+          }
+        >
+          <Field
+            label={t("assets.viewName")}
+            value={viewName}
+            onChange={(event) => setViewName(event.target.value)}
+            autoFocus
+          />
         </Dialog>
         <Dialog
           open={!!printHtml}

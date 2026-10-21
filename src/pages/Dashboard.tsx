@@ -17,6 +17,7 @@ import { Badge, Button, Card } from "../components/ui";
 import { useApp } from "../context/AppContext";
 import { assetStatusBreakdown } from "../domain/dashboardMetrics";
 import { StatusBadge } from "../components/AssetStatusBadge";
+import { parentLocationIdOf } from "../domain/locationTree";
 
 const MovementChart = lazy(() => import("../components/dashboard/MovementChart"));
 
@@ -28,9 +29,15 @@ export default function Dashboard() {
   const [selectedLocationId, setSelectedLocationId] = useState("all");
   const deferredLocationId = useDeferredValue(selectedLocationId);
   const isFiltering = deferredLocationId !== selectedLocationId;
-  const activeLocations = snapshot.references
-    .filter((item) => item.kind === "location" && item.status === "Active")
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const activeLocations = useMemo(
+    () =>
+      snapshot.references
+        .filter((item) => item.kind === "location" && item.status === "Active")
+        .filter((item) => !parentLocationIdOf(item))
+        .filter((item) => !/^(computer\s*lokaal|ict[- ]?storage)$/i.test(item.name))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [snapshot.references],
+  );
   const filtered = useMemo(() => {
     const currentLocation = snapshot.references.find(
       (item) => item.id === deferredLocationId,
@@ -40,9 +47,11 @@ export default function Dashboard() {
     const assetMatches = (asset: {
       currentLocationId?: string;
       location: string;
+      mainLocationId?: string;
     }) =>
       all ||
       asset.currentLocationId === deferredLocationId ||
+      asset.mainLocationId === deferredLocationId ||
       asset.location === name;
     const assets = snapshot.assets.filter(assetMatches),
       assetCodes = new Set(assets.map((x) => x.code));

@@ -105,7 +105,7 @@ export default function AssetForm() {
         description: existing.description || "",
         category: existing.category,
         subcategory: existing.subcategory || "",
-        assetTypeId: existing.assetTypeId || "",
+        assetTypeId: existing.assetTypeId || "serialized",
         type: existing.type,
         brand: existing.brand,
         model: existing.model,
@@ -262,10 +262,9 @@ export default function AssetForm() {
     // silently assigns one.
     const assetTypeId =
       values.assetTypeId ||
-      (!existing &&
-      trackingTypes.items.some((t) => t.id === "serialized" && t.status === "Active")
+      (trackingTypes.items.some((t) => t.id === "serialized" && t.status === "Active")
         ? "serialized"
-        : "");
+        : "serialized");
     const uploadId = existing?.id || crypto.randomUUID();
     const [uploadedAttachments, uploadedPhotos] = await Promise.all([
       uploadAimsFiles(attachmentFiles, "assets", uploadId),
