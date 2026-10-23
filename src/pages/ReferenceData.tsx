@@ -1372,7 +1372,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
                       display: "block",
                       marginTop: "4px",
                       color: "var(--color-text-muted)",
-                      fontSize: "0.76rem",
+                      fontSize: "var(--text-sm)",
                       lineHeight: 1.3,
                     }}
                   >

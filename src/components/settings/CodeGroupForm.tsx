@@ -135,7 +135,7 @@ export function CodeGroupForm({
         disabled={busy}
       />
       {group && currentPrefix.trim().toUpperCase() !== group.prefix && (
-        <p className="field wide" style={{ marginTop: "0.5rem", marginBottom: "1rem", fontSize: "0.85em", color: "var(--color-text-dim)" }}>
+        <p className="field wide" style={{ marginTop: "0.5rem", marginBottom: "1rem", fontSize: "var(--text-base)", color: "var(--color-text-dim)" }}>
           {nl
             ? "Let op: bij een gewijzigde prefix worden bestaande codes van middelen die aan deze codegroep gekoppeld zijn automatisch aangepast (oude code blijft bewaard als vorige code) en geüpdatet."
             : "Note: changing the prefix automatically rewrites the inventory codes of every asset linked to this code group (the old code is kept as a previous code) and updates linked categories."}

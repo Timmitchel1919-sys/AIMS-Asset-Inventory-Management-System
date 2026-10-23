@@ -420,17 +420,17 @@ html[data-theme="kcs-azure-intelligence"] {
 .app-sidebar__brand-text strong {
   color: var(--color-sidebar-text);
 
-  font-size: 1.25rem;
-  font-weight: 750;
-  line-height: 1.1;
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--leading-tight);
 }
 
 .app-sidebar__brand-text span {
   color: var(--color-sidebar-muted);
 
-  font-size: 0.74rem;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-snug);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -494,8 +494,8 @@ html[data-theme="kcs-azure-intelligence"] {
 
   border-radius: 999px;
 
-  font-size: 0.76rem;
-  font-weight: 700;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
 }
 
 .sidebar-user-card__details {
@@ -514,15 +514,15 @@ html[data-theme="kcs-azure-intelligence"] {
 }
 
 .sidebar-user-card__details strong {
-  font-size: 0.82rem;
-  font-weight: 650;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .sidebar-user-card__details span {
   color: var(--color-sidebar-muted);
 
-  font-size: 0.7rem;
-  font-weight: 500;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
 }
 
 .navigation-item {

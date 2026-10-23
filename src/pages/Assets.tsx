@@ -1322,7 +1322,7 @@ export default function Assets() {
                     }
                   />
                   {selected.length > 1 && (
-                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.25rem", fontSize: "0.85rem", cursor: "pointer" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.25rem", fontSize: "var(--text-base)", cursor: "pointer" }}>
                       <input
                         type="checkbox"
                         checked={!!bulkData.isSerialSequence}
@@ -1506,7 +1506,7 @@ export default function Assets() {
                   required={!bulkData.isSerialSequence}
                 />
                 {selected.length > 1 && (
-                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.25rem", fontSize: "0.85rem", cursor: "pointer" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.25rem", fontSize: "var(--text-base)", cursor: "pointer" }}>
                     <input
                       type="checkbox"
                       checked={!!bulkData.isSerialSequence}

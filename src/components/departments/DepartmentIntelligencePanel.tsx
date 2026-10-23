@@ -331,7 +331,7 @@ function AddAssetToDeptDialog({
                 {nl ? "beschikbaar" : "available"})
               </span>
             </label>
-            <span style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
+            <span style={{ fontSize: "var(--text-base)", color: "var(--color-text-muted)" }}>
               {selectedIds.length} {nl ? "geselecteerd" : "selected"}
             </span>
           </div>
@@ -375,7 +375,7 @@ function AddAssetToDeptDialog({
                         <td>
                           <strong>{a.name}</strong>
                           {(a.brand || a.model) && (
-                            <span style={{ display: "block", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
+                            <span style={{ display: "block", fontSize: "var(--text-sm)", color: "var(--color-text-muted)" }}>
                               {[a.brand, a.model].filter(Boolean).join(" ")}
                             </span>
                           )}

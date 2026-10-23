@@ -53,7 +53,7 @@
   margin-bottom: 14px;
 }
 .card-head h2 {
-  font-size: 15px;
+  font-size: var(--text-base);
   margin: 0;
 }
 .starter-location-results {
@@ -144,7 +144,7 @@
   white-space: nowrap;
 }
 .brand strong {
-  font-size: 14px;
+  font-size: var(--text-base);
 }
 .brand span {
   font-size: var(--text-sm);
@@ -327,7 +327,7 @@
 }
 .profile-details strong {
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: var(--text-base);
 }
 .profile-details .profile-active {
   color: var(--color-success);
@@ -357,7 +357,7 @@
   font-size: var(--text-sm);
 }
 .admin-metrics strong {
-  font-size: 24px;
+  font-size: var(--text-3xl);
 }
 .admin-console-card span {
   display: inline-block;
@@ -558,7 +558,9 @@
   line-height: var(--leading-tight);
   margin: 0;
   letter-spacing: var(--tracking-tight);
-  white-space: nowrap;
+  white-space: normal;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .page-title p {
   width: fit-content;
@@ -829,6 +831,13 @@ td {
   color: var(--color-text-secondary);
   font-size: var(--text-md);
   line-height: var(--leading-normal);
+  font-variant-numeric: tabular-nums;
+}
+th[scope="row"] {
+  font-size: var(--text-md);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
 }
 th[data-column-id="code"],
 td[data-column-id="code"] {
@@ -931,7 +940,7 @@ td small {
   background: var(--color-surface-elevated, var(--color-surface));
   box-shadow: var(--shadow-sm);
   color: var(--color-text-secondary);
-  font-size: 0.82rem;
+  font-size: var(--text-md);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -1114,7 +1123,7 @@ td small {
   border-bottom: 1px solid var(--color-border);
 }
 .asset-hero h2 {
-  font-size: 22px;
+  font-size: var(--text-2xl);
   margin: 8px 0 3px;
 }
 .asset-hero p {
@@ -1239,7 +1248,7 @@ td small {
   outline: none;
   color: var(--color-text-primary);
   font-weight: var(--font-weight-medium);
-  line-height: var(--leading-relaxed);
+  line-height: var(--leading-normal);
 }
 
 html[data-aims-theme="aimsAzureGlass"]
@@ -1270,7 +1279,7 @@ html[data-aims-theme="aimsEmeraldGloss"]
   font-weight: var(--font-weight-regular);
   color: var(--color-text-muted);
   margin-top: 5px;
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   line-height: var(--leading-normal);
 }
 .field .field-error {
@@ -1306,7 +1315,7 @@ html[data-aims-theme="aimsEmeraldGloss"]
   color: var(--color-success);
 }
 .success-panel h1 {
-  font-size: 24px;
+  font-size: var(--text-3xl);
 }
 .success-panel p {
   color: var(--color-text-secondary);
@@ -1571,7 +1580,7 @@ html[data-aims-theme="aimsEmeraldGloss"]
   border: 3px solid var(--color-accent);
   clip-path: polygon(50% 0, 95% 24%, 95% 76%, 50% 100%, 5% 76%, 5% 24%);
   color: var(--color-accent);
-  font-size: 20px;
+  font-size: var(--text-2xl);
   font-weight: 900;
 }
 .auth-brand h1 {
@@ -1689,7 +1698,7 @@ html[data-aims-theme="aimsEmeraldGloss"]
   margin: auto;
 }
 .state h2 {
-  font-size: 20px;
+  font-size: var(--text-2xl);
   margin: 15px 0 7px;
 }
 .state p {
@@ -1839,7 +1848,7 @@ html[data-aims-theme="aimsEmeraldGloss"]
 .user-photo-field > span {
   width: 58px;
   height: 58px;
-  font-size: 15px;
+  font-size: var(--text-base);
 }
 .user-photo-field > .field {
   min-width: 0;
@@ -2108,7 +2117,7 @@ html .system-information {
     gap: 4px;
   }
   .page-title h1 {
-    font-size: 22px;
+    font-size: var(--text-2xl);
   }
   .page-title p {
     font-size: var(--text-sm);
@@ -2305,7 +2314,7 @@ html .system-information {
     border-right: 0;
   }
   .metric strong {
-    font-size: 22px;
+    font-size: var(--text-2xl);
   }
   .quick-actions {
     grid-template-columns: 1fr;
@@ -2573,7 +2582,7 @@ html .system-information {
 }
 .dialog h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--text-2xl);
 }
 .dialog header p {
   margin: 5px 0 0;
@@ -2677,7 +2686,7 @@ html .system-information {
 }
 .laptop-import-metrics strong {
   color: var(--color-primary);
-  font-size: 20px;
+  font-size: var(--text-2xl);
 }
 .laptop-import-metrics span {
   margin-top: 3px;
@@ -2791,7 +2800,7 @@ html .system-information {
 }
 .status-summary .card b {
   display: block;
-  font-size: 22px;
+  font-size: var(--text-2xl);
 }
 .status-summary .card small {
   color: var(--color-text-secondary);
@@ -3078,7 +3087,7 @@ html .system-information {
 }
 .detail-grid dt {
   color: var(--text-muted);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
 }
 .detail-grid dd {
   margin: 0.25rem 0 0;
@@ -3243,7 +3252,7 @@ html .system-information {
     padding: 8px;
   }
   .location-record-actions .btn {
-    font-size: 11px !important;
+    font-size: var(--text-sm) !important;
     padding: 9px 7px !important;
   }
 }
@@ -3872,7 +3881,7 @@ html .system-information {
   min-height: 1.75rem;
   align-items: center;
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: var(--text-md);
   white-space: nowrap;
 }
 
@@ -3995,7 +4004,7 @@ html .system-information {
   grid-column: 1 / -1;
 }
 .asset-identity-panel dt {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
 .asset-identity-panel dd {
@@ -4040,15 +4049,15 @@ html .system-information {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
 }
 .bulk-move-list li em {
   color: var(--color-text-muted);
   font-style: normal;
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
 }
 .bulk-move-list code {
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
 }
 .sheets-sync-health.is-error {
   color: var(--danger, #b42318);
@@ -4061,7 +4070,7 @@ html .system-information {
   gap: 0.35rem;
   padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -4112,7 +4121,7 @@ html .system-information {
 .sync-conflicts-summary {
   margin: 0;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   font-variant-numeric: tabular-nums;
 }
 .sync-conflicts-summary .linklike {
@@ -4158,7 +4167,7 @@ html .system-information {
   gap: 0.5rem;
 }
 .sync-conflict-head code {
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
 }
 .sync-conflict-head code.muted {
   color: var(--muted);
@@ -4186,12 +4195,12 @@ html .system-information {
 }
 .sync-conflict-detail {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   color: var(--muted);
 }
 .sync-conflict-changes {
   border-collapse: collapse;
-  font-size: 0.82rem;
+  font-size: var(--text-md);
 }
 .sync-conflict-changes th {
   text-align: left;

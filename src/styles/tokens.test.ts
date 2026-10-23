@@ -49,3 +49,22 @@ describe("theme tokens", () => {
     );
   });
 });
+
+describe("typography system", () => {
+  it.each([
+    "--font-sans",
+    "--font-mono",
+    "--text-xs",
+    "--text-sm",
+    "--text-md",
+    "--text-base",
+    "--text-4xl",
+    "--leading-normal",
+    "--tracking-wider",
+  ])("defines %s", (token) => expect(css).toContain(token));
+
+  it("provides tabular numeral and monospace utilities", () => {
+    expect(css).toContain(".tabular-nums");
+    expect(css).toContain(".type-mono");
+  });
+});
