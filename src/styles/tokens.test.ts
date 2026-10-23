@@ -32,6 +32,16 @@ describe("theme tokens", () => {
     "--color-input-background",
   ])("defines semantic token %s", (token) => expect(css).toContain(token));
 
+  it.each([
+    "--workspace-background: var(--color-background)",
+    "--surface-card: var(--color-surface)",
+    "--surface-panel: var(--color-surface-secondary)",
+    "--surface-elevated: var(--color-surface-elevated)",
+    "--surface-border: var(--color-border)",
+    "--surface-text-primary: var(--color-text-primary)",
+    "--surface-text-secondary: var(--color-text-secondary)",
+  ])("maps unified surface token %s", (token) => expect(css).toContain(token));
+
   it("defines the legacy semantic aliases through canonical theme-aware tokens", () => {
     expect(css).toContain("--color-text: var(--color-text-primary)");
     expect(css).toContain(

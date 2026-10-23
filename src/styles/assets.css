@@ -31,16 +31,16 @@
   grid-column: 1 / -1;
   grid-row: 3;
 }
-/* Ensure category dropdown popover is solid white across every theme */
+/* Keep the category popover opaque while respecting the active theme. */
 html .asset-category-dropdown,
 html[data-theme] .asset-category-dropdown,
 html[data-aims-theme] .asset-category-dropdown,
 .app .asset-category-dropdown,
 .asset-classification-card .asset-category-dropdown,
 .asset-category-dropdown {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
-  color: #123b78 !important;
+  background: var(--surface-elevated) !important;
+  background-color: var(--surface-elevated) !important;
+  color: var(--surface-text-primary) !important;
   opacity: 1 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -49,30 +49,30 @@ html[data-aims-theme] .asset-category-dropdown,
 }
 .asset-category-dropdown > div,
 .asset-category-dropdown ul {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
+  background: var(--surface-elevated) !important;
+  background-color: var(--surface-elevated) !important;
 }
 .asset-category-dropdown input {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
-  color: #123b78 !important;
+  background: var(--color-input-background) !important;
+  background-color: var(--color-input-background) !important;
+  color: var(--surface-text-primary) !important;
   border: 1px solid var(--color-border, #cbd5e1) !important;
 }
 .asset-category-dropdown .dropdown-item,
 .asset-category-dropdown li {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
-  color: #123b78 !important;
+  background: var(--surface-elevated) !important;
+  background-color: var(--surface-elevated) !important;
+  color: var(--surface-text-primary) !important;
 }
 .asset-category-dropdown .dropdown-item:hover,
 .asset-category-dropdown li:hover {
-  background: #f1f5f9 !important;
-  background-color: #f1f5f9 !important;
-  color: #0f2d5c !important;
+  background: var(--color-surface-hover) !important;
+  background-color: var(--color-surface-hover) !important;
+  color: var(--surface-text-primary) !important;
 }
 .asset-category-dropdown button {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
+  background: var(--surface-elevated) !important;
+  background-color: var(--surface-elevated) !important;
 }
 .asset-form-sections .card:nth-child(3),
 .asset-form-sections .card:last-child {
@@ -347,7 +347,7 @@ html[data-aims-theme] .asset-category-dropdown,
   }
 }
 .barcode-preview {
-  font-family: monospace;
+  font-family: var(--font-mono);
   letter-spacing: -2px;
   font-size: 24px;
   overflow: hidden;
@@ -457,7 +457,7 @@ html[data-aims-theme] .asset-category-dropdown,
   margin: 0;
 }
 .qr-scanner h2 {
-  font-size: 16px;
+  font-size: var(--text-lg);
 }
 .qr-scanner header p {
   margin-top: 3px;

@@ -1184,7 +1184,7 @@ body {
   margin: 0;
 
   color: var(--color-text-primary);
-  background: #FFFFFF;
+  background: var(--workspace-background);
 
   transition:
     background-color var(--transition-normal),
@@ -1194,9 +1194,9 @@ html,
 body,
 #root {
   min-height: 100%;
-  background: #FFFFFF;
+  background: var(--workspace-background);
 }
-.app-layout { display: flex; width: 100%; min-height: 100vh; background: #FFFFFF; } .app-main { min-width: 0; flex: 1; background: #FFFFFF; }
+.app-layout { display: flex; width: 100%; min-height: 100vh; background: var(--workspace-background); } .app-main { min-width: 0; flex: 1; background: var(--workspace-background); }
 
 
 
@@ -1213,7 +1213,7 @@ html[data-theme="kcs-forest-gold"] .page-content {
 .dashboard-content,
 .app-main,
 main {
-  background: #FFFFFF;
+  background: var(--workspace-background);
 }
 html[data-theme="kcs-azure-intelligence"] body,
 html[data-theme="kcs-azure-intelligence"] #root,
@@ -1222,7 +1222,7 @@ html[data-theme="kcs-azure-intelligence"] .main-content,
 html[data-theme="kcs-azure-intelligence"] .page-content,
 html[data-theme="kcs-azure-intelligence"] .dashboard-page,
 html[data-theme="kcs-azure-intelligence"] main {
-  background: #FFFFFF;
+  background: var(--workspace-background);
 }
 
 html[data-theme="kcs-forest-gold"] body,
@@ -1232,7 +1232,7 @@ html[data-theme="kcs-forest-gold"] .main-content,
 html[data-theme="kcs-forest-gold"] .page-content,
 html[data-theme="kcs-forest-gold"] .dashboard-page,
 html[data-theme="kcs-forest-gold"] main {
-  background: #FFFFFF;
+  background: var(--workspace-background);
 }
 
 

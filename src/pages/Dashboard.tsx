@@ -22,7 +22,7 @@ import { parentLocationIdOf } from "../domain/locationTree";
 const MovementChart = lazy(() => import("../components/dashboard/MovementChart"));
 
 export default function Dashboard() {
-  const { user, language, formatDate, formatDateTime } = useApp(),
+  const { language, formatDate, formatDateTime } = useApp(),
     nl = language === "nl",
     navigate = useNavigate(),
     snapshot = useMockSnapshot();
@@ -193,9 +193,7 @@ export default function Dashboard() {
     <div className="page dashboard-page">
       <header className="page-title">
         <div>
-          <h1>
-            {nl ? "Goedemorgen" : "Good morning"}, {user?.name.split(" ")[0]}
-          </h1>
+          <h1>Dashboard</h1>
           <p>
             {nl
               ? "Dit gebeurt vandaag in uw inventaris."
