@@ -1,5 +1,6 @@
 export const FONT_FAMILIES = [
   "Inter",
+  "IBM Plex Mono",
   "Montserrat",
   "Source Sans 3",
   "Roboto",
@@ -16,6 +17,7 @@ export const DEFAULT_FONT_SIZE: FontSize = 14;
 
 export const FONT_FAMILY_STACKS: Record<FontFamily, string> = {
   Inter: 'Inter, system-ui, -apple-system, "Segoe UI", sans-serif',
+  "IBM Plex Mono": '"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
   Montserrat: 'Montserrat, Inter, system-ui, sans-serif',
   "Source Sans 3": '"Source Sans 3", Inter, system-ui, sans-serif',
   Roboto: 'Roboto, Inter, system-ui, sans-serif',

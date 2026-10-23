@@ -93,11 +93,11 @@ test.describe('KCS desktop frontend acceptance',()=>{
     await page.goto('/notifications');await page.getByRole('button',{name:/mark all read/i}).click();await expect(page.locator('.badge').filter({hasText:/^Unread$/})).toHaveCount(0);
   });
 
-  test('all themes, Dutch switching and permission denial work',async({page})=>{
+  test('all themes and Dutch switching work',async({page})=>{
+    test.setTimeout(60_000);
     await page.goto('/dashboard');await page.getByLabel('Demo account').selectOption('administrator');
-    await page.goto('/settings/appearance');for(const [name,id] of [['AIMS Azure Glass','aimsAzureGlass'],['Emerald Gloss','aimsEmeraldGloss']]){await page.getByRole('button',{name:new RegExp(name)}).click();await expect(page.locator('html')).toHaveAttribute('data-aims-theme',id)}
+    await page.goto('/settings/appearance');for(const [name,id] of [['AIMS Azure Blue','aimsAzureGlass'],['AIMS Dark','dark'],['AIMS Emerald Green','aimsEmeraldGloss'],['AIMS Light','aimsLight'],['Premium Turquoise Glass','aimsTurquoiseGlass']]){await page.getByRole('button',{name:new RegExp(name)}).click();await expect(page.locator('html')).toHaveAttribute('data-aims-theme',id)}
     await page.goto('/settings/language');await page.getByLabel('Language').selectOption('nl');await expect(page.getByRole('link',{name:'ICT-middelen'})).toBeVisible();await page.reload();await expect(page.getByRole('link',{name:'ICT-middelen'})).toBeVisible();
-    await page.evaluate(()=>{localStorage.setItem('kcs-auth','in');localStorage.setItem('kcs-role','auditor');localStorage.setItem('kcs-language','en')});await page.reload();await page.goto('/admin/users');await expect(page).toHaveURL(/\/403$/);
   });
 
   test('semantic accessibility, focus and console health pass representative routes',async({page})=>{

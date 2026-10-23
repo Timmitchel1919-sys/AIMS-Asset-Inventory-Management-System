@@ -16,9 +16,9 @@ test.describe('KCS mobile acceptance',()=>{
     for(const path of ['/dashboard','/assets','/inventory','/assignments','/borrow','/repairs','/maintenance','/movements','/audits','/disposals','/reports','/settings']){await page.goto(path);expect(await page.evaluate(()=>document.documentElement.scrollWidth),`${path} overflow`).toBeLessThanOrEqual(await page.evaluate(()=>innerWidth));await expect(page.getByRole('heading',{level:1})).toBeVisible()}
     await page.goto('/dashboard');const menuButton=page.getByRole('button',{name:/open navigation/i});await expect(menuButton.locator('svg.lucide-menu')).toBeVisible();await expect(menuButton.locator('img')).toHaveCount(0);await menuButton.click();const drawer=page.getByRole('complementary',{name:/primary navigation/i});await expect(drawer).toBeVisible();await drawer.getByRole('link',{name:/ICT Assets|ICT-middelen/}).click();await expect(page).toHaveURL(/\/assets$/);await expect(page.locator('.mobile-records article').first()).toBeVisible();
   });
-  test('required responsive widths and three themes do not overflow',async({page})=>{
+  test('required responsive widths and all themes do not overflow',async({page})=>{
     for(const [width,height] of [[360,800],[390,844],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]]){await page.setViewportSize({width,height});await page.goto('/dashboard');expect(await page.evaluate(()=>document.documentElement.scrollWidth),`${width}x${height}`).toBeLessThanOrEqual(width)}
-    await page.setViewportSize({width:390,height:844});await page.goto('/settings/appearance');for(const name of ['AIMS Azure Glass','Emerald Gloss']){await page.getByRole('button',{name:new RegExp(name)}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)}
+    await page.setViewportSize({width:390,height:844});await page.goto('/settings/appearance');for(const name of ['AIMS Azure Blue','AIMS Dark','AIMS Emerald Green','AIMS Light','Premium Turquoise Glass']){await page.getByRole('button',{name:new RegExp(name)}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)}
   });
   test('offline and install guidance are explicit about mock limitations',async({page})=>{
     await page.goto('/offline');await expect(page.getByText(/not durably synchronized/i)).toBeVisible();

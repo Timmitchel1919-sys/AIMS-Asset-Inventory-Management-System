@@ -20,12 +20,15 @@ import { AccountBackButton, PageHeader } from "../components/WorkflowUi";
 import { authErrorMessage, updateSelfProfile } from "../auth/firebaseAuth";
 import { useApp } from "../context/AppContext";
 import type { ThemeId } from "../domain/types";
+import { persistThemePreference } from "../domain/themePreference";
 
 
 const themes: [ThemeId, string][] = [
   ["aimsAzureGlass", "AIMS Azure Blue"],
   ["dark", "AIMS Dark"],
   ["aimsEmeraldGloss", "AIMS Emerald Green"],
+  ["aimsLight", "AIMS Light"],
+  ["aimsTurquoiseGlass", "Premium Turquoise Glass"],
 ];
 const DATE_TIME_FORMAT_EXAMPLE = new Date(2026, 7, 27, 13, 5);
 export function ProfilePage() {
@@ -229,10 +232,27 @@ export function ProfilePage() {
 export function PreferencesPage() {
   const app = useApp(),
     nl = app.language === "nl",
-    [message, setMessage] = useState("");
+    [message, setMessage] = useState(""),
+    [preferenceError, setPreferenceError] = useState("");
   async function save(next: Parameters<typeof app.updatePreferences>[0]) {
+    setPreferenceError("");
     await app.updatePreferences(next);
     setMessage((next.language ?? app.language) === "nl" ? "Voorkeuren opgeslagen." : "Preferences saved.");
+  }
+  async function selectTheme(next: ThemeId) {
+    setMessage("");
+    setPreferenceError("");
+    try {
+      await persistThemePreference({
+        current: app.theme,
+        next,
+        apply: app.setTheme,
+        persist: (theme) => app.updatePreferences({ theme }),
+      });
+      setMessage(nl ? "Voorkeuren opgeslagen." : "Preferences saved.");
+    } catch (error) {
+      setPreferenceError(authErrorMessage(error));
+    }
   }
   return (
     <div className="page">
@@ -244,6 +264,11 @@ export function PreferencesPage() {
       {message && (
         <p className="notice success" role="status">
           {message}
+        </p>
+      )}
+      {preferenceError && (
+        <p className="notice error" role="alert">
+          {preferenceError}
         </p>
       )}
       <div className="account-settings-grid">
@@ -258,10 +283,7 @@ export function PreferencesPage() {
               <button
                 key={id}
                 className={`theme-choice theme-${id} ${app.theme === id ? "selected" : ""}`}
-                onClick={async () => {
-                  app.setTheme(id);
-                  await save({ theme: id });
-                }}
+                onClick={() => selectTheme(id)}
               >
                 <i>
                   <span />

@@ -18,4 +18,9 @@ describe('theme choice previews',()=>{
     expect(css).toContain('.theme-aimsLight i span:first-child');
     expect(css).toContain('background: #f4f7fb');
   });
+  it('shows the Premium Turquoise Glass preview',()=>{
+    expect(css).toContain('.theme-aimsTurquoiseGlass i span:first-child { background: #071317; }');
+    expect(css).toContain('.theme-aimsTurquoiseGlass i span:nth-child(2) { background: #25C7B7; }');
+    expect(css).toContain('.theme-aimsTurquoiseGlass i span:nth-child(3) { background: #79E6DD; }');
+  });
 });

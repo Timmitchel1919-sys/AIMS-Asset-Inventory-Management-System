@@ -7,6 +7,7 @@ const THEMES: ThemeId[] = [
   "dark",
   "aimsEmeraldGloss",
   "aimsLight",
+  "aimsTurquoiseGlass",
 ];
 
 describe("resolveAimsLogoSrc", () => {

@@ -10,7 +10,7 @@ import {
 
 describe("typography preferences", () => {
   it("exposes only the approved values", () => {
-    expect(FONT_FAMILIES).toEqual(["Inter", "Montserrat", "Source Sans 3", "Roboto", "Open Sans"]);
+    expect(FONT_FAMILIES).toEqual(["Inter", "IBM Plex Mono", "Montserrat", "Source Sans 3", "Roboto", "Open Sans"]);
     expect(FONT_SIZES).toEqual([12, 13, 14, 15, 16]);
   });
 

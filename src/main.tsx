@@ -38,6 +38,7 @@ import "./components/download/AnimatedDownloadButton.css";
 import "./styles/emerald-gloss.css";
 import "./styles/dark.css";
 import "./styles/aims-light.css";
+import "./styles/turquoise-glass.css";
 import "./styles/scrollbars.css";
 import "./styles/big-screen.css";
 import "./styles/mobile-scroll.css";

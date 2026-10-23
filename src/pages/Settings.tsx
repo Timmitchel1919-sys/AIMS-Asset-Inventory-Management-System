@@ -25,6 +25,8 @@ import { RecycleBinSettings } from "../components/settings/RecycleBinSettings";
 import { useApp } from "../context/AppContext";
 import type { ThemeId } from "../domain/types";
 import { useRepository } from "../data/repositoryContext";
+import { authErrorMessage } from "../auth/firebaseAuth";
+import { persistThemePreference } from "../domain/themePreference";
 import {
   firebaseAuth,
   firebaseConfigured,
@@ -48,6 +50,16 @@ const themes: [ThemeId, string, string][] = [
     "aimsEmeraldGloss",
     "AIMS Emerald Green",
     "A premium enterprise theme with a deep emerald sidebar, warm ivory surfaces, and restrained gold accents.",
+  ],
+  [
+    "aimsLight",
+    "AIMS Light",
+    "A clean neutral light workspace.",
+  ],
+  [
+    "aimsTurquoiseGlass",
+    "Premium Turquoise Glass",
+    "A premium turquoise glass theme with selective liquid-glass surfaces and high-contrast focus states.",
   ],
 ];
 const tabs = [
@@ -275,27 +287,56 @@ export default function Settings() {
           ) : tab === "recycleBin" ? (
             <RecycleBinSettings />
           ) : tab === "appearance" ? (
-            <div className="theme-grid">
-              {themes.map(([id, name, description]) => (
-                <button
-                  key={id}
-                  onClick={async () => {
-                    app.setTheme(id);
-                    await app.updatePreferences({ theme: id });
-                  }}
-                  className={`theme-choice theme-${id} ${app.theme === id ? "selected" : ""}`}
-                >
-                  <i>
-                    <span />
-                    <span />
-                    <span />
-                  </i>
-                  <b>{name}</b>
-                  <small>{description}</small>
-                  {app.theme === id && <em>{nl ? "Actief" : "Active"}</em>}
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="theme-grid">
+                {themes.map(([id, name, description]) => (
+                  <button
+                    key={id}
+                    onClick={async () => {
+                      setFeedback({
+                        status: "loading",
+                        message: nl
+                          ? "Thema wordt opgeslagen…"
+                          : "Saving theme…",
+                      });
+                      try {
+                        await persistThemePreference({
+                          current: app.theme,
+                          next: id,
+                          apply: app.setTheme,
+                          persist: (theme) =>
+                            app.updatePreferences({ theme }),
+                        });
+                        setFeedback({
+                          status: "success",
+                          message: nl
+                            ? "Thema opgeslagen."
+                            : "Theme saved.",
+                        });
+                      } catch (error) {
+                        setFeedback({
+                          status: "error",
+                          message: authErrorMessage(error),
+                        });
+                      }
+                    }}
+                    className={`theme-choice theme-${id} ${app.theme === id ? "selected" : ""}`}
+                  >
+                    <i>
+                      <span />
+                      <span />
+                      <span />
+                    </i>
+                    <b>{name}</b>
+                    <small>{description}</small>
+                    {app.theme === id && (
+                      <em>{nl ? "Actief" : "Active"}</em>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <MutationFeedback {...feedback} />
+            </>
           ) : (
             <form className="workflow-form" onSubmit={save}>
               {tab === "general" && (

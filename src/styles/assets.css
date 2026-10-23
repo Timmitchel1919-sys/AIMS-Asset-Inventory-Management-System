@@ -80,7 +80,7 @@ html[data-aims-theme] .asset-category-dropdown,
 }
 .field-hint {
   color: var(--color-text-muted);
-  font-size: 11px;
+  font-size: var(--text-sm);
 }
 .admin-warning {
   display: flex;
@@ -144,7 +144,7 @@ html[data-aims-theme] .asset-category-dropdown,
   border-radius: var(--radius-md);
 }
 .asset-qr small {
-  font-size: 9px;
+  font-size: var(--text-xs);
 }
 .asset-tabs {
   display: flex;
@@ -164,7 +164,7 @@ html[data-aims-theme] .asset-category-dropdown,
   );
   color: var(--color-text-primary);
   padding: 8px 11px;
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 650;
 }
 .asset-tabs button:hover {
@@ -199,7 +199,7 @@ html[data-aims-theme] .asset-category-dropdown,
 }
 .asset-tab-help p {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 550;
   line-height: 1.45;
 }
@@ -218,12 +218,12 @@ html[data-aims-theme] .asset-category-dropdown,
   border-bottom: 1px solid var(--color-border-subtle);
 }
 .asset-overview-grid dt {
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
 .asset-overview-grid dd {
   margin: 5px 0 0;
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 700;
   overflow-wrap: anywhere;
 }
@@ -239,7 +239,7 @@ html[data-aims-theme] .asset-category-dropdown,
 .history-list pre {
   max-height: 180px;
   overflow: auto;
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .document-list {
   display: flex;
@@ -305,7 +305,7 @@ html[data-aims-theme] .asset-category-dropdown,
   background: var(--color-background-secondary);
 }
 .asset-history-timeline dt {
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
 .asset-history-timeline dd {
@@ -341,7 +341,7 @@ html[data-aims-theme] .asset-category-dropdown,
 }
 @media (min-width: 200px) {
   .qr-scan-hint {
-    font-size: 10px;
+    font-size: var(--text-xs);
     letter-spacing: 0.02em;
     text-transform: uppercase;
   }
@@ -363,7 +363,7 @@ html[data-aims-theme] .asset-category-dropdown,
   padding: 7px 9px;
   border-radius: 999px;
   background: var(--color-surface-hover);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .import-steps span.active {
   background: var(--color-primary);
@@ -462,7 +462,7 @@ html[data-aims-theme] .asset-category-dropdown,
 .qr-scanner header p {
   margin-top: 3px;
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: var(--text-sm);
 }
 .qr-scanner .icon-button {
   width: 44px;
@@ -538,7 +538,7 @@ html[data-aims-theme] .asset-category-dropdown,
   gap: 10px;
   padding: 0 16px;
   color: var(--color-text-muted);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .qr-manual-divider::before,
 .qr-manual-divider::after {
@@ -557,7 +557,7 @@ html[data-aims-theme] .asset-category-dropdown,
 .qr-manual label > span {
   display: block;
   margin-bottom: 6px;
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 700;
 }
 .qr-manual label > div {
@@ -589,7 +589,7 @@ html[data-aims-theme] .asset-category-dropdown,
   border-radius: 8px;
   background: var(--color-danger-soft);
   color: var(--color-danger);
-  font-size: 11px;
+  font-size: var(--text-sm);
 }
 @media (max-width: 780px) {
   .qr-scanner {

@@ -613,9 +613,9 @@ html[data-theme="kcs-azure-intelligence"] {
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  font-size: 0.94rem;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: var(--text-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-snug);
 
   text-align: left;
 }
@@ -634,9 +634,9 @@ html[data-theme="kcs-azure-intelligence"] {
 
   border-radius: 999px;
 
-  font-size: 0.72rem;
-  font-weight: 700;
-  line-height: 1;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--leading-none);
 }
 
 .navigation-item:hover {
@@ -969,9 +969,9 @@ html[data-theme="kcs-forest-gold"] .reminder-icon svg {
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  font-size: 0.94rem;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: var(--text-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-snug);
 
   text-align: left;
 }
@@ -990,9 +990,9 @@ html[data-theme="kcs-forest-gold"] .reminder-icon svg {
 
   border-radius: 999px;
 
-  font-size: 0.72rem;
-  font-weight: 700;
-  line-height: 1;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--leading-none);
 }
 
 .navigation-item:hover {
@@ -1464,9 +1464,9 @@ html[data-theme="kcs-forest-gold"] .glass-card::before {
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  font-size: 0.94rem;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: var(--text-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-snug);
 
   text-align: left;
 }
@@ -1485,9 +1485,9 @@ html[data-theme="kcs-forest-gold"] .glass-card::before {
 
   border-radius: 999px;
 
-  font-size: 0.72rem;
-  font-weight: 700;
-  line-height: 1;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--leading-none);
 }
 
 .navigation-item:hover {

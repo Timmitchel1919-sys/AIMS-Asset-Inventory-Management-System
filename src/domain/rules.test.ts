@@ -17,4 +17,6 @@ describe('domain rules',()=>{
   it('falls back to AIMS Azure Glass for invalid themes',()=>expect(normalizeTheme('unknown')).toBe('aimsAzureGlass'));
   it('falls back when the removed KCS Azure Flow key is encountered',()=>expect(normalizeTheme('kcsAzureFlow')).toBe('aimsAzureGlass'));
   it('migrates legacy themes',()=>{expect(normalizeTheme('kcs-forest-gold')).toBe('aimsEmeraldGloss');expect(normalizeTheme('aimsEmeraldGlass')).toBe('aimsEmeraldGloss');expect(normalizeTheme('kcs-azure-intelligence')).toBe('aimsAzureGlass')});
+  it('recognises Premium Turquoise Glass and its legacy aliases',()=>{expect(normalizeTheme('aimsTurquoiseGlass')).toBe('aimsTurquoiseGlass');expect(normalizeTheme('premium-turquoise-glass')).toBe('aimsTurquoiseGlass');expect(normalizeTheme('aims-turquoise-glass')).toBe('aimsTurquoiseGlass');expect(normalizeTheme('turquoise-glass')).toBe('aimsTurquoiseGlass')});
+  it('keeps the Light and Azure themes distinct',()=>{expect(normalizeTheme('aimsLight')).toBe('aimsLight');expect(normalizeTheme('aims-light')).toBe('aimsAzureGlass')});
 });

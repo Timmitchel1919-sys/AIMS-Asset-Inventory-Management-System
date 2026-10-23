@@ -6,6 +6,26 @@ const rules = readFileSync(
   "utf8",
 );
 describe("Firestore AIMS authorization rules", () => {
+  it("accepts every current theme, the legacy Midnight id and every supported font", () => {
+    for (const theme of [
+      "aimsAzureGlass",
+      "dark",
+      "aimsMidnight",
+      "aimsEmeraldGloss",
+      "aimsLight",
+      "aimsTurquoiseGlass",
+    ])
+      expect(rules).toContain(`'${theme}'`);
+    for (const font of [
+      "Inter",
+      "IBM Plex Mono",
+      "Montserrat",
+      "Source Sans 3",
+      "Roboto",
+      "Open Sans",
+    ])
+      expect(rules).toContain(`'${font}'`);
+  });
   it("uses one secure exact verified-domain production ruleset", () => {
     expect(rules).toContain(
       "request.auth.token.email.matches('^[^@]+@[Kk][Aa][Nn][Gg][Oo][Ee][Rr][Oo][Ee][Ss][Cc][Hh][Oo][Oo][Ll][.]com$')",

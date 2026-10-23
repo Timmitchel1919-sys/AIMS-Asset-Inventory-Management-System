@@ -206,12 +206,12 @@ service cloud.firestore {
           'theme','language','dateFormat','timeFormat','notifications',
           'fontFamily','fontSize'
         ])
-        && (!('theme' in preferences) || preferences.theme in ['aimsAzureGlass','aimsMidnight','aimsEmeraldGloss','aimsLight'])
+        && (!('theme' in preferences) || preferences.theme in ['aimsAzureGlass','dark','aimsMidnight','aimsEmeraldGloss','aimsLight','aimsTurquoiseGlass'])
         && (!('language' in preferences) || preferences.language in ['en','nl'])
         && (!('dateFormat' in preferences) || preferences.dateFormat in ['DD-MM-YYYY','MM-DD-YYYY','YYYY-MM-DD'])
         && (!('timeFormat' in preferences) || preferences.timeFormat in ['24-hour','12-hour'])
         && (!('notifications' in preferences) || (preferences.notifications is map && preferences.notifications.size() <= 20))
-        && (!('fontFamily' in preferences) || preferences.fontFamily in ['Inter','Montserrat','Source Sans 3','Roboto','Open Sans'])
+        && (!('fontFamily' in preferences) || preferences.fontFamily in ['Inter','IBM Plex Mono','Montserrat','Source Sans 3','Roboto','Open Sans'])
         && (!('fontSize' in preferences) || (preferences.fontSize is int && preferences.fontSize >= 12 && preferences.fontSize <= 16));
     }
 

@@ -2129,7 +2129,7 @@
 .aims-hero-dashboard-bar span { width: 7px; height: 7px; border-radius: 50%; background: #8fa5bc; }
 .aims-hero-dashboard-bar span:nth-child(2) { background: #2c7ef4; }
 .aims-hero-dashboard-bar span:nth-child(3) { background: #00aeef; }
-.aims-hero-dashboard-bar small { margin-left: auto; color: #536b82; font-size: 9px; font-weight: 800; letter-spacing: .18em; }
+.aims-hero-dashboard-bar small { margin-left: auto; color: #536b82; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-widest); }
 .aims-hero-dashboard-frame > .aims-preview-app { aspect-ratio: 16 / 9; font-size: clamp(4px,.42vw,7px); }
 .aims-hero-trust { display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 22px 0 0; padding: 0; list-style: none; color: var(--aims-slate); font-size: .8rem; font-weight: 700; }
 .aims-hero-trust li { display: flex; align-items: center; gap: 7px; }
