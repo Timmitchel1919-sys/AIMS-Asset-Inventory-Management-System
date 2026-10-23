@@ -17,10 +17,10 @@ describe("unified workspace surface system", () => {
     expect(components).toMatch(/\.card\s*\{[^}]*background: var\(--surface-card\)/s);
   });
 
-  it("keeps text-only page descriptions on the workspace surface", () => {
-    expect(components).toMatch(
-      /\.page-title p\s*\{[^}]*background: transparent;[^}]*color: var\(--surface-text-secondary\)/s,
-    );
+  it("removes module descriptions beside page titles", () => {
+    expect(components).toMatch(/\.page-title p\s*\{[^}]*display: none/s);
+    expect(dashboard).not.toContain("Here is what is happening with your inventory today.");
+    expect(dashboard).not.toContain("Dit gebeurt vandaag in uw inventaris.");
   });
 
   it("does not force the ICT asset category menu to light-theme white", () => {

@@ -194,11 +194,6 @@ export default function Dashboard() {
       <header className="page-title">
         <div>
           <h1>Dashboard</h1>
-          <p>
-            {nl
-              ? "Dit gebeurt vandaag in uw inventaris."
-              : "Here is what is happening with your inventory today."}
-          </p>
         </div>
         <select
           aria-label={nl ? "Locatie" : "Location"}

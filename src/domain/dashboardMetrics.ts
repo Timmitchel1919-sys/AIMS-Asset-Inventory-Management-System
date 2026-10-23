@@ -11,10 +11,10 @@ export const DASHBOARD_STATUS_ORDER: readonly AssetStatusKey[] = [
   "assigned",
   "borrowed",
   "reserved",
-  "underMaintenance",
+  "archived",
   "underRepair",
   "damaged",
-  "archived",
+  "underMaintenance",
 ];
 
 export interface StatusCount {

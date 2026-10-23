@@ -10,7 +10,7 @@ describe("dashboard status breakdown", () => {
       assets("Available", "Available", "Assigned", "Borrowed", "Reserved", "Under Maintenance", "Under Repair", "Damaged", "Archived"),
     );
     expect(counts.map((c) => c.status)).toEqual([
-      "Available", "Assigned", "Borrowed", "Reserved", "Under Maintenance", "Under Repair", "Damaged", "Archived",
+      "Available", "Assigned", "Borrowed", "Reserved", "Archived", "Under Repair", "Damaged", "Under Maintenance",
     ]);
     expect(counts.map((c) => c.count)).toEqual([2, 1, 1, 1, 1, 1, 1, 1]);
     expect(total).toBe(9);
