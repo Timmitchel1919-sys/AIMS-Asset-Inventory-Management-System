@@ -26,6 +26,7 @@ describe("adaptive scroll navigation architecture", () => {
     expect(shell).toContain('position:sticky;');
     expect(shell).toContain('top:var(--aims-table-header-offset)');
     expect(shell).toContain('--aims-table-header-offset:var(--aims-topbar-offset)');
+    expect(shell).toContain('margin-bottom:calc(-1 * var(--aims-data-toolbar-height))');
     expect(components).toMatch(/\.migration-assets-table thead th\s*\{[^}]*position: static/s);
   });
 
