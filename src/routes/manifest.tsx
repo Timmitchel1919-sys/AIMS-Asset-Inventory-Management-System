@@ -286,6 +286,22 @@ export const routeManifest: AppRoute[] = [
     icon: "dashboard",
   },
   {
+    // Isolated Dark Bento preview — owner-only, dev-only.
+    // Does not appear in navigation; the live dashboard is unchanged.
+    id: "dashboard-bento-preview",
+    path: "/dashboard/preview/dark-bento",
+    component: page(() => import("../pages/DashboardBentoPreview")),
+    titleKey: "routes.dashboard",
+    permission: "dashboard.view",
+    ownerOnly: true,
+    navigation: false,
+    breadcrumb: ["routes.dashboard"],
+    mobile: true,
+    lazy: true,
+    status: "partial",
+    icon: "dashboard",
+  },
+  {
     id: "assets",
     path: "/assets",
     component: page(() => import("../pages/Assets")),

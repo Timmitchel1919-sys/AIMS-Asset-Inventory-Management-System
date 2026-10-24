@@ -43,6 +43,7 @@ import "./styles/turquoise-glass.css";
 import "./styles/scrollbars.css";
 import "./styles/big-screen.css";
 import "./styles/mobile-scroll.css";
+import "./styles/dashboard-bento.css";
 
 /*
  * Apply the saved KCS theme before React renders.
