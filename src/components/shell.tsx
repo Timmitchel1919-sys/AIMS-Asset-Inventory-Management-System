@@ -208,25 +208,30 @@ export function AppShell({ children }: { children: ReactNode }) {
   useLayoutEffect(() => {
     const root = appRootRef.current;
     if (!root) return;
+    const topbar = root.querySelector<HTMLElement>(":scope > .topbar");
+    const pageHeader = root.querySelector<HTMLElement>("main .page-title");
+    const toolbar = root.querySelector<HTMLElement>(
+      "main .data-toolbar, main .dm-toolbar, main .list-toolbar",
+    );
     const measure = () => {
-      const topbar = root.querySelector<HTMLElement>(":scope > .topbar");
-      const pageHeader = root.querySelector<HTMLElement>("main .page-title");
-      const toolbar = root.querySelector<HTMLElement>(
-        "main .data-toolbar, main .dm-toolbar, main .list-toolbar",
-      );
       root.style.setProperty("--aims-topbar-height", `${topbar?.offsetHeight ?? 0}px`);
       root.style.setProperty("--aims-page-header-height", `${pageHeader?.offsetHeight ?? 0}px`);
       root.style.setProperty("--aims-data-toolbar-height", `${toolbar?.offsetHeight ?? 0}px`);
     };
-    const task = window.requestAnimationFrame(measure);
-    const delayed = window.setTimeout(measure, 180);
+    // Measure before paint so the sticky table header never starts at zero
+    // and then jumps to its real offset. ResizeObserver keeps the stack in
+    // sync when responsive wrapping changes an actual section height.
+    measure();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
+    [topbar, pageHeader, toolbar].forEach((element) => {
+      if (element) observer?.observe(element);
+    });
     window.addEventListener("resize", measure);
     return () => {
-      window.cancelAnimationFrame(task);
-      window.clearTimeout(delayed);
+      observer?.disconnect();
       window.removeEventListener("resize", measure);
     };
-  }, [location.pathname, children]);
+  }, [location.pathname]);
   useEffect(() => {
     const openAccountMenu = () => setProfileOpen(true);
     window.addEventListener(OPEN_ACCOUNT_MENU_EVENT, openAccountMenu);

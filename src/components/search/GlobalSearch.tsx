@@ -45,10 +45,6 @@ export function GlobalSearch({
         event.preventDefault();
         window.dispatchEvent(new Event("aims:reveal-navigation"));
         const { scrollX, scrollY } = window;
-        root.current?.style.setProperty(
-          "--global-search-overlay-offset",
-          `${scrollY}px`,
-        );
         input.current?.focus({ preventScroll: true });
         input.current?.select();
         setFocused(true);
@@ -101,10 +97,6 @@ export function GlobalSearch({
           }}
           onFocus={() => {
             window.dispatchEvent(new Event("aims:reveal-navigation"));
-            root.current?.style.setProperty(
-              "--global-search-overlay-offset",
-              `${window.scrollY}px`,
-            );
             setFocused(true);
           }}
           onKeyDown={keyDown}

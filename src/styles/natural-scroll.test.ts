@@ -36,8 +36,9 @@ describe("adaptive scroll navigation architecture", () => {
     expect(globalSearch).toContain("focus({ preventScroll: true })");
     expect(globalSearch).toContain("requestAnimationFrame(() => window.scrollTo(scrollX, scrollY))");
     expect(globalSearch).toContain('new Event("aims:reveal-navigation")');
-    expect(shell).toMatch(/\.global-search:focus-within\{position:absolute/);
-    expect(shell).toContain('width:min(640px,calc(100vw - 32px))!important');
+    expect(shell).toMatch(/\.topbar-search \.global-search:focus-within\{position:relative/);
+    expect(shell).toContain('transform:none');
+    expect(globalSearch).not.toContain('--global-search-overlay-offset');
   });
 });
 
