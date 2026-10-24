@@ -6,6 +6,10 @@ import { HeroTile } from "../components/dashboard/bento/tiles/HeroTile";
 import { CategoryAllocationTile } from "../components/dashboard/bento/tiles/CategoryAllocationTile";
 import { RecentActivityTile } from "../components/dashboard/bento/tiles/RecentActivityTile";
 import { PlaceholderTile } from "../components/dashboard/bento/tiles/PlaceholderTile";
+import { DepartmentCardsTile } from "../components/dashboard/bento/tiles/DepartmentCardsTile";
+import { LocationCardsTile } from "../components/dashboard/bento/tiles/LocationCardsTile";
+import { UtilizationGaugeTile } from "../components/dashboard/bento/tiles/UtilizationGaugeTile";
+import { MaintenanceIntelligenceTile } from "../components/dashboard/bento/tiles/MaintenanceIntelligenceTile";
 
 export default function DashboardBentoPreview() {
   const { user, language, effectiveTheme, formatDateTime, setTheme } = useApp();
@@ -17,6 +21,15 @@ export default function DashboardBentoPreview() {
 
   const assets = useMemo(() => snapshot.assets, [snapshot.assets]);
   const movements = useMemo(() => snapshot.movements, [snapshot.movements]);
+  const references = useMemo(() => snapshot.references, [snapshot.references]);
+  const locationTypes = useMemo(
+    () => snapshot.locationTypes,
+    [snapshot.locationTypes],
+  );
+  const maintenance = useMemo(
+    () => snapshot.maintenance,
+    [snapshot.maintenance],
+  );
 
   if (isProd) {
     return (
@@ -69,30 +82,27 @@ export default function DashboardBentoPreview() {
       </header>
 
       <BentoShell>
+        {/* Row 1 — Hero + Departments + Locations */}
         <HeroTile
           nl={nl}
           userName={user?.name}
           assets={assets}
           movements={movements}
         />
-        <PlaceholderTile
-          title={nl ? "Afdelingskaarten" : "Department cards"}
-          detail={
-            nl
-              ? "Beschikbaar in Phase 2. Vereist bevestigde afdelingsmapping."
-              : "Available in Phase 2. Requires confirmed department mapping."
-          }
-          previewLabel={nl ? "Later" : "Later"}
+        <DepartmentCardsTile nl={nl} references={references} assets={assets} />
+        <LocationCardsTile
+          nl={nl}
+          references={references}
+          locationTypes={locationTypes}
+          assets={assets}
         />
-        <PlaceholderTile
-          title={nl ? "Benutting" : "Utilization"}
-          detail={
-            nl
-              ? "Beschikbaar in Phase 2 na bevestiging van statusdefinities."
-              : "Available in Phase 2 after status-definition sign-off."
-          }
-          previewLabel={nl ? "Later" : "Later"}
-        />
+
+        {/* Row 2 — Utilization + Category + Maintenance */}
+        <UtilizationGaugeTile nl={nl} assets={assets} />
+        <CategoryAllocationTile nl={nl} assets={assets} />
+        <MaintenanceIntelligenceTile nl={nl} maintenance={maintenance} />
+
+        {/* Row 3 — remaining placeholders */}
         <PlaceholderTile
           title={nl ? "Levenscyclus / Afschrijving" : "Lifecycle / Depreciation"}
           detail={
@@ -102,16 +112,6 @@ export default function DashboardBentoPreview() {
           }
           previewLabel={nl ? "Later" : "Later"}
           span={2}
-        />
-        <CategoryAllocationTile nl={nl} assets={assets} />
-        <PlaceholderTile
-          title={nl ? "Onderhoud" : "Maintenance intelligence"}
-          detail={
-            nl
-              ? "Volgt zodra operationele definities zijn bevestigd."
-              : "Follows once operational definitions are confirmed."
-          }
-          previewLabel={nl ? "Later" : "Later"}
         />
         <PlaceholderTile
           title={nl ? "Voorraaddrempel" : "Stock threshold"}
@@ -126,12 +126,13 @@ export default function DashboardBentoPreview() {
           title={nl ? "Bewegingsstream" : "Movement stream"}
           detail={
             nl
-              ? "Live-polling ontwerp volgt in Phase 2."
-              : "Live-polling design to follow in Phase 2."
+              ? "Passief overzicht volgt in Phase 2d."
+              : "Passive overview to follow in Phase 2d."
           }
           previewLabel={nl ? "Later" : "Later"}
-          span={2}
         />
+
+        {/* Row 4 — Recent activity full width */}
         <RecentActivityTile
           nl={nl}
           movements={movements}

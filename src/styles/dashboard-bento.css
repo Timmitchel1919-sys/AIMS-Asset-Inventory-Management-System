@@ -451,7 +451,295 @@ html[data-theme="dark"] .bento-theme-gate,
 
 @media (prefers-reduced-motion: reduce) {
   html[data-theme="dark"] .bento-root .bento-hero__strip-bar,
-  html[data-theme="dark"] .bento-root .bento-cat__seg {
+  html[data-theme="dark"] .bento-root .bento-cat__seg,
+  html[data-theme="dark"] .bento-root .bento-gauge__value {
     transition: none !important;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Phase 2A — Department / Location cards                            */
+/* ------------------------------------------------------------------ */
+
+html[data-theme="dark"] .bento-root .bento-cards__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+html[data-theme="dark"] .bento-root .bento-cards__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--bento-radius-sm);
+  background: var(--bento-surface-elev);
+  border: 1px solid var(--bento-border);
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+html[data-theme="dark"] .bento-root .bento-cards__row:hover {
+  transform: translateY(-1px);
+  border-color: var(--bento-border-strong);
+}
+
+html[data-theme="dark"] .bento-root .bento-cards__row--unassigned {
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(217, 196, 164, 0.04) 0 8px,
+    transparent 8px 16px
+  );
+  border-style: dashed;
+}
+
+html[data-theme="dark"] .bento-root .bento-cards__meta {
+  min-width: 0;
+  flex: 1;
+}
+
+html[data-theme="dark"] .bento-root .bento-cards__name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bento-ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+html[data-theme="dark"] .bento-root .bento-cards__name > span.bento-cards__badge {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(107, 134, 245, 0.12);
+  color: var(--bento-accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  flex: 0 0 auto;
+}
+
+html[data-theme="dark"] .bento-root .bento-cards__sub {
+  margin: 2px 0 0;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
+}
+
+html[data-theme="dark"] .bento-root .bento-cards__value {
+  text-align: right;
+  flex: 0 0 auto;
+}
+
+html[data-theme="dark"] .bento-root .bento-cards__count {
+  margin: 0;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+html[data-theme="dark"] .bento-root .bento-cards__status {
+  margin: 2px 0 0;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bento-accent-warm);
+}
+
+html[data-theme="dark"] .bento-root .bento-cards__overflow {
+  margin: 10px 0 0;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Phase 2B — Utilization gauge                                      */
+/* ------------------------------------------------------------------ */
+
+html[data-theme="dark"] .bento-root .bento-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+html[data-theme="dark"] .bento-root .bento-gauge__track {
+  stroke: rgba(255, 255, 255, 0.06);
+}
+
+html[data-theme="dark"] .bento-root .bento-gauge__value {
+  stroke: var(--bento-accent);
+  transition: stroke-dashoffset 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html[data-theme="dark"] .bento-root .bento-gauge__pct {
+  margin: 6px 0 0;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 32px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+html[data-theme="dark"] .bento-root .bento-gauge__pct > span {
+  font-size: 14px;
+  color: var(--bento-ink-muted);
+  margin-left: 2px;
+}
+
+html[data-theme="dark"] .bento-root .bento-gauge__sub {
+  margin: 4px 0 0;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] .bento-root .bento-gauge__dist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 14px;
+  margin: 14px 0 0;
+  padding: 10px;
+  border-radius: var(--bento-radius-sm);
+  background: var(--bento-surface-elev);
+  border: 1px solid var(--bento-border);
+}
+
+html[data-theme="dark"] .bento-root .bento-gauge__dist > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--text-xs);
+}
+
+html[data-theme="dark"] .bento-root .bento-gauge__dist dt {
+  margin: 0;
+  color: var(--bento-ink-muted);
+}
+
+html[data-theme="dark"] .bento-root .bento-gauge__dist dd {
+  margin: 0;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] .bento-root .bento-gauge__dist-muted dt,
+html[data-theme="dark"] .bento-root .bento-gauge__dist-muted dd {
+  opacity: 0.6;
+}
+
+html[data-theme="dark"] .bento-root .bento-gauge__dist-unknown dd {
+  color: var(--bento-accent-warm);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Phase 2C — Maintenance intelligence                               */
+/* ------------------------------------------------------------------ */
+
+html[data-theme="dark"] .bento-root .bento-maint {
+  background: linear-gradient(
+      180deg,
+      rgba(107, 134, 245, 0.08) 0%,
+      rgba(107, 134, 245, 0) 100%
+    ),
+    var(--bento-surface);
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__kpis > div {
+  padding: 10px 12px;
+  border-radius: var(--bento-radius-sm);
+  background: var(--bento-surface-elev);
+  border: 1px solid var(--bento-border);
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__kpis dt {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__kpis dd {
+  margin: 2px 0 0;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__kpi--warn {
+  border-color: rgba(217, 196, 164, 0.5) !important;
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__kpi--warn dd {
+  color: var(--bento-accent-warm);
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__schedule {
+  margin-top: 10px;
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__schedule ol {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  height: 70px;
+  align-items: end;
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__schedule li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  height: 100%;
+  min-width: 0;
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__bar {
+  width: 100%;
+  background: var(--bento-accent);
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__dow {
+  font-size: 10px;
+  color: var(--bento-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__quiet {
+  margin: 8px 0 0;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
+  text-align: center;
+}
+
+html[data-theme="dark"] .bento-root .bento-maint__note {
+  margin: 10px 0 0;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
 }
