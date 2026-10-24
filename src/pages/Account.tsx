@@ -275,7 +275,7 @@ export function PreferencesPage() {
         
         <div className="preferences-columns">
           <div className="preferences-column">
-        <Card>
+        <Card className="themes-settings-card">
           <Palette />
           <h2>{nl ? "Thema's" : "Themes"}</h2>
           <div className="theme-grid">
@@ -296,9 +296,10 @@ export function PreferencesPage() {
             ))}
           </div>
         </Card>
-        <Card className="preferences-card--compact">
+        <Card className="preferences-card--compact date-time-settings-card">
           <MonitorCog />
           <h2>{nl ? "Datum en tijd" : "Date & time"}</h2>
+          <div className="date-time-format-fields">
           <SelectField
             label={nl ? "Datumnotatie" : "Date format"}
             value={app.preferences.dateFormat}
@@ -323,6 +324,7 @@ export function PreferencesPage() {
             <option>24-hour</option>
             <option>12-hour</option>
           </SelectField>
+          </div>
           <p className="preference-format-example" aria-live="polite">
             <small>{nl ? "Voorbeeld" : "Example"}</small>
             <strong>{app.formatDateTime(DATE_TIME_FORMAT_EXAMPLE)}</strong>
@@ -330,7 +332,7 @@ export function PreferencesPage() {
         </Card>
           </div>
           <div className="preferences-column">
-        <Card className="preferences-card--compact">
+        <Card className="preferences-card--compact language-settings-card">
           <Languages />
           <h2>{nl ? "Taal" : "Language"}</h2>
           <SelectField
