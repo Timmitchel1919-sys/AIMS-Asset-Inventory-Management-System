@@ -26,10 +26,10 @@ import {
 } from "../domain/deviceManagement";
 
 /**
- * Persistence for the owner-only Device Management console. Every collection
- * here is readable/writable only by the Owner (see firestore.rules). Every
- * mutation writes its audit entry in the same atomic batch, and the audit
- * collection is create-only.
+ * Persistence for Device Management. Authorized users may subscribe to the
+ * managed-device register, while privileged collections and every mutation
+ * remain Owner-only in Firestore Rules. Every mutation writes its audit entry
+ * in the same atomic batch, and the audit collection is create-only.
  */
 
 export const DEVICE_COLLECTIONS = {
@@ -104,7 +104,7 @@ export interface DeviceManagementData {
   connected: boolean;
 }
 
-export function useDeviceManagementData(): DeviceManagementData {
+export function useDeviceManagementData(privileged = false): DeviceManagementData {
   const [state, setState] = useState<Omit<DeviceManagementData, "connected">>({
     devices: [],
     policies: [],
@@ -116,7 +116,10 @@ export function useDeviceManagementData(): DeviceManagementData {
   useEffect(() => {
     if (!firestore) return;
     const db: Firestore = firestore;
-    const pending = new Set<string>(Object.keys(DEVICE_COLLECTIONS));
+    const subscriptionKeys: (keyof typeof DEVICE_COLLECTIONS)[] = privileged
+      ? ["devices", "policies", "commands", "audit"]
+      : ["devices"];
+    const pending = new Set<string>(subscriptionKeys);
     const settle = (key: string) => {
       pending.delete(key);
       if (!pending.size) setState((s) => ({ ...s, loading: false }));
@@ -139,30 +142,24 @@ export function useDeviceManagementData(): DeviceManagementData {
         },
         fail(key),
       );
-    const unsubscribers = [
-      listen("devices", mapDevice),
-      listen("policies", mapPolicy),
-      listen(
-        "commands",
-        mapCommand,
-        query(
-          collection(db, DEVICE_COLLECTIONS.commands),
-          orderBy("createdAt", "desc"),
-          limit(300),
+    const unsubscribers = [listen("devices", mapDevice)];
+    if (privileged) {
+      unsubscribers.push(
+        listen("policies", mapPolicy),
+        listen(
+          "commands",
+          mapCommand,
+          query(collection(db, DEVICE_COLLECTIONS.commands), orderBy("createdAt", "desc"), limit(300)),
         ),
-      ),
-      listen(
-        "audit",
-        mapAudit,
-        query(
-          collection(db, DEVICE_COLLECTIONS.audit),
-          orderBy("createdAt", "desc"),
-          limit(300),
+        listen(
+          "audit",
+          mapAudit,
+          query(collection(db, DEVICE_COLLECTIONS.audit), orderBy("createdAt", "desc"), limit(300)),
         ),
-      ),
-    ];
+      );
+    }
     return () => unsubscribers.forEach((stop) => stop());
-  }, []);
+  }, [privileged]);
   return { ...state, connected: !!firestore };
 }
 

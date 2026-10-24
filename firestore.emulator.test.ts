@@ -15,7 +15,10 @@ import {
 } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { FirebaseInventoryRepository } from "./src/data/firebaseRepository";
-import { createFirestoreImportAdapter } from "./src/migration/firebaseImportWriter";
+import {
+  createFirestoreImportAdapter,
+  FIRESTORE_RULES_SAFE_BATCH_SIZE,
+} from "./src/migration/firebaseImportWriter";
 import {
   executeFinalImportPlan,
   type FinalImportPlan,
@@ -63,6 +66,7 @@ describe("AIMS Firestore authorization", () => {
       "categories.manage",
       "admin.system.configure",
       "admin.audit.read",
+      "inventory.import",
       "assets.create",
       "assets.view",
     ];
@@ -139,7 +143,7 @@ describe("AIMS Firestore authorization", () => {
       make("history", "assetHistoryEvents", "history-kcsdb-15", {
         assetId: "asset-kcsdb-15",
         assetCode: "KCSDB-15",
-        eventType: "Legacy import",
+        eventType: "inventory_import_created",
         category: "Legacy",
         title: "Legacy History-gebeurtenis",
         description: "Onderhoud",
@@ -185,14 +189,16 @@ describe("AIMS Firestore authorization", () => {
       reviewManifest: {},
     } as unknown as FinalImportPlan;
     const adapter = createFirestoreImportAdapter(db, uid);
-    const first = await executeFinalImportPlan(plan, adapter, { batchSize: 3 });
+    const first = await executeFinalImportPlan(plan, adapter, {
+      batchSize: FIRESTORE_RULES_SAFE_BATCH_SIZE,
+    });
     expect(first).toMatchObject({
       status: "COMPLETE",
       completed: 7,
       failed: 0,
     });
     const second = await executeFinalImportPlan(plan, adapter, {
-      batchSize: 3,
+      batchSize: FIRESTORE_RULES_SAFE_BATCH_SIZE,
     });
     expect(second).toMatchObject({
       status: "COMPLETE",
@@ -343,7 +349,10 @@ describe("AIMS Firestore authorization", () => {
       .authenticatedContext("owner-uid", verified("aliendas@kangoeroeschool.com"))
       .firestore();
     const admin = environment
-      .authenticatedContext("admin-uid", verified("someone@kangoeroeschool.com"))
+      .authenticatedContext("admin-uid", {
+        ...verified("someone@kangoeroeschool.com"),
+        role: "administrator",
+      })
       .firestore();
     const unverifiedOwner = environment
       .authenticatedContext("owner-uid", {
@@ -368,13 +377,29 @@ describe("AIMS Firestore authorization", () => {
     const fake = environment
       .authenticatedContext("fake-owner", verified("fake@kangoeroeschool.com"))
       .firestore();
-    for (const collection of ["deviceManagement", "deviceCommands", "devicePolicies", "deviceNetwork", "deviceCompliance", "deviceAuditTrail"]) {
+    await environment.withSecurityRulesDisabled(async (context) => {
+      for (const collection of ["deviceManagement", "deviceCommands", "devicePolicies", "deviceNetwork", "deviceCompliance", "deviceAuditTrail"])
+        await setDoc(doc(context.firestore(), `${collection}/x`), { value: 1 });
+    });
+    for (const collection of ["deviceManagement", "deviceNetwork", "deviceCompliance"]) {
+      await assertSucceeds(getDoc(doc(fake, `${collection}/x`)));
+      await assertSucceeds(getDoc(doc(admin, `${collection}/x`)));
+      await assertFails(getDoc(doc(unverifiedOwner, `${collection}/x`)));
+      await assertFails(setDoc(doc(admin, `${collection}/user-write`), { value: 2 }));
+      await assertSucceeds(getDoc(doc(owner, `${collection}/x`)));
+    }
+    for (const collection of ["deviceCommands", "devicePolicies", "deviceAuditTrail"]) {
       await assertFails(getDoc(doc(fake, `${collection}/x`)));
       await assertFails(getDoc(doc(admin, `${collection}/x`)));
       await assertFails(getDoc(doc(unverifiedOwner, `${collection}/x`)));
-      await assertSucceeds(setDoc(doc(owner, `${collection}/x`), { value: 1 }));
       await assertSucceeds(getDoc(doc(owner, `${collection}/x`)));
     }
+    await assertSucceeds(setDoc(doc(owner, "deviceManagement/owner-write"), { value: 2 }));
+    await assertSucceeds(setDoc(doc(owner, "deviceCompliance/owner-write"), { value: 2 }));
+    await assertFails(setDoc(doc(owner, "deviceNetwork/owner-write"), { value: 2 }));
+    await assertSucceeds(setDoc(doc(owner, "deviceCommands/owner-write"), { value: 2 }));
+    await assertSucceeds(setDoc(doc(owner, "devicePolicies/owner-write"), { value: 2 }));
+    await assertSucceeds(setDoc(doc(owner, "deviceAuditTrail/owner-write"), { value: 2 }));
     // The audit trail is create-only, even for the Owner.
     await assertFails(updateDoc(doc(owner, "deviceAuditTrail/x"), { value: 2 }));
     await assertFails(deleteDoc(doc(owner, "deviceAuditTrail/x")));
@@ -406,17 +431,24 @@ describe("AIMS Firestore authorization", () => {
         createdAt: serverTimestamp(), createdBy: "seed", updatedAt: serverTimestamp(), updatedBy: "seed",
       });
     });
-    const regular = environment.authenticatedContext("u1", verified("someone@kangoeroeschool.com")).firestore();
-    const admin = environment.authenticatedContext("u2", verified("Manager-ICT@kangoeroeschool.com")).firestore();
+    const regular = environment.authenticatedContext("u1", {
+      ...verified("someone@kangoeroeschool.com"),
+      role: "warehouse-staff",
+    }).firestore();
+    const admin = environment.authenticatedContext("u2", {
+      ...verified("Manager-ICT@kangoeroeschool.com"),
+      role: "administrator",
+    }).firestore();
     for (const db of [regular, admin]) {
       await assertFails(updateDoc(doc(db, "codeGroups/cg1"), { archived: true, isActive: false, updatedAt: serverTimestamp(), updatedBy: "x" }));
       await assertFails(deleteDoc(doc(db, "codeGroups/cg1")));
       await assertFails(updateDoc(doc(db, "locations/main1"), { status: "Archived", updatedAt: serverTimestamp(), updatedBy: "x" }));
       await assertFails(deleteDoc(doc(db, "locations/main1")));
     }
-    // Ordinary updates and sub-locations are unaffected.
+    // Ordinary descriptive updates remain available; every direct Master Data
+    // deletion (including sub-locations) stays behind the trusted Function.
     await assertSucceeds(updateDoc(doc(regular, "codeGroups/cg1"), { name: "Laptops 2", updatedAt: serverTimestamp(), updatedBy: "u1" }));
-    await assertSucceeds(deleteDoc(doc(regular, "locations/sub1")));
+    await assertFails(deleteDoc(doc(regular, "locations/sub1")));
   });
 
   it("allows only a valid self profile and denies privilege injection or cross-user access", async () => {
@@ -791,83 +823,20 @@ describe("Firebase repository persistence and concurrency", () => {
     refreshed.dispose();
   });
 
-  it("persists a code-group prefix correction across linked assets and categories", async () => {
+  it("keeps code-group prefix migrations behind the trusted server boundary", async () => {
     await seedConcurrencyFixtures();
-    await environment.withSecurityRulesDisabled(async (context) => {
-      const d = context.firestore();
-      await setDoc(doc(d, "categories/laptops"), {
-        kind: "category",
-        name: "Laptops",
-        type: "Serialized",
-        status: "Active",
-        relatedCount: 0,
-        details: { codeGroup: "KCSMD" },
-        createdAt: serverTimestamp(),
-        createdBy: uid,
+    const db = environment.authenticatedContext(uid, claims).firestore();
+
+    await assertFails(
+      updateDoc(doc(db, "codeGroups/devices"), {
+        prefix: "KCSM",
         updatedAt: serverTimestamp(),
         updatedBy: uid,
-      });
-    });
-    const db = environment.authenticatedContext(uid, claims).firestore();
-    const access = async () => ({
-      permissions: [
-        "admin.system.configure",
-        "assets.view",
-        "assets.create",
-        "assets.edit",
-        "categories.manage",
-      ],
-      denials: [],
-      active: true,
-    });
-    const repo = new FirebaseInventoryRepository(
-      db,
-      () => uid,
-      undefined,
-      access,
+      }),
     );
-    await repo.initialize();
-    await repo.execute({
-      action: "asset.create",
-      values: {
-        codePrefix: "KCSMD",
-        name: "Rename phone",
-        serialNumber: "REN-001",
-      },
-    });
-    const asset = repo
-      .snapshot()
-      .assets.find((item) => item.codePrefix === "KCSMD")!;
-    const result = await repo.execute({
-      action: "codeGroup.edit",
-      entityId: "devices",
-      actor: "Administrator",
-      values: { name: "Mobile devices", prefix: "KCSM" },
-    });
-    expect(JSON.stringify(result)).toContain('"ok":true');
-    const refreshed = new FirebaseInventoryRepository(
-      db,
-      () => uid,
-      undefined,
-      access,
-    );
-    await refreshed.initialize();
-    const renamed = refreshed
-      .snapshot()
-      .assets.find((item) => item.id === asset.id);
-    expect(renamed?.codePrefix).toBe("KCSM");
-    expect(renamed?.code).toBe(`KCSM-${asset.codeNumber}`);
-    expect(renamed?.previousCodes).toContain(asset.code);
-    const category = refreshed
-      .snapshot()
-      .references.find((item) => item.id === "laptops");
-    expect(category?.details.codeGroup).toBe("KCSM");
-    expect(
-      refreshed.snapshot().codeGroups.find((item) => item.id === "devices")
-        ?.prefix,
-    ).toBe("KCSM");
-    repo.dispose();
-    refreshed.dispose();
+
+    const group = await getDoc(doc(db, "codeGroups/devices"));
+    expect(group.data()?.prefix).toBe("KCSMD");
   });
 
   it("persists stock workflow records and rejects a stale concurrent issue", async () => {
@@ -1090,12 +1059,12 @@ describe("AIMS Master Data authorization", () => {
     await assertFails(deleteDoc(doc(db, "departments/ict")));
   });
 
-  it("lets the designated delete managers soft-delete and restore code groups", async () => {
+  it("keeps code-group archive and restore Function-only, even for a delete manager", async () => {
     const db = deleteManager("aliendas@kangoeroeschool.com");
     await assertSucceeds(
       setDoc(doc(db, "codeGroups/kcsl"), laptopCodeGroup("delete-manager")),
     );
-    await assertSucceeds(
+    await assertFails(
       updateDoc(doc(db, "codeGroups/kcsl"), {
         isActive: false,
         archived: true,
@@ -1104,26 +1073,6 @@ describe("AIMS Master Data authorization", () => {
         updatedBy: "delete-manager",
       }),
     );
-    const deletedGroup = await getDoc(doc(db, "codeGroups/kcsl"));
-    expect(deletedGroup.data()).toMatchObject({
-      archived: true,
-      deletionReason: "Retired",
-      isActive: false,
-    });
-    await assertSucceeds(
-      updateDoc(doc(db, "codeGroups/kcsl"), {
-        isActive: true,
-        archived: false,
-        deletionReason: "",
-        updatedAt: serverTimestamp(),
-        updatedBy: "delete-manager",
-      }),
-    );
-    const restoredGroup = await getDoc(doc(db, "codeGroups/kcsl"));
-    expect(restoredGroup.data()).toMatchObject({
-      archived: false,
-      isActive: true,
-    });
   });
 
   it("forbids a normal user from soft-deleting a code group", async () => {
@@ -1142,42 +1091,43 @@ describe("AIMS Master Data authorization", () => {
     );
   });
 
-  it("lets the designated delete managers create, update and delete master data", async () => {
-    for (const email of [
+  it("lets delete managers create and update Master Data but keeps deletion Function-only", async () => {
+    for (const [index, email] of [
       "sastropawiroe@kangoeroeschool.com",
       "aliendas@kangoeroeschool.com",
       "Manager-ICT@kangoeroeschool.com",
-    ]) {
+    ].entries()) {
       const db = deleteManager(email);
+      const suffix = String(index + 1);
       await assertSucceeds(
-        setDoc(doc(db, "codeGroups/kcsl"), laptopCodeGroup("delete-manager")),
+        setDoc(doc(db, `codeGroups/kcsl-${suffix}`), laptopCodeGroup("delete-manager")),
       );
       await assertSucceeds(
-        updateDoc(doc(db, "codeGroups/kcsl"), {
+        updateDoc(doc(db, `codeGroups/kcsl-${suffix}`), {
           nextAvailableNumber: 2,
           updatedAt: serverTimestamp(),
           updatedBy: "delete-manager",
         }),
       );
-      await assertSucceeds(deleteDoc(doc(db, "codeGroups/kcsl")));
+      await assertFails(deleteDoc(doc(db, `codeGroups/kcsl-${suffix}`)));
 
       await assertSucceeds(
-        setDoc(doc(db, "locations/main-kh"), {
+        setDoc(doc(db, `locations/main-kh-${suffix}`), {
           name: "KH",
           kind: "location",
           ...audit("delete-manager"),
         }),
       );
-      await assertSucceeds(deleteDoc(doc(db, "locations/main-kh")));
+      await assertFails(deleteDoc(doc(db, `locations/main-kh-${suffix}`)));
 
       await assertSucceeds(
-        setDoc(doc(db, "departments/ict"), {
+        setDoc(doc(db, `departments/ict-${suffix}`), {
           name: "ICT",
           kind: "department",
           ...audit("delete-manager"),
         }),
       );
-      await assertSucceeds(deleteDoc(doc(db, "departments/ict")));
+      await assertFails(deleteDoc(doc(db, `departments/ict-${suffix}`)));
     }
   });
 

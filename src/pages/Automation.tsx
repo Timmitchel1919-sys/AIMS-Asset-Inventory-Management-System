@@ -1,17 +1,10 @@
 import {
-  AlertTriangle,
-  ArrowRight,
   Calendar,
   CheckCircle2,
-  Clock,
-  Database,
-  ExternalLink,
   FileSpreadsheet,
   History,
-  Layers,
   Pause,
   Play,
-  Plus,
   RefreshCw,
   Server,
   ShieldCheck,
@@ -20,12 +13,12 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { httpsCallable } from "firebase/functions";
-import { Badge, Button, Card, Field } from "../components/ui";
+import { Badge, Button, Card } from "../components/ui";
 import { DataTable, type DataColumn } from "../components/DataTable";
-import { Dialog, OfflineGate, PageHeader } from "../components/WorkflowUi";
+import { OfflineGate, PageHeader } from "../components/WorkflowUi";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { firebaseFunctions } from "../lib/firebase";
@@ -264,7 +257,8 @@ export default function AutomationPage() {
   }, []);
 
   useEffect(() => {
-    fetchSyncHealth();
+    const timer = window.setTimeout(() => void fetchSyncHealth(), 0);
+    return () => window.clearTimeout(timer);
   }, [fetchSyncHealth]);
 
   const saveAutomations = (updated: AutomationTask[]) => {

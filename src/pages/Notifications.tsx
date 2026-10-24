@@ -8,22 +8,18 @@ import {
   CheckCheck,
   CheckCircle2,
   Clock,
-  Filter,
   Info,
   Mail,
   MailOpen,
   RefreshCw,
   Search,
-  Settings2,
   Sliders,
-  Sparkles,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Badge, Button, Card, Field } from "../components/ui";
+import { Badge, Button, Card } from "../components/ui";
 import { Dialog, OfflineGate, PageHeader } from "../components/WorkflowUi";
 import { useApp } from "../context/AppContext";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
-import type { Notification } from "../domain/types";
 
 type LifecycleTab = "unread" | "read" | "archived" | "preferences";
 type PriorityFilter = "all" | "Critical" | "High" | "Medium" | "Low";

@@ -84,19 +84,6 @@ function MainLocationsSettings() {
     });
   }
 
-  async function change(
-    location: ReferenceRecord,
-    action: "reference.delete" | "reference.archive" | "reference.restore",
-  ) {
-    const r = await repository.execute({
-      action,
-      entityId: location.id,
-      values: { kind: location.kind },
-    });
-    setFeedback({ status: r.ok ? "success" : "error", message: r.message });
-    if (r.ok) setDeleting(null);
-  }
-
   return (
     <div>
       <div className="section-toolbar">

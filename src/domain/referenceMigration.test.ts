@@ -181,8 +181,8 @@ import { resolveAssetReferences } from "./referenceMigration";
 
 describe("resolveAssetReferences (live sync after a user action)", () => {
   const lookups = () => {
-    const { assets: _a, assetTypes: _t, ...rest } = base();
-    return rest;
+    const { references, codeGroups, users, defaultAssetTypeName } = base();
+    return { references, codeGroups, users, defaultAssetTypeName };
   };
   it("derives ids from the asset text", () => {
     expect(resolveAssetReferences(asset({}), lookups())).toEqual({

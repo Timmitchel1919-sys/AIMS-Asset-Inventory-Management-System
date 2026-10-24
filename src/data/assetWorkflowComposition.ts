@@ -74,7 +74,8 @@ export async function composeAssetCommand(
     if (!assignee) return execute(command);
     if (status !== "Assigned") return fail(NOT_ASSIGNABLE[lang]);
 
-    const { assignedTo: _drop, ...rest } = v;
+    const rest = { ...v };
+    delete rest.assignedTo;
     const created = await execute({ ...command, values: { ...rest, status: "Available" } });
     if (!created.ok || !created.entityId) return created;
     const assigned = await execute({
@@ -135,7 +136,9 @@ export async function composeAssetCommand(
     });
   }
   // Everything else on the form, without the assignee the workflow already handled.
-  const { assignedTo: _skip, status: _status, ...rest } = v;
+  const rest = { ...v };
+  delete rest.assignedTo;
+  delete rest.status;
   const settled: AssetStatus = next ? "Assigned" : "Available";
   commands.push({
     ...command,

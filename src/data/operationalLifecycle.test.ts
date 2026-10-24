@@ -262,14 +262,13 @@ describe("operational lifecycle", () => {
       expect(block).toMatch(/allow update:[\s\S]*resource\.data\.status == 'Draft'/);
     });
 
-    it("inventory movements and transactions are append-only, and only locations/departments can ever be deleted generically", () => {
+    it("inventory movements and transactions are append-only, and generic client deletion is forbidden", () => {
       expect(rules).toContain("&& collectionName != 'inventoryTransactions'");
       expect(rules).toContain("&& collectionName != 'assetMovements'");
       const generic = rule("match /{collectionName}/{id}");
       const del = generic.slice(generic.indexOf("allow delete:"));
       expect(del).not.toMatch(/inventoryTransactions|assetMovements|activityLogs|audits/);
-      expect(del).toContain("collectionName == 'locations'");
-      expect(del).toContain("collectionName == 'departments'");
+      expect(del).toContain("allow delete: if false;");
     });
 
     it("asset records are never deletable (history keeps its subject)", () => {

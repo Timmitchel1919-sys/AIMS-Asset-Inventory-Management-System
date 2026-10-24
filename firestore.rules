@@ -23,20 +23,28 @@ service cloud.firestore {
     function hasAccessAssignment() {
       return isVerified() && exists(accessAssignmentPath());
     }
-    // A verified school account whose access assignment has not been suspended.
+    // A verified school account with an explicitly provisioned, active access
+    // assignment. Missing assignments are not treated as implicit access.
     function isActiveAssignment() {
-      return !hasAccessAssignment() || get(accessAssignmentPath()).data.active == true;
+      return hasAccessAssignment() && get(accessAssignmentPath()).data.active == true;
     }
-    // Central Master Data authorization: any verified, active AIMS user —
-    // including one with no accessAssignments document yet (a brand-new
-    // account whose provisionUserAccess call hasn't run or hasn't been
-    // read back yet). It intentionally does not require unrelated UI
-    // feature permissions such as dashboard.view, settings.manage or
-    // departments.manage, and does not require an existing access
-    // assignment or custom claims — only suspension
-    // (isActiveAssignment() == false) withholds it.
+    function hasTrustedTokenSignal() {
+      return (('role' in request.auth.token)
+          && request.auth.token.role is string
+          && request.auth.token.role.size() > 0)
+        || (('permissions' in request.auth.token)
+          && request.auth.token.permissions is list
+          && request.auth.token.permissions.size() > 0);
+    }
+    function hasTrustedAccessSignal() {
+      return isVerified()
+        && ((hasTrustedTokenSignal() && !hasAccessAssignment())
+          || isActiveAssignment());
+    }
+    // Central authorization accepts only verified users whose trusted token
+    // or protected access-assignment proves that provisioning completed.
     function isAuthorizedAimsUser() {
-      return isVerified() && isActiveAssignment();
+      return isOwner() || hasTrustedAccessSignal();
     }
     // The single AIMS Owner / super admin, identified by the verified email
     // in the Firebase Auth token (which a client cannot forge or edit). It is
@@ -58,26 +66,20 @@ service cloud.firestore {
     function ownerRoleAllowed(data) {
       return data.role != 'owner' || isOwner();
     }
-    // Every authorized AIMS user may add and delete Master Data. Deletion is
-    // still business-safe client-side (records move to the recycle bin first;
-    // permanent delete requires resolving active related data).
+    // Explicit denials override otherwise valid module access.
     function isExplicitlyDenied(value) {
       return (('denials' in request.auth.token) && request.auth.token.denials is list && value in request.auth.token.denials)
         || (hasAccessAssignment()
           && get(accessAssignmentPath()).data.denials is list
           && value in get(accessAssignmentPath()).data.denials);
     }
-    // Every verified, non-suspended AIMS user has full ("super admin")
-    // rights to every permission string — role/permission-list documents are
-    // no longer consulted as a restriction, only suspension
-    // (isActiveAssignment() == false) or an explicit denial can withhold
-    // anything. Keep in sync with rolePermissions in src/auth/permissions.ts
-    // and resolveActorAccess() in src/data/firebaseRepository.tsx.
+    // A trusted role, permission claim or active assignment activates the
+    // existing broad AIMS user model; explicit denials still take precedence.
     function hasPermission(value) {
-      return isOwner() || (isVerified() && isActiveAssignment() && !isExplicitlyDenied(value));
+      return isOwner() || (hasTrustedAccessSignal() && !isExplicitlyDenied(value));
     }
     function hasAnyPermission(values) {
-      return isOwner() || (isVerified() && values is list && values.size() <= 30 && isActiveAssignment() && !(
+      return isOwner() || (hasTrustedAccessSignal() && values is list && values.size() <= 30 && !(
         (('denials' in request.auth.token) && request.auth.token.denials is list && request.auth.token.denials.hasAny(values))
         || (hasAccessAssignment() && get(accessAssignmentPath()).data.denials.hasAny(values))
       ));
@@ -785,10 +787,11 @@ service cloud.firestore {
     }
 
     // =======================================================================
-    // OWNER-ONLY DEVICE MANAGEMENT BOUNDARY
+    // DEVICE INFORMATION: authorized-user reads, owner-only mutations.
     // =======================================================================
     match /deviceManagement/{document=**} {
-      allow read, write: if isOwner();
+      allow read: if isAuthorizedAimsUser();
+      allow write: if isOwner();
     }
     match /deviceCommands/{document=**} {
       allow read, write: if isOwner();
@@ -797,10 +800,12 @@ service cloud.firestore {
       allow read, write: if isOwner();
     }
     match /deviceNetwork/{document=**} {
-      allow read, write: if isOwner();
+      allow read: if isAuthorizedAimsUser();
+      allow write: if false;
     }
     match /deviceCompliance/{document=**} {
-      allow read, write: if isOwner();
+      allow read: if isAuthorizedAimsUser();
+      allow write: if isOwner();
     }
     match /deviceAuditTrail/{document=**} {
       // Audit records must not be normally deleted.
@@ -867,10 +872,9 @@ service cloud.firestore {
              && resource.data.get('type', '') == 'Main location'
              && request.resource.data.get('status', '') == 'Archived'
              && resource.data.get('status', '') != 'Archived');
-      allow delete: if isOperationalCollection(collectionName)
-        && ((collectionName == 'locations'
-              && resource.data.get('type', '') != 'Main location')
-            || (collectionName == 'departments' && isAuthorizedAimsUser()));
+      // Master Data deletion is performed only by the trusted Cloud Function,
+      // after dependency checks and delete-manager authorization.
+      allow delete: if false;
     }
 
     match /{document=**} { allow read, write: if false; }

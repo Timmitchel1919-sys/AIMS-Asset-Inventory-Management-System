@@ -36,6 +36,8 @@ import {
 } from "../domain/deviceManagement";
 import type { Asset, AssetStatus } from "../domain/types";
 import { useT } from "../i18n";
+import { isAimsOwnerEmail } from "../auth/accessBootstrap";
+import { DEMO_AUTH_MODE } from "../auth/aimsEmailPolicy";
 
 type TabId = "overview" | "health" | "compliance" | "policies" | "commands" | "audit";
 const TAB_PATHS: Record<TabId, string> = {
@@ -62,9 +64,10 @@ const COPY = {
   en: {
     title: "Device Management & Monitoring",
     description:
-      "Owner-only console for the managed device register, health, compliance policies and the command log.",
+      "Managed device register, health and compliance monitoring with protected administrative controls.",
     tabs: { overview: "Overview", health: "Health", compliance: "Compliance", policies: "Policies", commands: "Commands", audit: "Audit" } as Record<TabId, string>,
     ownerOnly: "OWNER ONLY",
+    readOnly: "MONITORING ACCESS",
     noAgent:
       "No device agent is connected. Health and compliance are calculated from the asset register, and commands are recorded as queued for the audit trail — they are not executed on any device.",
     offlineTitle: "Firebase is not connected",
@@ -113,9 +116,10 @@ const COPY = {
   nl: {
     title: "Apparaatbeheer & Monitoring",
     description:
-      "Alleen voor de eigenaar: beheerconsole voor het apparatenregister, gezondheid, compliancebeleid en het opdrachtenlogboek.",
+      "Beheerd apparatenregister, gezondheid en compliancemonitoring met beschermde beheerfuncties.",
     tabs: { overview: "Overzicht", health: "Gezondheid", compliance: "Compliance", policies: "Beleid", commands: "Opdrachten", audit: "Audit" } as Record<TabId, string>,
     ownerOnly: "ALLEEN EIGENAAR",
+    readOnly: "MONITORINGTOEGANG",
     noAgent:
       "Er is geen apparaatagent gekoppeld. Gezondheid en compliance worden berekend uit het assetregister en opdrachten worden als 'in wachtrij' vastgelegd voor de audittrail — ze worden niet op een apparaat uitgevoerd.",
     offlineTitle: "Firebase is niet verbonden",
@@ -183,7 +187,10 @@ export default function DeviceManagement() {
   const navigate = useNavigate();
   const location = useLocation();
   const snapshot = useMockSnapshot();
-  const data = useDeviceManagementData();
+  const canManage = DEMO_AUTH_MODE
+    ? app.user?.role === "owner"
+    : isAimsOwnerEmail(app.user?.email);
+  const data = useDeviceManagementData(canManage);
   const nl = app.language === "nl";
   const c = nl ? COPY.nl : COPY.en;
   const tab: TabId = PATH_TABS[location.pathname.replace(/\/$/, "")] ?? "overview";
@@ -234,7 +241,7 @@ export default function DeviceManagement() {
     }
   };
 
-  const now = Date.now();
+  const [now] = useState(() => Date.now());
   const assetsById = useMemo(
     () => new Map(snapshot.assets.map((asset) => [asset.id, asset])),
     [snapshot.assets],
@@ -260,8 +267,7 @@ export default function DeviceManagement() {
           };
         })
         .sort((a, b) => a.assetCode.localeCompare(b.assetCode)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data.devices, assetsById, policiesById],
+    [data.devices, assetsById, policiesById, now],
   );
 
   const needle = search.trim().toLowerCase();
@@ -379,8 +385,8 @@ export default function DeviceManagement() {
         title={c.title}
         description={c.description}
         actions={
-          <span className="badge badge-danger dm-owner-badge">
-            <ShieldAlert size={14} aria-hidden="true" /> {c.ownerOnly}
+          <span className={`badge ${canManage ? "badge-danger" : "badge-info"} dm-owner-badge`}>
+            <ShieldAlert size={14} aria-hidden="true" /> {canManage ? c.ownerOnly : c.readOnly}
           </span>
         }
       />
@@ -393,7 +399,7 @@ export default function DeviceManagement() {
         </p>
       )}
       <div className="asset-tabs" role="tablist" aria-label={c.title}>
-        {TABS.map((key) => (
+        {(canManage ? TABS : TABS.slice(0, 3)).map((key) => (
           <button
             key={key}
             type="button"
@@ -429,11 +435,13 @@ export default function DeviceManagement() {
                   placeholder={c.search}
                   aria-label={c.search}
                 />
-                <Button type="button" onClick={() => { setEnrollSelection(new Set()); setEnrollOpen(true); }}>
-                  <Plus size={16} /> {c.addDevices}
-                </Button>
+                {canManage && (
+                  <Button type="button" onClick={() => { setEnrollSelection(new Set()); setEnrollOpen(true); }}>
+                    <Plus size={16} /> {c.addDevices}
+                  </Button>
+                )}
               </div>
-              {selection.size > 0 && (
+              {canManage && selection.size > 0 && (
                 <div className="dm-bulkbar" role="region" aria-label={c.actions}>
                   <strong>{selection.size} {c.selected}</strong>
                   <select value={bulkPolicy} onChange={(e) => setBulkPolicy(e.target.value)} aria-label={c.assignPolicy}>
@@ -464,14 +472,14 @@ export default function DeviceManagement() {
                   <table>
                     <thead>
                       <tr>
-                        <th><input type="checkbox" checked={allFilteredSelected} onChange={toggleAll} aria-label="Select all" /></th>
-                        <th>{c.device}</th><th>{c.assignee}</th><th>{nl ? "Status & Telemetrie" : "Status & Telemetry"}</th><th>{c.health}</th><th>{c.policy}</th><th>{c.compliance}</th><th>{c.actions}</th>
+                        {canManage && <th><input type="checkbox" checked={allFilteredSelected} onChange={toggleAll} aria-label="Select all" /></th>}
+                        <th>{c.device}</th><th>{c.assignee}</th><th>{nl ? "Status & Telemetrie" : "Status & Telemetry"}</th><th>{c.health}</th><th>{c.policy}</th><th>{c.compliance}</th>{canManage && <th>{c.actions}</th>}
                       </tr>
                     </thead>
                     <tbody>
                       {filtered.map((row) => (
                         <tr key={row.assetId}>
-                          <td><input type="checkbox" checked={selection.has(row.assetId)} onChange={() => toggleRow(row.assetId)} aria-label={row.assetCode} /></td>
+                          {canManage && <td><input type="checkbox" checked={selection.has(row.assetId)} onChange={() => toggleRow(row.assetId)} aria-label={row.assetCode} /></td>}
                           <td><strong>{row.assetCode}</strong><br /><small>{row.asset?.name ?? c.assetMissing}</small></td>
                           <td>{row.asset?.assignedTo || "—"}</td>
                           <td>
@@ -495,12 +503,12 @@ export default function DeviceManagement() {
                           <td>{row.health ? <Badge tone={healthTone(row.health.level)}>{row.health.score} · {c.healthLevels[row.health.level]}</Badge> : "—"}</td>
                           <td>{row.policy?.name ?? "—"}</td>
                           <td>{row.compliance ? (row.compliance.compliant ? <Badge tone="success">{c.compliant}</Badge> : <Badge tone="danger">{row.compliance.violations.length} {c.violations.toLowerCase()}</Badge>) : "—"}</td>
-                          <td>
+                          {canManage && <td>
                             <Button type="button" variant="ghost" aria-label={`${c.remove} ${row.assetCode}`} disabled={busy}
                               onClick={() => run(() => unenrollDevice({ assetId: row.assetId, assetCode: row.assetCode }, actor).then(() => setSelection((s) => { const n = new Set(s); n.delete(row.assetId); return n; })), c.done.removed)}>
                               <Trash2 size={16} />
                             </Button>
-                          </td>
+                          </td>}
                         </tr>
                       ))}
                     </tbody>
@@ -752,6 +760,7 @@ export default function DeviceManagement() {
         </section>
       )}
 
+      {canManage && <>
       <Dialog
         open={enrollOpen}
         onClose={() => setEnrollOpen(false)}
@@ -848,6 +857,7 @@ export default function DeviceManagement() {
           </div>
         )}
       </Dialog>
+      </>}
     </div>
   );
 }

@@ -8,16 +8,22 @@ import { defaultPolicyRules } from "../domain/deviceManagement";
 
 const store = vi.hoisted(() => ({
   data: {} as Record<string, unknown>,
-  queueCommands: vi.fn(async (_request: unknown) => "batch"),
+  queueCommands: vi.fn(async (...args: [unknown, unknown]) => {
+    void args;
+    return "batch";
+  }),
   assignPolicy: vi.fn(async () => undefined),
   enrollDevices: vi.fn(async () => undefined),
   dispatchCommand: vi.fn(async () => undefined),
   executeCommand: vi.fn(async () => undefined),
   dispatchAndExecuteAllQueued: vi.fn(async () => undefined),
 }));
+const appState = vi.hoisted(() => ({
+  user: { id: "owner", name: "Owner", role: "owner", email: "aliendas@kangoeroeschool.com" },
+}));
 
 vi.mock("../context/AppContext", () => ({
-  useApp: () => ({ language: "en", user: { id: "owner", name: "Owner", role: "owner" } }),
+  useApp: () => ({ language: "en", user: appState.user }),
 }));
 vi.mock("../data/repositoryContext", () => ({
   useMockSnapshot: () => ({ assets }),
@@ -52,6 +58,7 @@ beforeEach(() => {
   HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
   HTMLDialogElement.prototype.close = function () { this.removeAttribute("open"); };
   store.queueCommands.mockClear();
+  appState.user = { id: "owner", name: "Owner", role: "owner", email: "aliendas@kangoeroeschool.com" };
   store.data = {
     connected: true,
     loading: false,
@@ -76,6 +83,17 @@ describe("DeviceManagement page", () => {
     expect(screen.getByText(first.code)).toBeInTheDocument();
     expect(screen.getByText(second.code)).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
+  });
+  it("gives a regular user monitoring access without privileged controls", () => {
+    appState.user = { id: "user", name: "User", role: "administrator", email: "user@kangoeroeschool.com" };
+    renderAt("/device-management");
+    expect(screen.getByText("MONITORING ACCESS")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Overview" })).toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: "Policies" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add devices" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Actions" })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/SSID: KCS-EDU-SECURE/)).toHaveLength(2);
+    expect(screen.queryByRole("dialog", { name: "New command" })).not.toBeInTheDocument();
   });
   it("labels every table cell so tables can collapse into cards on mobile", () => {
     renderAt("/device-management");

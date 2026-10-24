@@ -7,6 +7,12 @@ import {
 } from "firebase/firestore";
 import type { ImportWriteAdapter, ImportWrite } from "./finalImportPlan";
 
+// Firestore evaluates Security Rules across every write in a commit. AIMS asset
+// and history validations are intentionally strict and can exceed the 1,000
+// expression request limit when heterogeneous documents share one commit.
+// Keep production imports at one validated document per resumable checkpoint.
+export const FIRESTORE_RULES_SAFE_BATCH_SIZE = 1;
+
 /** Production-capable adapter. It performs no work until executeFinalImportPlan is explicitly called. */
 export function createFirestoreImportAdapter(
   db: Firestore,

@@ -1,7 +1,7 @@
 import { useAssetTypes } from "../data/assetTypesStore";
 import { readAllowedAssetTypeIds } from "../domain/categoryRelations";
 import { assetInCategory } from "../domain/assetLookups";
-import { useState, FormEvent, useMemo } from "react";
+import { useState, FormEvent } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { useApp } from "../context/AppContext";
@@ -58,8 +58,7 @@ export const CategoriesPage = () => {
   const activeAssetCount = (item: ReferenceRecord) =>
     snapshot.assets.filter(a => assetInCategory(a, item) && !["Archived", "Disposed"].includes(a.status)).length;
 
-  const columns = useMemo<ListColumn<ReferenceRecord>[]>(
-    () => [
+  const columns: ListColumn<ReferenceRecord>[] = [
       {
         id: "name",
         label: t("categories.assetName"),
@@ -105,9 +104,7 @@ export const CategoriesPage = () => {
         ),
         value: (item) => item.status,
       },
-    ],
-    [t, snapshot.assets, topCategories]
-  );
+    ];
 
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<{ field: string; direction: "asc" | "desc" }>({ field: "name", direction: "asc" });
@@ -115,16 +112,12 @@ export const CategoriesPage = () => {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState({ category: "", tracking: "", status: "" });
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
-  const categoryChoices = useMemo(
-    () => [...new Set(assetTypes.map(item => categoryName(item)).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
-    [assetTypes, topCategories],
-  );
-  const trackingChoices = useMemo(
-    () => [...new Set(assetTypes.map(item => item.type).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
-    [assetTypes],
-  );
+  const categoryChoices = [...new Set(assetTypes.map(item => categoryName(item)).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
+  const trackingChoices = [...new Set(assetTypes.map(item => item.type).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
 
-  const filteredAssetTypes = useMemo(() => {
+  const filteredAssetTypes = (() => {
     // Items moved to the recycle bin stay hidden unless asked for explicitly.
     let result = assetTypes.filter(item => (filters.status ? item.status === filters.status : item.status !== "Archived"));
     if (filters.category) result = result.filter(item => categoryName(item) === filters.category);
@@ -144,7 +137,7 @@ export const CategoriesPage = () => {
       return sort.direction === "asc" ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
     });
     return result;
-  }, [assetTypes, query, sort, columns, filters]);
+  })();
 
   const visibleColumns = columns.map(c => c.id);
 

@@ -9,15 +9,13 @@ import type { WorkflowCommand } from "./contracts";
 export function editableAssetValues(
   values: NonNullable<WorkflowCommand["values"]>,
 ) {
-  const {
-    code,
-    codePrefix,
-    codeNumber,
-    previousCodes,
-    codeCorrection,
-    correctionReason,
-    allowDuplicateSerial,
-    ...editable
-  } = values;
+  const editable = { ...values };
+  delete editable.code;
+  delete editable.codePrefix;
+  delete editable.codeNumber;
+  delete editable.previousCodes;
+  delete editable.codeCorrection;
+  delete editable.correctionReason;
+  delete editable.allowDuplicateSerial;
   return editable;
 }

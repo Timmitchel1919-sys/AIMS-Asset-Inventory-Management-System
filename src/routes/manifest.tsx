@@ -26,6 +26,7 @@ export type RouteIcon =
   | "settings"
   | "devices"
   | "radar"
+  | "network"
   | "install";
 export type RouteStatus = "implemented" | "partial" | "missing";
 export interface AppRoute {
@@ -48,6 +49,20 @@ export interface AppRoute {
 const page = (load: () => Promise<{ default: ComponentType }>) => lazy(load);
 
 export const routeManifest: AppRoute[] = [
+  {
+    id: "network-directory",
+    path: "/network-directory",
+    component: lazy(() => import("../pages/NetworkDirectory")),
+    titleKey: "routes.networkDirectory",
+    navKey: "nav.networkDirectory",
+    navigation: true,
+    breadcrumb: ["routes.networkDirectory"],
+    mobile: true,
+    lazy: true,
+    status: "implemented",
+    icon: "network",
+    ownerOnly: false,
+  },
   {
     id: "network-discovery",
     path: "/network-discovery",
@@ -75,7 +90,8 @@ export const routeManifest: AppRoute[] = [
     status: "implemented" as const,
     ownerOnly: true,
   },
-  // Owner-only Device Management console: one tabbed page, one path per tab.
+  // Device information is available to authorized AIMS users. Privileged
+  // policy, command, bulk-action and audit routes remain owner-only.
   ...[
     '/device-management', '/device-monitoring', '/device-compliance',
     '/device-policies', '/device-commands', '/device-bulk-actions',
@@ -93,7 +109,7 @@ export const routeManifest: AppRoute[] = [
     mobile: true,
     lazy: true as const,
     status: "implemented" as const,
-    ownerOnly: true,
+    ownerOnly: ['/device-policies','/device-commands','/device-bulk-actions','/device-audit'].includes(path),
   })),
   {
     id: "home",

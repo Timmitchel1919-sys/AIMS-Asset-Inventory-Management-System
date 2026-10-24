@@ -43,14 +43,6 @@ import { useT } from "../i18n";
 import { uploadAimsFiles } from "../services/firebaseStorageUploads";
 import { readLocalDraft, useAutosaveDraft } from "../hooks/useAutosaveDraft";
 
-const categories = [
-  "Laptops",
-  "Printers",
-  "Projectors",
-  "Network switches",
-  "UPS devices",
-  "Tablets",
-];
 const statuses: AssetStatus[] = [
   "Available",
   "Assigned",
@@ -165,6 +157,8 @@ export default function AssetForm() {
     setValue,
     getValues,
   } = formMethods;
+  // React Hook Form's watch subscription is intentionally consumed directly.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const watchedValues = watch();
   // Category relations: default Codegroep and allowed tracking types.
   const relations = useMemo(

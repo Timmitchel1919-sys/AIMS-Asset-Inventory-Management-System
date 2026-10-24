@@ -62,7 +62,51 @@
 .global-search kbd{display:none!important}
 .global-search__input-wrapper>input{padding-right:40px}
 .global-search__clear,.global-search__loading-icon{right:8px}
-@media(min-width:781px){.topbar-search{flex:1;min-width:0;margin-right:8px}.topbar-search .global-search{width:100%;max-width:none}}
+@media(min-width:781px){.topbar-search{flex:0 1 640px;min-width:320px;margin-right:auto}.topbar-search .global-search{width:100%;max-width:640px}}
+
+/* One authoritative adaptive navigation stack. The window remains the sole
+   vertical scroll container; only wide tables retain horizontal overflow. */
+.authenticated-app{
+  --aims-topbar-height:64px;
+  --aims-page-header-height:0px;
+  --aims-data-toolbar-height:0px;
+  --aims-topbar-offset:var(--aims-topbar-height);
+  --aims-page-header-offset:var(--aims-page-header-height);
+  --aims-toolbar-offset:var(--aims-data-toolbar-height);
+  --aims-table-header-offset:calc(var(--aims-topbar-offset) + var(--aims-page-header-offset) + var(--aims-toolbar-offset));
+}
+.authenticated-app>.topbar{position:sticky;top:0;z-index:40;transition:transform 220ms ease,opacity 180ms ease}
+.authenticated-app main .page-title{position:sticky;top:var(--aims-topbar-offset);z-index:35;background:var(--workspace-background);transition:transform 220ms ease,opacity 180ms ease,top 220ms ease}
+.authenticated-app main :is(.data-toolbar,.dm-toolbar,.list-toolbar){position:sticky;top:calc(var(--aims-topbar-offset) + var(--aims-page-header-offset));z-index:34;background:var(--surface-card);transition:transform 220ms ease,opacity 180ms ease,top 220ms ease}
+.authenticated-app .page :is(.desktop-table,.table-scroll,.dm-table-wrap)>table>thead>tr>th,
+.authenticated-app .page :is(.desktop-table,.table-scroll,.dm-table-wrap) table>thead>tr>th{
+  position:sticky;
+  top:var(--aims-table-header-offset);
+  z-index:30;
+  background:var(--surface-card);
+  box-shadow:0 1px 0 var(--surface-border);
+  transition:top 220ms ease;
+}
+.authenticated-app[data-scroll-navigation="hidden"]{
+  --aims-topbar-offset:0px;
+  --aims-page-header-offset:0px;
+  --aims-toolbar-offset:0px;
+}
+.authenticated-app[data-scroll-navigation="hidden"]>.topbar{transform:translateY(-105%);opacity:0;pointer-events:none}
+.authenticated-app[data-scroll-navigation="hidden"] main .page-title{transform:translateY(-180px);opacity:0;pointer-events:none}
+.authenticated-app[data-scroll-navigation="hidden"] main :is(.data-toolbar,.dm-toolbar,.list-toolbar){transform:translateY(-280px);opacity:0;pointer-events:none}
+.global-search:focus-within{width:min(640px,calc(100vw - 32px))!important}
+@media(max-width:780px){
+  .authenticated-app{--aims-topbar-height:58px}
+  .authenticated-app main :is(.data-toolbar,.dm-toolbar,.list-toolbar){position:relative;top:auto;transform:none!important;opacity:1!important;pointer-events:auto!important}
+  .authenticated-app{--aims-data-toolbar-height:0px}
+}
+@media(prefers-reduced-motion:reduce){
+  .authenticated-app>.topbar,
+  .authenticated-app main .page-title,
+  .authenticated-app main :is(.data-toolbar,.dm-toolbar,.list-toolbar),
+  .authenticated-app .page :is(.desktop-table,.table-scroll,.dm-table-wrap) table>thead>tr>th{transition:none}
+}
 
 /* Keep the collapse glyph unframed in every supported theme. */
 .app-sidebar .sidebar-collapse-button,

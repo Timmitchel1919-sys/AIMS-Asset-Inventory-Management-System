@@ -1,18 +1,11 @@
 import {
-  Calendar,
   CheckCircle2,
-  Download,
   FileSpreadsheet,
   FileText,
-  Filter,
-  Layers,
   Printer,
-  RefreshCw,
-  Search,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { Badge, Button, Card, Field, SelectField } from "../components/ui";
+import { Badge, Button } from "../components/ui";
 import { DataTable, type DataColumn } from "../components/DataTable";
 import { Dialog, OfflineGate, PageHeader } from "../components/WorkflowUi";
 import { useApp } from "../context/AppContext";
@@ -55,9 +48,9 @@ export default function ReportsPage() {
     "all",
   );
   const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStatus] = useState("");
   const [filterLocation, setFilterLocation] = useState("");
-  const [filterDepartment, setFilterDepartment] = useState("");
+  const [filterDepartment] = useState("");
   const [printModalOpen, setPrintModalOpen] = useState(false);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
 
@@ -204,12 +197,6 @@ export default function ReportsPage() {
   const uniqueLocations = useMemo(() => {
     return Array.from(
       new Set(snapshot.assets.map((a) => a.location).filter(Boolean)),
-    ).sort();
-  }, [snapshot.assets]);
-
-  const uniqueDepartments = useMemo(() => {
-    return Array.from(
-      new Set(snapshot.assets.map((a) => a.department).filter(Boolean)),
     ).sort();
   }, [snapshot.assets]);
 

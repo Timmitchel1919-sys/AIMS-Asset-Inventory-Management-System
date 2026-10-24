@@ -25,6 +25,7 @@ describe("Master Data deletion policy", () => {
     const group = rules.slice(rules.indexOf("match /codeGroups/{id}"), rules.indexOf("match /assetTypes/{id}"));
     expect(group).toContain("allow delete: if false;");
     expect(rules).toContain("collectionName == 'locations'");
-    expect(rules).toContain("resource.data.get('type', '') != 'Main location'");
+    const generic = rules.slice(rules.indexOf("match /{collectionName}/{id}"));
+    expect(generic).toContain("allow delete: if false;");
   });
 });

@@ -286,7 +286,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         main.id ===
         (item.type === "Main location" ? item.id : item.mainLocationId),
     );
-  const availableSubLocations = useMemo(() => {
+  const availableSubLocations = (() => {
     // 1. All active departments (such as classes, rooms, and departments)
     const departments = snapshot.references
       .filter((x) => x.kind === "department" && x.status === "Active")
@@ -336,7 +336,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
       });
     }
     return combined.sort((a, b) => a.name.localeCompare(b.name));
-  }, [snapshot.references, selectedMainLocationId, mainLocations]);
+  })();
   const locationHierarchyLabel = (item: ReferenceRecord) =>
     item.type === "Main location" && String(item.details.prefix || "").trim()
       ? String(item.details.prefix).trim().toUpperCase()

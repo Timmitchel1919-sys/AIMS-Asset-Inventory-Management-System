@@ -63,7 +63,7 @@ export default function UserDirectory() {
       setRegisteredUsers([]);
       setError(nl ? "De geregistreerde gebruikers konden niet worden geladen." : "Registered users could not be loaded.");
     });
-  }, [firebaseMode, nl]);
+  }, [firebaseMode, nl, app.user?.id, ownProfilePhoto]);
 
   // Presence is a separate, owner-write-only collection (see lib/presence);
   // a single listener here keeps this real-time without any polling.
@@ -110,7 +110,7 @@ export default function UserDirectory() {
             online: isEffectivelyOnline(presenceByUid[item.uid], now),
           }))
         : demoUsers,
-    [firebaseMode, registeredUsers, presenceByUid, now, demoUsers, app.user?.id, ownProfilePhoto],
+    [firebaseMode, registeredUsers, presenceByUid, now, demoUsers],
   );
   const providerLabel = (value: DirectoryUser["authProvider"]) => value === "anonymous"
     ? (nl ? "Anoniem" : "Anonymous")

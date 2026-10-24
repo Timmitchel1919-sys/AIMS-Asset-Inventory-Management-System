@@ -1,6 +1,5 @@
 import {
   Archive,
-  Columns3,
   Download,
   Search,
   Trash2,
@@ -92,7 +91,7 @@ export function DataTable<T>({
     onQueryChange?.(value);
   };
   const [selected, setSelected] = useState<string[]>([]);
-  const [visible, setVisible] = useState<string[]>(() => {
+  const [visible] = useState<string[]>(() => {
     try {
       const saved = JSON.parse(
         localStorage.getItem(`kcs-columns-${id}`) || "null",
@@ -110,7 +109,6 @@ export function DataTable<T>({
     id: string;
     direction: "asc" | "desc";
   } | null>(null);
-  const [showColumns, setShowColumns] = useState(false);
   const [notice, setNotice] = useState("");
 
   // Lists start in a predictable alphabetical order throughout AIMS. Prefer
@@ -131,10 +129,14 @@ export function DataTable<T>({
       ),
     [columns],
   );
-  const activeSort = sort ??
-    (alphabeticalColumn
-      ? { id: alphabeticalColumn.id, direction: "asc" as const }
-      : null);
+  const activeSort = useMemo(
+    () =>
+      sort ??
+      (alphabeticalColumn
+        ? { id: alphabeticalColumn.id, direction: "asc" as const }
+        : null),
+    [alphabeticalColumn, sort],
+  );
 
   const searchable = useMemo(
     () =>

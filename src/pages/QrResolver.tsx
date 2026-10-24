@@ -25,18 +25,15 @@ export default function QrResolver() {
   const { user, authLoading, emailVerified } = useApp();
   const location = useLocation();
   const t = useT();
+  const invalidToken = !token || !isValidQrToken(token);
   const [state, setState] = useState<ResolverState>("resolving");
   const [assetId, setAssetId] = useState<string | undefined>();
 
   useEffect(() => {
     let active = true;
-    if (!token || !isValidQrToken(token)) {
-      setState("not-found");
-      return;
-    }
+    if (invalidToken) return;
     if (!user || (!emailVerified && !(DEMO_AUTH_MODE && user.isDemoUser)))
       return;
-    setState("resolving");
     (async () => {
       try {
         const db = requireFirebase().db;
@@ -71,7 +68,10 @@ export default function QrResolver() {
           setState(isPermissionDenied(error) ? "unauthorized" : "not-found");
       }
     })();
-  }, [token, user, emailVerified]);
+    return () => {
+      active = false;
+    };
+  }, [token, user, emailVerified, invalidToken]);
 
   if (authLoading) return <RouteLoader />;
   if (!user)
@@ -92,18 +92,19 @@ export default function QrResolver() {
     );
   if (assetId) return <Navigate to={`/assets/${assetId}`} replace />;
 
+  const effectiveState = invalidToken ? "not-found" : state;
   const title =
-    state === "not-found"
+    effectiveState === "not-found"
       ? t("qr.notFound")
-      : state === "revoked"
+      : effectiveState === "revoked"
         ? t("qr.revoked")
-        : state === "unauthorized"
+        : effectiveState === "unauthorized"
           ? t("qr.unauthorized")
           : t("qr.resolving");
   const Icon =
-    state === "unauthorized"
+    effectiveState === "unauthorized"
       ? ShieldAlert
-      : state === "resolving"
+      : effectiveState === "resolving"
         ? QrCode
         : AlertTriangle;
 

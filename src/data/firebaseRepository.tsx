@@ -586,7 +586,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
         if (write.collection !== "assets") continue;
         const data = write.data as { qrToken?: string; qrUpdatedAt?: unknown };
         if (data.qrToken) continue;
-        let token = generateQrToken();
+        const token = generateQrToken();
         data.qrToken = token;
         data.qrUpdatedAt = serverTimestamp();
         withQr.push({
@@ -826,7 +826,7 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
           reason: String(command.values.correctionReason || ""),
         });
         await this.initialize();
-        const { codeCorrection, correctionReason, codePrefix, codeNumber, ...editableValues } = command.values;
+        const editableValues = editableAssetValues(command.values);
         command = { ...command, values: editableValues };
       } catch (error) {
         return { ok: false, message: firestoreErrorMessage(error).message };

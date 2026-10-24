@@ -6,6 +6,7 @@ import {
   Bot,
   Boxes,
   MonitorSmartphone,
+  Network,
   Building2,
   ChevronLeft,
   ChevronRight,
@@ -101,6 +102,7 @@ const icons: Record<RouteIcon, LucideIcon> = {
   settings: Settings,
   devices: MonitorSmartphone,
   radar: Radar,
+  network: Network,
   install: PackageOpen,
 };
 
@@ -151,6 +153,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     snapshot = useMockSnapshot(),
     repository = useRepository();
   const sidebarRef = useRef<HTMLElement>(null),
+    appRootRef = useRef<HTMLDivElement>(null),
     accountMenuRef = useRef<HTMLDivElement>(null),
     accountButtonRef = useRef<HTMLButtonElement>(null),
     mobileSearchRef = useRef<HTMLDivElement>(null),
@@ -167,7 +170,63 @@ export function AppShell({ children }: { children: ReactNode }) {
     [listening, setListening] = useState(false),
     [voiceStatus, setVoiceStatus] = useState(""),
     [profileOpen, setProfileOpen] = useState(false),
-    [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+    [mobileSearchOpen, setMobileSearchOpen] = useState(false),
+    [navigationVisible, setNavigationVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const scrollFrame = useRef<number | null>(null);
+  useEffect(() => {
+    lastScrollY.current = window.scrollY;
+    const update = () => {
+      scrollFrame.current = null;
+      const next = Math.max(0, window.scrollY);
+      const delta = next - lastScrollY.current;
+      if (next < 64) setNavigationVisible(true);
+      else if (delta >= 16) setNavigationVisible(false);
+      else if (delta <= -16) setNavigationVisible(true);
+      if (Math.abs(delta) >= 16 || next < 64) lastScrollY.current = next;
+    };
+    const onScroll = () => {
+      if (scrollFrame.current == null)
+        scrollFrame.current = window.requestAnimationFrame(update);
+    };
+    const reveal = () => setNavigationVisible(true);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("aims:reveal-navigation", reveal);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("aims:reveal-navigation", reveal);
+      if (scrollFrame.current != null) window.cancelAnimationFrame(scrollFrame.current);
+    };
+  }, []);
+  useEffect(() => {
+    const task = window.requestAnimationFrame(() => {
+      setNavigationVisible(true);
+      lastScrollY.current = window.scrollY;
+    });
+    return () => window.cancelAnimationFrame(task);
+  }, [location.pathname]);
+  useLayoutEffect(() => {
+    const root = appRootRef.current;
+    if (!root) return;
+    const measure = () => {
+      const topbar = root.querySelector<HTMLElement>(":scope > .topbar");
+      const pageHeader = root.querySelector<HTMLElement>("main .page-title");
+      const toolbar = root.querySelector<HTMLElement>(
+        "main .data-toolbar, main .dm-toolbar, main .list-toolbar",
+      );
+      root.style.setProperty("--aims-topbar-height", `${topbar?.offsetHeight ?? 0}px`);
+      root.style.setProperty("--aims-page-header-height", `${pageHeader?.offsetHeight ?? 0}px`);
+      root.style.setProperty("--aims-data-toolbar-height", `${toolbar?.offsetHeight ?? 0}px`);
+    };
+    const task = window.requestAnimationFrame(measure);
+    const delayed = window.setTimeout(measure, 180);
+    window.addEventListener("resize", measure);
+    return () => {
+      window.cancelAnimationFrame(task);
+      window.clearTimeout(delayed);
+      window.removeEventListener("resize", measure);
+    };
+  }, [location.pathname, children]);
   useEffect(() => {
     const openAccountMenu = () => setProfileOpen(true);
     window.addEventListener(OPEN_ACCOUNT_MENU_EVENT, openAccountMenu);
@@ -257,12 +316,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     app.user?.role === "owner"
       ? sidebarModuleOrder.flatMap((id) =>
           id === "settings"
-            ? ["network-discovery", "device-management", id]
+            ? ["network-directory", "network-discovery", "device-management", id]
             : id === "assistant"
               ? [id, "tracking-types"]
               : [id],
         )
-      : sidebarModuleOrder;
+      : sidebarModuleOrder.flatMap((id) => id === "settings" ? ["network-directory", "device-management", id] : [id]);
   const primaryRoutes = moduleOrder.flatMap((id) => {
     if (id === "network-discovery" && !(DEMO_AUTH_MODE || isAimsOwnerEmail(app.user?.email))) return [];
     const route = routes.find((candidate) => candidate.id === id);
@@ -352,7 +411,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
   return (
     <div
+      ref={appRootRef}
       className={`app authenticated-app ${app.sidebarCollapsed ? "collapsed" : ""}`}
+      data-scroll-navigation={navigationVisible ? "visible" : "hidden"}
       style={typographyStyle}
     >
       <a className="skip-link" href="#main-content">

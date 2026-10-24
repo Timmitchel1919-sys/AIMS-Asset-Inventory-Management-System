@@ -648,7 +648,9 @@ export function saveArchivedAssetRecord(record: ArchivedAssetRecord) {
     const existing = loadArchivedAssetRecords();
     existing[record.id] = record;
     window.localStorage.setItem(ARCHIVED_ASSETS_STORAGE_KEY, JSON.stringify(existing));
-  } catch {}
+  } catch {
+    // Local archive persistence is best-effort only.
+  }
 }
 
 export function removeArchivedAssetRecord(assetId: string) {
@@ -657,7 +659,9 @@ export function removeArchivedAssetRecord(assetId: string) {
     const existing = loadArchivedAssetRecords();
     delete existing[assetId];
     window.localStorage.setItem(ARCHIVED_ASSETS_STORAGE_KEY, JSON.stringify(existing));
-  } catch {}
+  } catch {
+    // Local archive persistence is best-effort only.
+  }
 }
 
 export function applyArchivedAssetRecords<T extends { id: string; status?: string; isArchived?: boolean; archivedAt?: string; archivedBy?: string; deletionReason?: string }>(

@@ -43,7 +43,10 @@ import {
   type FinalImportPlan,
   type ImportCheckpoint,
 } from "../migration/finalImportPlan";
-import { createFirestoreImportAdapter } from "../migration/firebaseImportWriter";
+import {
+  createFirestoreImportAdapter,
+  FIRESTORE_RULES_SAFE_BATCH_SIZE,
+} from "../migration/firebaseImportWriter";
 
 const stages = [
   "Bestanden selecteren",
@@ -337,7 +340,10 @@ export default function CombinedAssetImport() {
     const result = await executeFinalImportPlan(
       writePlan,
       createFirestoreImportAdapter(firestore, actorUid),
-      { batchSize: 400, onProgress: setCheckpoint },
+      {
+        batchSize: FIRESTORE_RULES_SAFE_BATCH_SIZE,
+        onProgress: setCheckpoint,
+      },
     );
     setCheckpoint(result);
     setImportFinishedAt(new Date().toISOString());

@@ -101,7 +101,9 @@ describe("Firestore AIMS authorization rules", () => {
       "request.auth.token.email.lower() == 'aliendas@kangoeroeschool.com'",
     );
     expect(rules).not.toContain("data.role == 'owner'");
-    expect(rules).toContain("return isOwner() || (isVerified()");
+    expect(rules).toContain("return isOwner() || hasTrustedAccessSignal();");
+    expect(rules).toContain("return hasAccessAssignment() && get(accessAssignmentPath()).data.active == true;");
+    expect(rules).toContain("hasTrustedTokenSignal() && !hasAccessAssignment()");
     expect(rules).toContain("ownerRoleAllowed(request.resource.data)");
     expect(rules).toContain("ownerRoleAllowed(resource.data)");
     for (const name of [
@@ -118,6 +120,15 @@ describe("Firestore AIMS authorization rules", () => {
     for (const name of ["discoveryAgents", "discoveryRequests", "discoveredDevices"])
       expect(rules).toContain(`match /${name}/{document=**} { allow read: if isOwner(); allow write: if false; }`);
     expect(rules).toContain("match /discoveryEnrollments/{document=**} { allow read, write: if false; }");
+  });
+  it("separates user-readable device data from Owner-only actions", () => {
+    expect(rules).toContain("match /deviceManagement/{document=**}");
+    expect(rules).toContain("match /deviceNetwork/{document=**}");
+    expect(rules).toContain("match /deviceCompliance/{document=**}");
+    expect(rules.match(/allow read: if isAuthorizedAimsUser\(\);/g)?.length).toBeGreaterThanOrEqual(3);
+    for (const name of ["deviceCommands", "devicePolicies"])
+      expect(rules).toContain(`match /${name}/{document=**} {\n      allow read, write: if isOwner();`);
+    expect(rules).toContain("match /deviceNetwork/{document=**} {\n      allow read: if isAuthorizedAimsUser();\n      allow write: if false;");
   });
   it("keeps tracking type management Owner-only while retaining safe reference reads", () => {
     expect(rules).toContain("match /assetTypes/{id}");

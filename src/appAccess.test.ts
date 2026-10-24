@@ -35,6 +35,16 @@ describe('app download and admin access integration',()=>{
     expect(routeManifest.find(candidate=>candidate.path==='/device-management')?.id).toBe('device-management');
   });
 
+  it('allows authenticated module access while keeping privileged device routes owner-only',()=>{
+    expect(routeManifest.find(route=>route.path==='/network-directory')).toMatchObject({
+      id:'network-directory',navigation:true,ownerOnly:false,
+    });
+    for(const path of ['/device-management','/device-monitoring','/device-compliance'])
+      expect(routeManifest.find(route=>route.path===path)?.ownerOnly).toBe(false);
+    for(const path of ['/device-policies','/device-commands','/device-bulk-actions','/device-audit'])
+      expect(routeManifest.find(route=>route.path===path)?.ownerOnly).toBe(true);
+  });
+
   it('routes asset imports directly to the protected combined workbook importer',()=>{
     const route=routeManifest.find(candidate=>candidate.path==='/assets/import');
     expect(route).toMatchObject({id:'asset-import',permission:'assets.import'});

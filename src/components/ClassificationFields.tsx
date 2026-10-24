@@ -3,12 +3,12 @@ import { useFormContext } from "react-hook-form";
 import { Plus } from "lucide-react";
 import { useRepositorySnapshot, useRepository } from "../data/repositoryContext";
 import { Button, Field } from "./ui";
-import { Dialog, MutationFeedback } from "./WorkflowUi";
+import { Dialog } from "./WorkflowUi";
 import { useAssetT } from "../assetCopy";
 import { useApp } from "../context/AppContext";
 
 export function ClassificationFields() {
-  const { register, watch, setValue, formState: { errors } } = useFormContext();
+  const { watch, setValue, formState: { errors } } = useFormContext();
   const snapshot = useRepositorySnapshot();
   const repository = useRepository();
   const a = useAssetT();

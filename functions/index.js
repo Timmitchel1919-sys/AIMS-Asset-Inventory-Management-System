@@ -1070,10 +1070,30 @@ export const submitDiscoveryResults = onRequest(discoveryHttpOptions, async (req
   const prepared = await Promise.all(results.map(async (result) => {
     const id = sha256(`${agent.id}\n${result.macAddress || result.ipAddress}`).slice(0, 40);
     const ref = db.collection("discoveredDevices").doc(id);
-    return { result, id, ref, exists: (await ref.get()).exists };
+    const directoryRef = db.collection("deviceNetwork").doc(id);
+    const [existing, directory] = await Promise.all([ref.get(), directoryRef.get()]);
+    return { result, id, ref, directoryRef, exists: existing.exists, directoryExists: directory.exists };
   }));
-  for (const { result, id, ref, exists } of prepared) {
+  for (const { result, id, ref, directoryRef, exists, directoryExists } of prepared) {
     batch.set(ref, { ...result, discoveryId: id, requestId, agentId: agent.id, ...(!exists ? { firstSeen: FieldValue.serverTimestamp(), createdAt: FieldValue.serverTimestamp() } : {}), lastSeen: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    batch.set(directoryRef, {
+      deviceId: id,
+      hostname: result.hostname,
+      ipAddress: result.ipAddress,
+      macAddress: result.macAddress,
+      vendor: result.vendor,
+      deviceType: result.deviceType,
+      status: "DISCOVERED",
+      ...(!directoryExists ? {
+        assetId: null,
+        assetCode: null,
+        location: null,
+        firstSeen: FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
+      } : {}),
+      lastSeen: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true });
   }
   batch.update(requestRef, { status: "COMPLETED", deviceCount: results.length, durationMs: Math.max(0, Number(request.body?.durationMs) || 0), completedAt: FieldValue.serverTimestamp(), error: null });
   batch.update(agent.ref, { lastScan: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });

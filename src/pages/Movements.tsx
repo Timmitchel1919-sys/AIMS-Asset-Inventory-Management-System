@@ -26,21 +26,6 @@ import { useApp } from "../context/AppContext";
 import type { Movement } from "../domain/types";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 
-const movementTypes = [
-  "Incoming",
-  "Outgoing",
-  "Transfer",
-  "Assignment",
-  "Borrow",
-  "Return",
-  "Repair transfer",
-  "Maintenance transfer",
-  "Stock correction",
-  "Damage",
-  "Loss",
-  "Disposal",
-  "Audit adjustment",
-];
 export default function MovementsPage() {
   const { language } = useApp(),
     nl = language === "nl",

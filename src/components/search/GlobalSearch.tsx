@@ -43,6 +43,7 @@ export function GlobalSearch({
         const target = event.target as HTMLElement;
         if (target.closest('textarea,[contenteditable="true"]')) return;
         event.preventDefault();
+        window.dispatchEvent(new Event("aims:reveal-navigation"));
         const { scrollX, scrollY } = window;
         root.current?.style.setProperty(
           "--global-search-overlay-offset",
@@ -99,6 +100,7 @@ export function GlobalSearch({
             setFocused(true);
           }}
           onFocus={() => {
+            window.dispatchEvent(new Event("aims:reveal-navigation"));
             root.current?.style.setProperty(
               "--global-search-overlay-offset",
               `${window.scrollY}px`,

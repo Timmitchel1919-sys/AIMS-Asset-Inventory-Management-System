@@ -1,20 +1,5 @@
 import * as XLSX from "xlsx";
-import type {
-  Asset,
-  Audit,
-  AuditDiscrepancy,
-  BorrowRecord,
-  CorrectiveAction,
-  Maintenance,
-  Movement,
-  Repair,
-} from "./types";
-import type {
-  ActivityRecord,
-  Assignment,
-  InventoryItem,
-  MockSnapshot,
-} from "../data/contracts";
+import type { MockSnapshot } from "../data/contracts";
 
 export type ReportCategory =
   | "assets"

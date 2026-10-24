@@ -1,4 +1,4 @@
-import {CheckCheck,Mail,MailOpen,Plus,ShieldCheck,UserCog} from 'lucide-react';
+import {Plus,ShieldCheck,UserCog} from 'lucide-react';
 import {useState,type FormEvent} from 'react';
 import {Badge,Button,Field,SelectField,TextAreaField} from '../components/ui';
 import {DataTable,type DataColumn} from '../components/DataTable';
@@ -6,7 +6,6 @@ import {ConfirmDialog,Dialog,MutationFeedback,OfflineGate,PageHeader} from '../c
 import {rolePermissions,type Permission} from '../auth/permissions';
 import {useApp} from '../context/AppContext';
 import type {ActivityRecord,RoleRecord,SystemUser} from '../data/contracts';
-import type {Notification} from '../domain/types';
 import {useMockSnapshot,useRepository} from '../data/repositoryContext';
 
 import NotificationsPage from './Notifications';
