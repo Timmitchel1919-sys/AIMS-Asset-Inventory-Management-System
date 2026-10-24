@@ -5,11 +5,13 @@ import { BentoShell } from "../components/dashboard/bento/BentoShell";
 import { HeroTile } from "../components/dashboard/bento/tiles/HeroTile";
 import { CategoryAllocationTile } from "../components/dashboard/bento/tiles/CategoryAllocationTile";
 import { RecentActivityTile } from "../components/dashboard/bento/tiles/RecentActivityTile";
-import { PlaceholderTile } from "../components/dashboard/bento/tiles/PlaceholderTile";
 import { DepartmentCardsTile } from "../components/dashboard/bento/tiles/DepartmentCardsTile";
 import { LocationCardsTile } from "../components/dashboard/bento/tiles/LocationCardsTile";
 import { UtilizationGaugeTile } from "../components/dashboard/bento/tiles/UtilizationGaugeTile";
 import { MaintenanceIntelligenceTile } from "../components/dashboard/bento/tiles/MaintenanceIntelligenceTile";
+import { MovementStreamTile } from "../components/dashboard/bento/tiles/MovementStreamTile";
+import { StockThresholdTile } from "../components/dashboard/bento/tiles/StockThresholdTile";
+import { AssetAgeTile } from "../components/dashboard/bento/tiles/AssetAgeTile";
 
 export default function DashboardBentoPreview() {
   const { user, language, effectiveTheme, formatDateTime, setTheme } = useApp();
@@ -30,6 +32,7 @@ export default function DashboardBentoPreview() {
     () => snapshot.maintenance,
     [snapshot.maintenance],
   );
+  const inventory = useMemo(() => snapshot.inventory, [snapshot.inventory]);
 
   if (isProd) {
     return (
@@ -102,35 +105,10 @@ export default function DashboardBentoPreview() {
         <CategoryAllocationTile nl={nl} assets={assets} />
         <MaintenanceIntelligenceTile nl={nl} maintenance={maintenance} />
 
-        {/* Row 3 — remaining placeholders */}
-        <PlaceholderTile
-          title={nl ? "Levenscyclus / Afschrijving" : "Lifecycle / Depreciation"}
-          detail={
-            nl
-              ? "Afgerond na audit van financiële velden."
-              : "Pending audit of financial fields."
-          }
-          previewLabel={nl ? "Later" : "Later"}
-          span={2}
-        />
-        <PlaceholderTile
-          title={nl ? "Voorraaddrempel" : "Stock threshold"}
-          detail={
-            nl
-              ? "Alleen voor voorraaditems met min/herbestel/max."
-              : "Only for inventory items with min/reorder/max set."
-          }
-          previewLabel={nl ? "Later" : "Later"}
-        />
-        <PlaceholderTile
-          title={nl ? "Bewegingsstream" : "Movement stream"}
-          detail={
-            nl
-              ? "Passief overzicht volgt in Phase 2d."
-              : "Passive overview to follow in Phase 2d."
-          }
-          previewLabel={nl ? "Later" : "Later"}
-        />
+        {/* Row 3 — Movement Stream (span 2) + Stock Threshold + Asset Age */}
+        <MovementStreamTile nl={nl} movements={movements} />
+        <StockThresholdTile nl={nl} inventory={inventory} />
+        <AssetAgeTile nl={nl} assets={assets} />
 
         {/* Row 4 — Recent activity full width */}
         <RecentActivityTile

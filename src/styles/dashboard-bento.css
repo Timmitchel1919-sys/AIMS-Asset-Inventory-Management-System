@@ -743,3 +743,406 @@ html[data-theme="dark"] .bento-root .bento-maint__note {
   font-size: var(--text-xs);
   color: var(--bento-ink-muted);
 }
+
+/* ------------------------------------------------------------------ */
+/*  Phase 2D — Movement stream                                        */
+/* ------------------------------------------------------------------ */
+
+html[data-theme="dark"] .bento-root .bento-stream__chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 72px;
+  margin-top: 4px;
+}
+
+html[data-theme="dark"] .bento-root .bento-stream__bar {
+  flex: 1;
+  min-height: 4px;
+  border-radius: 3px 3px 0 0;
+  background: var(--bento-accent);
+  transition: height 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html[data-theme="dark"] .bento-root .bento-stream__bar--peak {
+  background: var(--bento-ink);
+}
+
+html[data-theme="dark"] .bento-root .bento-stream__caption {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  color: var(--bento-ink-muted);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] .bento-root .bento-stream__summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 10px;
+  border-radius: var(--bento-radius-sm);
+  background: var(--bento-surface-elev);
+  border: 1px solid var(--bento-border);
+}
+
+html[data-theme="dark"] .bento-root .bento-stream__summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+html[data-theme="dark"] .bento-root .bento-stream__summary dt {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
+}
+
+html[data-theme="dark"] .bento-root .bento-stream__summary dd {
+  margin: 0;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] .bento-root .bento-stream__note {
+  margin: 8px 0 0;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Phase 2E — Stock threshold                                        */
+/* ------------------------------------------------------------------ */
+
+html[data-theme="dark"] .bento-root .bento-stock__kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__kpis > div {
+  padding: 8px 10px;
+  border-radius: var(--bento-radius-sm);
+  background: var(--bento-surface-elev);
+  border: 1px solid var(--bento-border);
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__kpis dt {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__kpis dd {
+  margin: 2px 0 0;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__kpi--warn {
+  border-color: rgba(252, 165, 165, 0.4) !important;
+}
+html[data-theme="dark"] .bento-root .bento-stock__kpi--warn dd {
+  color: #fca5a5;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__all-good {
+  padding: 14px 10px;
+  text-align: center;
+  color: var(--bento-ink-muted);
+  font-size: var(--text-xs);
+  border-radius: var(--bento-radius-sm);
+  background: var(--bento-surface-elev);
+  border: 1px dashed var(--bento-border);
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__line {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--bento-radius-sm);
+  background: var(--bento-surface-elev);
+  border: 1px solid var(--bento-border);
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__line-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__line-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__item-name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bento-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__item-code {
+  margin: 1px 0 0;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__chip {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+html[data-theme="dark"] .bento-root .bento-stock__chip--below-min {
+  background: rgba(252, 165, 165, 0.18);
+  color: #fca5a5;
+}
+html[data-theme="dark"] .bento-root .bento-stock__chip--reorder {
+  background: rgba(217, 196, 164, 0.18);
+  color: var(--bento-accent-warm);
+}
+html[data-theme="dark"] .bento-root .bento-stock__chip--above-max,
+html[data-theme="dark"] .bento-root .bento-stock__chip--healthy,
+html[data-theme="dark"] .bento-root .bento-stock__chip--unconfigured {
+  background: rgba(107, 134, 245, 0.14);
+  color: var(--bento-accent);
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 12px;
+  margin: 0;
+  padding: 0;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__facts > div {
+  min-width: 0;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__facts dt {
+  margin: 0;
+  font-size: 10px;
+  color: var(--bento-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__facts dd {
+  margin: 2px 0 0;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__range {
+  position: relative;
+  height: 24px;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__range-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: var(--bento-muted);
+  border-radius: 999px;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__range-mark {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  background: var(--bento-accent-warm);
+  border-radius: 2px;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__range-marker {
+  position: absolute;
+  top: 50%;
+  width: 3px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  background: var(--bento-ink);
+  border-radius: 2px;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__range-missing {
+  margin: 2px 0 0;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
+  font-style: italic;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__note {
+  margin: 6px 0 0;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
+}
+html[data-theme="dark"] .bento-root .bento-stock__note--warn {
+  color: var(--bento-accent-warm);
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: var(--text-xs);
+  color: var(--bento-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] .bento-root .bento-stock__nav button {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--bento-surface);
+  color: var(--bento-ink);
+  border: 1px solid var(--bento-border);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+html[data-theme="dark"] .bento-root .bento-stock__nav button:hover {
+  border-color: var(--bento-border-strong);
+}
+html[data-theme="dark"] .bento-root .bento-stock__nav button:focus-visible {
+  outline: 2px solid var(--bento-focus);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Phase 2F — Asset age                                              */
+/* ------------------------------------------------------------------ */
+
+html[data-theme="dark"] .bento-root .bento-age__total {
+  margin: 0 0 10px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+html[data-theme="dark"] .bento-root .bento-age__total > span {
+  margin-left: 6px;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--bento-ink-muted);
+  font-family: inherit;
+}
+
+html[data-theme="dark"] .bento-root .bento-age__bars {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+html[data-theme="dark"] .bento-root .bento-age__row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+html[data-theme="dark"] .bento-root .bento-age__row-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--text-xs);
+}
+
+html[data-theme="dark"] .bento-root .bento-age__row-num {
+  color: var(--bento-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] .bento-root .bento-age__bar-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+html[data-theme="dark"] .bento-root .bento-age__bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html[data-theme="dark"] .bento-root .bento-age__row--fresh .bento-age__bar-fill {
+  background: var(--bento-accent);
+}
+html[data-theme="dark"] .bento-root .bento-age__row--mid .bento-age__bar-fill {
+  background: color-mix(in oklch, var(--bento-accent) 70%, var(--bento-accent-warm) 30%);
+}
+html[data-theme="dark"] .bento-root .bento-age__row--aged .bento-age__bar-fill {
+  background: color-mix(in oklch, var(--bento-accent) 35%, var(--bento-accent-warm) 65%);
+}
+html[data-theme="dark"] .bento-root .bento-age__row--senior .bento-age__bar-fill {
+  background: var(--bento-accent-warm);
+}
+html[data-theme="dark"] .bento-root .bento-age__row--unknown .bento-age__bar-fill {
+  background: rgba(142, 144, 160, 0.6);
+}
+
+html[data-theme="dark"] .bento-root .bento-age__facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 12px;
+  margin: 14px 0 0;
+  padding: 10px;
+  border-radius: var(--bento-radius-sm);
+  background: var(--bento-surface-elev);
+  border: 1px solid var(--bento-border);
+}
+html[data-theme="dark"] .bento-root .bento-age__facts > div {
+  min-width: 0;
+}
+html[data-theme="dark"] .bento-root .bento-age__facts dt {
+  margin: 0;
+  font-size: 10px;
+  color: var(--bento-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+html[data-theme="dark"] .bento-root .bento-age__facts dd {
+  margin: 2px 0 0;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="dark"] .bento-root .bento-stream__bar,
+  html[data-theme="dark"] .bento-root .bento-age__bar-fill {
+    transition: none !important;
+  }
+}
