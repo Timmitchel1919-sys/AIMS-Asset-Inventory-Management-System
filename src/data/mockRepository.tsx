@@ -1772,6 +1772,21 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               sourceRecordCode: code,
               migrationVersion: "laptop-inventory-v1",
             };
+            // These source columns have no dedicated Asset/InventoryItem
+            // field — preserve them as readable notes instead of silently
+            // dropping them (they already survive in full in sourceData).
+            const accessoryNotes = [
+              sourceData.loanContract
+                ? `Bruikleencontract: ${sourceData.loanContract}`
+                : null,
+              sourceData.charger ? `Oplader: ${sourceData.charger}` : null,
+              sourceData.laptopBag
+                ? `Laptoptas: ${sourceData.laptopBag}`
+                : null,
+              sourceData.mouse ? `Muis: ${sourceData.mouse}` : null,
+            ]
+              .filter(Boolean)
+              .join(" | ");
             const inventoryId = `${migrationId}-inventory`;
             const assetId = `${migrationId}-asset`;
             const item: InventoryItem = {
@@ -1797,7 +1812,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
               location: String(sourceData.location || ""),
               department: "",
               lastPurchaseDate: String(row.purchaseDate || ""),
-              notes: "",
+              notes: accessoryNotes,
               createdBy: actor,
               createdAt: importedAt,
               modifiedBy: actor,
@@ -1840,7 +1855,7 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
                 {}) as Record<string, string>,
               attachments: [],
               photos: [],
-              notes: "",
+              notes: accessoryNotes,
               sourceData,
               importMetadata,
               qr: true,
