@@ -73,7 +73,7 @@
   --aims-topbar-offset:var(--aims-topbar-height);
   --aims-page-header-offset:var(--aims-page-header-height);
   --aims-toolbar-offset:var(--aims-data-toolbar-height);
-  --aims-table-header-offset:calc(var(--aims-topbar-offset) + var(--aims-page-header-offset) + var(--aims-toolbar-offset));
+  --aims-table-header-offset:var(--aims-topbar-offset);
 }
 .authenticated-app>.topbar{position:sticky;top:0;z-index:40;transition:transform 220ms ease,opacity 180ms ease}
 .authenticated-app main .page-title{position:sticky;top:var(--aims-topbar-offset);z-index:35;background:var(--workspace-background);transition:transform 220ms ease,opacity 180ms ease,top 220ms ease}
