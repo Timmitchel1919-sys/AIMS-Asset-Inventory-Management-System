@@ -35,12 +35,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # Presentation build: synthetic in-memory data, no Firebase client.
-      # Intentionally no `env:` block below — the Firebase env guard in
-      # vite.config.ts only fires for `mode === "production"`, so a
-      # `--mode presentation` build does not need (and must not receive)
-      # VITE_FIREBASE_* secrets. The resulting bundle has firebaseConfigured
-      # === false at runtime.
+      # VITE_APP_MODE is set inline here (not via .env.presentation, which is
+      # gitignored and therefore not available to the CI runner). This makes
+      # `src/main.tsx` select MockRepositoryProvider and `AppContext` short-
+      # circuit every Firebase code path.
+      # No VITE_FIREBASE_* secrets are injected — the Firebase env guard in
+      # vite.config.ts only fires for `mode === "production"`, and
+      # `src/lib/firebase.ts` leaves every service accessor null when those
+      # env vars are absent. Defense in depth: even if presentation mode were
+      # ever bypassed, no Firebase client would initialize.
       - run: npm install --no-package-lock && npm run build:presentation
+        env:
+          VITE_APP_MODE: presentation
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
