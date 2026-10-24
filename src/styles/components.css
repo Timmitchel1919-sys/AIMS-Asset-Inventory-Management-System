@@ -3690,9 +3690,6 @@ html .system-information {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .typography-settings-card { grid-column: 1 / -1; }
-.preferences-columns { grid-column:1 / -1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start; }
-.preferences-column { display:grid;gap:16px;align-content:start;min-width:0; }
-.preferences-column > .card { min-width:0; }
 .typography-controls { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
 .account-settings-grid > .card.preferences-card--compact { align-self:start;padding-bottom:14px; }
 .preference-format-example { display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:12px 0 0;padding-top:10px;border-top:1px solid var(--color-border);font-variant-numeric:tabular-nums; }
@@ -3753,7 +3750,6 @@ html .system-information {
   .account-settings-grid .theme-grid {
     grid-template-columns: 1fr 1fr;
   }
-  .preferences-columns { grid-template-columns:1fr; }
   .typography-controls { grid-template-columns:1fr; }
 }
 @media (max-width: 390px) {
@@ -4374,27 +4370,22 @@ html .system-information {
 
 /* Preferences use a compact two-by-two layout in every theme. */
 .account-settings-grid .typography-settings-card { grid-column: 1; grid-row: 1; }
-.account-settings-grid .preferences-columns,
-.account-settings-grid .preferences-column { display: contents; }
-.account-settings-grid .preferences-column:first-child > .card:first-child { grid-column: 1; grid-row: 2; }
-.account-settings-grid .preferences-column:first-child > .card:nth-child(2) { grid-column: 1; grid-row: 3; }
-.account-settings-grid .preferences-column:last-child > .card:first-child { grid-column: 2; grid-row: 1; }
-.account-settings-grid .preferences-column:last-child > .card:nth-child(2) { grid-column: 2; grid-row: 2; }
-.account-settings-grid .date-time-settings-card { grid-column:1;grid-row:1; }
-.account-settings-grid .themes-settings-card { grid-column:1;grid-row:2; }
-.account-settings-grid .language-settings-card { grid-column:2;grid-row:1; }
-.date-time-format-fields { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start; }
+.account-settings-grid .date-time-settings-card { grid-column: 1; grid-row: 1; }
+.account-settings-grid .language-settings-card { grid-column: 2; grid-row: 1; }
+.account-settings-grid .themes-settings-card { grid-column: 1; grid-row: 2; }
+.account-settings-grid .notifications-settings-card { grid-column: 2; grid-row: 2; }
+.date-time-format-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
 .typography-controls { grid-template-columns: 1fr; }
 .theme-dark i span:first-child { background: #071d49; }
 .theme-dark i span:nth-child(2) { background: #123b78; }
 .theme-dark i span:nth-child(3) { background: #dbe8ff; }
 @media (max-width: 780px) {
   .account-settings-grid .typography-settings-card,
-  .account-settings-grid .preferences-column:first-child > .card:first-child,
-  .account-settings-grid .preferences-column:first-child > .card:nth-child(2),
-  .account-settings-grid .preferences-column:last-child > .card:first-child,
-  .account-settings-grid .preferences-column:last-child > .card:nth-child(2) { grid-column: 1; grid-row: auto; }
-  .date-time-format-fields { grid-template-columns:1fr; }
+  .account-settings-grid .date-time-settings-card,
+  .account-settings-grid .language-settings-card,
+  .account-settings-grid .themes-settings-card,
+  .account-settings-grid .notifications-settings-card { grid-column: 1; grid-row: auto; }
+  .date-time-format-fields { grid-template-columns: 1fr; }
 }
 
 /* Fixes from prompt */

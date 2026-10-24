@@ -272,9 +272,56 @@ export function PreferencesPage() {
         </p>
       )}
       <div className="account-settings-grid">
-        
-        <div className="preferences-columns">
-          <div className="preferences-column">
+        <Card className="preferences-card--compact date-time-settings-card">
+          <MonitorCog />
+          <h2>{nl ? "Datum en tijd" : "Date & time"}</h2>
+          <div className="date-time-format-fields">
+            <SelectField
+              label={nl ? "Datumnotatie" : "Date format"}
+              value={app.preferences.dateFormat}
+              onChange={(event) =>
+                save({
+                  dateFormat: event.target.value as
+                    "DD-MM-YYYY" | "MM-DD-YYYY" | "YYYY-MM-DD",
+                })
+              }
+            >
+              <option>DD-MM-YYYY</option>
+              <option>MM-DD-YYYY</option>
+              <option>YYYY-MM-DD</option>
+            </SelectField>
+            <SelectField
+              label={nl ? "Tijdnotatie" : "Time format"}
+              value={app.preferences.timeFormat}
+              onChange={(event) =>
+                save({ timeFormat: event.target.value as "24-hour" | "12-hour" })
+              }
+            >
+              <option>24-hour</option>
+              <option>12-hour</option>
+            </SelectField>
+          </div>
+          <p className="preference-format-example" aria-live="polite">
+            <small>{nl ? "Voorbeeld" : "Example"}</small>
+            <strong>{app.formatDateTime(DATE_TIME_FORMAT_EXAMPLE)}</strong>
+          </p>
+        </Card>
+        <Card className="preferences-card--compact language-settings-card">
+          <Languages />
+          <h2>{nl ? "Taal" : "Language"}</h2>
+          <SelectField
+            label={nl ? "Taal" : "Language"}
+            value={app.language}
+            onChange={async (event) => {
+              const language = event.target.value as "en" | "nl";
+              app.setLanguage(language);
+              await save({ language });
+            }}
+          >
+            <option value="en">{nl ? "Engels" : "English"}</option>
+            <option value="nl">Nederlands</option>
+          </SelectField>
+        </Card>
         <Card className="themes-settings-card">
           <Palette />
           <h2>{nl ? "Thema's" : "Themes"}</h2>
@@ -296,59 +343,7 @@ export function PreferencesPage() {
             ))}
           </div>
         </Card>
-        <Card className="preferences-card--compact date-time-settings-card">
-          <MonitorCog />
-          <h2>{nl ? "Datum en tijd" : "Date & time"}</h2>
-          <div className="date-time-format-fields">
-          <SelectField
-            label={nl ? "Datumnotatie" : "Date format"}
-            value={app.preferences.dateFormat}
-            onChange={(event) =>
-              save({
-                dateFormat: event.target.value as
-                  "DD-MM-YYYY" | "MM-DD-YYYY" | "YYYY-MM-DD",
-              })
-            }
-          >
-            <option>DD-MM-YYYY</option>
-            <option>MM-DD-YYYY</option>
-            <option>YYYY-MM-DD</option>
-          </SelectField>
-          <SelectField
-            label={nl ? "Tijdnotatie" : "Time format"}
-            value={app.preferences.timeFormat}
-            onChange={(event) =>
-              save({ timeFormat: event.target.value as "24-hour" | "12-hour" })
-            }
-          >
-            <option>24-hour</option>
-            <option>12-hour</option>
-          </SelectField>
-          </div>
-          <p className="preference-format-example" aria-live="polite">
-            <small>{nl ? "Voorbeeld" : "Example"}</small>
-            <strong>{app.formatDateTime(DATE_TIME_FORMAT_EXAMPLE)}</strong>
-          </p>
-        </Card>
-          </div>
-          <div className="preferences-column">
-        <Card className="preferences-card--compact language-settings-card">
-          <Languages />
-          <h2>{nl ? "Taal" : "Language"}</h2>
-          <SelectField
-            label={nl ? "Taal" : "Language"}
-            value={app.language}
-            onChange={async (event) => {
-              const language = event.target.value as "en" | "nl";
-              app.setLanguage(language);
-              await save({ language });
-            }}
-          >
-            <option value="en">{nl ? "Engels" : "English"}</option>
-            <option value="nl">Nederlands</option>
-          </SelectField>
-        </Card>
-        <Card>
+        <Card className="notifications-settings-card">
           <Bell />
           <h2>{nl ? "Persoonlijke meldingen" : "Personal notifications"}</h2>
           {[
@@ -370,8 +365,6 @@ export function PreferencesPage() {
             </label>
           ))}
         </Card>
-          </div>
-        </div>
       </div>
     </div>
   );
