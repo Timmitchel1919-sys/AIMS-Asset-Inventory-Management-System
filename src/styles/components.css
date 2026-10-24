@@ -846,6 +846,12 @@ td[data-column-id="code"] {
   word-break: keep-all;
   text-transform: uppercase;
 }
+.data-table-assets td[data-column-id="serial"],
+.data-table-assets td[data-column-id="code"] {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-wide);
+}
 td strong,
 td b {
   color: var(--color-text-primary);

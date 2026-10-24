@@ -1822,7 +1822,7 @@ html[data-theme] .auth-page:is(.auth-login, .auth-signup) .google-login {
 
 .auth-footer__dot {
   color: #cbd5e1;
-  font-size: 0.65rem;
+  font-size: var(--text-sm);
 }
 
 .auth-footer__credits {
@@ -1831,14 +1831,14 @@ html[data-theme] .auth-page:is(.auth-login, .auth-signup) .google-login {
 
 .auth-footer__copyright {
   margin: 0;
-  font-size: 0.69rem;
+  font-size: var(--text-sm);
   color: #94a3b8;
   line-height: 1.35;
 }
 
 .auth-footer__developer {
   margin: 1px 0 0;
-  font-size: 0.67rem;
+  font-size: var(--text-sm);
   color: #94a3b8;
   line-height: 1.35;
 }
