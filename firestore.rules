@@ -807,6 +807,12 @@ service cloud.firestore {
       allow read, create: if isOwner();
       allow update, delete: if false;
     }
+    // Network Discovery is administered by the single verified AIMS Owner.
+    // Agent writes use Admin SDK Cloud Functions after credential and scope checks.
+    match /discoveryAgents/{document=**} { allow read: if isOwner(); allow write: if false; }
+    match /discoveryEnrollments/{document=**} { allow read, write: if false; }
+    match /discoveryRequests/{document=**} { allow read: if isOwner(); allow write: if false; }
+    match /discoveredDevices/{document=**} { allow read: if isOwner(); allow write: if false; }
     // =======================================================================
 
     match /legalDocuments/{type} {

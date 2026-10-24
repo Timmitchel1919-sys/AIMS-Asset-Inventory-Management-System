@@ -21,6 +21,7 @@ import {
   User,
   PanelLeftClose,
   Recycle,
+  Radar,
   RotateCcw,
   Search,
   Send,
@@ -60,6 +61,8 @@ import { PwaStatus } from "./PwaStatus";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { GlobalSearch } from "./search/GlobalSearch";
 import { AimsLogo } from "./branding/AimsLogo";
+import { isAimsOwnerEmail } from "../auth/accessBootstrap";
+import { DEMO_AUTH_MODE } from "../auth/aimsEmailPolicy";
 
 type VoiceRecognition = {
   lang: string;
@@ -97,6 +100,7 @@ const icons: Record<RouteIcon, LucideIcon> = {
   disposals: Recycle,
   settings: Settings,
   devices: MonitorSmartphone,
+  radar: Radar,
   install: PackageOpen,
 };
 
@@ -253,13 +257,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     app.user?.role === "owner"
       ? sidebarModuleOrder.flatMap((id) =>
           id === "settings"
-            ? ["device-management", id]
+            ? ["network-discovery", "device-management", id]
             : id === "assistant"
               ? [id, "tracking-types"]
               : [id],
         )
       : sidebarModuleOrder;
   const primaryRoutes = moduleOrder.flatMap((id) => {
+    if (id === "network-discovery" && !(DEMO_AUTH_MODE || isAimsOwnerEmail(app.user?.email))) return [];
     const route = routes.find((candidate) => candidate.id === id);
     return route ? [route] : [];
   });

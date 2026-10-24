@@ -25,6 +25,7 @@ export type RouteIcon =
   | "disposals"
   | "settings"
   | "devices"
+  | "radar"
   | "install";
 export type RouteStatus = "implemented" | "partial" | "missing";
 export interface AppRoute {
@@ -47,6 +48,20 @@ export interface AppRoute {
 const page = (load: () => Promise<{ default: ComponentType }>) => lazy(load);
 
 export const routeManifest: AppRoute[] = [
+  {
+    id: "network-discovery",
+    path: "/network-discovery",
+    component: lazy(() => import("../pages/NetworkDiscovery")),
+    titleKey: "routes.networkDiscovery",
+    navKey: "nav.networkDiscovery",
+    navigation: true,
+    breadcrumb: ["routes.networkDiscovery"],
+    mobile: true,
+    lazy: true,
+    status: "implemented",
+    ownerOnly: true,
+    icon: "radar",
+  },
   // Owner-only, report-first migration of canonical asset references.
   {
     id: "reference-migration",

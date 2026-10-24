@@ -114,6 +114,11 @@ describe("Firestore AIMS authorization rules", () => {
     ])
       expect(rules).toContain(`match /${name}/{document=**}`);
   });
+  it("keeps Network Discovery owner-readable and client-write-denied", () => {
+    for (const name of ["discoveryAgents", "discoveryRequests", "discoveredDevices"])
+      expect(rules).toContain(`match /${name}/{document=**} { allow read: if isOwner(); allow write: if false; }`);
+    expect(rules).toContain("match /discoveryEnrollments/{document=**} { allow read, write: if false; }");
+  });
   it("keeps tracking type management Owner-only while retaining safe reference reads", () => {
     expect(rules).toContain("match /assetTypes/{id}");
     expect(rules).toContain("data.behavior in ['SERIALIZED','BULK','CONSUMABLE']");

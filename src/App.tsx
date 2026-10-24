@@ -6,6 +6,7 @@ import {can} from './auth/permissions';
 import {routeManifest,type AppRoute} from './routes/manifest';
 import {useApp} from './context/AppContext';
 import {DEMO_AUTH_MODE} from './auth/aimsEmailPolicy';
+import {isAimsOwnerEmail} from './auth/accessBootstrap';
 
 function RenderRoute({route}:{route:AppRoute}){
   const {user,authLoading,emailVerified,accessDenied,sessionExpired}=useApp();
@@ -23,7 +24,7 @@ function RenderRoute({route}:{route:AppRoute}){
   if(!user)return <Navigate to="/login" state={{from:location,reason:sessionExpired?'session-expired':undefined}} replace/>;
   if(!emailVerified&&!(DEMO_AUTH_MODE&&user.isDemoUser))return <Navigate to="/verify-email" replace/>;
   
-  if(route.ownerOnly&&user.role!=='owner'){
+  if(route.ownerOnly&&(user.role!=='owner'||(!DEMO_AUTH_MODE&&route.id==='network-discovery'&&!isAimsOwnerEmail(user.email)))){
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center animate-in fade-in zoom-in duration-500">

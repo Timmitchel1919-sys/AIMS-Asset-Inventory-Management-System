@@ -1,0 +1,8 @@
+import { reverse } from "node:dns/promises";
+import { spawn } from "node:child_process";
+import { enumerateScope } from "./security.js";
+const run=(file,args,timeout=2500)=>new Promise(resolve=>{const child=spawn(file,args,{windowsHide:true,stdio:["ignore","pipe","ignore"]});let output="";child.stdout.on("data",c=>output+=c);const timer=setTimeout(()=>child.kill(),timeout);child.on("error",()=>{clearTimeout(timer);resolve({ok:false,output:""})});child.on("close",code=>{clearTimeout(timer);resolve({ok:code===0,output})})});
+async function arpTable(){const {output}=await run(process.platform==="win32"?"arp":"arp",["-a"],5000);const map=new Map();for(const line of output.split(/\r?\n/)){const match=line.match(/(\d{1,3}(?:\.\d{1,3}){3})\s+([0-9a-f]{2}(?:[:-][0-9a-f]{2}){5})/i);if(match)map.set(match[1],match[2].replaceAll("-",":").toUpperCase())}return map}
+async function ping(ip){const args=process.platform==="win32"?["-n","1","-w","700",ip]:["-c","1","-W","1",ip];return(await run("ping",args,1800)).ok}
+async function hostname(ip){try{return(await reverse(ip))[0]||null}catch{return null}}
+export async function discover(scope,{concurrency=16}={}){const ips=enumerateScope(scope),arp=await arpTable(),results=[];let cursor=0;async function worker(){while(cursor<ips.length){const ip=ips[cursor++],mac=arp.get(ip)||null,alive=Boolean(mac)||await ping(ip);if(!alive)continue;const host=await hostname(ip);results.push({ipAddress:ip,macAddress:mac,hostname:host,vendor:null,deviceType:null,method:mac?"ARP":host?"DNS":"ICMP",status:"DISCOVERED"})}}await Promise.all(Array.from({length:Math.min(concurrency,ips.length)},worker));return results}

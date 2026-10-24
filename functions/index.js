@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
-import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { HttpsError, onCall, onRequest } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { defineSecret, defineString } from "firebase-functions/params";
 import {
@@ -22,6 +22,18 @@ import {
   archiveMasterData as archiveMasterDataImpl,
   checkDependencies,
 } from "./masterData.js";
+import {
+  DISCOVERY_COMMAND,
+  ENROLLMENT_TTL_MS,
+  REQUEST_TTL_MS,
+  bearerToken,
+  normalizeAgentId,
+  normalizedDiscoveryResult,
+  parseAuthorizedScope,
+  randomToken,
+  sha256,
+  signCommand,
+} from "./discovery.js";
 
 initializeApp();
 const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
@@ -34,6 +46,7 @@ const syncSpreadsheetId = defineString("AIMS_SYNC_SPREADSHEET_ID", {
 // to adjust the cadence (App Engine cron syntax or "every N hours").
 const SYNC_EXPORT_SCHEDULE = "every 24 hours";
 const SCHOOL_DOMAIN = "kangoeroeschool.com";
+const OWNER_EMAIL = "aliendas@kangoeroeschool.com";
 
 function authorized(request) {
   const email = String(request.auth?.token?.email || "")
@@ -50,6 +63,10 @@ function authorized(request) {
 // firestore.rules and rolePermissions in src/auth/permissions.ts.
 function isAdmin(request) {
   return authorized(request);
+}
+
+function isOwnerRequest(request) {
+  return authorized(request) && String(request.auth?.token?.email || "").trim().toLowerCase() === OWNER_EMAIL;
 }
 
 /**
@@ -830,3 +847,237 @@ export const archiveMasterData = onCall(
     }
   },
 );
+
+const discoveryOptions = { region: "southamerica-east1", timeoutSeconds: 60, memory: "256MiB" };
+const discoveryHttpOptions = { region: "southamerica-east1", timeoutSeconds: 60, memory: "256MiB", cors: false };
+
+function requireOwner(request) {
+  if (!isOwnerRequest(request))
+    throw new HttpsError("permission-denied", "Only the verified AIMS Owner can administer Network Discovery.");
+}
+
+function discoveryAudit(db, action, actor, entityType, entityId, details = {}) {
+  const now = FieldValue.serverTimestamp();
+  return db.collection("activityLogs").add({
+    action,
+    entityType,
+    entityId,
+    actorUserId: actor.uid || "discovery-agent",
+    actorEmail: actor.email || "",
+    details,
+    result: details.result || "Success",
+    createdAt: now,
+    updatedAt: now,
+    updatedBy: actor.uid || "discovery-agent",
+  });
+}
+
+const httpError = (response, status, message) => response.status(status).json({ ok: false, error: message });
+const dateMillis = (value) => typeof value?.toMillis === "function" ? value.toMillis() : Date.parse(value || "");
+
+async function authenticateDiscoveryAgent(db, request) {
+  const token = bearerToken(request.headers.authorization);
+  if (!token) return null;
+  const credentialHash = sha256(token);
+  const snapshot = await db.collection("discoveryAgents").where("credentialHash", "==", credentialHash).limit(1).get();
+  if (snapshot.empty) return null;
+  const document = snapshot.docs[0];
+  return { ref: document.ref, id: document.id, data: document.data(), credentialHash };
+}
+
+export const createDiscoveryEnrollment = onCall(discoveryOptions, async (request) => {
+  requireOwner(request);
+  let scope;
+  try { scope = parseAuthorizedScope(request.data?.networkScope); }
+  catch (error) { throw new HttpsError("invalid-argument", error.message); }
+  const token = randomToken();
+  const expiresAt = new Date(Date.now() + ENROLLMENT_TTL_MS);
+  const ref = getFirestore().collection("discoveryEnrollments").doc();
+  await ref.set({
+    tokenHash: sha256(token),
+    agentName: String(request.data?.agentName || "").trim().slice(0, 100) || "Discovery Agent",
+    site: String(request.data?.site || "").trim().slice(0, 100) || "KCS",
+    networkScope: scope.cidr,
+    used: false,
+    expiresAt,
+    createdAt: FieldValue.serverTimestamp(),
+    createdBy: request.auth.uid,
+  });
+  await discoveryAudit(getFirestore(), "DISCOVERY_ENROLLMENT_CREATED", { uid: request.auth.uid, email: request.auth.token.email }, "discoveryEnrollment", ref.id, { scope: scope.cidr });
+  return { ok: true, enrollmentId: ref.id, enrollmentToken: token, expiresAt: expiresAt.toISOString() };
+});
+
+export const manageDiscoveryAgent = onCall(discoveryOptions, async (request) => {
+  requireOwner(request);
+  const agentId = normalizeAgentId(request.data?.agentId);
+  const action = String(request.data?.action || "").toUpperCase();
+  if (!["ENABLE", "DISABLE", "REVOKE", "UPDATE_SCOPE"].includes(action))
+    throw new HttpsError("invalid-argument", "Unsupported agent action.");
+  const db = getFirestore();
+  const ref = db.collection("discoveryAgents").doc(agentId);
+  const snapshot = await ref.get();
+  if (!snapshot.exists) throw new HttpsError("not-found", "Discovery agent not found.");
+  const current = snapshot.data();
+  if (current.status === "REVOKED" && action !== "REVOKE")
+    throw new HttpsError("failed-precondition", "A revoked agent cannot be re-enabled or modified.");
+  const patch = { updatedAt: FieldValue.serverTimestamp(), updatedBy: request.auth.uid };
+  if (action === "ENABLE") patch.status = "ACTIVE";
+  if (action === "DISABLE") patch.status = "DISABLED";
+  if (action === "REVOKE") Object.assign(patch, { status: "REVOKED", credentialHash: null, revokedAt: FieldValue.serverTimestamp() });
+  if (action === "UPDATE_SCOPE") {
+    try { patch.networkScope = parseAuthorizedScope(request.data?.networkScope).cidr; }
+    catch (error) { throw new HttpsError("invalid-argument", error.message); }
+  }
+  await ref.update(patch);
+  await discoveryAudit(db, `AGENT_${action === "UPDATE_SCOPE" ? "SCOPE_UPDATED" : action + "D"}`, { uid: request.auth.uid, email: request.auth.token.email }, "discoveryAgent", agentId, { beforeStatus: current.status, scope: patch.networkScope || current.networkScope });
+  return { ok: true, agentId, status: patch.status || current.status };
+});
+
+export const requestNetworkDiscovery = onCall(discoveryOptions, async (request) => {
+  requireOwner(request);
+  const agentId = normalizeAgentId(request.data?.agentId);
+  const db = getFirestore();
+  const agentSnapshot = await db.collection("discoveryAgents").doc(agentId).get();
+  if (!agentSnapshot.exists) throw new HttpsError("not-found", "Discovery agent not found.");
+  const agent = agentSnapshot.data();
+  if (agent.status !== "ACTIVE" || !agent.credentialHash)
+    throw new HttpsError("failed-precondition", "Only an active authenticated agent can receive discovery requests.");
+  let scope;
+  try { scope = parseAuthorizedScope(request.data?.networkScope || agent.networkScope).cidr; }
+  catch (error) { throw new HttpsError("invalid-argument", error.message); }
+  if (scope !== agent.networkScope) {
+    await discoveryAudit(db, "DISCOVERY_SCOPE_REJECTED", { uid: request.auth.uid, email: request.auth.token.email }, "discoveryAgent", agentId, { requestedScope: scope, authorizedScope: agent.networkScope, result: "Blocked" });
+    throw new HttpsError("permission-denied", "Requested scope is not authorized for this agent.");
+  }
+  const ref = db.collection("discoveryRequests").doc();
+  const issuedAt = new Date();
+  const expiresAt = new Date(issuedAt.getTime() + REQUEST_TTL_MS);
+  const command = { command: DISCOVERY_COMMAND, requestId: ref.id, agentId, scope, issuedAt: issuedAt.toISOString(), expiresAt: expiresAt.toISOString() };
+  await ref.set({ ...command, signature: signCommand(command, agent.credentialHash), status: "QUEUED", requestedBy: request.auth.uid, requestedByEmail: request.auth.token.email, createdAt: FieldValue.serverTimestamp(), expiresAtDate: expiresAt });
+  await discoveryAudit(db, "DISCOVERY_REQUESTED", { uid: request.auth.uid, email: request.auth.token.email }, "discoveryRequest", ref.id, { agentId, scope, command: DISCOVERY_COMMAND });
+  return { ok: true, requestId: ref.id, expiresAt: command.expiresAt };
+});
+
+export const registerDiscoveryAgent = onRequest(discoveryHttpOptions, async (request, response) => {
+  if (request.method !== "POST") return httpError(response, 405, "POST required.");
+  const enrollmentToken = String(request.body?.enrollmentToken || "");
+  if (!enrollmentToken) return httpError(response, 401, "Enrollment token required.");
+  let agentId;
+  try { agentId = normalizeAgentId(request.body?.agentId); }
+  catch (error) { return httpError(response, 400, error.message); }
+  const db = getFirestore();
+  const enrollmentSnapshot = await db.collection("discoveryEnrollments").where("tokenHash", "==", sha256(enrollmentToken)).limit(1).get();
+  if (enrollmentSnapshot.empty) return httpError(response, 403, "Invalid enrollment token.");
+  const enrollmentRef = enrollmentSnapshot.docs[0].ref;
+  const credential = randomToken();
+  try {
+    await db.runTransaction(async (transaction) => {
+      const [enrollment, existing] = await Promise.all([transaction.get(enrollmentRef), transaction.get(db.collection("discoveryAgents").doc(agentId))]);
+      const data = enrollment.data();
+      if (existing.exists) throw new Error("DUPLICATE_AGENT");
+      if (data.used || dateMillis(data.expiresAt) <= Date.now()) throw new Error("INVALID_ENROLLMENT");
+      transaction.update(enrollmentRef, { used: true, usedAt: FieldValue.serverTimestamp(), agentId });
+      transaction.create(db.collection("discoveryAgents").doc(agentId), {
+        agentId,
+        agentName: String(request.body?.agentName || data.agentName).trim().slice(0, 100),
+        organization: String(request.body?.organization || data.site).trim().slice(0, 100),
+        installationId: String(request.body?.installationId || "").trim().slice(0, 100),
+        version: String(request.body?.version || "unknown").trim().slice(0, 40),
+        operatingSystem: String(request.body?.operatingSystem || "unknown").trim().slice(0, 120),
+        networkScope: data.networkScope,
+        status: "PENDING",
+        registrationState: "REGISTERED_PENDING_APPROVAL",
+        credentialHash: sha256(credential),
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    });
+  } catch (error) {
+    if (error.message === "DUPLICATE_AGENT") return httpError(response, 409, "Agent ID already exists.");
+    return httpError(response, 403, "Enrollment token is expired or already used.");
+  }
+  await discoveryAudit(db, "AGENT_REGISTERED", { uid: agentId }, "discoveryAgent", agentId, { status: "PENDING" });
+  return response.status(201).json({ ok: true, agentId, credential, networkScope: enrollmentSnapshot.docs[0].data().networkScope, status: "PENDING" });
+});
+
+export const discoveryAgentHeartbeat = onRequest(discoveryHttpOptions, async (request, response) => {
+  if (request.method !== "POST") return httpError(response, 405, "POST required.");
+  const db = getFirestore();
+  const agent = await authenticateDiscoveryAgent(db, request);
+  if (!agent) return httpError(response, 401, "Invalid agent credential.");
+  if (["DISABLED", "REVOKED"].includes(agent.data.status)) return httpError(response, 403, `Agent is ${agent.data.status.toLowerCase()}.`);
+  await agent.ref.update({
+    lastHeartbeat: FieldValue.serverTimestamp(),
+    version: String(request.body?.version || agent.data.version).slice(0, 40),
+    operatingSystem: String(request.body?.operatingSystem || agent.data.operatingSystem).slice(0, 120),
+    health: { uptimeSeconds: Math.max(0, Number(request.body?.uptimeSeconds) || 0), connectionState: "CONNECTED" },
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+  return response.json({ ok: true, agentId: agent.id, status: agent.data.status, serverTime: new Date().toISOString() });
+});
+
+export const pollDiscoveryCommand = onRequest(discoveryHttpOptions, async (request, response) => {
+  if (request.method !== "GET") return httpError(response, 405, "GET required.");
+  const db = getFirestore();
+  const agent = await authenticateDiscoveryAgent(db, request);
+  if (!agent) return httpError(response, 401, "Invalid agent credential.");
+  if (agent.data.status !== "ACTIVE") return httpError(response, 403, "Agent is not active.");
+  const snapshot = await db.collection("discoveryRequests").where("agentId", "==", agent.id).where("status", "==", "QUEUED").limit(10).get();
+  for (const document of snapshot.docs.filter((candidate) => dateMillis(candidate.data().expiresAtDate) <= Date.now()))
+    await document.ref.update({ status: "EXPIRED", completedAt: FieldValue.serverTimestamp() });
+  const candidate = snapshot.docs.find((document) => dateMillis(document.data().expiresAtDate) > Date.now());
+  if (!candidate) return response.json({ ok: true, command: null });
+  const data = await db.runTransaction(async (transaction) => {
+    const current = await transaction.get(candidate.ref);
+    const value = current.data();
+    if (!current.exists || value.status !== "QUEUED" || dateMillis(value.expiresAtDate) <= Date.now()) return null;
+    transaction.update(candidate.ref, { status: "DISPATCHED", startedAt: FieldValue.serverTimestamp() });
+    return value;
+  });
+  if (!data) return response.json({ ok: true, command: null });
+  await discoveryAudit(db, "DISCOVERY_STARTED", { uid: agent.id }, "discoveryRequest", candidate.id, { agentId: agent.id, scope: data.scope });
+  return response.json({ ok: true, command: { command: data.command, requestId: candidate.id, agentId: data.agentId, scope: data.scope, issuedAt: data.issuedAt, expiresAt: data.expiresAt, signature: data.signature } });
+});
+
+export const submitDiscoveryResults = onRequest(discoveryHttpOptions, async (request, response) => {
+  if (request.method !== "POST") return httpError(response, 405, "POST required.");
+  const db = getFirestore();
+  const agent = await authenticateDiscoveryAgent(db, request);
+  if (!agent) return httpError(response, 401, "Invalid agent credential.");
+  if (agent.data.status !== "ACTIVE") return httpError(response, 403, "Agent is not active.");
+  const requestId = String(request.body?.requestId || "");
+  const requestRef = db.collection("discoveryRequests").doc(requestId);
+  const claim = await db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(requestRef);
+    if (!snapshot.exists || snapshot.data().agentId !== agent.id) return { error: 404 };
+    if (snapshot.data().status !== "DISPATCHED") return { error: 409 };
+    if (dateMillis(snapshot.data().expiresAtDate) <= Date.now()) return { error: 410 };
+    transaction.update(requestRef, { status: "PROCESSING", processingAt: FieldValue.serverTimestamp() });
+    return { error: 0 };
+  });
+  if (claim.error === 404) return httpError(response, 404, "Discovery request not found.");
+  if (claim.error === 409) return httpError(response, 409, "Discovery request is not awaiting results.");
+  if (claim.error === 410) return httpError(response, 410, "Discovery request expired.");
+  const rawResults = Array.isArray(request.body?.results) ? request.body.results.slice(0, 256) : [];
+  let results;
+  try { results = rawResults.map((result) => normalizedDiscoveryResult(result, agent.data.networkScope)); }
+  catch (error) {
+    await requestRef.update({ status: "REJECTED", error: String(error.message).slice(0, 500), completedAt: FieldValue.serverTimestamp() });
+    await discoveryAudit(db, "DISCOVERY_SCOPE_REJECTED", { uid: agent.id }, "discoveryRequest", requestId, { error: error.message, result: "Blocked" });
+    return httpError(response, 403, error.message);
+  }
+  const batch = db.batch();
+  const prepared = await Promise.all(results.map(async (result) => {
+    const id = sha256(`${agent.id}\n${result.macAddress || result.ipAddress}`).slice(0, 40);
+    const ref = db.collection("discoveredDevices").doc(id);
+    return { result, id, ref, exists: (await ref.get()).exists };
+  }));
+  for (const { result, id, ref, exists } of prepared) {
+    batch.set(ref, { ...result, discoveryId: id, requestId, agentId: agent.id, ...(!exists ? { firstSeen: FieldValue.serverTimestamp(), createdAt: FieldValue.serverTimestamp() } : {}), lastSeen: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+  }
+  batch.update(requestRef, { status: "COMPLETED", deviceCount: results.length, durationMs: Math.max(0, Number(request.body?.durationMs) || 0), completedAt: FieldValue.serverTimestamp(), error: null });
+  batch.update(agent.ref, { lastScan: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });
+  await batch.commit();
+  await discoveryAudit(db, "DISCOVERY_COMPLETED", { uid: agent.id }, "discoveryRequest", requestId, { deviceCount: results.length, scope: agent.data.networkScope });
+  return response.json({ ok: true, requestId, deviceCount: results.length });
+});

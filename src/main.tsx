@@ -34,6 +34,7 @@ import "./styles/assets.css";
 import "./styles/asset-status.css";
 import "./styles/operations-layout.css";
 import "./styles/device-management.css";
+import "./styles/network-discovery.css";
 import "./components/download/AnimatedDownloadButton.css";
 import "./styles/emerald-gloss.css";
 import "./styles/dark.css";

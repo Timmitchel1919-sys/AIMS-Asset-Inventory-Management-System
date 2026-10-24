@@ -1,4 +1,4 @@
-import {Activity,AlertTriangle,QrCode,Recycle,ShieldCheck,UserCheck,UserX,Users} from 'lucide-react';
+import {Activity,AlertTriangle,QrCode,Radar,Recycle,ShieldCheck,UserCheck,UserX,Users} from 'lucide-react';
 import {Link} from 'react-router-dom';
 import {PageHeader} from '../components/WorkflowUi';
 import {useApp} from '../context/AppContext';
@@ -9,6 +9,7 @@ const modules=[
   {title:'Roles & Permissions',description:'Role capabilities and approval boundaries.',to:'/admin/roles-permissions',icon:ShieldCheck},
   {title:'Activity Log',description:'Read-only administrative and system history.',to:'/admin/activity-log',icon:Activity},
   {title:'QR Backfill',description:'Provision secure QR identities for existing assets.',to:'/admin/qr-backfill',icon:QrCode},
+  {title:'Network Discovery',description:'Owner-only discovery agents, authorized scopes and scan history.',to:'/network-discovery',icon:Radar},
 ];
 
 export default function AdminConsole(){

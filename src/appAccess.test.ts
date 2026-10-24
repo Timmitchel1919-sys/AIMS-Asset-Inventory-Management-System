@@ -29,6 +29,12 @@ describe('app download and admin access integration',()=>{
     expect(route?.permission).toBe('admin.access');
   });
 
+  it('keeps Network Discovery separate and owner-only',()=>{
+    const route=routeManifest.find(candidate=>candidate.path==='/network-discovery');
+    expect(route).toMatchObject({id:'network-discovery',ownerOnly:true,navigation:true});
+    expect(routeManifest.find(candidate=>candidate.path==='/device-management')?.id).toBe('device-management');
+  });
+
   it('routes asset imports directly to the protected combined workbook importer',()=>{
     const route=routeManifest.find(candidate=>candidate.path==='/assets/import');
     expect(route).toMatchObject({id:'asset-import',permission:'assets.import'});
