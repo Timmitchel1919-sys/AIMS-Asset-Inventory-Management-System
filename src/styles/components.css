@@ -840,6 +840,24 @@ td[data-column-id="code"] {
   word-break: break-word;
   hyphens: auto;
 }
+.data-table-assets .desktop-table thead th {
+  height: 56px;
+  padding: 0 16px;
+  vertical-align: middle;
+  color: var(--color-text-secondary);
+  background: var(--color-table-header);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 2px solid var(--color-border);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
+}
+.data-table-assets .desktop-table thead th:first-child {
+  width: 52px;
+  padding-inline: 16px 8px;
+  text-align: center;
+}
 .data-table-assets th[data-column-id="serial"],
 .data-table-assets td[data-column-id="serial"] {
   white-space: nowrap;

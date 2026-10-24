@@ -29,6 +29,13 @@ describe("adaptive scroll navigation architecture", () => {
     expect(components).toMatch(/\.migration-assets-table thead th\s*\{[^}]*position: static/s);
   });
 
+  it("preserves the approved ICT asset column-header bar", () => {
+    expect(shell).toMatch(/position:sticky;[^}]*background:var\(--color-table-header\)/s);
+    expect(components).toMatch(
+      /\.data-table-assets \.desktop-table thead th\s*\{[^}]*height: 56px[^}]*background: var\(--color-table-header\)[^}]*text-transform: none/s,
+    );
+  });
+
   it("keeps settings navigation in natural flow", () => {
     expect(components).toMatch(/\.settings-nav\s*\{[^}]*position: static/s);
   });

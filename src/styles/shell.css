@@ -83,7 +83,7 @@
   position:sticky;
   top:var(--aims-table-header-offset);
   z-index:30;
-  background:var(--surface-card);
+  background:var(--color-table-header);
   box-shadow:0 1px 0 var(--surface-border);
   transition:top 220ms ease;
 }
