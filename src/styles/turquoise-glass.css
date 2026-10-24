@@ -15,10 +15,10 @@ html[data-aims-theme="aimsTurquoiseGlass"] {
   color-scheme: dark;
   --color-background: #071317;
   --color-background-secondary: #071c21;
-  --color-surface: rgba(13, 29, 34, 0.86);
-  --color-surface-secondary: rgba(12, 27, 31, 0.78);
-  --color-surface-elevated: rgba(15, 33, 38, 0.92);
-  --color-surface-hover: rgba(19, 40, 46, 0.9);
+  --color-surface: rgba(52, 116, 136, 0.9);
+  --color-surface-secondary: rgba(48, 108, 124, 0.86);
+  --color-surface-elevated: rgba(60, 132, 152, 0.94);
+  --color-surface-hover: rgba(76, 160, 184, 0.92);
 
   --color-primary: #25C7B7;
   --color-primary-hover: #2ad0c0;

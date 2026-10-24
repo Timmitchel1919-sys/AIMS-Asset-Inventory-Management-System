@@ -5,3 +5,8 @@
 .filter-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
 @media(max-width:480px){.filter-actions{display:grid;grid-template-columns:1fr 1fr}.filter-actions .btn{width:100%}}
 @media(prefers-reduced-motion:reduce){.list-menu>div{scroll-behavior:auto}}
+
+/* Loaded after the legacy compact-list rules: data pages participate in the
+   document scroll and grow beyond the viewport without an inner Y scroller. */
+.data-page{width:100%;min-height:calc(100dvh - 116px);height:auto}
+.data-page .data-card{flex:1 0 auto;min-height:0;overflow:visible}
