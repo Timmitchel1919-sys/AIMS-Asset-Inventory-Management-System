@@ -4755,3 +4755,37 @@ html[data-theme="dark"] .password-strength__hints li[data-ok="true"] { color: #3
   font-size: var(--text-base);
 }
 
+
+/* ------------------------------------------------------------------ */
+/*  Help center — Contact ICT Support + ticket list                   */
+/* ------------------------------------------------------------------ */
+.support-tickets__title {
+  margin: 14px 0 6px;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.support-tickets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.support-tickets li {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 10px;
+}
+.support-tickets li strong {
+  font-size: var(--text-sm);
+}
+.support-tickets li small {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+

@@ -28,6 +28,7 @@ import {
   searchHelp,
   type HelpCategoryId,
 } from "../content/helpArticles";
+import { ContactSupportCard } from "../components/account/ContactSupportCard";
 import { firebaseConfigured } from "../lib/firebase";
 import {
   KCS_ICT_SUPPORT_EMAIL,
@@ -401,8 +402,9 @@ export function HelpPage() {
             </ul>
           )}
         </Card>
+        <ContactSupportCard />
         <Card>
-          <h2>{nl ? "Contact opnemen met ICT-ondersteuning" : "Contact ICT Support"}</h2>
+          <h2>{nl ? "Direct contact" : "Direct contact"}</h2>
           <p>
             <a
               href={`mailto:${KCS_ICT_SUPPORT_EMAIL}?subject=AIMS%20support&body=${diagnostics}`}
@@ -413,7 +415,9 @@ export function HelpPage() {
             {KCS_ICT_SUPPORT_LINE}
           </p>
           <p>
-            {nl ? "De e-mail bevat alleen diagnostische gegevens over de applicatie, browser, route en tijdstempel." : "The email includes only application, browser, route, and timestamp diagnostics."}
+            {nl
+              ? "Voor urgente zaken buiten AIMS om; bevat alleen diagnostische gegevens over applicatie, browser, route en tijdstempel."
+              : "For urgent matters outside AIMS; includes only application, browser, route and timestamp diagnostics."}
           </p>
         </Card>
         <Card>
