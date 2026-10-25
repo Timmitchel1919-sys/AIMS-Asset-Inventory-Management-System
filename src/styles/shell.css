@@ -492,3 +492,94 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
   z-index: 60;
 }
 
+
+/* ------------------------------------------------------------------ */
+/*  Profile menu — Sign Out (destructive) + role / verified badge     */
+/* ------------------------------------------------------------------ */
+
+/* Bright, bold Sign Out with soft-red hover wash. Overrides the older
+   lower-contrast rules above so dark themes also stay accessible. */
+.profile-menu .account-signout {
+  margin-top: 8px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-top: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  color: #ef4444;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  background: transparent;
+}
+.profile-menu .account-signout svg {
+  color: #ef4444;
+  stroke-width: 2.25;
+}
+.profile-menu .account-signout:hover,
+.profile-menu .account-signout:focus-visible {
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  outline: none;
+}
+.profile-menu .account-signout:focus-visible {
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.45);
+}
+
+/* Dark themes get a brighter, more legible red. */
+html[data-theme="dark"] .profile-menu .account-signout,
+html[data-theme="dark"] .profile-menu .account-signout svg {
+  color: #fb7185;
+}
+html[data-theme="dark"] .profile-menu .account-signout:hover,
+html[data-theme="dark"] .profile-menu .account-signout:focus-visible {
+  color: #fda4af;
+  background: rgba(251, 113, 133, 0.14);
+}
+html[data-theme="dark"] .profile-menu .account-signout:focus-visible {
+  box-shadow: 0 0 0 2px rgba(251, 113, 133, 0.55);
+}
+
+/* Role chip inside the menu header. */
+.profile-menu header .account-menu-role {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-surface-hover, rgba(0, 0, 0, 0.06));
+  color: var(--color-text-primary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+html[data-theme="dark"] .profile-menu header .account-menu-role {
+  background: rgba(34, 211, 238, 0.14);
+  color: var(--midnight-ink, #F1F5F9);
+}
+
+/* Verified / not-verified badge. */
+.profile-menu header .account-menu-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.profile-menu header .account-menu-verified svg {
+  width: 14px;
+  height: 14px;
+}
+.profile-menu header .account-menu-verified.verified {
+  color: #16a34a;
+}
+.profile-menu header .account-menu-verified.unverified {
+  color: #f59e0b;
+}
+html[data-theme="dark"] .profile-menu header .account-menu-verified.verified {
+  color: #34D399;
+}
+html[data-theme="dark"] .profile-menu header .account-menu-verified.unverified {
+  color: #F5B86B;
+}
+

@@ -61,6 +61,8 @@ export type UserPreferences = {
   language?: "en" | "nl";
   dateFormat?: "DD-MM-YYYY" | "MM-DD-YYYY" | "YYYY-MM-DD";
   timeFormat?: "24-hour" | "12-hour";
+  timezone?: string;
+  firstDayOfWeek?: "monday" | "sunday";
   notifications?: Record<string, boolean>;
   fontFamily?: FontFamily;
   fontSize?: FontSize;

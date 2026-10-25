@@ -212,6 +212,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       (localStorage.getItem(
         "aims-time-format",
       ) as UserPreferences["timeFormat"]) || "24-hour",
+    timezone:
+      localStorage.getItem("aims-timezone") || "America/Paramaribo",
+    firstDayOfWeek:
+      (localStorage.getItem(
+        "aims-first-day-of-week",
+      ) as UserPreferences["firstDayOfWeek"]) || "monday",
     notifications: {
       maintenance: true,
       borrowing: true,
@@ -380,6 +386,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
             localStorage.setItem("aims-date-format", merged.dateFormat);
           if (merged.timeFormat)
             localStorage.setItem("aims-time-format", merged.timeFormat);
+          if (merged.timezone)
+            localStorage.setItem("aims-timezone", merged.timezone);
+          if (merged.firstDayOfWeek)
+            localStorage.setItem(
+              "aims-first-day-of-week",
+              merged.firstDayOfWeek,
+            );
           if (!presentationMode) await savePreferences(merged);
         } catch (error) {
           setPreferences(previous);

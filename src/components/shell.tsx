@@ -2,6 +2,7 @@ import {
   Activity,
   Archive,
   BarChart3,
+  BadgeCheck,
   Bell,
   Bot,
   Boxes,
@@ -13,6 +14,7 @@ import {
   ClipboardCheck,
   FolderTree,
   LayoutDashboard,
+  LifeBuoy,
   LogOut,
   MapPin,
   ListChecks,
@@ -576,12 +578,37 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </span>
                   <div>
                     <strong>{app.user.name}</strong>
+                    {app.user.role && (
+                      <small className="account-menu-role">
+                        {app.user.role
+                          .split("-")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() + word.slice(1),
+                          )
+                          .join(" ")}
+                      </small>
+                    )}
                     <small>
                       {app.user.isDemoUser
                         ? app.language === "nl"
                           ? "Demosessie"
                           : "Demo session"
                         : app.user.email}
+                    </small>
+                    <small
+                      className={`account-menu-verified${
+                        app.emailVerified ? " verified" : " unverified"
+                      }`}
+                    >
+                      <BadgeCheck aria-hidden="true" />
+                      {app.emailVerified
+                        ? app.language === "nl"
+                          ? "Geverifieerd"
+                          : "Verified"
+                        : app.language === "nl"
+                          ? "Niet geverifieerd"
+                          : "Not verified"}
                     </small>
                     {(app.user.jobTitle || app.user.department) && (
                       <small>
@@ -633,7 +660,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       setProfileOpen(false);
                     }}
                   >
-                    <ShieldCheck />
+                    <LifeBuoy />
                     {app.language === "nl"
                       ? "Help en ondersteuning"
                       : "Help & Support"}

@@ -24,8 +24,8 @@ import { persistThemePreference } from "../domain/themePreference";
 
 
 const themes: [ThemeId, string][] = [
-  ["aimsAzureGlass", "AIMS Azure Blue"],
-  ["dark", "AIMS Dark"],
+  ["aimsAzureGlass", "AIMS Blue Azure"],
+  ["dark", "AIMS DarkBento"],
   ["aimsEmeraldGloss", "AIMS Emerald Green"],
   ["aimsLight", "AIMS Light"],
   ["aimsTurquoiseGlass", "Premium Turquoise Glass"],
@@ -299,6 +299,35 @@ export function PreferencesPage() {
             >
               <option>24-hour</option>
               <option>12-hour</option>
+            </SelectField>
+            <SelectField
+              label={nl ? "Tijdzone" : "Time zone"}
+              value={app.preferences.timezone ?? "America/Paramaribo"}
+              onChange={(event) => save({ timezone: event.target.value })}
+            >
+              <option value="America/Paramaribo">
+                {nl
+                  ? "Suriname-tijd (America/Paramaribo)"
+                  : "Suriname Time (America/Paramaribo)"}
+              </option>
+              <option value="Europe/Amsterdam">
+                {nl
+                  ? "Nederland (Europe/Amsterdam)"
+                  : "Netherlands (Europe/Amsterdam)"}
+              </option>
+              <option value="UTC">UTC</option>
+            </SelectField>
+            <SelectField
+              label={nl ? "Eerste dag van de week" : "First day of week"}
+              value={app.preferences.firstDayOfWeek ?? "monday"}
+              onChange={(event) =>
+                save({
+                  firstDayOfWeek: event.target.value as "monday" | "sunday",
+                })
+              }
+            >
+              <option value="monday">{nl ? "Maandag" : "Monday"}</option>
+              <option value="sunday">{nl ? "Zondag" : "Sunday"}</option>
             </SelectField>
           </div>
           <p className="preference-format-example" aria-live="polite">
