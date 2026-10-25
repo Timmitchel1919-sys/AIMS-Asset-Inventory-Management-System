@@ -18,10 +18,30 @@ import { useApp } from "../context/AppContext";
 import { assetStatusBreakdown } from "../domain/dashboardMetrics";
 import { StatusBadge } from "../components/AssetStatusBadge";
 import { parentLocationIdOf } from "../domain/locationTree";
+import { BentoDashboard } from "../components/dashboard/bento/BentoDashboard";
 
 const MovementChart = lazy(() => import("../components/dashboard/MovementChart"));
 
+/**
+ * Thin theme-aware dispatcher for /dashboard.
+ *
+ * - Midnight / Dark Theme (`effectiveTheme === "dark"`) renders the new
+ *   Dark Bento Dashboard.
+ * - Every other theme (Azure Glass, Emerald Gloss, Light, Premium Turquoise
+ *   Glass) continues to render the existing Dashboard presentation unchanged.
+ *
+ * The branch happens at component selection time so React never mounts both
+ * dashboards simultaneously. Both consume the same `useMockSnapshot()` via
+ * `useSyncExternalStore`, so no duplicate repository subscriptions are
+ * created when switching themes.
+ */
 export default function Dashboard() {
+  const { effectiveTheme } = useApp();
+  if (effectiveTheme === "dark") return <BentoDashboard />;
+  return <DashboardLegacy />;
+}
+
+function DashboardLegacy() {
   const { language, formatDate, formatDateTime } = useApp(),
     nl = language === "nl",
     navigate = useNavigate(),
