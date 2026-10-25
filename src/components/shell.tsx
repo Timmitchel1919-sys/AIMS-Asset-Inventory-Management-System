@@ -15,7 +15,6 @@ import {
   LayoutDashboard,
   LogOut,
   MapPin,
-  Menu,
   ListChecks,
   Mic,
   PackageOpen,
@@ -24,7 +23,6 @@ import {
   Recycle,
   Radar,
   RotateCcw,
-  Search,
   Send,
   Settings,
   Shield,
@@ -49,7 +47,6 @@ import {
   type ReactNode,
 } from "react";
 import { useApp } from "../context/AppContext";
-import { ConnectivityPill } from "./ConnectivityPill";
 import {
   FONT_FAMILY_STACKS,
   resolveFontFamily,
@@ -60,7 +57,6 @@ import { matchRoute, navRoutes, type RouteIcon } from "../routes/manifest";
 import { useT } from "../i18n";
 import { PwaStatus } from "./PwaStatus";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
-import { GlobalSearch } from "./search/GlobalSearch";
 import { AimsLogo } from "./branding/AimsLogo";
 import { isAimsOwnerEmail } from "../auth/accessBootstrap";
 import { DEMO_AUTH_MODE } from "../auth/aimsEmailPolicy";
@@ -156,7 +152,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     appRootRef = useRef<HTMLDivElement>(null),
     accountMenuRef = useRef<HTMLDivElement>(null),
     accountButtonRef = useRef<HTMLButtonElement>(null),
-    mobileSearchRef = useRef<HTMLDivElement>(null),
     [activeNotchTop, setActiveNotchTop] = useState<number | null>(null);
   const presentationMode = import.meta.env.VITE_APP_MODE === "presentation";
   const appFontFamily = resolveFontFamily(app.preferences.fontFamily);
@@ -170,7 +165,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     [listening, setListening] = useState(false),
     [voiceStatus, setVoiceStatus] = useState(""),
     [profileOpen, setProfileOpen] = useState(false),
-    [mobileSearchOpen, setMobileSearchOpen] = useState(false),
     [navigationVisible, setNavigationVisible] = useState(true);
   const lastScrollY = useRef(0);
   const scrollFrame = useRef<number | null>(null);
@@ -256,26 +250,6 @@ export function AppShell({ children }: { children: ReactNode }) {
       document.removeEventListener("keydown", key);
     };
   }, [profileOpen]);
-  useEffect(() => {
-    if (!mobileSearchOpen) return;
-    const close = (event: MouseEvent) => {
-      if (!mobileSearchRef.current?.contains(event.target as Node))
-        setMobileSearchOpen(false);
-    };
-    const key = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMobileSearchOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    document.addEventListener("keydown", key);
-    return () => {
-      document.removeEventListener("mousedown", close);
-      document.removeEventListener("keydown", key);
-    };
-  }, [mobileSearchOpen]);
-  useEffect(() => {
-    const task = window.setTimeout(() => setMobileSearchOpen(false), 0);
-    return () => window.clearTimeout(task);
-  }, [location.pathname]);
   const [assistantMessages, setAssistantMessages] = useState<
     { who: "bot" | "you"; text: string }[]
   >([
@@ -321,12 +295,22 @@ export function AppShell({ children }: { children: ReactNode }) {
     app.user?.role === "owner"
       ? sidebarModuleOrder.flatMap((id) =>
           id === "settings"
-            ? ["network-directory", "network-discovery", "device-management", id]
+            ? [
+                "network-directory",
+                "network-discovery",
+                "device-management",
+                "notifications",
+                id,
+              ]
             : id === "assistant"
               ? [id, "tracking-types"]
               : [id],
         )
-      : sidebarModuleOrder.flatMap((id) => id === "settings" ? ["network-directory", "device-management", id] : [id]);
+      : sidebarModuleOrder.flatMap((id) =>
+          id === "settings"
+            ? ["network-directory", "device-management", "notifications", id]
+            : [id],
+        );
   const primaryRoutes = moduleOrder.flatMap((id) => {
     if (id === "network-discovery" && !(DEMO_AUTH_MODE || isAimsOwnerEmail(app.user?.email))) return [];
     const route = routes.find((candidate) => candidate.id === id);
@@ -536,186 +520,143 @@ export function AppShell({ children }: { children: ReactNode }) {
             aria-hidden="true"
           />
         )}
-      </aside>
-      <header className="topbar">
-        <button
-          type="button"
-          className="topbar-logo-trigger"
-          aria-label={
-            app.mobileOpen
-              ? t("common.closeNavigation")
-              : t("common.openNavigation")
-          }
-          aria-expanded={app.mobileOpen}
-          aria-controls="app-primary-navigation"
-          onClick={() => {
-            setMobileSearchOpen(false);
-            app.setMobileOpen(!app.mobileOpen);
-          }}
-        >
-          <Menu className="topbar-menu-trigger__icon" aria-hidden="true" />
-        </button>
-        <div
-          className="topbar-search"
-          data-expanded={mobileSearchOpen}
-          ref={mobileSearchRef}
-        >
-          <GlobalSearch autoFocus={mobileSearchOpen} />
-          {mobileSearchOpen && (
-            <button
-              type="button"
-              className="topbar-search-close"
-              aria-label={t("common.closeSearch")}
-              onClick={() => setMobileSearchOpen(false)}
-            >
-              <X aria-hidden="true" />
-            </button>
-          )}
-        </div>
-        {!mobileSearchOpen && (
+        <div className="sidebar-foot" ref={accountMenuRef}>
           <button
-            type="button"
-            className="topbar-search-trigger"
-            aria-label={t("common.openSearch")}
-            onClick={() => {
-              app.setMobileOpen(false);
-              setMobileSearchOpen(true);
-            }}
+            ref={accountButtonRef}
+            className="sidebar-profile"
+            aria-label={
+              app.language === "nl" ? "Accountmenu openen" : "Open account menu"
+            }
+            aria-expanded={profileOpen}
+            aria-haspopup="menu"
+            aria-controls="account-menu"
+            title={app.sidebarCollapsed ? app.user.name : undefined}
+            onClick={() => setProfileOpen((value) => !value)}
           >
-            <Search aria-hidden="true" />
-          </button>
-        )}
-        <div className="top-actions">
-          <ConnectivityPill />
-          <button
-            className="top-notifications"
-            aria-label={`${t("nav.notifications")}: ${unreadNotificationCount}`}
-            onClick={() => navigate("/notifications")}
-          >
-            <Bell />
-            {unreadNotificationCount > 0 && (
-              <span>{unreadNotificationCount}</span>
+            {app.user.profilePhoto ? (
+              <img
+                className="avatar avatar-photo"
+                src={app.user.profilePhoto}
+                alt=""
+              />
+            ) : (
+              <span className="avatar">{app.user.initials}</span>
             )}
+            <span className="sidebar-action-label">
+              <strong>{app.user.name}</strong>
+              <small>
+                {app.user.isDemoUser
+                  ? app.language === "nl"
+                    ? "Demosessie"
+                    : "Demo session"
+                  : app.user.email}
+              </small>
+            </span>
           </button>
-          <div className="profile-menu-wrap" ref={accountMenuRef}>
-            <button
-              ref={accountButtonRef}
-              className="top-user"
-              aria-label={
-                app.language === "nl"
-                  ? "Accountmenu openen"
-                  : "Open account menu"
-              }
-              aria-expanded={profileOpen}
-              aria-haspopup="menu"
-              aria-controls="account-menu"
-              onClick={() => setProfileOpen((value) => !value)}
-            >
-              {app.user.profilePhoto ? (
-                <img
-                  className="avatar avatar-photo"
-                  src={app.user.profilePhoto}
-                  alt=""
-                />
-              ) : (
-                <span className="avatar">{app.user.initials}</span>
-              )}
-            </button>
-            {profileOpen && (
-              <>
-                <button
-                  className="account-sheet-scrim"
-                  aria-label={app.language === "nl" ? "Accountmenu sluiten" : "Close account menu"}
-                  onClick={() => setProfileOpen(false)}
-                />
-                <div id="account-menu" className="profile-menu" role="menu">
-                  <span className="account-sheet-handle" aria-hidden="true" />
-                  <header>
-                    <span className="account-menu-avatar">
-                      {app.user.profilePhoto ? (
-                        <img src={app.user.profilePhoto} alt="" />
-                      ) : (
-                        app.user.initials
-                      )}
-                    </span>
-                    <div>
-                      <strong>{app.user.name}</strong>
-                      <small>{app.user.isDemoUser ? (app.language === "nl" ? "Demosessie" : "Demo session") : app.user.email}</small>
-                      {(app.user.jobTitle || app.user.department) && (
-                        <small>
-                          {[app.user.jobTitle, app.user.department]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </small>
-                      )}
-                    </div>
-                  </header>
-                  <div className="account-menu-links">
-                    <button
-                      role="menuitem"
-                      onClick={() => {
-                        navigate("/profile");
-                        setProfileOpen(false);
-                      }}
-                    >
-                      <User />
-                      {app.language === "nl" ? "Mijn profiel" : "My Profile"}
-                      <ChevronRight />
-                    </button>
-                    <button
-                      role="menuitem"
-                      onClick={() => {
-                        navigate("/preferences");
-                        setProfileOpen(false);
-                      }}
-                    >
-                      <Settings />
-                      {app.language === "nl" ? "Voorkeuren" : "Preferences"}
-                      <ChevronRight />
-                    </button>
-                    <button
-                      role="menuitem"
-                      onClick={() => {
-                        navigate("/security");
-                        setProfileOpen(false);
-                      }}
-                    >
-                      <Shield />
-                      {app.language === "nl" ? "Beveiliging" : "Security"}
-                      <ChevronRight />
-                    </button>
-                    <button
-                      role="menuitem"
-                      onClick={() => {
-                        navigate("/help");
-                        setProfileOpen(false);
-                      }}
-                    >
-                      <ShieldCheck />
-                      {app.language === "nl" ? "Help en ondersteuning" : "Help & Support"}
-                      <ChevronRight />
-                    </button>
+          {profileOpen && (
+            <>
+              <button
+                className="account-sheet-scrim"
+                aria-label={
+                  app.language === "nl"
+                    ? "Accountmenu sluiten"
+                    : "Close account menu"
+                }
+                onClick={() => setProfileOpen(false)}
+              />
+              <div id="account-menu" className="profile-menu" role="menu">
+                <span className="account-sheet-handle" aria-hidden="true" />
+                <header>
+                  <span className="account-menu-avatar">
+                    {app.user.profilePhoto ? (
+                      <img src={app.user.profilePhoto} alt="" />
+                    ) : (
+                      app.user.initials
+                    )}
+                  </span>
+                  <div>
+                    <strong>{app.user.name}</strong>
+                    <small>
+                      {app.user.isDemoUser
+                        ? app.language === "nl"
+                          ? "Demosessie"
+                          : "Demo session"
+                        : app.user.email}
+                    </small>
+                    {(app.user.jobTitle || app.user.department) && (
+                      <small>
+                        {[app.user.jobTitle, app.user.department]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </small>
+                    )}
                   </div>
+                </header>
+                <div className="account-menu-links">
                   <button
-                    className="account-signout"
                     role="menuitem"
-                    onClick={async () => {
+                    onClick={() => {
+                      navigate("/profile");
                       setProfileOpen(false);
-                      await app.logout();
-                      // Sign out returns to the public Landing page — never the
-                      // splash or the login screen (no startup friction).
-                      navigate("/", { replace: true });
                     }}
                   >
-                    <LogOut />
-                    {app.language === "nl" ? "Afmelden" : "Sign out"}
+                    <User />
+                    {app.language === "nl" ? "Mijn profiel" : "My Profile"}
+                    <ChevronRight />
+                  </button>
+                  <button
+                    role="menuitem"
+                    onClick={() => {
+                      navigate("/preferences");
+                      setProfileOpen(false);
+                    }}
+                  >
+                    <Settings />
+                    {app.language === "nl" ? "Voorkeuren" : "Preferences"}
+                    <ChevronRight />
+                  </button>
+                  <button
+                    role="menuitem"
+                    onClick={() => {
+                      navigate("/security");
+                      setProfileOpen(false);
+                    }}
+                  >
+                    <Shield />
+                    {app.language === "nl" ? "Beveiliging" : "Security"}
+                    <ChevronRight />
+                  </button>
+                  <button
+                    role="menuitem"
+                    onClick={() => {
+                      navigate("/help");
+                      setProfileOpen(false);
+                    }}
+                  >
+                    <ShieldCheck />
+                    {app.language === "nl"
+                      ? "Help en ondersteuning"
+                      : "Help & Support"}
+                    <ChevronRight />
                   </button>
                 </div>
-              </>
-            )}
-          </div>
+                <button
+                  className="account-signout"
+                  role="menuitem"
+                  onClick={async () => {
+                    setProfileOpen(false);
+                    await app.logout();
+                    navigate("/", { replace: true });
+                  }}
+                >
+                  <LogOut />
+                  {app.language === "nl" ? "Afmelden" : "Sign out"}
+                </button>
+              </div>
+            </>
+          )}
         </div>
-      </header>
+      </aside>
       <main
         className="main"
         id="main-content"

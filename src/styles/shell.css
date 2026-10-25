@@ -409,3 +409,86 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
     object-position: center;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/*  Sidebar footer — frozen profile button beneath the module list    */
+/* ------------------------------------------------------------------ */
+.app-sidebar .sidebar-foot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 14px;
+  border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+  background: var(--color-sidebar-background);
+}
+.app-sidebar .sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+.app-sidebar .sidebar-profile:hover,
+.app-sidebar .sidebar-profile:focus-visible {
+  background: var(--color-surface-hover, rgba(255, 255, 255, 0.05));
+  outline: none;
+}
+.app-sidebar .sidebar-profile .avatar {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary, #fff);
+  font-size: var(--text-sm);
+  flex: 0 0 34px;
+  object-fit: cover;
+}
+.app-sidebar .sidebar-profile .sidebar-action-label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+.app-sidebar .sidebar-profile .sidebar-action-label strong {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+.app-sidebar .sidebar-profile .sidebar-action-label small {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+.app-sidebar--collapsed .sidebar-foot .sidebar-profile {
+  justify-content: center;
+  padding: 6px;
+}
+.app-sidebar--collapsed .sidebar-foot .sidebar-profile .sidebar-action-label {
+  display: none !important;
+}
+
+/* Account menu floats above the frozen footer, not inside it. */
+.app-sidebar .sidebar-foot .profile-menu {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(100% + 8px);
+  z-index: 60;
+}
+
