@@ -5,13 +5,13 @@ import { cleanup, render } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 /**
- * The Dashboard dispatcher must mount the Dark Bento content when the
- * Midnight / Dark Theme is active, and the existing Dashboard presentation
- * on every other theme. This test asserts the dispatch per theme without
- * exercising the full data pipeline.
+ * The Dashboard renders the same card layout (title, metrics, status,
+ * movement + attention + quick-actions, recent movements, upcoming) on
+ * every theme. Theme-specific colors come from scoped CSS, not from a
+ * component swap. This test asserts the layout stays identical across
+ * every active theme.
  */
 
-// Minimal snapshot that both Dashboard branches can safely consume.
 const emptySnapshot = {
   assets: [],
   inventory: [],
@@ -58,7 +58,6 @@ vi.mock("../data/repositoryContext", () => ({
   }),
 }));
 
-// Avoid loading the real MovementChart (recharts) which is heavy and needs ResizeObserver.
 vi.mock("../components/dashboard/MovementChart", () => ({
   default: () => <div data-testid="movement-chart" />,
 }));
@@ -75,51 +74,30 @@ function renderDashboard() {
   );
 }
 
-describe("Dashboard theme dispatcher", () => {
-  it("renders the Dark Bento Dashboard when effectiveTheme is 'dark'", () => {
-    theme.value = "dark";
-    const { container } = renderDashboard();
-    expect(container.querySelector(".bento-root")).not.toBeNull();
-    // The legacy Dashboard surfaces a specific heading that must NOT appear here.
-    expect(container.textContent).not.toContain("Inventory overview");
-  });
+describe("Dashboard unified layout", () => {
+  const themes = ["dark", "aimsAzureGlass", "aimsEmeraldGloss", "aimsLight", "aimsTurquoiseGlass"];
+  for (const t of themes) {
+    it(`renders the same card layout on ${t}`, () => {
+      theme.value = t;
+      const { container } = renderDashboard();
+      // Shared layout: the dashboard page container
+      expect(container.querySelector(".dashboard-page")).not.toBeNull();
+      // The metrics card is titled "Inventory overview" on every theme
+      expect(container.textContent).toContain("Inventory overview");
+      // No Bento-specific root is mounted anywhere any more
+      expect(container.querySelector(".bento-root")).toBeNull();
+    });
+  }
 
-  it("renders the legacy Dashboard on Azure Glass", () => {
-    theme.value = "aimsAzureGlass";
-    const { container } = renderDashboard();
-    expect(container.querySelector(".bento-root")).toBeNull();
-    expect(container.textContent).toContain("Inventory overview");
-  });
-
-  it("renders the legacy Dashboard on Emerald Gloss", () => {
-    theme.value = "aimsEmeraldGloss";
-    const { container } = renderDashboard();
-    expect(container.querySelector(".bento-root")).toBeNull();
-    expect(container.textContent).toContain("Inventory overview");
-  });
-
-  it("renders the legacy Dashboard on Light", () => {
-    theme.value = "aimsLight";
-    const { container } = renderDashboard();
-    expect(container.querySelector(".bento-root")).toBeNull();
-    expect(container.textContent).toContain("Inventory overview");
-  });
-
-  it("renders the legacy Dashboard on Premium Turquoise Glass", () => {
-    theme.value = "aimsTurquoiseGlass";
-    const { container } = renderDashboard();
-    expect(container.querySelector(".bento-root")).toBeNull();
-    expect(container.textContent).toContain("Inventory overview");
-  });
-
-  it("switches from Bento to legacy when the theme changes between renders", () => {
+  it("keeps the layout identical when the theme changes between renders", () => {
     theme.value = "dark";
     const { container, rerender } = render(
       <MemoryRouter>
         <Dashboard />
       </MemoryRouter>,
     );
-    expect(container.querySelector(".bento-root")).not.toBeNull();
+    expect(container.querySelector(".dashboard-page")).not.toBeNull();
+    expect(container.textContent).toContain("Inventory overview");
 
     theme.value = "aimsLight";
     rerender(
@@ -127,7 +105,8 @@ describe("Dashboard theme dispatcher", () => {
         <Dashboard />
       </MemoryRouter>,
     );
-    expect(container.querySelector(".bento-root")).toBeNull();
+    expect(container.querySelector(".dashboard-page")).not.toBeNull();
     expect(container.textContent).toContain("Inventory overview");
+    expect(container.querySelector(".bento-root")).toBeNull();
   });
 });
