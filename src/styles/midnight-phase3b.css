@@ -656,3 +656,141 @@ html[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
     transition: none !important;
   }
 }
+
+/* ================================================================== */
+/* 3B.9 — Outline-style icons, grey chips, transparent container      */
+/*       Scope: dark theme only. Applies across modules + mobile.      */
+/* ================================================================== */
+
+/* ---- Icon tiles (metric-icon, attention-icon): remove soft fill, */
+/* keep bright outline + bright icon. Covers success / info /       */
+/* warning / danger tone utility classes.                           */
+html[data-theme="dark"] .metric-icon,
+html[data-theme="dark"] .attention-icon {
+  background: transparent !important;
+  border: 1.5px solid currentColor;
+  box-shadow: none;
+}
+html[data-theme="dark"] .metric-icon.success,
+html[data-theme="dark"] .attention-icon.success {
+  color: #4ade80;
+}
+html[data-theme="dark"] .metric-icon.info,
+html[data-theme="dark"] .attention-icon.info {
+  color: #38bdf8;
+}
+html[data-theme="dark"] .metric-icon.warning,
+html[data-theme="dark"] .attention-icon.warning {
+  color: #fbbf24;
+}
+html[data-theme="dark"] .metric-icon.danger,
+html[data-theme="dark"] .attention-icon.danger {
+  color: #fb7185;
+}
+html[data-theme="dark"] .metric-icon svg,
+html[data-theme="dark"] .attention-icon svg {
+  color: currentColor;
+  stroke-width: 2.25;
+}
+
+/* ---- Asset status pills: remove fill, keep bright outline + text */
+html[data-theme="dark"] .status-pill,
+html[data-theme="dark"] .asset-status,
+html[data-theme="dark"] .badge[data-status] {
+  background: transparent !important;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+html[data-theme="dark"] .status-pill[data-tone="success"],
+html[data-theme="dark"] .asset-status[data-status="Available"],
+html[data-theme="dark"] .badge[data-status="Available"] {
+  color: #4ade80;
+  border: 1.5px solid #4ade80;
+}
+html[data-theme="dark"] .status-pill[data-tone="warning"],
+html[data-theme="dark"] .asset-status[data-status="Under Maintenance"],
+html[data-theme="dark"] .asset-status[data-status="Under Repair"],
+html[data-theme="dark"] .badge[data-status="Overdue"] {
+  color: #fbbf24;
+  border: 1.5px solid #fbbf24;
+}
+html[data-theme="dark"] .status-pill[data-tone="danger"],
+html[data-theme="dark"] .asset-status[data-status="Damaged"],
+html[data-theme="dark"] .asset-status[data-status="Missing"],
+html[data-theme="dark"] .badge[data-status="Disposed"] {
+  color: #fb7185;
+  border: 1.5px solid #fb7185;
+}
+html[data-theme="dark"] .status-pill[data-tone="info"],
+html[data-theme="dark"] .asset-status[data-status="Assigned"],
+html[data-theme="dark"] .asset-status[data-status="Borrowed"] {
+  color: #38bdf8;
+  border: 1.5px solid #38bdf8;
+}
+html[data-theme="dark"] .status-pill[data-tone="neutral"],
+html[data-theme="dark"] .asset-status[data-status="Archived"],
+html[data-theme="dark"] .asset-status[data-status="Reserved"] {
+  color: #cbd5e1;
+  border: 1.5px solid #94a3b8;
+}
+/* Status-breakdown row counts become bright white next to the pill */
+html[data-theme="dark"] .status-breakdown button strong {
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+/* ---- Card hierarchy: outer container becomes light-black & semi- */
+/* transparent, inner chips (metric buttons, attention buttons,     */
+/* upcoming entries) become grey raised surfaces.                   */
+html[data-theme="dark"] .card.metrics-card,
+html[data-theme="dark"] .card.status-breakdown-card,
+html[data-theme="dark"] .card.chart-card,
+html[data-theme="dark"] .card.attention,
+html[data-theme="dark"] .card.quick-actions,
+html[data-theme="dark"] .dashboard-bottom > .card {
+  background: rgba(14, 18, 28, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+}
+html[data-theme="dark"] .metric,
+html[data-theme="dark"] .attention > button,
+html[data-theme="dark"] .status-breakdown button,
+html[data-theme="dark"] .upcoming button {
+  background: rgba(42, 48, 62, 0.78) !important;
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+}
+html[data-theme="dark"] .metric:hover,
+html[data-theme="dark"] .attention > button:hover,
+html[data-theme="dark"] .status-breakdown button:hover,
+html[data-theme="dark"] .upcoming button:hover {
+  background: rgba(55, 62, 78, 0.88) !important;
+  border-color: rgba(34, 211, 238, 0.35) !important;
+}
+
+/* ---- Mobile Departments module: overview trigger grey + blue text, */
+/* zero-counts in the Active Assets column rendered red.             */
+html[data-theme="dark"] .department-overview-trigger,
+html[data-theme="dark"] .mobile-records .department-overview-trigger {
+  background: #1e2432 !important;
+  color: #60a5fa !important;
+  border: 1px solid rgba(96, 165, 250, 0.35) !important;
+  box-shadow: none !important;
+}
+html[data-theme="dark"] .department-overview-trigger:hover {
+  background: #262d3d !important;
+  color: #93c5fd !important;
+}
+html[data-theme="dark"] .department-overview-trigger svg {
+  color: #60a5fa;
+}
+/* Active-assets column: a bare "0" becomes red; non-zero stays ink. */
+html[data-theme="dark"] td[data-column-id="activeAssets"],
+html[data-theme="dark"] td[data-column-id="activeAssets"] button {
+  color: var(--midnight-ink);
+  font-weight: 700;
+}
+html[data-theme="dark"] td[data-column-id="activeAssets"][data-value="0"],
+html[data-theme="dark"] td[data-column-id="activeAssets"] button[data-value="0"] {
+  color: #fb7185 !important;
+}
