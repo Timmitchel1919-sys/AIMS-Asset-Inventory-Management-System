@@ -4818,3 +4818,54 @@ html[data-theme="dark"] .password-strength__hints li[data-ok="true"] { color: #3
   word-break: break-word;
 }
 
+
+/* ------------------------------------------------------------------ */
+/*  Release notes list                                                */
+/* ------------------------------------------------------------------ */
+.release-notes {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.release-notes > li {
+  padding: 12px 14px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+}
+.release-notes > li > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.release-notes > li > header strong {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--text-sm);
+}
+.release-notes > li > header small {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+.release-notes > li > p {
+  margin: 0 0 8px;
+  font-size: var(--text-sm);
+}
+.release-notes h4 {
+  margin: 10px 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+.release-notes h4 + ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: var(--text-sm);
+}
+.release-notes h4 + ul li { margin: 2px 0; }
+

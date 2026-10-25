@@ -30,6 +30,7 @@ import {
 } from "../content/helpArticles";
 import { ContactSupportCard } from "../components/account/ContactSupportCard";
 import { ReportProblemCard } from "../components/account/ReportProblemCard";
+import { latestVersion, releaseNotes } from "../content/releaseNotes";
 import { firebaseConfigured } from "../lib/firebase";
 import {
   KCS_ICT_SUPPORT_EMAIL,
@@ -433,12 +434,61 @@ export function HelpPage() {
             {nl ? "Omgeving" : "Environment"}: {import.meta.env.MODE}
             <br />
             {nl ? "Versie" : "Version"}:{" "}
-            {import.meta.env.VITE_APP_VERSION || (nl ? "Buildmetadata niet beschikbaar" : "Build metadata unavailable")}
+            {import.meta.env.VITE_APP_VERSION || latestVersion()}
           </p>
           <p>
             <Link to="/privacy">{nl ? "Privacyverklaring" : "Privacy Notice"}</Link> ·{" "}
             <Link to="/terms">{nl ? "Algemene voorwaarden" : "Terms & Conditions"}</Link>
           </p>
+        </Card>
+        <Card className="release-notes-card">
+          <h2>{nl ? "Release notes" : "Release notes"}</h2>
+          <p>
+            {nl
+              ? "Nieuwste wijzigingen eerst. Eén centrale bron in src/content/releaseNotes.ts."
+              : "Newest changes first. One central source in src/content/releaseNotes.ts."}
+          </p>
+          <ol className="release-notes">
+            {releaseNotes.map((entry) => (
+              <li key={entry.version}>
+                <header>
+                  <strong>{entry.version}</strong>
+                  <small>{entry.date}</small>
+                </header>
+                <p>{entry.highlights[language]}</p>
+                {entry.features && entry.features.length > 0 && (
+                  <>
+                    <h4>{nl ? "Nieuw" : "New"}</h4>
+                    <ul>
+                      {entry.features.map((item, index) => (
+                        <li key={index}>{item[language]}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {entry.improvements && entry.improvements.length > 0 && (
+                  <>
+                    <h4>{nl ? "Verbeteringen" : "Improvements"}</h4>
+                    <ul>
+                      {entry.improvements.map((item, index) => (
+                        <li key={index}>{item[language]}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {entry.fixes && entry.fixes.length > 0 && (
+                  <>
+                    <h4>{nl ? "Opgeloste problemen" : "Fixes"}</h4>
+                    <ul>
+                      {entry.fixes.map((item, index) => (
+                        <li key={index}>{item[language]}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </li>
+            ))}
+          </ol>
         </Card>
       </div>
     </div>
