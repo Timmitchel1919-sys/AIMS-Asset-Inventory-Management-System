@@ -29,6 +29,7 @@ import {
   type HelpCategoryId,
 } from "../content/helpArticles";
 import { ContactSupportCard } from "../components/account/ContactSupportCard";
+import { ReportProblemCard } from "../components/account/ReportProblemCard";
 import { firebaseConfigured } from "../lib/firebase";
 import {
   KCS_ICT_SUPPORT_EMAIL,
@@ -420,18 +421,7 @@ export function HelpPage() {
               : "For urgent matters outside AIMS; includes only application, browser, route and timestamp diagnostics."}
           </p>
         </Card>
-        <Card>
-          <h2>{nl ? "Een probleem melden" : "Report a Problem"}</h2>
-          <p>
-            {nl ? "Meld aanmeldproblemen, problemen met middelen, applicatiefouten, gegevensproblemen of machtigingsproblemen via de ICT-ondersteuningsmail." : "Report login problems, asset issues, application bugs, data issues, or permission issues through the ICT support email."}
-          </p>
-          <a
-            className="btn secondary help-problem-link"
-            href={`mailto:${KCS_ICT_SUPPORT_EMAIL}?subject=AIMS%20problem%20report&body=${diagnostics}`}
-          >
-            {nl ? "Probleemmelding voorbereiden" : "Prepare problem report"}
-          </a>
-        </Card>
+        <ReportProblemCard />
         <Card>
           <h2>{nl ? "Over AIMS" : "About AIMS"}</h2>
           <p>

@@ -592,6 +592,25 @@ service cloud.firestore {
         || (name == 'scheduledReports' && hasPermission('reports.schedule'));
     }
 
+    // Technical problem reports with auto-captured diagnostics.
+    match /problemReports/{reportId} {
+      allow read: if request.auth != null
+        && (resource.data.reportedBy == request.auth.uid
+            || hasAnyPermission(['admin.users.manage','notifications.escalate']));
+      allow create: if request.auth != null
+        && request.resource.data.reportedBy == request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.description is string
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.problemType in [
+          'crash','unexpected-behavior','missing-data','permission',
+          'performance','visual','other'
+        ]
+        && request.resource.data.diagnostics is map;
+      allow update: if hasAnyPermission(['admin.users.manage','notifications.escalate']);
+      allow delete: if false;
+    }
+
     // Support tickets. Any signed-in user can open a ticket (requested
     // by themselves) and read their own tickets. Admin workflows can
     // read/update tickets via a separate permission.
