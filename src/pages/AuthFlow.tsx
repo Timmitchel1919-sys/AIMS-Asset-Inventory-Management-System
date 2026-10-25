@@ -22,6 +22,12 @@ import { useApp } from "../context/AppContext";
 import { logAuthEvent } from "../services/authEvents";
 import { ActiveSessionsCard, LoginActivityCard } from "../components/account/SecurityActivity";
 import { MfaCard } from "../components/account/MfaCard";
+import {
+  helpArticles,
+  helpCategories,
+  searchHelp,
+  type HelpCategoryId,
+} from "../content/helpArticles";
 import { firebaseConfigured } from "../lib/firebase";
 import {
   KCS_ICT_SUPPORT_EMAIL,
@@ -281,10 +287,19 @@ export function SecurityPage() {
 }
 
 export function HelpPage() {
-  const location = useLocation(), { language } = useApp(), nl = language === "nl";
+  const location = useLocation(),
+    { language } = useApp(),
+    nl = language === "nl",
+    [query, setQuery] = useState(""),
+    [openCategory, setOpenCategory] = useState<HelpCategoryId | null>(null),
+    [openArticle, setOpenArticle] = useState<string | null>(null);
   const diagnostics = encodeURIComponent(
     `AIMS support request\nModule: ${location.pathname}\nTime: ${new Date().toISOString()}\nBrowser: ${navigator.userAgent}`,
   );
+  const searchResults = query.trim() ? searchHelp(query, language) : [];
+  const categoryArticles = openCategory
+    ? helpArticles.filter((article) => article.category === openCategory)
+    : [];
   return (
     <div className="page help-page">
       <AccountBackButton />
@@ -293,17 +308,98 @@ export function HelpPage() {
         description={nl ? "Documentatie, ondersteuning en applicatie-informatie." : "Documentation, support, and application information."}
       />
       <div className="account-settings-grid">
-        <Card>
+        <Card className="help-center-card">
           <h2>{nl ? "Helpcentrum" : "Help Center"}</h2>
-          <p>{nl ? "Bekijk hulp per werkproces." : "Browse help by workflow."}</p>
-          <nav className="help-links">
-            {(nl
-              ? ["Aan de slag", "ICT-middelen", "Magazijn", "Locaties", "Toewijzingen", "Uitleenbeheer", "Reparaties", "Onderhoud", "Rapporten", "Account", "PWA-installatie"]
-              : ["Getting Started", "ICT Assets", "Warehouse", "Locations", "Assignments", "Borrow Management", "Repairs", "Maintenance", "Reports", "Account", "PWA Installation"]
-            ).map((item) => (
-              <span key={item}>{item}</span>
-            ))}
-          </nav>
+          <div className="help-search">
+            <input
+              type="search"
+              placeholder={nl ? "Zoek in AIMS Help…" : "Search AIMS Help…"}
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setOpenCategory(null);
+                setOpenArticle(null);
+              }}
+              aria-label={nl ? "Help doorzoeken" : "Search help"}
+            />
+          </div>
+          {query.trim() ? (
+            <div className="help-results">
+              <p className="field-help">
+                {searchResults.length === 0
+                  ? nl
+                    ? "Geen resultaten voor deze zoekterm."
+                    : "No results for this search."
+                  : nl
+                    ? `${searchResults.length} resultaten`
+                    : `${searchResults.length} results`}
+              </p>
+              <ul>
+                {searchResults.map((article) => (
+                  <li key={article.id}>
+                    <details
+                      open={openArticle === article.id}
+                      onToggle={(event) => {
+                        if ((event.currentTarget as HTMLDetailsElement).open)
+                          setOpenArticle(article.id);
+                      }}
+                    >
+                      <summary>{article.title[language]}</summary>
+                      <p>{article.body[language]}</p>
+                    </details>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : openCategory ? (
+            <div className="help-results">
+              <button
+                type="button"
+                className="help-back"
+                onClick={() => setOpenCategory(null)}
+              >
+                ← {nl ? "Alle categorieën" : "All categories"}
+              </button>
+              <h3>
+                {
+                  helpCategories.find((cat) => cat.id === openCategory)?.label[
+                    language
+                  ]
+                }
+              </h3>
+              <ul>
+                {categoryArticles.map((article) => (
+                  <li key={article.id}>
+                    <details open={openArticle === article.id}>
+                      <summary
+                        onClick={() =>
+                          setOpenArticle((current) =>
+                            current === article.id ? null : article.id,
+                          )
+                        }
+                      >
+                        {article.title[language]}
+                      </summary>
+                      <p>{article.body[language]}</p>
+                    </details>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <ul className="help-categories">
+              {helpCategories.map((cat) => (
+                <li key={cat.id}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenCategory(cat.id)}
+                  >
+                    {cat.label[language]}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
         <Card>
           <h2>{nl ? "Contact opnemen met ICT-ondersteuning" : "Contact ICT Support"}</h2>
