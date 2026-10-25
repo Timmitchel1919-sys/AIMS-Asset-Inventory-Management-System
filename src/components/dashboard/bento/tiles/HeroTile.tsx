@@ -82,10 +82,10 @@ export function HeroTile({ nl, userName, assets, movements, now }: Props) {
     >
       <div className="bento-hero__row">
         <div>
-          <h2 id="bento-hero-title" className="bento-hero__welcome">
+          <h1 id="bento-hero-title" className="bento-hero__welcome">
             {nl ? "Welkom, " : "Welcome, "}
             <em>{userName ?? "AIMS"}</em>
-          </h2>
+          </h1>
           <p className="bento-hero__subline">
             {nl
               ? "Overzicht van je actieve inventaris en bewegingen."
