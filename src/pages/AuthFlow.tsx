@@ -5,7 +5,8 @@ import {
   Mail,
   ShieldCheck,
 } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { PasswordStrengthMeter } from "../components/account/PasswordStrength";
 import { useLocation, useNavigate } from "react-router-dom";
 import { safeTargetFromState, type ReturnPathParts } from "../lib/navigation";
 import { Button, Card } from "../components/ui";
@@ -139,7 +140,8 @@ export function SecurityPage() {
     method = firebaseConfigured ? currentSignInMethod() : "unknown",
     [message, setMessage] = useState(""),
     [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [newPassword, setNewPassword] = useState("");
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget),
@@ -225,8 +227,16 @@ export function SecurityPage() {
                   type="password"
                   autoComplete="new-password"
                   required
+                  value={newPassword}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    setNewPassword(event.target.value)
+                  }
                 />
               </label>
+              <PasswordStrengthMeter
+                password={newPassword}
+                language={app.language}
+              />
               <label>
                 {nl ? "Nieuw wachtwoord bevestigen" : "Confirm new password"}
                 <input
