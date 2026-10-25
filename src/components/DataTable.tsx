@@ -386,11 +386,22 @@ export function DataTable<T>({
                         onChange={() => toggle(rowKey(row))}
                       />
                     </td>
-                    {visibleColumns.map((column) => (
-                      <td key={column.id} data-column-id={column.id}>
-                        {renderCell(column, row)}
-                      </td>
-                    ))}
+                    {visibleColumns.map((column) => {
+                      const rawText = column.text?.(row);
+                      return (
+                        <td
+                          key={column.id}
+                          data-column-id={column.id}
+                          data-value={
+                            typeof rawText === "number" || typeof rawText === "string"
+                              ? String(rawText)
+                              : undefined
+                          }
+                        >
+                          {renderCell(column, row)}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>
