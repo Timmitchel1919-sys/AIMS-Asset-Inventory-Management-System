@@ -5,6 +5,7 @@ const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf
 const components = read("./components.css");
 const list = read("./list.css");
 const shell = read("./shell.css");
+const midnight = read("./midnight-phase3b.css");
 const turquoise = read("./turquoise-glass.css");
 const globalSearch = read("../components/search/GlobalSearch.tsx");
 
@@ -20,14 +21,17 @@ describe("adaptive scroll navigation architecture", () => {
     expect(list.lastIndexOf("height:auto")).toBeGreaterThan(list.lastIndexOf("height:calc(100vh - 75px)"));
   });
 
-  it("keeps horizontal table overflow and sticky table labels", () => {
-    expect(components).toMatch(/\.table-scroll\s*\{[^}]*overflow-x: auto[^}]*overflow-y: visible/s);
+  it("keeps both table axes aligned in one bounded data viewport", () => {
+    expect(components).toMatch(/\.table-scroll\s*\{[^}]*overflow-x: auto/s);
     expect(components).not.toContain("max-height: calc(100vh - 264px)");
     expect(shell).toContain('position:sticky;');
     expect(shell).toContain('top:var(--aims-table-header-offset)');
-    expect(shell).toContain('--aims-table-header-offset:var(--aims-topbar-offset)');
+    expect(shell).toContain('--aims-table-header-offset:calc(var(--aims-topbar-offset) + var(--aims-page-header-offset) + var(--aims-toolbar-offset))');
+    expect(shell).toMatch(/:is\(\.desktop-table,\.table-scroll,\.dm-table-wrap\)\{[^}]*max-height:calc\(100dvh - var\(--aims-table-header-offset\) - 16px\)[^}]*overflow-x:auto;[^}]*overflow-y:auto;/s);
+    expect(shell).toMatch(/:is\(\.desktop-table,\.table-scroll,\.dm-table-wrap\) table>thead>tr>th\{[^}]*top:0;/s);
     expect(shell).toContain('margin-bottom:calc(-1 * var(--aims-data-toolbar-height))');
-    expect(components).toMatch(/\.migration-assets-table thead th\s*\{[^}]*position: static/s);
+    expect(shell).toContain('.authenticated-app .page table>thead>tr>th{');
+    expect(midnight).not.toMatch(/table thead th,[^{]+\{[^}]*top:\s*0/s);
   });
 
   it("preserves the approved ICT asset column-header bar", () => {
@@ -35,6 +39,12 @@ describe("adaptive scroll navigation architecture", () => {
     expect(components).toMatch(
       /\.data-table-assets \.desktop-table thead th\s*\{[^}]*height: 56px[^}]*background: var\(--color-table-header\)[^}]*text-transform: none/s,
     );
+  });
+
+  it("keeps Main location labels on one line", () => {
+    expect(shell).toContain('[data-column-id="location"]');
+    expect(shell).toContain('[data-column-id="mainLocation"]');
+    expect(shell).toMatch(/data-column-id="main-location"[^}]*white-space:nowrap/s);
   });
 
   it("keeps settings navigation in natural flow", () => {
