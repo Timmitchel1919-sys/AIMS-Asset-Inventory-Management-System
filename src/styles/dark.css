@@ -260,3 +260,133 @@ html[data-theme="dark"] th[aria-sort="descending"] {
 html[data-theme="dark"] :is(.asset-code, .table-link, .count-link) {
   color: #8ea2ff;
 }
+
+/* ---------------------------------------------------------------------- */
+/* Dark Bento polish – topbar status pill, module count chips, overview   */
+/* button, and fully black module surfaces. Applies to every module and   */
+/* works for both desktop and mobile breakpoints.                         */
+/* ---------------------------------------------------------------------- */
+
+/* Topbar connectivity pill — remove the filled background, keep the
+   ring, label and icon green (brighter). Mirror the treatment for all
+   other state tones (sync/limited/offline) so any coloured status chip
+   is outline-only. */
+html[data-theme="dark"] .connectivity-pill {
+  background: transparent !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-theme="dark"] .connectivity-pill--online {
+  color: #4ade80 !important;
+  border-color: #4ade80 !important;
+}
+html[data-theme="dark"] .connectivity-pill--online svg { color: #4ade80; }
+html[data-theme="dark"] .connectivity-pill--syncing {
+  color: #93c5fd !important;
+  border-color: #93c5fd !important;
+}
+html[data-theme="dark"] .connectivity-pill--limited {
+  color: #fcd34d !important;
+  border-color: #fcd34d !important;
+}
+html[data-theme="dark"] .connectivity-pill--offline {
+  color: #fca5a5 !important;
+  border-color: #fca5a5 !important;
+}
+
+/* Module count chips (total records / active assets / inactive assets).
+   Keep the outer chip card, drop the coloured pill around the number,
+   and brighten the digits themselves. */
+html[data-theme="dark"] .data-toolbar__count {
+  background: #000 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--color-text-secondary);
+}
+html[data-theme="dark"] .data-toolbar__count b {
+  background: transparent !important;
+  padding: 0;
+  min-width: 0;
+  color: #c7d2fe;
+  font-weight: 800;
+  text-shadow: 0 0 10px rgba(141, 162, 255, 0.35);
+}
+html[data-theme="dark"] .data-toolbar__count--success b {
+  color: #4ade80;
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.35);
+}
+html[data-theme="dark"] .data-toolbar__count--danger b {
+  color: #fca5a5;
+  text-shadow: 0 0 10px rgba(252, 165, 165, 0.35);
+}
+
+/* Overview trigger inside list/mobile cards — restyle to match the
+   primary Export button: solid blue with white text. */
+html[data-theme="dark"] .department-overview-trigger,
+html[data-theme="dark"] .mobile-records .department-overview-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  background: #2949c8 !important;
+  color: #ffffff !important;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  box-shadow: 0 0 18px rgba(41, 73, 200, 0.4);
+  text-decoration: none;
+  transition: background 150ms ease, transform 150ms ease;
+}
+html[data-theme="dark"] .department-overview-trigger:hover {
+  background: #3352d0 !important;
+  transform: translateY(-1px);
+}
+html[data-theme="dark"] .department-overview-trigger svg { color: #ffffff; }
+
+/* Pure black surface for the module container that holds search,
+   counts, and the record cards. Covers both the shared .data-card
+   wrapper and the mobile card list that sits inside it. */
+html[data-theme="dark"] .data-page .data-card,
+html[data-theme="dark"] .data-card {
+  background: #000 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.9rem;
+}
+html[data-theme="dark"] .data-page .data-toolbar,
+html[data-theme="dark"] .data-card .data-toolbar {
+  background: #000 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+html[data-theme="dark"] .mobile-records {
+  background: #000;
+}
+html[data-theme="dark"] .mobile-records article {
+  background: #0b0b0d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+/* Mobile-record field labels and values: brighter type on true black. */
+html[data-theme="dark"] .mobile-records small {
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+html[data-theme="dark"] .mobile-records span {
+  color: var(--color-text-primary);
+}
+
+/* Any inline green link (e.g. active-count link in reference lists):
+   drop the soft background, keep the colour, brighten it. */
+html[data-theme="dark"] .linklike[style*="--color-success"],
+html[data-theme="dark"] .count-link.is-success {
+  background: transparent !important;
+  color: #4ade80 !important;
+}
+html[data-theme="dark"] .linklike[style*="--color-danger"],
+html[data-theme="dark"] .count-link.is-danger {
+  background: transparent !important;
+  color: #fca5a5 !important;
+}
