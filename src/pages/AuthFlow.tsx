@@ -20,6 +20,7 @@ import {
 import { useApp } from "../context/AppContext";
 import { logAuthEvent } from "../services/authEvents";
 import { ActiveSessionsCard, LoginActivityCard } from "../components/account/SecurityActivity";
+import { MfaCard } from "../components/account/MfaCard";
 import { firebaseConfigured } from "../lib/firebase";
 import {
   KCS_ICT_SUPPORT_EMAIL,
@@ -261,6 +262,7 @@ export function SecurityPage() {
             </p>
           </Card>
         )}
+        <MfaCard />
         <ActiveSessionsCard />
         <LoginActivityCard />
       </div>

@@ -619,6 +619,15 @@ service cloud.firestore {
           ];
         allow update, delete: if false;
       }
+
+      // Per-user MFA backup codes. Only the user may read/write; only
+      // SHA-256 hashes of codes are stored (never plaintext).
+      match /mfaBackup/{docId} {
+        allow read: if isOwnUser(uid);
+        allow create, update: if isOwnUser(uid)
+          && request.resource.data.hashes is list;
+        allow delete: if isOwnUser(uid);
+      }
     }
 
     match /accessAssignments/{uid} {
