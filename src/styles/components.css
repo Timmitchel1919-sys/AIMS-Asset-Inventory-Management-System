@@ -629,7 +629,7 @@
 }
 .collapsed .brand > div:nth-child(2),
 .collapsed .sidebar nav span,
-.collapsed .sidebar-foot button span,
+.collapsed .sidebar-foot > .sidebar-profile .sidebar-action-label,
 .collapsed .user-mini div,
 .collapsed .nav-count {
   display: none;
@@ -2070,7 +2070,7 @@ html .system-information {
   }
   .collapsed .brand > div:nth-child(2),
   .collapsed .sidebar nav span,
-  .collapsed .sidebar-foot button span,
+  .collapsed .sidebar-foot > .sidebar-profile .sidebar-action-label,
   .collapsed .user-mini div,
   .collapsed .nav-count {
     display: block;

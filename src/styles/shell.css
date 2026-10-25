@@ -141,7 +141,7 @@ html[data-theme="kcs-azure-intelligence"]{--global-search-surface:#fff;--global-
 @media(max-width:780px){.global-search__results{position:fixed;top:58px;left:8px;right:8px;max-height:calc(100vh - 130px)}.global-search__input-wrapper>input{padding-right:40px}.global-search__clear,.global-search__loading-icon{right:8px}}
 
 /* Desktop ChatGPT-style sidebar collapse behavior. */
-.app-sidebar{--sidebar-expanded-width:248px;--sidebar-collapsed-width:76px;--sidebar-transition-duration:220ms;width:var(--sidebar-expanded-width);min-width:var(--sidebar-expanded-width);border-right:0;box-shadow:none;transition:width var(--sidebar-transition-duration) ease,min-width var(--sidebar-transition-duration) ease}.app-sidebar--collapsed{width:var(--sidebar-collapsed-width);min-width:var(--sidebar-collapsed-width)}.app.collapsed{grid-template-columns:var(--sidebar-collapsed-width) minmax(0,1fr)}.app-sidebar__header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px}.app-sidebar__logo-button{width:62px;height:62px;padding:0;border:1px solid transparent;border-radius:12px;clip-path:none;background:transparent;transition:width var(--sidebar-transition-duration,220ms) ease,height var(--sidebar-transition-duration,220ms) ease}.app-sidebar__logo-button img{width:100%;height:100%;object-fit:contain;transition:width var(--sidebar-transition-duration,220ms) ease,height var(--sidebar-transition-duration,220ms) ease}.app-sidebar__brand-text,.navigation-item__label,.sidebar-user-details,.sidebar-action-label{display:block;opacity:1;visibility:visible;transform:translateX(0);transition:opacity 150ms ease,visibility 150ms ease,transform 180ms ease}.app-sidebar--collapsed .app-sidebar__header{display:flex;justify-content:center;padding-inline:11px}.app-sidebar--collapsed .app-sidebar__logo-button{width:54px;height:54px;flex:none}.app-sidebar--collapsed .app-sidebar__brand-text,.app-sidebar--collapsed .navigation-item__label,.app-sidebar--collapsed .sidebar-user-details,.app-sidebar--collapsed .sidebar-action-label{display:block;width:0;max-width:0;opacity:0;visibility:hidden;overflow:hidden;transform:translateX(-8px);pointer-events:none}.app-sidebar--collapsed .app-sidebar__collapse-button{display:none}.app-sidebar--collapsed nav a{width:50px;min-width:50px;height:50px;min-height:50px;margin:2px auto;padding:0;justify-content:center;border-radius:14px}.app-sidebar--collapsed nav a svg{margin:0}.app-sidebar--collapsed .nav-count{display:none}.app-sidebar--collapsed .user-mini,.app-sidebar--collapsed .sidebar-foot button{width:50px;height:50px;margin-inline:auto;padding:0;justify-content:center}.app-sidebar--collapsed .sidebar-foot{padding-inline:13px}.app-sidebar--collapsed .user-mini>span{flex:none}.app-sidebar--collapsed .sidebar-foot button svg{margin:0}.main{min-width:0}.app-sidebar nav a.active{box-shadow:none}
+.app-sidebar{--sidebar-expanded-width:248px;--sidebar-collapsed-width:76px;--sidebar-transition-duration:220ms;width:var(--sidebar-expanded-width);min-width:var(--sidebar-expanded-width);border-right:0;box-shadow:none;transition:width var(--sidebar-transition-duration) ease,min-width var(--sidebar-transition-duration) ease}.app-sidebar--collapsed{width:var(--sidebar-collapsed-width);min-width:var(--sidebar-collapsed-width)}.app.collapsed{grid-template-columns:var(--sidebar-collapsed-width) minmax(0,1fr)}.app-sidebar__header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px}.app-sidebar__logo-button{width:62px;height:62px;padding:0;border:1px solid transparent;border-radius:12px;clip-path:none;background:transparent;transition:width var(--sidebar-transition-duration,220ms) ease,height var(--sidebar-transition-duration,220ms) ease}.app-sidebar__logo-button img{width:100%;height:100%;object-fit:contain;transition:width var(--sidebar-transition-duration,220ms) ease,height var(--sidebar-transition-duration,220ms) ease}.app-sidebar__brand-text,.navigation-item__label,.sidebar-user-details,.sidebar-action-label{display:block;opacity:1;visibility:visible;transform:translateX(0);transition:opacity 150ms ease,visibility 150ms ease,transform 180ms ease}.app-sidebar--collapsed .app-sidebar__header{display:flex;justify-content:center;padding-inline:11px}.app-sidebar--collapsed .app-sidebar__logo-button{width:54px;height:54px;flex:none}.app-sidebar--collapsed .app-sidebar__brand-text,.app-sidebar--collapsed .navigation-item__label,.app-sidebar--collapsed .sidebar-user-details,.app-sidebar--collapsed .sidebar-action-label{display:block;width:0;max-width:0;opacity:0;visibility:hidden;overflow:hidden;transform:translateX(-8px);pointer-events:none}.app-sidebar--collapsed .app-sidebar__collapse-button{display:none}.app-sidebar--collapsed nav a{width:50px;min-width:50px;height:50px;min-height:50px;margin:2px auto;padding:0;justify-content:center;border-radius:14px}.app-sidebar--collapsed nav a svg{margin:0}.app-sidebar--collapsed .nav-count{display:none}.app-sidebar--collapsed .user-mini,.app-sidebar--collapsed .sidebar-foot>.sidebar-profile{width:50px;height:50px;margin-inline:auto;padding:0;justify-content:center}.app-sidebar--collapsed .sidebar-foot{padding-inline:13px}.app-sidebar--collapsed .user-mini>span{flex:none}.app-sidebar--collapsed .sidebar-foot>.sidebar-profile svg{margin:0}.main{min-width:0}.app-sidebar nav a.active{box-shadow:none}
 .app-sidebar>.app-sidebar__header{position:sticky;top:0;z-index:3;flex:none;background:var(--color-sidebar-background)}.app-sidebar>nav{min-height:0;overflow-y:auto;overscroll-behavior:contain}.app-sidebar>.sidebar-foot{position:sticky;bottom:0;z-index:3;flex:none;background:var(--color-sidebar-background)}
 .app-sidebar>nav{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--color-accent) 72%,white) transparent}
 .app-sidebar>nav::-webkit-scrollbar{width:5px}
@@ -157,10 +157,10 @@ html[data-theme="kcs-azure-intelligence"]{--global-search-surface:#fff;--global-
   -webkit-backdrop-filter:blur(var(--glass-blur,18px)) saturate(var(--glass-saturation,118%));
 }
 @media(prefers-reduced-motion:reduce){.app-sidebar,.app-sidebar__brand-text,.app-sidebar__logo-button,.app-sidebar__logo-button img,.navigation-item__label,.sidebar-user-details,.sidebar-action-label{transition:none}}
-@media(max-width:780px){.app-sidebar,.app-sidebar--collapsed{width:min(300px,86vw);min-width:0}.app-sidebar__header,.app-sidebar--collapsed .app-sidebar__header{display:flex;justify-content:flex-start;padding:14px 16px}.app-sidebar--collapsed .app-sidebar__brand-text,.app-sidebar--collapsed .navigation-item__label,.app-sidebar--collapsed .sidebar-user-details,.app-sidebar--collapsed .sidebar-action-label{width:auto;max-width:none;opacity:1;visibility:visible;overflow:visible;transform:none;pointer-events:auto}.app-sidebar--collapsed nav a{width:auto;min-width:0;height:42px;min-height:42px;margin:2px 0;padding:0 12px;justify-content:flex-start;border-radius:8px}.app-sidebar--collapsed .nav-count{display:block}.app-sidebar--collapsed .user-mini,.app-sidebar--collapsed .sidebar-foot button{width:100%;height:auto;margin:0;padding:9px;justify-content:flex-start}.app-sidebar__collapse-button{display:none}}
-.collapsed .app-sidebar>.app-sidebar__header>.app-sidebar__brand-text:nth-child(2),.collapsed .app-sidebar nav .navigation-item__label,.collapsed .app-sidebar .user-mini>.sidebar-user-details,.collapsed .app-sidebar .sidebar-foot button>.sidebar-action-label{display:block;width:0;max-width:0;opacity:0;visibility:hidden;overflow:hidden;transform:translateX(-8px);pointer-events:none}
+@media(max-width:780px){.app-sidebar,.app-sidebar--collapsed{width:min(300px,86vw);min-width:0}.app-sidebar__header,.app-sidebar--collapsed .app-sidebar__header{display:flex;justify-content:flex-start;padding:14px 16px}.app-sidebar--collapsed .app-sidebar__brand-text,.app-sidebar--collapsed .navigation-item__label,.app-sidebar--collapsed .sidebar-user-details,.app-sidebar--collapsed .sidebar-action-label{width:auto;max-width:none;opacity:1;visibility:visible;overflow:visible;transform:none;pointer-events:auto}.app-sidebar--collapsed nav a{width:auto;min-width:0;height:42px;min-height:42px;margin:2px 0;padding:0 12px;justify-content:flex-start;border-radius:8px}.app-sidebar--collapsed .nav-count{display:block}.app-sidebar--collapsed .user-mini,.app-sidebar--collapsed .sidebar-foot>.sidebar-profile{width:100%;height:auto;margin:0;padding:9px;justify-content:flex-start}.app-sidebar__collapse-button{display:none}}
+.collapsed .app-sidebar>.app-sidebar__header>.app-sidebar__brand-text:nth-child(2),.collapsed .app-sidebar nav .navigation-item__label,.collapsed .app-sidebar .user-mini>.sidebar-user-details,.collapsed .app-sidebar .sidebar-foot>.sidebar-profile>.sidebar-action-label{display:block;width:0;max-width:0;opacity:0;visibility:hidden;overflow:hidden;transform:translateX(-8px);pointer-events:none}
 .collapsed .app-sidebar nav>.sidebar-route{display:contents}
-@media(max-width:780px){.collapsed .app-sidebar>.app-sidebar__header>.app-sidebar__brand-text:nth-child(2),.collapsed .app-sidebar nav .navigation-item__label,.collapsed .app-sidebar .user-mini>.sidebar-user-details,.collapsed .app-sidebar .sidebar-foot button>.sidebar-action-label{display:block;width:auto;max-width:none;opacity:1;visibility:visible;overflow:visible;transform:none;pointer-events:auto}}
+@media(max-width:780px){.collapsed .app-sidebar>.app-sidebar__header>.app-sidebar__brand-text:nth-child(2),.collapsed .app-sidebar nav .navigation-item__label,.collapsed .app-sidebar .user-mini>.sidebar-user-details,.collapsed .app-sidebar .sidebar-foot>.sidebar-profile>.sidebar-action-label{display:block;width:auto;max-width:none;opacity:1;visibility:visible;overflow:visible;transform:none;pointer-events:auto}}
 
 /* Give the sidebar brand copy a little more breathing room from the logo. */
 .app-sidebar__brand-text{margin-left:4px}
@@ -181,10 +181,10 @@ html[data-theme="kcs-azure-intelligence"]{--global-search-surface:#fff;--global-
 .app-sidebar--collapsed .nav-count,.app-sidebar--collapsed .sidebar-section-label{display:none!important}
   .app-sidebar--collapsed .sidebar-foot{padding-inline:0}
   .app-sidebar--collapsed .sidebar-foot .sidebar-download{width:100%;display:flex;justify-content:center}
-  .app-sidebar--collapsed .sidebar-foot button{position:relative;display:flex;align-items:center;justify-content:center;width:48px;min-width:48px;max-width:48px;height:48px;min-height:48px;max-height:48px;margin:2px auto;padding:0;gap:0;box-sizing:border-box;transform:none}
-  .app-sidebar--collapsed .sidebar-foot button:is(:hover,:focus-visible,:active){transform:none}
+  .app-sidebar--collapsed .sidebar-foot>.sidebar-profile{position:relative;display:flex;align-items:center;justify-content:center;width:48px;min-width:48px;max-width:48px;height:48px;min-height:48px;max-height:48px;margin:2px auto;padding:0;gap:0;box-sizing:border-box;transform:none}
+  .app-sidebar--collapsed .sidebar-foot>.sidebar-profile:is(:hover,:focus-visible,:active){transform:none}
   .collapsed .app-sidebar .sidebar-foot .sidebar-download__icon{display:inline-flex;align-items:center;justify-content:center;width:24px;min-width:24px;max-width:24px;height:24px;min-height:24px;max-height:24px;margin:0;padding:0;opacity:1;visibility:visible;overflow:visible;transform:none;pointer-events:auto}
-  .app-sidebar--collapsed .sidebar-foot button>svg,.app-sidebar--collapsed .sidebar-foot .sidebar-download__icon>svg{position:static;display:block;width:22px;height:22px;margin:0;padding:0;flex:none;transform:none}
+  .app-sidebar--collapsed .sidebar-foot>.sidebar-profile>svg,.app-sidebar--collapsed .sidebar-foot .sidebar-download__icon>svg{position:static;display:block;width:22px;height:22px;margin:0;padding:0;flex:none;transform:none}
   .app-sidebar--collapsed .sidebar-foot .sidebar-action-label{display:none!important}
 }
 
@@ -486,10 +486,26 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
 /* Account menu floats above the frozen footer, not inside it. */
 .app-sidebar .sidebar-foot .profile-menu {
   position: absolute;
+  top: auto;
   left: 12px;
   right: 12px;
   bottom: calc(100% + 8px);
   z-index: 60;
+}
+.app-sidebar .sidebar-foot > .account-sheet-scrim {
+  display: none;
+}
+@media (min-width: 781px) {
+  .app-sidebar--collapsed:has(.profile-menu) {
+    overflow: visible;
+  }
+  .app-sidebar--collapsed .sidebar-foot .profile-menu {
+    top: auto;
+    right: auto;
+    bottom: 0;
+    left: calc(100% + 8px);
+    width: min(320px, calc(100vw - 100px));
+  }
 }
 
 
