@@ -37,6 +37,7 @@ export interface DataTableProps<T> {
   hideExport?: boolean;
   query?: string;
   onQueryChange?: (query: string) => void;
+  mobileExtraColumnIds?: string[];
 }
 
 const quote = (value: string) => `"${value.replaceAll('"', '""')}"`;
@@ -62,6 +63,7 @@ export function DataTable<T>({
   hideExport = false,
   query: externalQuery,
   onQueryChange,
+  mobileExtraColumnIds = [],
 }: DataTableProps<T>) {
   const { language, formatDate, formatDateTime } = useApp();
   const nl = language === "nl";
@@ -175,17 +177,18 @@ export function DataTable<T>({
   const visibleColumns = columns.filter((column) =>
     visible.includes(column.id),
   );
-  const mobileColumns =
+  const primaryMobileColumns =
     id === "locations"
       ? visibleColumns.filter((column) => column.id !== "actions")
-      : [
-          ...visibleColumns.slice(0, 5),
-          ...visibleColumns.filter(
-            (column) =>
-              column.id === "status" &&
-              !visibleColumns.slice(0, 5).includes(column),
-          ),
-        ];
+      : visibleColumns.slice(0, 5);
+  const mobileColumns = [
+    ...primaryMobileColumns,
+    ...visibleColumns.filter(
+      (column) =>
+        (column.id === "status" || mobileExtraColumnIds.includes(column.id)) &&
+        !primaryMobileColumns.includes(column),
+    ),
+  ];
   const renderCell = (column: DataColumn<T>, row: T) =>
     toDisplay(column.id, column.render(row));
   useEffect(() => {

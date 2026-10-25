@@ -2872,6 +2872,38 @@ html .system-information {
     color: var(--color-text-muted);
     margin-bottom: 3px;
   }
+  .data-table-departments .mobile-records article > div:has(.department-overview-trigger) {
+    grid-column: 1 / -1;
+    margin-top: 3px;
+    padding-top: 11px;
+    border-top: 1px solid var(--color-border-subtle);
+  }
+  .data-table-departments .mobile-records article > div:has(.department-overview-trigger) > small {
+    display: none;
+  }
+  .data-table-departments .department-overview-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 34%, var(--color-border));
+    border-radius: var(--radius-sm);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+  }
+  .data-table-departments .department-overview-trigger:hover {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface-elevated));
+  }
+  .data-table-departments .department-overview-trigger:focus-visible {
+    outline: 3px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
   .table-actions {
     width: 100%;
     margin: 0;

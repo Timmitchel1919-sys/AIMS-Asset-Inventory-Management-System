@@ -41,4 +41,36 @@ describe("DataTable", () => {
       "Zulu",
     ]);
   });
+
+  it("keeps explicitly requested actions available in mobile cards", () => {
+    const mobileColumns: DataColumn<Row>[] = [
+      ...["name", "manager", "assets", "location", "status"].map((id) => ({
+        id,
+        label: id,
+        render: (row: Row) => row.name,
+      })),
+      {
+        id: "overview",
+        label: "",
+        render: () => <button type="button">Overview</button>,
+      },
+    ];
+
+    const { container } = render(
+      <DataTable
+        id="departments"
+        rows={[{ id: "1", name: "Finance" }]}
+        columns={mobileColumns}
+        rowKey={(row) => row.id}
+        searchPlaceholder="Search"
+        emptyTitle="Empty"
+        emptyDescription="No records"
+        mobileExtraColumnIds={["overview"]}
+      />,
+    );
+
+    expect(
+      container.querySelector(".mobile-records button"),
+    ).toHaveTextContent("Overview");
+  });
 });

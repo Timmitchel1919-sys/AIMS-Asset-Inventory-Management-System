@@ -1026,6 +1026,7 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
               nl ? "Voeg het eerste record toe." : "Add the first record."
             }
             onRowClick={edit}
+            mobileExtraColumnIds={kind === "department" ? ["overview"] : undefined}
             filters={
               kind === "location" ? (
                 <div className="location-filters">
