@@ -604,6 +604,21 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','photoURL','department','jobTitle','preferences','authProvider','emailVerified','updatedAt','lastLoginAt'])
         && request.resource.data.updatedAt == request.time;
       allow delete: if false;
+
+      // Per-user Security activity log. Clients write their own events
+      // (sign-in, sign-out, password change, MFA toggles). Events are
+      // append-only; nothing else may read or modify them.
+      match /authEvents/{eventId} {
+        allow read: if isOwnUser(uid);
+        allow create: if request.auth != null && request.auth.uid == uid
+          && request.resource.data.at == request.time
+          && request.resource.data.type in [
+            'loggedIn','loggedOut','loginFailed',
+            'passwordChanged','mfaEnabled','mfaDisabled',
+            'newDevice','sessionTerminated'
+          ];
+        allow update, delete: if false;
+      }
     }
 
     match /accessAssignments/{uid} {

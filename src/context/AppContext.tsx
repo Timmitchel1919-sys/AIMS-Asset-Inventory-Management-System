@@ -50,6 +50,7 @@ import {
   formatPreferredDateTime,
   formatPreferredTime,
 } from "../domain/dateTimePreferences";
+import { logAuthEvent } from "../services/authEvents";
 
 const demoUsers: Record<Role, User> = {
   owner: {
@@ -411,7 +412,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const role = (
             identity.includes("@") ? "ict-staff" : identity
           ) as Role;
-          setUser(demoUsers[role] || demoUsers["ict-staff"]);
+          const demoUser = demoUsers[role] || demoUsers["ict-staff"];
+          setUser(demoUser);
           setPreferences((current) => ({
             ...current,
             fontFamily: DEFAULT_FONT_FAMILY,
@@ -420,19 +422,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
           localStorage.setItem("kcs-auth", "in");
           localStorage.setItem("kcs-role", role);
           setEmailVerified(true);
+          void logAuthEvent(demoUser.id, "loggedIn");
           return;
         }
         if (DEMO_AUTH_MODE) {
           const credential = await firebaseDemoLogin();
           await mapFirebaseUser(credential.user);
+          void logAuthEvent(credential.user?.uid ?? null, "loggedIn");
           return;
         }
         await firebaseLogin(identity, password, remember);
+        void logAuthEvent(
+          firebaseAuth?.currentUser?.uid ?? null,
+          "loggedIn",
+        );
       },
       logout: async () => {
         setAccessDenied(false);
         setSessionExpired(false);
         explicitLogout.current = true;
+        const uidBeforeLogout =
+          firebaseAuth?.currentUser?.uid ?? user?.id ?? null;
+        void logAuthEvent(uidBeforeLogout, "loggedOut");
         setUser(null);
         setEmailVerified(false);
         setPreferences((current) => ({
@@ -444,10 +455,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           localStorage.setItem("kcs-auth", "out");
           return;
         }
-        // Mark presence offline while still authenticated — the security
-        // rule is owner-write-only, so this must happen before sign-out.
-        const uid = firebaseAuth?.currentUser?.uid;
-        if (uid) await markPresenceOffline(uid);
+        if (uidBeforeLogout) await markPresenceOffline(uidBeforeLogout);
         await firebaseLogout();
       },
       refreshUser: async () => {

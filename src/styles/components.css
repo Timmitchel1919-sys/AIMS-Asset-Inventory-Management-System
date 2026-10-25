@@ -4456,3 +4456,92 @@ th[data-column-id="subLocations"] button,
 th[data-column-id="assets"] button {
   justify-content: center;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Security page — Active Sessions + Login Activity                  */
+/* ------------------------------------------------------------------ */
+.account-session-list,
+.account-activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.account-session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border, rgba(0,0,0,0.08));
+  border-radius: 10px;
+  background: var(--color-surface, transparent);
+}
+.account-session-item.current {
+  border-color: var(--color-primary, #22D3EE);
+}
+.account-session-item__meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.account-session-item__meta strong {
+  font-size: var(--text-sm);
+}
+.account-session-item__meta small {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+.account-session-item__chip {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-surface-hover, rgba(0,0,0,0.05));
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.account-session-actions {
+  margin-top: 10px;
+}
+.account-session-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 10px;
+}
+.account-session-note svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  margin-top: 2px;
+}
+.account-activity-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "title time" "device device";
+  gap: 2px 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border-subtle, rgba(0,0,0,0.06));
+  border-radius: 10px;
+}
+.account-activity-item strong {
+  grid-area: title;
+  font-size: var(--text-sm);
+}
+.account-activity-item small:first-of-type {
+  grid-area: time;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  text-align: right;
+}
+.account-activity-item small:last-of-type {
+  grid-area: device;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+

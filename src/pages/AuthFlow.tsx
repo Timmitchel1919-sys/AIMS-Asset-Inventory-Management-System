@@ -18,6 +18,8 @@ import {
   resendVerification,
 } from "../auth/firebaseAuth";
 import { useApp } from "../context/AppContext";
+import { logAuthEvent } from "../services/authEvents";
+import { ActiveSessionsCard, LoginActivityCard } from "../components/account/SecurityActivity";
 import { firebaseConfigured } from "../lib/firebase";
 import {
   KCS_ICT_SUPPORT_EMAIL,
@@ -163,6 +165,7 @@ export function SecurityPage() {
       await changePassword(current, password);
       event.currentTarget.reset();
       setMessage(nl ? "Wachtwoord succesvol gewijzigd." : "Password changed successfully.");
+      void logAuthEvent(app.user?.id ?? null, "passwordChanged");
     } catch (reason) {
       setError(authErrorMessage(reason));
     } finally {
@@ -258,6 +261,8 @@ export function SecurityPage() {
             </p>
           </Card>
         )}
+        <ActiveSessionsCard />
+        <LoginActivityCard />
       </div>
     </div>
   );
