@@ -636,11 +636,106 @@ export async function updateSelfProfile(values: {
     updatedAt: serverTimestamp(),
   });
 }
+const ALLOWED_THEME_IDS = new Set([
+  "aimsAzureGlass",
+  "dark",
+  "aimsMidnight",
+  "aimsEmeraldGloss",
+  "aimsLight",
+  "aimsTurquoiseGlass",
+]);
+const ALLOWED_LANGUAGES = new Set(["en", "nl"]);
+const ALLOWED_DATE_FORMATS = new Set(["DD-MM-YYYY", "MM-DD-YYYY", "YYYY-MM-DD"]);
+const ALLOWED_TIME_FORMATS = new Set(["24-hour", "12-hour"]);
+const ALLOWED_FIRST_DAYS = new Set(["monday", "sunday"]);
+const ALLOWED_FONT_FAMILIES = new Set([
+  "Inter",
+  "IBM Plex Mono",
+  "Montserrat",
+  "Source Sans 3",
+  "Roboto",
+  "Open Sans",
+]);
+
+/**
+ * Strip the UI preferences payload down to the keys the Firestore
+ * `validPreferences` rule accepts, drop null/undefined values and
+ * clamp any enum-typed field whose value is out of range. This stops
+ * a stale legacy key or an undefined field (which can land in state
+ * via merge from an older profile) from being rejected server-side.
+ */
+export function sanitizePreferencesForWrite(
+  preferences: UserPreferences,
+): UserPreferences {
+  const output: UserPreferences = {};
+  if (preferences.theme && ALLOWED_THEME_IDS.has(preferences.theme)) {
+    output.theme = preferences.theme;
+  }
+  if (preferences.language && ALLOWED_LANGUAGES.has(preferences.language)) {
+    output.language = preferences.language;
+  }
+  if (
+    preferences.dateFormat &&
+    ALLOWED_DATE_FORMATS.has(preferences.dateFormat)
+  ) {
+    output.dateFormat = preferences.dateFormat;
+  }
+  if (
+    preferences.timeFormat &&
+    ALLOWED_TIME_FORMATS.has(preferences.timeFormat)
+  ) {
+    output.timeFormat = preferences.timeFormat;
+  }
+  if (
+    typeof preferences.timezone === "string" &&
+    preferences.timezone.length > 0 &&
+    preferences.timezone.length <= 60
+  ) {
+    output.timezone = preferences.timezone;
+  }
+  if (
+    preferences.firstDayOfWeek &&
+    ALLOWED_FIRST_DAYS.has(preferences.firstDayOfWeek)
+  ) {
+    output.firstDayOfWeek = preferences.firstDayOfWeek;
+  }
+  if (
+    preferences.notifications &&
+    typeof preferences.notifications === "object"
+  ) {
+    const notifications: Record<string, boolean> = {};
+    let count = 0;
+    for (const [key, value] of Object.entries(preferences.notifications)) {
+      if (count >= 20) break;
+      if (typeof value === "boolean") {
+        notifications[key] = value;
+        count += 1;
+      }
+    }
+    if (count > 0) output.notifications = notifications;
+  }
+  if (
+    preferences.fontFamily &&
+    ALLOWED_FONT_FAMILIES.has(preferences.fontFamily)
+  ) {
+    output.fontFamily = preferences.fontFamily;
+  }
+  if (
+    typeof preferences.fontSize === "number" &&
+    Number.isInteger(preferences.fontSize) &&
+    preferences.fontSize >= 12 &&
+    preferences.fontSize <= 16
+  ) {
+    output.fontSize = preferences.fontSize;
+  }
+  return output;
+}
+
 export async function savePreferences(preferences: UserPreferences) {
   const { auth, db } = requireFirebase();
   if (!auth.currentUser) throw new Error("Sign in to save preferences.");
   await updateDoc(doc(db, "users", auth.currentUser.uid), {
-    preferences,
+    preferences: sanitizePreferencesForWrite(preferences),
     updatedAt: serverTimestamp(),
   });
 }

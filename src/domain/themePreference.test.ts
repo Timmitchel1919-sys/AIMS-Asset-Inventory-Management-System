@@ -18,9 +18,32 @@ describe("theme preference persistence", () => {
     expect(persist).toHaveBeenCalledWith("aimsTurquoiseGlass");
   });
 
-  it("restores the previous theme when persistence fails", async () => {
+  it("restores the previous theme when a non-permission error occurs", async () => {
     const apply = vi.fn();
-    const denied = new Error("permission-denied");
+    const failure = new Error("network");
+
+    await expect(
+      persistThemePreference({
+        current: "dark",
+        next: "aimsTurquoiseGlass",
+        apply,
+        persist: vi.fn(async () => {
+          throw failure;
+        }),
+      }),
+    ).rejects.toBe(failure);
+
+    expect(apply.mock.calls).toEqual([
+      ["aimsTurquoiseGlass"],
+      ["dark"],
+    ]);
+  });
+
+  it("keeps the selected theme on a permission-denied error", async () => {
+    const apply = vi.fn();
+    const denied = Object.assign(new Error("permission-denied"), {
+      code: "permission-denied",
+    });
 
     await expect(
       persistThemePreference({
@@ -33,10 +56,8 @@ describe("theme preference persistence", () => {
       }),
     ).rejects.toBe(denied);
 
-    expect(apply.mock.calls).toEqual([
-      ["aimsTurquoiseGlass"],
-      ["dark"],
-    ]);
+    // Only the optimistic apply(next) ran — no revert to the previous theme.
+    expect(apply.mock.calls).toEqual([["aimsTurquoiseGlass"]]);
   });
 
   it("does not write when the selected theme is already active", async () => {
