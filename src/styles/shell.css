@@ -424,7 +424,7 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
 }
 .app-sidebar .sidebar-profile {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   width: 100%;
   padding: 8px 10px;
@@ -452,6 +452,7 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
   font-size: var(--text-sm);
   flex: 0 0 34px;
   object-fit: cover;
+  margin-top: 2px;
 }
 .app-sidebar .sidebar-profile .sidebar-action-label {
   display: flex;
@@ -467,13 +468,47 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
   text-overflow: ellipsis;
   max-width: 170px;
 }
+.app-sidebar .sidebar-profile .sidebar-profile__role {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-sidebar-text, var(--color-text-primary));
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
 .app-sidebar .sidebar-profile .sidebar-action-label small {
   color: var(--color-text-muted);
   font-size: var(--text-xs);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
   max-width: 170px;
+}
+.app-sidebar .sidebar-profile .sidebar-profile__verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-weight: 700;
+}
+.app-sidebar .sidebar-profile .sidebar-profile__verified svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.app-sidebar .sidebar-profile .sidebar-profile__verified.verified {
+  color: #34d399;
+}
+.app-sidebar .sidebar-profile .sidebar-profile__verified.unverified {
+  color: #f59e0b;
+}
+.app-sidebar .sidebar-profile .sidebar-profile__position {
+  margin-top: 5px;
 }
 .app-sidebar--collapsed .sidebar-foot .sidebar-profile {
   justify-content: center;
@@ -597,5 +632,140 @@ html[data-theme="dark"] .profile-menu header .account-menu-verified.verified {
 }
 html[data-theme="dark"] .profile-menu header .account-menu-verified.unverified {
   color: #F5B86B;
+}
+
+
+/* ------------------------------------------------------------------ */
+/*  Profile menu — desktop scrim with blur + light-blue hover state   */
+/* ------------------------------------------------------------------ */
+
+/* Desktop: show the scrim at all breakpoints so the rest of the app
+   visibly dims while the profile panel is open. Mobile keeps its
+   stronger overlay from the existing rules below. */
+.app-sidebar .sidebar-foot .account-sheet-scrim {
+  display: block !important;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: rgba(10, 15, 25, 0.35) !important;
+  backdrop-filter: blur(4px) saturate(0.98);
+  -webkit-backdrop-filter: blur(4px) saturate(0.98);
+  z-index: 59;
+  cursor: pointer;
+}
+.app-sidebar .sidebar-foot .profile-menu {
+  z-index: 61;
+}
+
+/* Hover and keyboard focus now light blue + white text, matching the
+   active-module treatment on the sidebar. Override the earlier
+   surface-hover rule that produced the pale wash. */
+.profile-menu .account-menu-links button:hover,
+.profile-menu .account-menu-links button:focus-visible,
+.profile-menu header + div > button:hover,
+.profile-menu header + div > button:focus-visible {
+  background: #2563EB !important;
+  color: #FFFFFF !important;
+  outline: none;
+}
+.profile-menu .account-menu-links button:hover svg,
+.profile-menu .account-menu-links button:focus-visible svg {
+  color: #FFFFFF;
+}
+html[data-theme="dark"] .profile-menu .account-menu-links button:hover,
+html[data-theme="dark"] .profile-menu .account-menu-links button:focus-visible {
+  background: #22D3EE !important;
+  color: #06151A !important;
+}
+html[data-theme="dark"] .profile-menu .account-menu-links button:hover svg,
+html[data-theme="dark"] .profile-menu .account-menu-links button:focus-visible svg {
+  color: #06151A;
+}
+
+/* Sidebar profile button — shift slightly left (less padding) and
+   stack centered when the sidebar is collapsed. */
+.app-sidebar .sidebar-foot .sidebar-profile {
+  padding-left: 6px;
+  padding-right: 10px;
+}
+.app-sidebar--collapsed .sidebar-foot {
+  padding-left: 0;
+  padding-right: 0;
+}
+.app-sidebar--collapsed .sidebar-foot .sidebar-profile {
+  justify-content: center;
+  padding: 6px 0;
+  width: 48px;
+  margin: 0 auto;
+}
+.app-sidebar--collapsed .sidebar-foot .sidebar-profile .avatar {
+  margin: 0;
+}
+
+
+/* ------------------------------------------------------------------ */
+/*  Universal sub-panel / modal backdrop — dim + blur                 */
+/* ------------------------------------------------------------------ */
+
+/* Any modal/dialog/drawer backdrop across themes gets a dim + blur so
+   the panel underneath visibly falls back and the active sheet owns
+   the focus. */
+.modal-backdrop,
+.dialog-backdrop,
+.drawer-backdrop,
+[data-overlay],
+.scrim,
+dialog::backdrop,
+.aims-sheet-scrim {
+  background: rgba(10, 15, 25, 0.42) !important;
+  backdrop-filter: blur(6px) saturate(0.95);
+  -webkit-backdrop-filter: blur(6px) saturate(0.95);
+}
+html[data-theme="aims-light"] .modal-backdrop,
+html[data-theme="aims-light"] .dialog-backdrop,
+html[data-theme="aims-light"] .drawer-backdrop,
+html[data-theme="aims-light"] [data-overlay],
+html[data-theme="aims-light"] .scrim,
+html[data-theme="aims-light"] dialog::backdrop,
+html[data-theme="aims-light"] .aims-sheet-scrim {
+  background: rgba(248, 250, 252, 0.55) !important;
+  backdrop-filter: blur(6px) saturate(0.95);
+}
+
+/* Reduce blur if the OS asks for reduced transparency, keep the dim. */
+@media (prefers-reduced-transparency: reduce) {
+  .modal-backdrop,
+  .dialog-backdrop,
+  .drawer-backdrop,
+  [data-overlay],
+  .scrim,
+  dialog::backdrop,
+  .aims-sheet-scrim {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Dark theme — Departments Overview button: text-only                */
+/* ------------------------------------------------------------------ */
+html[data-theme="dark"] .dept-overview-trigger,
+html[data-theme="dark"] button.dept-overview-trigger,
+html[data-theme="dark"] [data-overview-trigger],
+html[data-theme="dark"] button[aria-label*="verview"] {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: var(--midnight-accent, #22D3EE);
+}
+html[data-theme="dark"] .dept-overview-trigger:hover,
+html[data-theme="dark"] button[aria-label*="verview"]:hover {
+  color: #67E8F9;
+  background: transparent !important;
 }
 

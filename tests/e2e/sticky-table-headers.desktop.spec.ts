@@ -104,3 +104,25 @@ test("Main location header never wraps", async ({ page }) => {
   await expect(mainLocation).toBeVisible();
   await expect(mainLocation).toHaveCSS("white-space", "nowrap");
 });
+
+test("ICT Assets selection boxes align and data columns share equal width", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/assets");
+
+  const table = page.locator('[data-testid="table-assets"] table');
+  const headerCheckbox = table.locator('thead input[type="checkbox"]');
+  const rowCheckbox = table.locator('tbody input[type="checkbox"]').first();
+  const [headerBox, rowBox] = await Promise.all([
+    headerCheckbox.boundingBox(),
+    rowCheckbox.boundingBox(),
+  ]);
+  expect(headerBox).not.toBeNull();
+  expect(rowBox).not.toBeNull();
+  expect(headerBox?.x).toBeCloseTo(rowBox?.x ?? 0, 0);
+
+  const widths = await table.locator("thead th[data-column-id]").evaluateAll((cells) =>
+    cells.map((cell) => cell.getBoundingClientRect().width),
+  );
+  expect(widths.length).toBeGreaterThan(1);
+  expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1);
+});

@@ -57,14 +57,20 @@
   --radius-sm: .5rem; --radius-md: .75rem; --radius-lg: 1rem; --radius-xl: 1.25rem;
   --shadow-sm: 0 1px 2px rgba(16,46,32,.05); --shadow-md: 0 8px 24px rgba(1,91,43,.07); --shadow-lg: 0 18px 48px rgba(1,55,30,.12);
   --duration-fast: 140ms; --duration-normal: 220ms;
-  --asset-status-available-bg:#CCFBF1; --asset-status-available-text:#0F766E; --asset-status-available-border:#5EEAD4; --asset-status-available-solid:#0D9488;
-  --asset-status-assigned-bg:#EDE9FE; --asset-status-assigned-text:#5B21B6; --asset-status-assigned-border:#C4B5FD; --asset-status-assigned-solid:#7C3AED;
-  --asset-status-borrowed-bg:#FEF9C3; --asset-status-borrowed-text:#854D0E; --asset-status-borrowed-border:#FDE047; --asset-status-borrowed-solid:#EAB308;
-  --asset-status-reserved-bg:#DBEAFE; --asset-status-reserved-text:#1E40AF; --asset-status-reserved-border:#93C5FD; --asset-status-reserved-solid:#2563EB;
-  --asset-status-under-maintenance-bg:#FEF3C7; --asset-status-under-maintenance-text:#92400E; --asset-status-under-maintenance-border:#FCD34D; --asset-status-under-maintenance-solid:#D97706;
-  --asset-status-under-repair-bg:#FCE7F3; --asset-status-under-repair-text:#9D174D; --asset-status-under-repair-border:#EC4899; --asset-status-under-repair-solid:#DB2777;
-  --asset-status-damaged-bg:#FEE2E2; --asset-status-damaged-text:#991B1B; --asset-status-damaged-border:#FCA5A5; --asset-status-damaged-solid:#B91C1C;
-  --asset-status-archived-bg:#F1F5F9; --asset-status-archived-text:#334155; --asset-status-archived-border:#94A3B8; --asset-status-archived-solid:#64748B;
+  /* Status palette — spec-fixed: available neon green, assigned bright
+     purple, borrowed bright yellow, reserved cyan, under-maintenance
+     bright turquoise, under-repair magenta, damaged bright red,
+     archived bright white (light theme uses an off-white chip so the
+     pill is still visible on white backgrounds; dark theme flips the
+     background to a dim tint so pure white text pops). */
+  --asset-status-available-bg:rgba(34, 255, 140, .14); --asset-status-available-text:#059F4A; --asset-status-available-border:rgba(34, 255, 140, .35); --asset-status-available-solid:#22FF8C;
+  --asset-status-assigned-bg:rgba(168, 85, 247, .14); --asset-status-assigned-text:#7C3AED; --asset-status-assigned-border:rgba(168, 85, 247, .35); --asset-status-assigned-solid:#A855F7;
+  --asset-status-borrowed-bg:rgba(250, 204, 21, .18); --asset-status-borrowed-text:#A16207; --asset-status-borrowed-border:rgba(250, 204, 21, .4); --asset-status-borrowed-solid:#FACC15;
+  --asset-status-reserved-bg:rgba(34, 211, 238, .14); --asset-status-reserved-text:#0E7490; --asset-status-reserved-border:rgba(34, 211, 238, .35); --asset-status-reserved-solid:#22D3EE;
+  --asset-status-under-maintenance-bg:rgba(45, 212, 191, .14); --asset-status-under-maintenance-text:#0F766E; --asset-status-under-maintenance-border:rgba(45, 212, 191, .35); --asset-status-under-maintenance-solid:#2DD4BF;
+  --asset-status-under-repair-bg:rgba(217, 70, 239, .14); --asset-status-under-repair-text:#A21CAF; --asset-status-under-repair-border:rgba(217, 70, 239, .35); --asset-status-under-repair-solid:#D946EF;
+  --asset-status-damaged-bg:rgba(239, 68, 68, .14); --asset-status-damaged-text:#B91C1C; --asset-status-damaged-border:rgba(239, 68, 68, .35); --asset-status-damaged-solid:#EF4444;
+  --asset-status-archived-bg:rgba(226, 232, 240, .6); --asset-status-archived-text:#334155; --asset-status-archived-border:rgba(148, 163, 184, .5); --asset-status-archived-solid:#CBD5E1;
   --asset-condition-good:#22C55E; --asset-condition-good-bg:rgba(34,197,94,.10); --asset-condition-good-text:#166534;
   --asset-condition-fair:#F97316; --asset-condition-fair-bg:rgba(249,115,22,.10); --asset-condition-fair-text:#9A3412;
   --asset-condition-poor:#DC2626; --asset-condition-poor-bg:rgba(220,38,38,.10); --asset-condition-poor-text:#991B1B;

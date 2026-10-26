@@ -329,6 +329,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const unreadNotificationCount = snapshot.notifications.filter(
     (notification) => !notification.read && !notification.dismissed,
   ).length;
+  const accountRoleLabel =
+    app.user.role === "owner"
+      ? "Administrator"
+      : app.user.role
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
   function askAssistant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = assistantQuery.trim();
@@ -546,6 +553,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
             <span className="sidebar-action-label">
               <strong>{app.user.name}</strong>
+              {app.user.role && (
+                <span className="sidebar-profile__role">{accountRoleLabel}</span>
+              )}
               <small>
                 {app.user.isDemoUser
                   ? app.language === "nl"
@@ -553,6 +563,27 @@ export function AppShell({ children }: { children: ReactNode }) {
                     : "Demo session"
                   : app.user.email}
               </small>
+              <small
+                className={`sidebar-profile__verified${
+                  app.emailVerified ? " verified" : " unverified"
+                }`}
+              >
+                <BadgeCheck aria-hidden="true" />
+                {app.emailVerified
+                  ? app.language === "nl"
+                    ? "Geverifieerd"
+                    : "Verified"
+                  : app.language === "nl"
+                    ? "Niet geverifieerd"
+                    : "Not verified"}
+              </small>
+              {(app.user.jobTitle || app.user.department) && (
+                <small className="sidebar-profile__position">
+                  {[app.user.jobTitle, app.user.department]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </small>
+              )}
             </span>
           </button>
           {profileOpen && (
@@ -568,57 +599,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               />
               <div id="account-menu" className="profile-menu" role="menu">
                 <span className="account-sheet-handle" aria-hidden="true" />
-                <header>
-                  <span className="account-menu-avatar">
-                    {app.user.profilePhoto ? (
-                      <img src={app.user.profilePhoto} alt="" />
-                    ) : (
-                      app.user.initials
-                    )}
-                  </span>
-                  <div>
-                    <strong>{app.user.name}</strong>
-                    {app.user.role && (
-                      <small className="account-menu-role">
-                        {app.user.role
-                          .split("-")
-                          .map(
-                            (word) =>
-                              word.charAt(0).toUpperCase() + word.slice(1),
-                          )
-                          .join(" ")}
-                      </small>
-                    )}
-                    <small>
-                      {app.user.isDemoUser
-                        ? app.language === "nl"
-                          ? "Demosessie"
-                          : "Demo session"
-                        : app.user.email}
-                    </small>
-                    <small
-                      className={`account-menu-verified${
-                        app.emailVerified ? " verified" : " unverified"
-                      }`}
-                    >
-                      <BadgeCheck aria-hidden="true" />
-                      {app.emailVerified
-                        ? app.language === "nl"
-                          ? "Geverifieerd"
-                          : "Verified"
-                        : app.language === "nl"
-                          ? "Niet geverifieerd"
-                          : "Not verified"}
-                    </small>
-                    {(app.user.jobTitle || app.user.department) && (
-                      <small>
-                        {[app.user.jobTitle, app.user.department]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </small>
-                    )}
-                  </div>
-                </header>
                 <div className="account-menu-links">
                   <button
                     role="menuitem"

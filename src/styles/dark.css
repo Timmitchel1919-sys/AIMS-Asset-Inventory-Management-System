@@ -100,16 +100,24 @@ html[data-theme="dark"] .topbar {
   border: none;
 }
 
-/* Sidebar navigation active state */
-html[data-theme="dark"] .app-sidebar nav .navigation-item:is(:hover,:focus-visible,.active,[aria-current="page"]) {
-  background: var(--color-sidebar-active-bg);
-  border: 1px solid #2949c8;
+/* Sidebar navigation active state — rail only (via midnight-phase3b);
+   no light-blue fill, outline or glow on the module button. */
+html[data-theme="dark"] .app-sidebar nav .navigation-item:is(:hover,:focus-visible) {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
   color: var(--color-sidebar-active-text);
   border-radius: 0.5rem;
-  box-shadow: 0 0 16px rgba(41,73,200,0.35);
+  box-shadow: none;
 }
-html[data-theme="dark"] .app-sidebar nav .navigation-item:is(:hover,:focus-visible,.active,[aria-current="page"]) .navigation-item__icon { 
-  color: var(--color-sidebar-active-text); 
+html[data-theme="dark"] .app-sidebar nav .navigation-item:is(.active,[aria-current="page"]) {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #e5e1e5;
+  border-radius: 0.5rem;
+  box-shadow: none;
+}
+html[data-theme="dark"] .app-sidebar nav .navigation-item:is(:hover,:focus-visible,.active,[aria-current="page"]) .navigation-item__icon {
+  color: var(--color-sidebar-active-text);
 }
 html[data-theme="dark"] .app-sidebar__active-notch { display: none; }
 
@@ -345,25 +353,25 @@ html[data-theme="dark"] .department-overview-trigger:hover {
 }
 html[data-theme="dark"] .department-overview-trigger svg { color: #ffffff; }
 
-/* Pure black surface for the module container that holds search,
-   counts, and the record cards. Covers both the shared .data-card
-   wrapper and the mobile card list that sits inside it. */
+/* Soft grey surface for module containers that hold search, counts and
+   record cards — matches the input/search bar tone so the panel reads
+   as one lifted surface against the app background. */
 html[data-theme="dark"] .data-page .data-card,
 html[data-theme="dark"] .data-card {
-  background: #000 !important;
+  background: #171f2f !important;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0.9rem;
 }
 html[data-theme="dark"] .data-page .data-toolbar,
 html[data-theme="dark"] .data-card .data-toolbar {
-  background: #000 !important;
+  background: #171f2f !important;
   border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 html[data-theme="dark"] .mobile-records {
-  background: #000;
+  background: #171f2f;
 }
 html[data-theme="dark"] .mobile-records article {
-  background: #0b0b0d;
+  background: #1d293b;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
 }

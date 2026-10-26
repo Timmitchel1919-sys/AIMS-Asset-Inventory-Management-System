@@ -323,8 +323,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }));
         if (profile.preferences.theme) {
           const next = normalizeTheme(profile.preferences.theme as ThemeId);
-          setThemeState(next);
-          persistAuthenticatedTheme(next);
+          // Prefer the user's local choice when Firestore's snapshot is
+          // stale (writes propagate asynchronously; a repeated
+          // mapFirebaseUser from onAuthStateChanged or token refresh
+          // would otherwise snap the UI back to the previous theme).
+          let localValid: ThemeId | null = null;
+          try {
+            const raw = localStorage.getItem("authenticatedThemePreference");
+            if (raw) {
+              const normalizedLocal = normalizeTheme(raw as ThemeId);
+              if (normalizedLocal) localValid = normalizedLocal;
+            }
+          } catch {
+            // ignore and fall through to firestore value
+          }
+          if (!localValid || localValid === next) {
+            setThemeState(next);
+            persistAuthenticatedTheme(next);
+          }
         }
         if (profile.preferences.language) {
           setLanguageState(profile.preferences.language);

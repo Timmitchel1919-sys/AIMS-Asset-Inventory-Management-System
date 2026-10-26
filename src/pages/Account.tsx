@@ -24,11 +24,8 @@ import { persistThemePreference } from "../domain/themePreference";
 
 
 const themes: [ThemeId, string][] = [
-  ["aimsAzureGlass", "AIMS Blue Azure"],
   ["dark", "AIMS DarkBento"],
-  ["aimsEmeraldGloss", "AIMS Emerald Green"],
   ["aimsLight", "AIMS Light"],
-  ["aimsTurquoiseGlass", "Premium Turquoise Glass"],
 ];
 const DATE_TIME_FORMAT_EXAMPLE = new Date(2026, 7, 27, 13, 5);
 export function ProfilePage() {

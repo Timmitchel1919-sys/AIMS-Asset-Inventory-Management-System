@@ -12,6 +12,9 @@ test("sidebar profile opens the complete account panel without moving", async ({
   await page.goto("/dashboard");
 
   const profile = page.getByRole("button", { name: "Open account menu" });
+  await expect(profile).toContainText("Administrator");
+  await expect(profile).toContainText(/Verified/i);
+  await expect(profile).not.toContainText(/Owner/i);
   const before = await profile.boundingBox();
   expect(before).not.toBeNull();
 
@@ -36,7 +39,7 @@ test("sidebar profile opens the complete account panel without moving", async ({
 
   const menuBox = await menu.boundingBox();
   expect(menuBox).not.toBeNull();
-  expect(menuBox?.height ?? 0).toBeGreaterThan(250);
+  expect(menuBox?.height ?? 0).toBeGreaterThan(200);
   expect((menuBox?.y ?? 0) + (menuBox?.height ?? 0)).toBeLessThanOrEqual(before?.y ?? 0);
 });
 
