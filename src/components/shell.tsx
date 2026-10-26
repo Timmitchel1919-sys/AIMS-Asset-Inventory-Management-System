@@ -569,9 +569,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
             <span className="sidebar-action-label">
               <strong>{app.user.name}</strong>
-              {app.user.role && (
-                <span className="sidebar-profile__role">{accountRoleLabel}</span>
-              )}
               <small>
                 {app.user.isDemoUser
                   ? app.language === "nl"

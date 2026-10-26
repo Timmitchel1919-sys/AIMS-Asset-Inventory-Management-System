@@ -775,3 +775,19 @@ html[data-theme="aims-light"] .aims-sheet-scrim {
    trigger was removed on request — the button now uses the standard
    secondary-button styling in both themes.) */
 
+
+/* ------------------------------------------------------------------ */
+/*  Mobile sidebar overlay — ensure it covers sticky page headers      */
+/* ------------------------------------------------------------------ */
+@media (max-width: 780px) {
+  .app-sidebar,
+  .app-sidebar.open {
+    z-index: 70;
+  }
+  /* The scrim must sit between the page and the sidebar so taps outside
+     the sidebar still dim-and-close it, but above sticky toolbars. */
+  .scrim {
+    z-index: 65;
+  }
+}
+
