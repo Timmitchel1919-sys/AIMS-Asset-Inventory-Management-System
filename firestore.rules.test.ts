@@ -34,6 +34,10 @@ describe("Firestore AIMS authorization rules", () => {
     expect(rules).not.toContain("allow read, write: if request.auth != null");
   });
   it("restricts user creation to the authenticated uid and protected metadata", () => {
+    expect(rules).toContain(
+      "function isOwnUser(uid) { return isSignedIn() && request.auth.uid == uid; }",
+    );
+    expect(rules).toContain("allow read: if isOwnUser(uid);");
     expect(rules).toContain("isVerified() && request.auth.uid == uid");
     expect(rules).toContain("data.accountType == 'school-user'");
     expect(rules).toContain("data.organizationDomain == 'kangoeroeschool.com'");
