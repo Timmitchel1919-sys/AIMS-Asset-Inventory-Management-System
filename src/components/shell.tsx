@@ -252,6 +252,22 @@ export function AppShell({ children }: { children: ReactNode }) {
       document.removeEventListener("keydown", key);
     };
   }, [profileOpen]);
+  // When the profile menu is open, dim the standalone PWA titlebar
+  // (Chrome tints that bar with `<meta name="theme-color">`). CSS can't
+  // blur browser chrome, but swapping the color visibly matches the
+  // scrim behind the panel for the duration of the interaction.
+  useEffect(() => {
+    const meta = document.querySelector<HTMLMetaElement>(
+      'meta[name="theme-color"]',
+    );
+    if (!meta) return;
+    if (!profileOpen) return;
+    const original = meta.content;
+    meta.content = "#0a0f19";
+    return () => {
+      meta.content = original;
+    };
+  }, [profileOpen]);
   const [assistantMessages, setAssistantMessages] = useState<
     { who: "bot" | "you"; text: string }[]
   >([
