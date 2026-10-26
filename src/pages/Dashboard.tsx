@@ -30,7 +30,7 @@ const MovementChart = lazy(() => import("../components/dashboard/MovementChart")
  * byte-identical and only hue changes between themes.
  */
 export default function Dashboard() {
-  const { language, formatDate, formatDateTime } = useApp(),
+  const { language, formatDate, formatDateTime, user } = useApp(),
     nl = language === "nl",
     navigate = useNavigate(),
     snapshot = useMockSnapshot();
@@ -366,7 +366,7 @@ export default function Dashboard() {
                     <td>{movement.assetCode}</td>
                     <td>{movement.from}</td>
                     <td>{movement.to}</td>
-                    <td>{movement.by}</td>
+                    <td>{user?.name || movement.by}</td>
                   </tr>
                 ))}
               </tbody>

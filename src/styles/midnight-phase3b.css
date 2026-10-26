@@ -93,14 +93,7 @@ html[data-theme="dark"] .sidebar nav a.active {
   background: transparent;
 }
 html[data-theme="dark"] .sidebar nav a.active::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 10%;
-  bottom: 10%;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--midnight-accent);
+  content: none;
 }
 html[data-theme="dark"] .sidebar nav a:focus-visible {
   outline: var(--midnight-focus-outline);

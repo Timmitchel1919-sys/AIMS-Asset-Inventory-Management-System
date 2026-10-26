@@ -4433,6 +4433,42 @@ html .system-information {
 .account-settings-grid .language-settings-card { grid-column: 2; grid-row: 1; }
 .account-settings-grid .themes-settings-card { grid-column: 1; grid-row: 2; }
 .account-settings-grid .notifications-settings-card { grid-column: 2; grid-row: 2; }
+.account-settings-grid .themes-settings-card,
+.account-settings-grid .notifications-settings-card { align-self: start; }
+
+/* Themes card: cards should hug the top of the panel and sit side by
+   side without stretching to fill the whole card height. */
+.account-settings-grid .themes-settings-card .theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+.account-settings-grid .themes-settings-card .theme-choice {
+  min-height: 112px;
+}
+
+/* Personal notifications: 2-column grid so items pair up (Maintenance |
+   Borrowing, Assignment | System, Email left under Borrowing). */
+.account-settings-grid .notifications-settings-card {
+  gap: 12px 14px;
+}
+.account-settings-grid .notifications-settings-card > .switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-subtle, rgba(0,0,0,0.08));
+  border-radius: 10px;
+  background: var(--color-surface);
+}
+.account-settings-grid .notifications-settings-card > .switch-row:nth-of-type(1) { grid-column: 1 / 2; grid-row: 2; }
+.account-settings-grid .notifications-settings-card > .switch-row:nth-of-type(2) { grid-column: 2 / 3; grid-row: 2; }
+.account-settings-grid .notifications-settings-card > .switch-row:nth-of-type(3) { grid-column: 1 / 2; grid-row: 3; }
+.account-settings-grid .notifications-settings-card > .switch-row:nth-of-type(4) { grid-column: 2 / 3; grid-row: 3; }
+.account-settings-grid .notifications-settings-card > .switch-row:nth-of-type(5) { grid-column: 1 / 2; grid-row: 4; }
+
 .date-time-format-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
 .typography-controls { grid-template-columns: 1fr; }
 .theme-dark i span:first-child { background: #071d49; }
@@ -4895,4 +4931,39 @@ html[data-theme="dark"] .password-strength__hints li[data-ok="true"] { color: #3
   font-size: var(--text-sm);
 }
 .release-notes h4 + ul li { margin: 2px 0; }
+
+
+/* ------------------------------------------------------------------ */
+/*  ICT asset status pills — outline + green only (per spec foto 6)   */
+/* ------------------------------------------------------------------ */
+.data-table-assets .asset-status,
+.data-table-assets .asset-status.table,
+.data-table-assets .asset-status.compact {
+  background: transparent !important;
+  border: 1px solid #22FF8C !important;
+  color: #22FF8C !important;
+}
+.data-table-assets .asset-status svg {
+  color: #22FF8C !important;
+}
+html[data-theme="aims-light"] .data-table-assets .asset-status,
+html[data-theme="aims-light"] .data-table-assets .asset-status.table,
+html[data-theme="aims-light"] .data-table-assets .asset-status.compact {
+  border: 1px solid #059F4A !important;
+  color: #059F4A !important;
+}
+html[data-theme="aims-light"] .data-table-assets .asset-status svg {
+  color: #059F4A !important;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Dashboard Recent Movements — Type cell outline only (foto 7)      */
+/* ------------------------------------------------------------------ */
+.dashboard-bottom .movement-icon.issue,
+.dashboard-bottom .movement-icon.return {
+  background: transparent !important;
+  border: 1px solid currentColor !important;
+}
+.dashboard-bottom .movement-icon.issue { color: var(--color-info, #60A5FA); }
+.dashboard-bottom .movement-icon.return { color: var(--color-info, #60A5FA); }
 
