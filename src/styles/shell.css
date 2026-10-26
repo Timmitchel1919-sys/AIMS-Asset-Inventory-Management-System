@@ -771,21 +771,7 @@ html[data-theme="aims-light"] .aims-sheet-scrim {
   }
 }
 
-/* ------------------------------------------------------------------ */
-/*  Dark theme — Departments Overview button: text-only                */
-/* ------------------------------------------------------------------ */
-html[data-theme="dark"] .dept-overview-trigger,
-html[data-theme="dark"] button.dept-overview-trigger,
-html[data-theme="dark"] [data-overview-trigger],
-html[data-theme="dark"] button[aria-label*="verview"] {
-  background: transparent !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-  color: var(--midnight-accent, #22D3EE);
-}
-html[data-theme="dark"] .dept-overview-trigger:hover,
-html[data-theme="dark"] button[aria-label*="verview"]:hover {
-  color: #67E8F9;
-  background: transparent !important;
-}
+/* (The dark-theme text-only override for the Departments Overview
+   trigger was removed on request — the button now uses the standard
+   secondary-button styling in both themes.) */
 

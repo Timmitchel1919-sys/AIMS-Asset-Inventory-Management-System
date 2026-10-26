@@ -18,6 +18,7 @@ import {
   LogOut,
   MapPin,
   ListChecks,
+  Menu,
   Mic,
   PackageOpen,
   User,
@@ -340,7 +341,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     assets: "nav.assetsShort",
     inventory: "nav.inventory",
     audits: "nav.auditsShort",
-    notifications: "nav.notificationsShort",
   };
   const unreadNotificationCount = snapshot.notifications.filter(
     (notification) => !notification.read && !notification.dismissed,
@@ -773,28 +773,30 @@ export function AppShell({ children }: { children: ReactNode }) {
           .filter((route) => route.id in bottomNavLabelKeys)
           .map((route) => {
             const Icon = icons[route.icon!],
-              isNotifications = route.id === "notifications",
               label = t(bottomNavLabelKeys[route.id]);
             return (
-              <NavLink
-                key={route.id}
-                to={routeBase(route.path)}
-                aria-label={
-                  isNotifications && unreadNotificationCount > 0
-                    ? `${label}, ${unreadNotificationCount} ${t("common.unread")}`
-                    : undefined
-                }
-              >
+              <NavLink key={route.id} to={routeBase(route.path)}>
                 <Icon aria-hidden="true" />
                 <span>{label}</span>
-                {isNotifications && unreadNotificationCount > 0 && (
-                  <b className="nav-count" aria-hidden="true">
-                    {unreadNotificationCount}
-                  </b>
-                )}
               </NavLink>
             );
           })}
+        <button
+          type="button"
+          className="bottom-nav__menu"
+          aria-label={t("common.openNavigation")}
+          aria-expanded={app.mobileOpen}
+          aria-controls="app-primary-navigation"
+          onClick={() => app.setMobileOpen(!app.mobileOpen)}
+        >
+          <Menu aria-hidden="true" />
+          <span>{app.language === "nl" ? "Menu" : "Menu"}</span>
+          {unreadNotificationCount > 0 && (
+            <b className="nav-count" aria-hidden="true">
+              {unreadNotificationCount}
+            </b>
+          )}
+        </button>
       </nav>
       {assistantEnabled && assistantOpen && (
         <div className="floating-assistant open">
