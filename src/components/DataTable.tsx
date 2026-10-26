@@ -35,6 +35,7 @@ export interface DataTableProps<T> {
   filters?: ReactNode;
   totalLabel?: string;
   hideExport?: boolean;
+  trailingAction?: ReactNode;
   query?: string;
   onQueryChange?: (query: string) => void;
   mobileExtraColumnIds?: string[];
@@ -61,6 +62,7 @@ export function DataTable<T>({
   filters,
   totalLabel,
   hideExport = false,
+  trailingAction,
   query: externalQuery,
   onQueryChange,
   mobileExtraColumnIds = [],
@@ -284,6 +286,11 @@ export function DataTable<T>({
               <Download />
               {nl ? "Exporteren" : "Export"}
             </Button>
+          </div>
+        )}
+        {trailingAction && (
+          <div className="table-actions table-actions--trailing">
+            {trailingAction}
           </div>
         )}
       </div>

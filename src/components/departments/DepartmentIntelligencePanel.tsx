@@ -903,15 +903,14 @@ export function DepartmentIntelligencePanel({
 
             {(tab === "ict" || tab === "all") &&
               (canViewAssets ? (
-                <>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      alignItems: "center",
-                      marginBottom: "6px",
-                    }}
-                  >
+                <DataTable
+                  id={`dept-${department.id}-${tab}-assets`}
+                  rows={tab === "ict" ? ictAssets : deptAssets}
+                  columns={assetColumns}
+                  rowKey={(a) => a.id}
+                  onRowClick={openAsset}
+                  searchPlaceholder={nl ? "Zoeken…" : "Search…"}
+                  trailingAction={
                     <Button
                       type="button"
                       variant="primary"
@@ -920,26 +919,18 @@ export function DepartmentIntelligencePanel({
                       <Plus size={14} />
                       {nl ? "Middelen toevoegen aan afdeling" : "Add assets to department"}
                     </Button>
-                  </div>
-                  <DataTable
-                    id={`dept-${department.id}-${tab}-assets`}
-                    rows={tab === "ict" ? ictAssets : deptAssets}
-                    columns={assetColumns}
-                    rowKey={(a) => a.id}
-                    onRowClick={openAsset}
-                    searchPlaceholder={nl ? "Zoeken…" : "Search…"}
-                    emptyTitle={
-                      nl
-                        ? "Geen middelen toegewezen aan deze afdeling."
-                        : "No assets currently assigned to this department."
-                    }
-                    emptyDescription={
-                      nl
-                        ? "Gebruik de knop 'Middelen toevoegen aan afdeling' om middelen te koppelen."
-                        : "Use the 'Add assets to department' button to link assets."
-                    }
-                  />
-                </>
+                  }
+                  emptyTitle={
+                    nl
+                      ? "Geen middelen toegewezen aan deze afdeling."
+                      : "No assets currently assigned to this department."
+                  }
+                  emptyDescription={
+                    nl
+                      ? "Gebruik de knop 'Middelen toevoegen aan afdeling' om middelen te koppelen."
+                      : "Use the 'Add assets to department' button to link assets."
+                  }
+                />
               ) : (
                 <MutationFeedback
                   status="error"

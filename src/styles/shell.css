@@ -662,12 +662,12 @@ html[data-theme="dark"] .profile-menu header .account-menu-verified.unverified {
   cursor: pointer;
 }
 
-/* Keep the sidebar + its icons untouched by the dim/blur: it sits
-   above the scrim and defines its own stacking context so the profile
-   menu can anchor to it. */
-.app-sidebar {
+/* Only the profile icon + the open profile panel escape the scrim —
+   the sidebar modules and the rest of the workspace stay behind the
+   dim+blur so the focus is unmistakably on the account menu. */
+.app-sidebar .sidebar-foot .sidebar-profile {
   position: relative;
-  z-index: 62;
+  z-index: 63;
 }
 .app-sidebar .sidebar-foot .profile-menu {
   z-index: 63;

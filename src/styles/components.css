@@ -4938,26 +4938,18 @@ html[data-theme="dark"] .password-strength__hints li[data-ok="true"] { color: #3
 
 
 /* ------------------------------------------------------------------ */
-/*  ICT asset status pills — outline + green only (per spec foto 6)   */
+/*  ICT asset status pills — DARK theme only: outline + neon green    */
+/*  (light theme keeps the per-status semantic fills from tokens)     */
 /* ------------------------------------------------------------------ */
-.data-table-assets .asset-status,
-.data-table-assets .asset-status.table,
-.data-table-assets .asset-status.compact {
+html[data-theme="dark"] .data-table-assets .asset-status,
+html[data-theme="dark"] .data-table-assets .asset-status.table,
+html[data-theme="dark"] .data-table-assets .asset-status.compact {
   background: transparent !important;
   border: 1px solid #22FF8C !important;
   color: #22FF8C !important;
 }
-.data-table-assets .asset-status svg {
+html[data-theme="dark"] .data-table-assets .asset-status svg {
   color: #22FF8C !important;
-}
-html[data-theme="aims-light"] .data-table-assets .asset-status,
-html[data-theme="aims-light"] .data-table-assets .asset-status.table,
-html[data-theme="aims-light"] .data-table-assets .asset-status.compact {
-  border: 1px solid #059F4A !important;
-  color: #059F4A !important;
-}
-html[data-theme="aims-light"] .data-table-assets .asset-status svg {
-  color: #059F4A !important;
 }
 
 /* ------------------------------------------------------------------ */
@@ -4970,4 +4962,33 @@ html[data-theme="aims-light"] .data-table-assets .asset-status svg {
 }
 .dashboard-bottom .movement-icon.issue { color: var(--color-info, #60A5FA); }
 .dashboard-bottom .movement-icon.return { color: var(--color-info, #60A5FA); }
+
+
+/* ------------------------------------------------------------------ */
+/*  Department Overview panel — compact toolbar layout                 */
+/* ------------------------------------------------------------------ */
+
+/* The DataTable inside the Overview sits right under the 4 tab buttons
+   with minimal vertical gap and uses a left-aligned toolbar: narrower
+   search, count, export, then the trailing action (Add assets). */
+.department-panel .dept-panel__tabs {
+  margin-bottom: 10px;
+}
+.department-panel .data-toolbar {
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.department-panel .data-toolbar .search {
+  flex: 0 1 320px;
+  min-width: 180px;
+  max-width: 360px;
+}
+.department-panel .data-toolbar .table-actions {
+  margin-left: 0;
+}
+.department-panel .data-toolbar .table-actions--trailing {
+  margin-left: 0;
+}
 
