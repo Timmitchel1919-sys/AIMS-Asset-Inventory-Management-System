@@ -80,6 +80,22 @@ describe('app download and admin access integration',()=>{
     );
   });
 
+  it('keeps new asset forms empty and restores drafts only while editing', () => {
+    const source = readFileSync('src/pages/AssetForm.tsx', 'utf8');
+    expect(source).toContain('const recoveredDraft = existing');
+    expect(source).toContain('if (!existing) clearLocalDraft(draftKey)');
+    expect(source).toContain('enabled: Boolean(existing) && isDirty');
+  });
+
+  it('dims sticky module headers while keeping only the profile control and menu sharp', () => {
+    const shell = readFileSync('src/components/shell.tsx', 'utf8');
+    const styles = readFileSync('src/styles/shell.css', 'utf8');
+    expect(shell).not.toContain('sidebar-profile__role');
+    expect(styles).toContain('.app-sidebar:has(.profile-menu) { position:relative; z-index:60; }');
+    expect(styles).toMatch(/\.account-sheet-scrim[\s\S]*?z-index:\s*59/);
+    expect(styles).toMatch(/\.sidebar-profile[\s\S]*?z-index:\s*63/);
+  });
+
   it('grants every role full add/edit/delete rights across every module — everyone is super admin', () => {
     const staff = rolePermissions['warehouse-staff'];
     expect(staff).toContain('assets.create');

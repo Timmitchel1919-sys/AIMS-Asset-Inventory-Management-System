@@ -345,13 +345,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const unreadNotificationCount = snapshot.notifications.filter(
     (notification) => !notification.read && !notification.dismissed,
   ).length;
-  const accountRoleLabel =
-    app.user.role === "owner"
-      ? "Administrator"
-      : app.user.role
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
   function askAssistant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = assistantQuery.trim();
@@ -569,9 +562,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
             <span className="sidebar-action-label">
               <strong>{app.user.name}</strong>
-              {app.user.role && (
-                <span className="sidebar-profile__role">{accountRoleLabel}</span>
-              )}
               <small>
                 {app.user.isDemoUser
                   ? app.language === "nl"

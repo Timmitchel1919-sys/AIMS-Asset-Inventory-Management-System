@@ -643,8 +643,12 @@ html[data-theme="dark"] .profile-menu header .account-menu-verified.unverified {
    visibly dims while the profile panel is open. Mobile keeps its
    stronger overlay from the existing rules below.
 
-   The sidebar is lifted above the scrim so it stays fully sharp and
-   bright — only the main workspace behind receives the dim + blur. */
+   Opening the menu creates a desktop stacking context above every sticky
+   module header. The scrim still covers the sidebar itself, so only the
+   profile trigger and open panel remain sharp. */
+@media (min-width: 781px) {
+  .app-sidebar:has(.profile-menu) { position:relative; z-index:60; }
+}
 .app-sidebar .sidebar-foot .account-sheet-scrim {
   display: block !important;
   position: fixed !important;

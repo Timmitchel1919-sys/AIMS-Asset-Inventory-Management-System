@@ -12,7 +12,7 @@ test("sidebar profile opens the complete account panel without moving", async ({
   await page.goto("/dashboard");
 
   const profile = page.getByRole("button", { name: "Open account menu" });
-  await expect(profile).toContainText("Administrator");
+  await expect(profile).not.toContainText("Administrator");
   await expect(profile).toContainText(/Verified/i);
   await expect(profile).not.toContainText(/Owner/i);
   const before = await profile.boundingBox();
@@ -29,6 +29,12 @@ test("sidebar profile opens the complete account panel without moving", async ({
   await expect(menu.getByRole("menuitem", { name: /Security/i })).toBeVisible();
   await expect(menu.getByRole("menuitem", { name: /Help & Support/i })).toBeVisible();
   await expect(menu.getByRole("menuitem", { name: /Sign out/i })).toBeVisible();
+  await expect(page.locator(".account-sheet-scrim")).toHaveCSS("z-index", "59");
+  await expect(page.locator(".app-sidebar")).toHaveCSS("z-index", "60");
+  await expect(page.locator(".authenticated-app main .page-title")).toHaveCSS("z-index", "35");
+  expect(await page.locator(".account-sheet-scrim").evaluate((element) =>
+    getComputedStyle(element).backdropFilter,
+  )).not.toBe("none");
 
   const after = await profile.boundingBox();
   expect(after).not.toBeNull();
@@ -41,6 +47,22 @@ test("sidebar profile opens the complete account panel without moving", async ({
   expect(menuBox).not.toBeNull();
   expect(menuBox?.height ?? 0).toBeGreaterThan(200);
   expect((menuBox?.y ?? 0) + (menuBox?.height ?? 0)).toBeLessThanOrEqual(before?.y ?? 0);
+});
+
+test("profile scrim dims sticky ICT headers in light and dark themes", async ({ page }) => {
+  for (const theme of ["aims-light", "dark"]) {
+    await page.goto("/assets");
+    await page.evaluate((value) => {
+      document.documentElement.dataset.theme = value;
+      localStorage.setItem("kcs-theme", value);
+    }, theme);
+    await page.getByRole("button", { name: "Open account menu" }).click();
+    await expect(page.getByRole("menu")).toBeVisible();
+    await expect(page.locator(".account-sheet-scrim")).toHaveCSS("z-index", "59");
+    await expect(page.locator(".app-sidebar")).toHaveCSS("z-index", "60");
+    await expect(page.locator(".authenticated-app main .page-title")).toHaveCSS("z-index", "35");
+    await page.keyboard.press("Escape");
+  }
 });
 
 test("collapsed sidebar keeps the complete account panel usable", async ({ page }) => {

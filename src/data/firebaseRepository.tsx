@@ -257,22 +257,37 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
         role: "administrator",
         email: user.email ?? null,
       };
-    const token = await user.getIdTokenResult();
+    // Refresh before authorization-sensitive writes so new verification or
+    // custom claims are not hidden behind a stale session token.
+    const token = await user.getIdTokenResult(true);
     const tokenDenials = Array.isArray(token.claims.denials)
       ? token.claims.denials.filter(
           (value): value is string => typeof value === "string",
         )
       : [];
-    const assignment = await getDoc(
-      doc(this.db, "accessAssignments", user.uid),
-    );
+    const assignmentRef = doc(this.db, "accessAssignments", user.uid);
+    let assignment = await getDoc(assignmentRef);
+    const isOwnerAccount = user.emailVerified && isAimsOwnerEmail(user.email);
+    // Self-heal an interrupted first-login provisioning step through the
+    // trusted callable; it validates the school identity and never overwrites
+    // a suspended or customized assignment.
+    if (!assignment.exists() && !isOwnerAccount && firebaseFunctions) {
+      await httpsCallable<Record<string, never>, { ok: boolean }>(
+        firebaseFunctions,
+        "provisionUserAccess",
+      )({});
+      assignment = await getDoc(assignmentRef);
+    }
     const data = assignment.data();
     const denials = Array.isArray(data?.denials)
       ? data.denials.filter(
           (value: unknown): value is string => typeof value === "string",
         )
       : [];
-    const active = data?.active !== false;
+    const hasTrustedTokenSignal =
+      (typeof token.claims.role === "string" && token.claims.role.length > 0) ||
+      (Array.isArray(token.claims.permissions) && token.claims.permissions.length > 0);
+    const active = assignment.exists() ? data?.active === true : hasTrustedTokenSignal;
     // Every verified AIMS user has full (super admin) rights, regardless of
     // the role/permission list stored on their access assignment — only
     // suspension (active === false) or an explicit denial withholds
@@ -280,7 +295,6 @@ export class FirebaseInventoryRepository extends WorkflowRepositoryEngine {
     // firestore.rules.
     // Only the verified Owner email is ever the owner; a stored 'owner' role
     // on anyone else is ignored.
-    const isOwnerAccount = user.emailVerified && isAimsOwnerEmail(user.email);
     const storedRole = (data?.role as Role) || "administrator";
     const resolvedRole: Role = isOwnerAccount
       ? "owner"

@@ -41,7 +41,7 @@ import {
 import type { AssetStatus, Condition } from "../domain/types";
 import { useT } from "../i18n";
 import { uploadAimsFiles } from "../services/firebaseStorageUploads";
-import { readLocalDraft, useAutosaveDraft } from "../hooks/useAutosaveDraft";
+import { clearLocalDraft, readLocalDraft, useAutosaveDraft } from "../hooks/useAutosaveDraft";
 
 const statuses: AssetStatus[] = [
   "Available",
@@ -140,7 +140,12 @@ export default function AssetForm() {
         (value) => value === "Available" || allowedStatusTargets("Available").includes(value),
       );
   const draftKey = `asset-form:${existing?.id || "new"}`;
-  const recoveredDraft = readLocalDraft<AssetFormValues>(draftKey);
+  // New assets must always start clean; the shared `new` draft key otherwise
+  // leaks values from a previous add flow into the next panel.
+  const recoveredDraft = existing ? readLocalDraft<AssetFormValues>(draftKey) : null;
+  useEffect(() => {
+    if (!existing) clearLocalDraft(draftKey);
+  }, [draftKey, existing]);
   const formMethods = useForm<AssetFormValues>({
     resolver: zodResolver(schema),
     // Merge so a draft saved before a field existed still validates.
@@ -244,7 +249,7 @@ export default function AssetForm() {
     key: draftKey,
     value: watchedValues,
     delay: 1000,
-    enabled: isDirty,
+    enabled: Boolean(existing) && isDirty,
     save: async () => undefined,
   });
   useEffect(() => {
