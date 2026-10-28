@@ -196,19 +196,17 @@ function writeData(
   exists: boolean,
   actorUid?: string,
 ) {
+  const immutableOnUpdate = exists
+    ? ["id", "createdAt", "createdBy", "updatedAt", "updatedBy", "importMetadata", "sourceData"]
+    : ["id", "createdAt", "createdBy", "updatedAt", "updatedBy"];
   const fields = Object.fromEntries(
-    Object.entries(item).filter(
-      ([key]) =>
-        !["id", "createdAt", "createdBy", "updatedAt", "updatedBy"].includes(
-          key,
-        ),
-    ),
+    Object.entries(item).filter(([key]) => !immutableOnUpdate.includes(key)),
   );
   const importMetadata = fields.importMetadata as
     Record<string, unknown> | undefined;
   return clean({
     ...fields,
-    ...(importMetadata
+    ...(importMetadata && !exists
       ? {
           importMetadata: {
             ...importMetadata,
