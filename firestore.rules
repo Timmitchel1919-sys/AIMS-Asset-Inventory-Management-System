@@ -262,9 +262,13 @@ service cloud.firestore {
           'sourceData','importMetadata','qr','qrToken','qrUpdatedAt',
           // Canonical references (additive; the text fields above stay).
           'categoryId','assetTypeId','codeGroupId','departmentId','assignedUserId',
-          'createdAt','updatedAt','updatedBy','isArchived','archivedAt','archivedBy'
+          'createdAt','updatedAt','updatedBy','isArchived','archivedAt','archivedBy',
+          'deletionReason','restoredAt','restoredBy'
         ])
         && data.keys().hasAll(['code','codePrefix','codeNumber','name','category','type','brand','model','serialNumber','location','department','status','condition','purchaseDate','warrantyExpiry','lastUpdated','qr','createdAt','createdBy','updatedAt','updatedBy'])
+        && (!('deletionReason' in data) || (data.deletionReason is string && data.deletionReason.size() <= 500))
+        && (!('restoredBy' in data) || (data.restoredBy is string && data.restoredBy.size() <= 150))
+        && (!('restoredAt' in data) || data.restoredAt is string)
         && data.code is string && data.code.size() > 0 && data.code.size() <= 40
         && data.codePrefix is string && data.codePrefix.size() > 0 && data.codePrefix.size() <= 16
         && data.codeNumber is int && data.codeNumber >= 1 && data.codeNumber <= 1000000000
@@ -304,7 +308,8 @@ service cloud.firestore {
           'maintenanceRequired','usefulLifeEnd','technicalSpecifications',
           'remoteAccess','attachments','photos','notes','qr','qrToken','qrUpdatedAt',
           'categoryId','assetTypeId','codeGroupId','departmentId','assignedUserId',
-          'updatedAt','updatedBy','isArchived','archivedAt','archivedBy'
+          'updatedAt','updatedBy','isArchived','archivedAt','archivedBy',
+          'deletionReason','restoredAt','restoredBy'
         ])
         && request.resource.data.code == resource.data.code
         && request.resource.data.codePrefix == resource.data.codePrefix

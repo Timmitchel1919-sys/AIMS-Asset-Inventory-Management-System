@@ -440,7 +440,17 @@ export default function Assets() {
         label: t("assets.serial"),
         sortable: true,
         render: (asset) => (
-          <span style={{ fontFamily: "var(--font-mono, monospace)", textTransform: "uppercase" }}>
+          <span
+            style={{
+              fontFamily: "var(--font-mono, monospace)",
+              textTransform: "uppercase",
+              overflowWrap: "anywhere",
+              wordBreak: "break-all",
+              whiteSpace: "normal",
+              display: "inline-block",
+              maxWidth: "100%",
+            }}
+          >
             {formatIctData(asset.serialNumber, "serial")}
           </span>
         ),
