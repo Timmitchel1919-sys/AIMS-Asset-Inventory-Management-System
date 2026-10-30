@@ -438,84 +438,98 @@ export function InventoryList() {
           }
         >
           <div className="workflow-form">
-            <Field
-              label={nl ? "Zoeken" : "Search"}
-              placeholder={
-                nl
-                  ? "Zoek op code, naam, merk, serienummer…"
-                  : "Search by code, name, brand, serial…"
-              }
-              value={bulkSearch}
-              onChange={(event) => setBulkSearch(event.target.value)}
-            />
-            <div
-              className="bulk-asset-picker-list"
-              style={{
-                maxHeight: "48vh",
-                overflow: "auto",
-                border: "1px solid var(--color-border)",
-                borderRadius: 8,
-                padding: 8,
-              }}
-            >
-              <label
-                className="switch-row compact"
-                style={{ padding: "4px 6px", borderBottom: "1px solid var(--color-border)" }}
-              >
-                <input
-                  type="checkbox"
-                  checked={
-                    bulkAssetRows.length > 0 &&
-                    bulkAssetRows.every((asset) =>
-                      bulkSelected.includes(asset.id),
-                    )
-                  }
-                  onChange={toggleBulkAll}
-                />
-                <span>
-                  <strong>
-                    {nl ? "Selecteer alles" : "Select all"} (
-                    {bulkAssetRows.length})
-                  </strong>
-                </span>
-              </label>
-              {bulkAssetRows.length === 0 ? (
-                <p style={{ padding: 12, color: "var(--color-text-secondary)" }}>
-                  {nl ? "Geen middelen gevonden." : "No assets found."}
-                </p>
-              ) : (
-                bulkAssetRows.map((asset) => {
-                  const checked = bulkSelected.includes(asset.id);
-                  return (
-                    <label
-                      key={asset.id}
-                      className="switch-row compact"
-                      style={{ padding: "6px 6px", borderBottom: "1px solid var(--color-border)" }}
-                    >
+            <div className="bulk-asset-picker-filters">
+              <Field
+                label={nl ? "Zoeken" : "Search"}
+                placeholder={
+                  nl
+                    ? "Zoek op code, naam, merk, serienummer, afdeling…"
+                    : "Search by code, name, brand, serial, department…"
+                }
+                value={bulkSearch}
+                onChange={(event) => setBulkSearch(event.target.value)}
+              />
+              <small style={{ color: "var(--color-text-secondary)" }}>
+                {nl
+                  ? `${bulkSelected.length} van ${bulkAssetRows.length} geselecteerd`
+                  : `${bulkSelected.length} of ${bulkAssetRows.length} selected`}
+              </small>
+            </div>
+            <div className="bulk-asset-picker-table-wrap">
+              <table className="bulk-asset-picker-table">
+                <thead>
+                  <tr>
+                    <th className="picker-check">
                       <input
                         type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleBulkSelected(asset.id)}
+                        aria-label={nl ? "Selecteer alles" : "Select all"}
+                        checked={
+                          bulkAssetRows.length > 0 &&
+                          bulkAssetRows.every((asset) =>
+                            bulkSelected.includes(asset.id),
+                          )
+                        }
+                        onChange={toggleBulkAll}
                       />
-                      <span style={{ display: "grid", gap: 2 }}>
-                        <span>
-                          <strong>{asset.code}</strong> · {asset.name}
-                        </span>
-                        <small style={{ color: "var(--color-text-secondary)" }}>
-                          {[
-                            asset.brand,
-                            asset.model,
-                            asset.serialNumber,
-                            asset.department,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ") || "—"}
-                        </small>
-                      </span>
-                    </label>
-                  );
-                })
-              )}
+                    </th>
+                    <th>{nl ? "Code" : "Code"}</th>
+                    <th>{nl ? "Naam" : "Name"}</th>
+                    <th>{nl ? "Categorie" : "Category"}</th>
+                    <th>{nl ? "Merk" : "Brand"}</th>
+                    <th>{nl ? "Model" : "Model"}</th>
+                    <th>{nl ? "Serienummer" : "Serial"}</th>
+                    <th>{nl ? "Afdeling" : "Department"}</th>
+                    <th>{nl ? "Locatie" : "Location"}</th>
+                    <th>{nl ? "Status" : "Status"}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bulkAssetRows.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={10}
+                        style={{
+                          padding: 20,
+                          textAlign: "center",
+                          color: "var(--color-text-secondary)",
+                        }}
+                      >
+                        {nl ? "Geen middelen gevonden." : "No assets found."}
+                      </td>
+                    </tr>
+                  ) : (
+                    bulkAssetRows.map((asset) => {
+                      const checked = bulkSelected.includes(asset.id);
+                      return (
+                        <tr
+                          key={asset.id}
+                          onClick={() => toggleBulkSelected(asset.id)}
+                        >
+                          <td className="picker-check">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleBulkSelected(asset.id)}
+                              onClick={(event) => event.stopPropagation()}
+                            />
+                          </td>
+                          <td>
+                            <strong>{asset.code}</strong>
+                          </td>
+                          <td>{asset.name || "—"}</td>
+                          <td>{asset.category || "—"}</td>
+                          <td>{asset.brand || "—"}</td>
+                          <td>{asset.model || "—"}</td>
+                          <td>{asset.serialNumber || "—"}</td>
+                          <td>{asset.department || "—"}</td>
+                          <td>{asset.location || "—"}</td>
+                          <td>{asset.status || "—"}</td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
             <MutationFeedback
               status={bulkFeedback.status}

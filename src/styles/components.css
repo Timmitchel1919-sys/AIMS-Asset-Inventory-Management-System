@@ -2574,6 +2574,53 @@ html .system-information {
   background: var(--color-surface-elevated);
   color: var(--color-text-primary);
   box-shadow: var(--shadow-lg);
+}
+.dialog.bulk-asset-picker {
+  width: min(1240px, calc(100vw - 28px));
+  max-height: 92vh;
+}
+.dialog.bulk-asset-picker .dialog-body {
+  overflow: hidden;
+}
+.bulk-asset-picker-table-wrap {
+  max-height: 60vh;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+.bulk-asset-picker-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.bulk-asset-picker-table th,
+.bulk-asset-picker-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.bulk-asset-picker-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--color-surface-elevated);
+  z-index: 1;
+  font-weight: 600;
+}
+.bulk-asset-picker-table tbody tr:hover {
+  background: var(--color-surface-secondary);
+  cursor: pointer;
+}
+.bulk-asset-picker-table .picker-check {
+  width: 1%;
+}
+.bulk-asset-picker-filters {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 8px;
+}
 
   /* Enforce centering */
   position: fixed;
