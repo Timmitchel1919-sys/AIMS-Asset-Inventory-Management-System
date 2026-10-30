@@ -494,6 +494,22 @@ service cloud.firestore {
         && data.system is bool
         && auditMetadataValid(data);
     }
+    // Owner-only safety-net for ad-hoc writes (bulk edits, data cleanup).
+    // Keeps privilege-escalation blocks and basic size caps but skips the
+    // strict shape validators so the Owner can repair records the stricter
+    // validators would otherwise reject on a field the schema doesn't name.
+    function ownerSanityWrite(data) {
+      return isOwner()
+        && noPrivilegeFields(data)
+        && shortString(data, 'name', 200)
+        && shortString(data, 'title', 300)
+        && shortString(data, 'description', 4000)
+        && shortString(data, 'notes', 4000)
+        && (!('code' in data) || (data.code is string && data.code.size() <= 80))
+        && (!('serialNumber' in data) || (data.serialNumber is string && data.serialNumber.size() <= 200))
+        && boundedList(data, 'attachments', 50)
+        && boundedList(data, 'photos', 50);
+    }
     function validOperationalRecord(data) {
       return data.size() <= 200
         && auditMetadataValid(data)
@@ -718,11 +734,19 @@ service cloud.firestore {
     match /assets/{id} {
       allow read: if hasPermission('assets.view');
       allow create: if validLegacyImportedAsset(request.resource.data)
+        || ownerSanityWrite(request.resource.data)
         || (hasPermission('assets.create') && validAsset(request.resource.data));
       // Asset identifiers are client-immutable. A code-group prefix migration
       // is performed exclusively by the trusted renameCodeGroupPrefix Function.
-      allow update: if hasAnyPermission(['assets.edit','assets.archive','movements.create'])
-        && ((validAsset(request.resource.data) && immutableAuditFields()) || validLegacyAssetEdit())
+      allow update: if (
+          isOwner()
+          || hasAnyPermission(['assets.edit','assets.archive','movements.create'])
+        )
+        && (
+          (validAsset(request.resource.data) && immutableAuditFields())
+          || validLegacyAssetEdit()
+          || (ownerSanityWrite(request.resource.data) && immutableAuditFields())
+        )
         && request.resource.data.code == resource.data.code
         && request.resource.data.codePrefix == resource.data.codePrefix
         && request.resource.data.codeNumber == resource.data.codeNumber;
@@ -742,8 +766,16 @@ service cloud.firestore {
     match /inventoryItems/{id} {
       allow read: if hasPermission('inventory.view');
       allow create: if validLegacyImportedInventory(request.resource.data)
+        || ownerSanityWrite(request.resource.data)
         || (hasPermission('inventory.create') && validInventory(request.resource.data));
-      allow update: if hasAnyPermission(['inventory.edit','inventory.archive','inventory.restore','inventory.receive','inventory.issue','inventory.transfer','inventory.return','inventory.reserve','inventory.correct']) && validInventory(request.resource.data) && immutableAuditFields()
+      allow update: if (
+          isOwner()
+          || hasAnyPermission(['inventory.edit','inventory.archive','inventory.restore','inventory.receive','inventory.issue','inventory.transfer','inventory.return','inventory.reserve','inventory.correct'])
+        )
+        && (
+          (validInventory(request.resource.data) && immutableAuditFields())
+          || (ownerSanityWrite(request.resource.data) && immutableAuditFields())
+        )
         && request.resource.data.code == resource.data.code;
       allow delete: if false;
     }
@@ -929,15 +961,20 @@ service cloud.firestore {
 
     match /{collectionName}/{id} {
       allow read: if isOperationalCollection(collectionName)
-        && canReadOperationalCollection(collectionName);
+        && (isOwner() || canReadOperationalCollection(collectionName));
       allow create: if isOperationalCollection(collectionName)
-        && canWriteOperationalCollection(collectionName)
-        && validOperationalRecord(request.resource.data);
+        && (
+          (canWriteOperationalCollection(collectionName) && validOperationalRecord(request.resource.data))
+          || ownerSanityWrite(request.resource.data)
+        );
       allow update: if isOperationalCollection(collectionName)
-        && canWriteOperationalCollection(collectionName)
+        && (isOwner() || canWriteOperationalCollection(collectionName))
         && collectionName != 'inventoryTransactions'
         && collectionName != 'assetMovements'
-        && validOperationalRecord(request.resource.data) && immutableAuditFields()
+        && (
+          (validOperationalRecord(request.resource.data) && immutableAuditFields())
+          || (ownerSanityWrite(request.resource.data) && immutableAuditFields())
+        )
         // Archiving a Hoofdlocatie (recycle bin) is a Master Data deletion:
         // Function only.
         && !(collectionName == 'locations'
