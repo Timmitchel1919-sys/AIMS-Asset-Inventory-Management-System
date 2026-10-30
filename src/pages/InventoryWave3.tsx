@@ -3,6 +3,7 @@ import {
   ArrowLeftRight,
   Download,
   PackagePlus,
+  Boxes,
   RotateCcw,
   ShieldCheck,
   TriangleAlert,
@@ -19,6 +20,7 @@ import {
 import { DataTable, type DataColumn } from "../components/DataTable";
 import {
   ConfirmDialog,
+  Dialog,
   MutationFeedback,
   OfflineGate,
   PageHeader,
@@ -34,8 +36,10 @@ import type {
   InventoryItem,
   StockReservation,
   WorkflowAction,
+  WorkflowCommand,
 } from "../data/contracts";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
+import { runBulkCommands } from "../data/bulkActions";
 import { StatusBadge } from "../components/AssetStatusBadge";
 import {
   analyzeLaptopInventory,
@@ -182,13 +186,115 @@ const itemColumns = (nl: boolean): DataColumn<InventoryItem>[] => [
 export function InventoryList() {
   const { language, user } = useApp(),
     nl = language === "nl",
-    snapshot = useMockSnapshot();
+    snapshot = useMockSnapshot(),
+    repository = useRepository();
   const [low, setLow] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkSearch, setBulkSearch] = useState("");
+  const [bulkSelected, setBulkSelected] = useState<string[]>([]);
+  const [bulkFeedback, setBulkFeedback] = useState<{
+    status: "idle" | "loading" | "success" | "error";
+    message: string;
+  }>({ status: "idle", message: "" });
   const rows = useMemo(
     () =>
       snapshot.inventory.filter((x) => !low || availableStock(x) <= x.minimum),
     [snapshot.inventory, low],
   );
+  const bulkAssetRows = useMemo(() => {
+    const term = bulkSearch.trim().toLocaleLowerCase();
+    return snapshot.assets
+      .filter((asset) => asset.status !== "Archived" && asset.status !== "Disposed")
+      .filter((asset) => {
+        if (!term) return true;
+        return [
+          asset.code,
+          asset.name,
+          asset.brand,
+          asset.model,
+          asset.category,
+          asset.serialNumber,
+          asset.department,
+          asset.location,
+        ]
+          .filter(Boolean)
+          .some((value) => String(value).toLocaleLowerCase().includes(term));
+      });
+  }, [snapshot.assets, bulkSearch]);
+  function openBulkDialog() {
+    setBulkSelected([]);
+    setBulkSearch("");
+    setBulkFeedback({ status: "idle", message: "" });
+    setBulkOpen(true);
+  }
+  function toggleBulkSelected(id: string) {
+    setBulkSelected((previous) =>
+      previous.includes(id)
+        ? previous.filter((value) => value !== id)
+        : [...previous, id],
+    );
+  }
+  function toggleBulkAll() {
+    const visibleIds = bulkAssetRows.map((asset) => asset.id);
+    const allSelected =
+      visibleIds.length > 0 &&
+      visibleIds.every((id) => bulkSelected.includes(id));
+    setBulkSelected(allSelected ? [] : visibleIds);
+  }
+  async function runBulkToInventory() {
+    if (!bulkSelected.length) return;
+    setBulkFeedback({
+      status: "loading",
+      message: nl ? "Artikelen toevoegen…" : "Adding items…",
+    });
+    const stamp = Date.now().toString(36);
+    const commands: WorkflowCommand[] = bulkSelected.map((id, idx) => {
+      const asset = snapshot.assets.find((item) => item.id === id);
+      const baseCode = (asset?.code || `ASSET-${idx + 1}`).toUpperCase();
+      return {
+        action: "inventory.create",
+        values: {
+          code: `INV-${baseCode}-${stamp}${idx}`,
+          name: asset?.name || (nl ? "Nieuw voorraadartikel" : "New item"),
+          itemType: "Equipment",
+          category: asset?.category || "Equipment",
+          subcategory: asset?.subcategory || "",
+          brand: asset?.brand || "",
+          model: asset?.model || "",
+          manufacturer: asset?.manufacturer || "",
+          supplier: asset?.supplier || "",
+          unit: "pieces",
+          onHand: 1,
+          minimum: 0,
+          reorderLevel: 0,
+          reorderQuantity: 0,
+          warehouse: "Main warehouse",
+          location: asset?.location || "Warehouse",
+          department: asset?.department || "",
+          notes: nl
+            ? `Toegevoegd vanuit ICT-module (${baseCode}).`
+            : `Added from the ICT module (${baseCode}).`,
+        },
+      };
+    });
+    const outcome = await runBulkCommands(repository, commands);
+    if (outcome.failed) {
+      setBulkFeedback({
+        status: "error",
+        message: `${outcome.succeeded}/${outcome.total} ${
+          nl ? "toegevoegd." : "added."
+        } ${outcome.failures.map((f) => f.message).join(" ")}`,
+      });
+    } else {
+      setBulkFeedback({
+        status: "success",
+        message: nl
+          ? `${outcome.succeeded} artikelen toegevoegd aan de magazijnvoorraad.`
+          : `${outcome.succeeded} items added to the warehouse inventory.`,
+      });
+      setBulkSelected([]);
+    }
+  }
   return (
     <OfflineGate>
       <div className="page">
@@ -209,6 +315,16 @@ export function InventoryList() {
                   {nl ? "Importeren" : "Import"}
                 </Link>
               ) : null}
+              {can(user?.role, "inventory.create") && (
+                <Button
+                  variant="secondary"
+                  className="page-header-secondary-action"
+                  onClick={openBulkDialog}
+                >
+                  <Boxes />
+                  {nl ? "Bulk artikel toevoegen" : "Add items in bulk"}
+                </Button>
+              )}
               <Link className="btn btn-primary" to="/inventory/new">
                 <PackagePlus />
                 {nl ? "Artikel toevoegen" : "Add item"}
@@ -293,6 +409,120 @@ export function InventoryList() {
             }
           />
         </section>
+        <Dialog
+          open={bulkOpen}
+          title={nl ? "Bulk artikel toevoegen" : "Add items in bulk"}
+          description={
+            nl
+              ? "Kies ICT-middelen uit de lijst — voor elk vinkje wordt een nieuw voorraadartikel aangemaakt."
+              : "Pick ICT assets below — one warehouse item is created per selection."
+          }
+          onClose={() => setBulkOpen(false)}
+          className="bulk-asset-picker"
+          footer={
+            <>
+              <Button variant="ghost" onClick={() => setBulkOpen(false)}>
+                {nl ? "Sluiten" : "Close"}
+              </Button>
+              <Button
+                onClick={runBulkToInventory}
+                disabled={
+                  !bulkSelected.length || bulkFeedback.status === "loading"
+                }
+              >
+                {nl
+                  ? `Toevoegen (${bulkSelected.length})`
+                  : `Add (${bulkSelected.length})`}
+              </Button>
+            </>
+          }
+        >
+          <div className="workflow-form">
+            <Field
+              label={nl ? "Zoeken" : "Search"}
+              placeholder={
+                nl
+                  ? "Zoek op code, naam, merk, serienummer…"
+                  : "Search by code, name, brand, serial…"
+              }
+              value={bulkSearch}
+              onChange={(event) => setBulkSearch(event.target.value)}
+            />
+            <div
+              className="bulk-asset-picker-list"
+              style={{
+                maxHeight: "48vh",
+                overflow: "auto",
+                border: "1px solid var(--color-border)",
+                borderRadius: 8,
+                padding: 8,
+              }}
+            >
+              <label
+                className="switch-row compact"
+                style={{ padding: "4px 6px", borderBottom: "1px solid var(--color-border)" }}
+              >
+                <input
+                  type="checkbox"
+                  checked={
+                    bulkAssetRows.length > 0 &&
+                    bulkAssetRows.every((asset) =>
+                      bulkSelected.includes(asset.id),
+                    )
+                  }
+                  onChange={toggleBulkAll}
+                />
+                <span>
+                  <strong>
+                    {nl ? "Selecteer alles" : "Select all"} (
+                    {bulkAssetRows.length})
+                  </strong>
+                </span>
+              </label>
+              {bulkAssetRows.length === 0 ? (
+                <p style={{ padding: 12, color: "var(--color-text-secondary)" }}>
+                  {nl ? "Geen middelen gevonden." : "No assets found."}
+                </p>
+              ) : (
+                bulkAssetRows.map((asset) => {
+                  const checked = bulkSelected.includes(asset.id);
+                  return (
+                    <label
+                      key={asset.id}
+                      className="switch-row compact"
+                      style={{ padding: "6px 6px", borderBottom: "1px solid var(--color-border)" }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleBulkSelected(asset.id)}
+                      />
+                      <span style={{ display: "grid", gap: 2 }}>
+                        <span>
+                          <strong>{asset.code}</strong> · {asset.name}
+                        </span>
+                        <small style={{ color: "var(--color-text-secondary)" }}>
+                          {[
+                            asset.brand,
+                            asset.model,
+                            asset.serialNumber,
+                            asset.department,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ") || "—"}
+                        </small>
+                      </span>
+                    </label>
+                  );
+                })
+              )}
+            </div>
+            <MutationFeedback
+              status={bulkFeedback.status}
+              message={bulkFeedback.message}
+            />
+          </div>
+        </Dialog>
       </div>
     </OfflineGate>
   );
