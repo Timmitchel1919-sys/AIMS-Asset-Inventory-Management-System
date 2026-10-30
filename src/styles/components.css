@@ -2334,10 +2334,16 @@ html .system-information {
   }
   .detail-title .actions {
     display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
   }
-  .detail-title .actions .btn {
+  .detail-title .actions .btn,
+  .detail-title .actions > .btn,
+  .page-title.detail-title > .actions > .btn {
     font-size: 0;
-    padding: 0 12px;
+    padding: 0 10px;
+    min-width: 0;
+    flex: 1 1 auto;
   }
   .detail-title .actions svg {
     margin: 0;
