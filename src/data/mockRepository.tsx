@@ -2274,6 +2274,26 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
           a.department = assignment.department;
           a.location = assignment.location;
           this.syncAssetReferences(a);
+          // When an asset is assigned to a user AND a department, the
+          // department becomes active automatically — a department that has
+          // live assigned assets is by definition in use. Match either on
+          // the resolved departmentId or on the raw name (legacy records).
+          const deptName = String(assignment.department || "").trim();
+          if (deptName) {
+            const target = this.state.references.find(
+              (ref) =>
+                ref.kind === "department" &&
+                ((a.departmentId && ref.id === a.departmentId) ||
+                  (!a.departmentId &&
+                    ref.name.trim().toLowerCase() ===
+                      deptName.toLowerCase())),
+            );
+            if (target && target.status !== "Active") {
+              target.status = "Active";
+              target.updatedAt = now();
+              target.updatedBy = command.actor || "Shaquil Alienda";
+            }
+          }
           this.state.assignments = [assignment, ...this.state.assignments];
           this.addMovement(
             "Assignment",

@@ -723,6 +723,25 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Any authorized AIMS user can flip an asset's operational status
+    // (e.g. Active → Inactive / Available → Reserved) without needing the
+    // broader assets.edit permission. The write may touch only the status
+    // field and the audit timestamps; identifier and shape fields stay
+    // untouched. This gives every signed-in school user the right to
+    // declare an asset "not active" after it has been added.
+    function isAssetStatusToggle() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status','updatedAt','updatedBy','lastUpdated','lastModifiedBy'
+        ])
+        && request.resource.data.status is string
+        && request.resource.data.status.size() > 0
+        && request.resource.data.status.size() <= 40
+        && request.resource.data.code == resource.data.code
+        && request.resource.data.codePrefix == resource.data.codePrefix
+        && request.resource.data.codeNumber == resource.data.codeNumber
+        && immutableAuditFields()
+        && noPrivilegeFields(request.resource.data);
+    }
     match /assets/{id} {
       allow read: if isOwner() || hasPermission('assets.view');
       // Owner path: no shape validation, no identifier-immutability check.
@@ -732,6 +751,7 @@ service cloud.firestore {
         || validLegacyImportedAsset(request.resource.data)
         || (hasPermission('assets.create') && validAsset(request.resource.data));
       allow update: if ownerSanityWrite(request.resource.data)
+        || (isAuthorizedAimsUser() && isAssetStatusToggle())
         || (
           hasAnyPermission(['assets.edit','assets.archive','movements.create'])
           && ((validAsset(request.resource.data) && immutableAuditFields()) || validLegacyAssetEdit())

@@ -273,8 +273,23 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     message: string;
   }>({ status: "idle", message: "" });
   const rows = useMemo(
-    () => snapshot.references.filter((item) => item.kind === kind),
-    [kind, snapshot.references],
+    () => {
+      const base = snapshot.references.filter((item) => item.kind === kind);
+      if (kind !== "department") return base;
+      // Live active-asset count per department: any asset currently assigned
+      // to this department whose status is not Disposed/Archived counts as
+      // active. Overrides whatever stale value may live on the stored
+      // department record.
+      return base.map((department) => {
+        const relatedCount = snapshot.assets.reduce((total, asset) => {
+          if (!assetInDepartment(asset, department)) return total;
+          if (["Disposed", "Archived"].includes(asset.status)) return total;
+          return total + 1;
+        }, 0);
+        return { ...department, relatedCount };
+      });
+    },
+    [kind, snapshot.references, snapshot.assets],
   );
   const locations = snapshot.references.filter(
       (item) => item.kind === "location",
