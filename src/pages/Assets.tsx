@@ -653,6 +653,10 @@ export default function Assets() {
       id: "export",
       label: t("assets.bulk.export"),
     },
+    can(user?.role, "inventory.create") && {
+      id: "toInventory",
+      label: t("assets.bulk.toInventory"),
+    },
   ].filter(Boolean) as { id: string; label: string }[];
 
   const beginBulk = (requestedAction = bulkAction) => {
@@ -767,6 +771,35 @@ export default function Assets() {
 
     const commands: WorkflowCommand[] = selected.map((entityId, idx) => {
       const currentAsset = snapshot.assets.find((a) => a.id === entityId);
+
+      if (bulkAction === "toInventory") {
+        const stamp = Date.now().toString(36);
+        const baseCode = (currentAsset?.code || `ASSET-${idx + 1}`).toUpperCase();
+        return {
+          action: "inventory.create" as const,
+          values: {
+            code: `INV-${baseCode}-${stamp}${idx}`,
+            name: currentAsset?.name || "Nieuw voorraadartikel",
+            itemType: "Equipment",
+            category: currentAsset?.category || "Equipment",
+            subcategory: currentAsset?.subcategory || "",
+            brand: currentAsset?.brand || "",
+            model: currentAsset?.model || "",
+            manufacturer: currentAsset?.manufacturer || "",
+            supplier: currentAsset?.supplier || "",
+            unit: "pieces",
+            onHand: 1,
+            minimum: 0,
+            reorderLevel: 0,
+            reorderQuantity: 0,
+            warehouse: "Main warehouse",
+            location: currentAsset?.location || "Warehouse",
+            department: currentAsset?.department || "",
+            notes:
+              `Toegevoegd vanuit ICT-module (${baseCode}). ${bulkReason}`.trim(),
+          },
+        };
+      }
 
       if (["archive", "delete"].includes(bulkAction)) {
         return {
@@ -1213,7 +1246,9 @@ export default function Assets() {
                           ? t("assets.bulk.mainLocation")
                           : bulkAction === "subLocation" || bulkAction === "department"
                             ? t("assets.bulk.subLocation")
-                            : t("assets.bulk.confirm")
+                            : bulkAction === "toInventory"
+                              ? t("assets.bulk.toInventory")
+                              : t("assets.bulk.confirm")
           }
           description={
             bulkAction === "bulkEdit"
