@@ -495,20 +495,12 @@ service cloud.firestore {
         && auditMetadataValid(data);
     }
     // Owner-only safety-net for ad-hoc writes (bulk edits, data cleanup).
-    // Keeps privilege-escalation blocks and basic size caps but skips the
-    // strict shape validators so the Owner can repair records the stricter
-    // validators would otherwise reject on a field the schema doesn't name.
+    // The ONLY remaining guardrail is that nobody can grant themselves
+    // administrator powers via a client write; every other shape check is
+    // intentionally dropped so the Owner can repair records whose fields
+    // the stricter validators don't yet know about.
     function ownerSanityWrite(data) {
-      return isOwner()
-        && noPrivilegeFields(data)
-        && shortString(data, 'name', 200)
-        && shortString(data, 'title', 300)
-        && shortString(data, 'description', 4000)
-        && shortString(data, 'notes', 4000)
-        && (!('code' in data) || (data.code is string && data.code.size() <= 80))
-        && (!('serialNumber' in data) || (data.serialNumber is string && data.serialNumber.size() <= 200))
-        && boundedList(data, 'attachments', 50)
-        && boundedList(data, 'photos', 50);
+      return isOwner() && noPrivilegeFields(data);
     }
     function validOperationalRecord(data) {
       return data.size() <= 200
@@ -732,24 +724,21 @@ service cloud.firestore {
     }
 
     match /assets/{id} {
-      allow read: if hasPermission('assets.view');
-      allow create: if validLegacyImportedAsset(request.resource.data)
-        || ownerSanityWrite(request.resource.data)
+      allow read: if isOwner() || hasPermission('assets.view');
+      // Owner path: no shape validation, no identifier-immutability check.
+      // Only guardrail is that nobody — including the Owner — can grant
+      // themselves administrator powers via noPrivilegeFields.
+      allow create: if ownerSanityWrite(request.resource.data)
+        || validLegacyImportedAsset(request.resource.data)
         || (hasPermission('assets.create') && validAsset(request.resource.data));
-      // Asset identifiers are client-immutable. A code-group prefix migration
-      // is performed exclusively by the trusted renameCodeGroupPrefix Function.
-      allow update: if (
-          isOwner()
-          || hasAnyPermission(['assets.edit','assets.archive','movements.create'])
-        )
-        && (
-          (validAsset(request.resource.data) && immutableAuditFields())
-          || validLegacyAssetEdit()
-          || (ownerSanityWrite(request.resource.data) && immutableAuditFields())
-        )
-        && request.resource.data.code == resource.data.code
-        && request.resource.data.codePrefix == resource.data.codePrefix
-        && request.resource.data.codeNumber == resource.data.codeNumber;
+      allow update: if ownerSanityWrite(request.resource.data)
+        || (
+          hasAnyPermission(['assets.edit','assets.archive','movements.create'])
+          && ((validAsset(request.resource.data) && immutableAuditFields()) || validLegacyAssetEdit())
+          && request.resource.data.code == resource.data.code
+          && request.resource.data.codePrefix == resource.data.codePrefix
+          && request.resource.data.codeNumber == resource.data.codeNumber
+        );
       allow delete: if false;
     }
     match /qrIdentities/{token} {
@@ -764,33 +753,35 @@ service cloud.firestore {
       allow delete: if false;
     }
     match /inventoryItems/{id} {
-      allow read: if hasPermission('inventory.view');
-      allow create: if validLegacyImportedInventory(request.resource.data)
-        || ownerSanityWrite(request.resource.data)
+      allow read: if isOwner() || hasPermission('inventory.view');
+      allow create: if ownerSanityWrite(request.resource.data)
+        || validLegacyImportedInventory(request.resource.data)
         || (hasPermission('inventory.create') && validInventory(request.resource.data));
-      allow update: if (
-          isOwner()
-          || hasAnyPermission(['inventory.edit','inventory.archive','inventory.restore','inventory.receive','inventory.issue','inventory.transfer','inventory.return','inventory.reserve','inventory.correct'])
-        )
-        && (
-          (validInventory(request.resource.data) && immutableAuditFields())
-          || (ownerSanityWrite(request.resource.data) && immutableAuditFields())
-        )
-        && request.resource.data.code == resource.data.code;
+      allow update: if ownerSanityWrite(request.resource.data)
+        || (
+          hasAnyPermission(['inventory.edit','inventory.archive','inventory.restore','inventory.receive','inventory.issue','inventory.transfer','inventory.return','inventory.reserve','inventory.correct'])
+          && validInventory(request.resource.data) && immutableAuditFields()
+          && request.resource.data.code == resource.data.code
+        );
       allow delete: if false;
     }
     match /codeGroups/{id} {
-      allow read: if isAuthorizedAimsUser();
-      allow create: if isAuthorizedAimsUser() && validCodeGroup(request.resource.data);
+      allow read: if isOwner() || isAuthorizedAimsUser();
+      allow create: if ownerSanityWrite(request.resource.data)
+        || (isAuthorizedAimsUser() && validCodeGroup(request.resource.data));
       // Browser clients may change descriptive fields, never the prefix.
       // Prefix migrations are performed only by the trusted backend Function.
-      allow update: if isAuthorizedAimsUser()
-        && validCodeGroup(request.resource.data)
-        && immutableAuditFields()
-        && request.resource.data.prefix == resource.data.prefix
-        // Moving a code group to the recycle bin is a deletion: Function only.
-        && (request.resource.data.get('archived', false) != true
-            || resource.data.get('archived', false) == true);
+      allow update: if (
+          ownerSanityWrite(request.resource.data)
+          && request.resource.data.prefix == resource.data.prefix
+        ) || (
+          isAuthorizedAimsUser()
+          && validCodeGroup(request.resource.data)
+          && immutableAuditFields()
+          && request.resource.data.prefix == resource.data.prefix
+          && (request.resource.data.get('archived', false) != true
+              || resource.data.get('archived', false) == true)
+        );
       allow delete: if false;
     }
     // Asset Types (tracking behavior). The document id is the normalised slug
@@ -833,8 +824,8 @@ service cloud.firestore {
       allow update, delete: if false;
     }
     match /assetHistoryEvents/{id} {
-      allow read: if hasAnyPermission(['history.view','assets.view']);
-      allow create: if validLegacyInventoryHistory(request.resource.data) || (validAssetHistoryEvent(request.resource.data) && (
+      allow read: if isOwner() || hasAnyPermission(['history.view','assets.view']);
+      allow create: if ownerSanityWrite(request.resource.data) || validLegacyInventoryHistory(request.resource.data) || (validAssetHistoryEvent(request.resource.data) && (
         (request.resource.data.isManual == true && hasPermission('history.create_manual'))
         || (request.resource.data.isManual == false && hasAnyPermission([
           'assets.create','assets.edit','assets.archive','assignments.manage',
@@ -964,16 +955,18 @@ service cloud.firestore {
         && (isOwner() || canReadOperationalCollection(collectionName));
       allow create: if isOperationalCollection(collectionName)
         && (
-          (canWriteOperationalCollection(collectionName) && validOperationalRecord(request.resource.data))
-          || ownerSanityWrite(request.resource.data)
+          ownerSanityWrite(request.resource.data)
+          || (canWriteOperationalCollection(collectionName) && validOperationalRecord(request.resource.data))
         );
       allow update: if isOperationalCollection(collectionName)
-        && (isOwner() || canWriteOperationalCollection(collectionName))
         && collectionName != 'inventoryTransactions'
         && collectionName != 'assetMovements'
         && (
-          (validOperationalRecord(request.resource.data) && immutableAuditFields())
-          || (ownerSanityWrite(request.resource.data) && immutableAuditFields())
+          ownerSanityWrite(request.resource.data)
+          || (
+            canWriteOperationalCollection(collectionName)
+            && validOperationalRecord(request.resource.data) && immutableAuditFields()
+          )
         )
         // Archiving a Hoofdlocatie (recycle bin) is a Master Data deletion:
         // Function only.
