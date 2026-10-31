@@ -1,5 +1,5 @@
 import { AlarmClock, Laptop, LogOut, ShieldAlert } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Card } from "../ui";
 import { useApp } from "../../context/AppContext";
 import {
@@ -38,14 +38,18 @@ export function ActiveSessionsCard() {
   const nl = app.language === "nl";
   const [sessions, setSessions] = useState<ActiveSession[]>([]);
   const [loading, setLoading] = useState(true);
-  const refresh = useCallback(async () => {
-    const events = await listAuthEvents(app.user?.id ?? null, 100);
-    setSessions(computeActiveSessions(events));
-    setLoading(false);
-  }, [app.user?.id]);
+  const uid = app.user?.id ?? null;
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let cancelled = false;
+    void listAuthEvents(uid, 100).then((events) => {
+      if (cancelled) return;
+      setSessions(computeActiveSessions(events));
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [uid]);
   async function signOutCurrent() {
     await app.logout();
   }

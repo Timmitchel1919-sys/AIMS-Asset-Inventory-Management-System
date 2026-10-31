@@ -2574,6 +2574,12 @@ html .system-information {
   background: var(--color-surface-elevated);
   color: var(--color-text-primary);
   box-shadow: var(--shadow-lg);
+  /* Enforce centering */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
 }
 .dialog.bulk-asset-picker {
   width: min(1240px, calc(100vw - 28px));
@@ -2620,14 +2626,6 @@ html .system-information {
   gap: 12px;
   align-items: end;
   margin-bottom: 8px;
-}
-
-  /* Enforce centering */
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  margin: 0;
 }
 .dialog::backdrop {
   background: var(--color-overlay);

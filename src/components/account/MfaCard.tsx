@@ -51,12 +51,24 @@ export function MfaCard() {
 
   useEffect(() => {
     if (!firebaseConfigured || isDemo) return;
+    let cancelled = false;
     try {
-      setStatus(getMfaStatus());
+      const next = getMfaStatus();
+      if (!cancelled) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing React state with Firebase multiFactor() after enrollment phase changes
+        setStatus(next);
+      }
     } catch {
       // multiFactor() throws before the user is bound; swallow.
     }
-    if (uid) void readBackupCodesState(uid).then(setBackup);
+    if (uid) {
+      void readBackupCodesState(uid).then((value) => {
+        if (!cancelled) setBackup(value);
+      });
+    }
+    return () => {
+      cancelled = true;
+    };
   }, [uid, isDemo, phase]);
 
   async function beginEnrollment() {
