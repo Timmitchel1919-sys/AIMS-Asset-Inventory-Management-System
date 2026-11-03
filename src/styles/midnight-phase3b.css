@@ -23,36 +23,37 @@
 
 html[data-theme="dark"] .app,
 html[data-theme="dark"] #root {
-  /* Local Midnight scale, additive to existing --color-* globals. */
-  --midnight-app-bg: #080B12;
-  --midnight-workspace: #0D111B;
-  --midnight-surface: #121826;
-  --midnight-surface-2: #171F2F;
-  --midnight-surface-hover: #1D293B;
-  --midnight-input: #101724;
-  --midnight-border: rgba(255, 255, 255, 0.06);
-  --midnight-border-strong: rgba(255, 255, 255, 0.11);
-  --midnight-divider: rgba(255, 255, 255, 0.04);
+  /* Local Midnight scale, additive to existing --color-* globals.
+     Carry Horizon palette — #0A0A0A / #378DF2 / #0BACC9 / #FFFFFF. */
+  --midnight-app-bg: #0A0A0A;
+  --midnight-workspace: #0F0F10;
+  --midnight-surface: #141414;
+  --midnight-surface-2: #1A1A1A;
+  --midnight-surface-hover: #222222;
+  --midnight-input: #121212;
+  --midnight-border: rgba(255, 255, 255, 0.08);
+  --midnight-border-strong: rgba(255, 255, 255, 0.14);
+  --midnight-divider: rgba(255, 255, 255, 0.05);
 
-  --midnight-ink: #F1F5F9;
-  --midnight-ink-2: #A9B6C8;
-  --midnight-ink-muted: #738198;
-  --midnight-ink-dim: #59677A;
+  --midnight-ink: #FFFFFF;
+  --midnight-ink-2: rgba(255, 255, 255, 0.75);
+  --midnight-ink-muted: rgba(255, 255, 255, 0.55);
+  --midnight-ink-dim: rgba(255, 255, 255, 0.35);
 
-  --midnight-accent: #22D3EE;
-  --midnight-accent-strong: #06B6D4;
-  --midnight-accent-soft: rgba(34, 211, 238, 0.14);
-  --midnight-accent-blue: #60A5FA;
-  --midnight-accent-teal: #2DD4BF;
+  --midnight-accent: #378DF2;
+  --midnight-accent-strong: #0BACC9;
+  --midnight-accent-soft: rgba(55, 141, 242, 0.16);
+  --midnight-accent-blue: #378DF2;
+  --midnight-accent-teal: #0BACC9;
   --midnight-accent-warm: #F5B86B;
 
-  --midnight-success: #34D399;
+  --midnight-success: #0BACC9;
   --midnight-warning: #F5B86B;
   --midnight-danger: #FB7185;
-  --midnight-info: #60A5FA;
+  --midnight-info: #378DF2;
 
-  --midnight-ring: 0 0 0 2px rgba(34, 211, 238, 0.4);
-  --midnight-focus-outline: 2px solid rgba(34, 211, 238, 0.55);
+  --midnight-ring: 0 0 0 2px rgba(55, 141, 242, 0.45);
+  --midnight-focus-outline: 2px solid rgba(55, 141, 242, 0.6);
 
   --midnight-radius-sm: 8px;
   --midnight-radius: 12px;

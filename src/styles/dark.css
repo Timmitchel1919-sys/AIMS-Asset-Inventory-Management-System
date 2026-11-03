@@ -1,63 +1,63 @@
 html[data-theme="dark"] {
-  /* M3 mapped to AIMS variables */
-  --color-primary: #6b86f5;
-  --color-primary-hover: #7b93ff;
-  --color-primary-active: #5570e0;
+  /* Carry Horizon palette — #0A0A0A / #378DF2 / #0BACC9 / #FFFFFF */
+  --color-primary: #378df2;
+  --color-primary-hover: #4f9df5;
+  --color-primary-active: #2a7bd9;
   --color-on-primary: #ffffff;
-  
-  --color-background: #020203;
-  --color-background-secondary: #0e0e10;
-  
+
+  --color-background: #0a0a0a;
+  --color-background-secondary: #111111;
+
   /* Surfaces */
-  --color-surface: rgba(19, 19, 22, 0.8); /* surface-container-lowest/80 */
-  --color-surface-secondary: rgba(28, 27, 30, 0.7); /* surface-container-low/70 */
-  --color-surface-elevated: #2a2a2c; /* surface-container-high */
-  --color-surface-hover: #353437; /* surface-container-highest */
-  
+  --color-surface: rgba(20, 20, 20, 0.85); /* lifted panel */
+  --color-surface-secondary: rgba(26, 26, 26, 0.75);
+  --color-surface-elevated: #1a1a1a;
+  --color-surface-hover: #222222;
+
   /* Borders */
-  --color-border: rgba(68, 70, 84, 0.4); /* outline-variant/40 */
-  --color-border-subtle: rgba(68, 70, 84, 0.2); 
-  --color-border-strong: #8e90a0; /* outline */
-  
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-subtle: rgba(255, 255, 255, 0.04);
+  --color-border-strong: rgba(255, 255, 255, 0.18);
+
   /* Text */
-  --color-text-primary: #e5e1e5; /* on-surface */
-  --color-text-secondary: #c5c5d6; /* on-surface-variant */
-  --color-text-muted: #8e90a0; /* outline */
-  --color-text-disabled: #464748; /* on-secondary-container */
-  
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.75);
+  --color-text-muted: rgba(255, 255, 255, 0.55);
+  --color-text-disabled: rgba(255, 255, 255, 0.3);
+
   /* Accents */
-  --color-accent: #d9c4a4; /* tertiary */
-  --color-danger: #ffb4ab; /* error */
-  --color-focus-ring: rgba(41, 73, 200, 0.5);
-  
-  --color-table-header: rgba(28, 27, 30, 0.9);
-  
+  --color-accent: #0bacc9;
+  --color-danger: #ff6b6b;
+  --color-focus-ring: rgba(55, 141, 242, 0.5);
+
+  --color-table-header: rgba(20, 20, 20, 0.9);
+
   /* Inputs */
-  --color-input-background: rgba(14, 14, 16, 0.5); /* surface-container-lowest/50 */
-  --color-input-border: rgba(68, 70, 84, 0.4); /* outline-variant/40 */
-  
+  --color-input-background: rgba(14, 14, 14, 0.6);
+  --color-input-border: rgba(255, 255, 255, 0.08);
+
   /* Sidebar */
-  --color-sidebar-bg: rgba(14,14,20,0.7);
-  --color-sidebar-text: #c5c5d6;
-  --color-sidebar-muted: #8e90a0;
-  --color-sidebar-hover: rgba(53, 52, 55, 0.4); /* surface-variant/40 */
-  --color-sidebar-active-bg: rgba(41, 73, 200, 0.2); /* primary-container/20 */
-  --color-sidebar-active-text: #b9c3ff; /* primary */
-  
+  --color-sidebar-bg: rgba(10, 10, 10, 0.9);
+  --color-sidebar-text: rgba(255, 255, 255, 0.75);
+  --color-sidebar-muted: rgba(255, 255, 255, 0.55);
+  --color-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --color-sidebar-active-bg: #378df2;
+  --color-sidebar-active-text: #ffffff;
+
   /* Search */
-  --global-search-surface: #131316;
-  --global-search-border: rgba(68, 70, 84, 0.4);
-  --global-search-text: #e5e1e5;
-  --global-search-muted: #8e90a0;
-  --global-search-hover: #2a2a2c;
-  --global-search-active: rgba(41, 73, 200, 0.2);
-  --global-search-accent: #2949c8;
-  
+  --global-search-surface: #141414;
+  --global-search-border: rgba(255, 255, 255, 0.1);
+  --global-search-text: #ffffff;
+  --global-search-muted: rgba(255, 255, 255, 0.55);
+  --global-search-hover: #1f1f1f;
+  --global-search-active: rgba(55, 141, 242, 0.2);
+  --global-search-accent: #378df2;
+
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 10px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 20px 40px -12px rgba(0, 0, 0, 0.7);
 }
 
 /* Base grids & backgrounds */
@@ -68,11 +68,11 @@ html[data-theme="dark"] .main,
 html[data-theme="dark"] .page,
 html[data-theme="dark"] .dashboard-grid,
 html[data-theme="dark"] .dashboard-bottom {
-  background-color: #020203;
+  background-color: #0a0a0a;
   color: var(--color-text-primary);
-  background-image: 
-    radial-gradient(circle at 10% 10%, rgba(20,32,85,0.35) 0%, transparent 45%),
-    radial-gradient(circle at 90% 90%, rgba(20,32,85,0.25) 0%, transparent 45%),
+  background-image:
+    radial-gradient(circle at 10% 10%, rgba(55, 141, 242, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 90% 90%, rgba(11, 172, 201, 0.14) 0%, transparent 45%),
     linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
@@ -84,40 +84,41 @@ html[data-theme="dark"] .app-sidebar,
 html[data-theme="dark"] .app-sidebar__header,
 html[data-theme="dark"] .app-sidebar > .sidebar-foot,
 html[data-theme="dark"] .bottom-nav {
-  background: rgba(14,14,20,0.7);
+  background: rgba(10, 10, 10, 0.9);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: inset -1px 0 0 rgba(255,255,255,0.07);
+  box-shadow: inset -1px 0 0 rgba(255,255,255,0.06);
   border: none;
 }
 
 /* Topbar (aims-glass-header) */
 html[data-theme="dark"] .topbar {
-  background: rgba(19,19,22,0.65);
+  background: rgba(14, 14, 14, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.4);
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.5);
   border: none;
 }
 
-/* Sidebar navigation active state — rail only (via midnight-phase3b);
-   no light-blue fill, outline or glow on the module button. */
+/* Sidebar navigation — active = filled blue pill like Carry Horizon */
+html[data-theme="dark"] .app-sidebar nav .navigation-item {
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 0.75rem;
+  transition: background 160ms ease, color 160ms ease;
+}
 html[data-theme="dark"] .app-sidebar nav .navigation-item:is(:hover,:focus-visible) {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid transparent;
-  color: var(--color-sidebar-active-text);
-  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
   box-shadow: none;
 }
 html[data-theme="dark"] .app-sidebar nav .navigation-item:is(.active,[aria-current="page"]) {
-  background: transparent;
-  border: 1px solid transparent;
-  color: #e5e1e5;
-  border-radius: 0.5rem;
-  box-shadow: none;
+  background: linear-gradient(135deg, #378df2 0%, #0bacc9 120%);
+  color: #ffffff;
+  box-shadow: 0 8px 24px -8px rgba(55, 141, 242, 0.55);
 }
-html[data-theme="dark"] .app-sidebar nav .navigation-item:is(:hover,:focus-visible,.active,[aria-current="page"]) .navigation-item__icon {
-  color: var(--color-sidebar-active-text);
+html[data-theme="dark"] .app-sidebar nav .navigation-item:is(.active,[aria-current="page"]) .navigation-item__icon,
+html[data-theme="dark"] .app-sidebar nav .navigation-item:is(:hover,:focus-visible) .navigation-item__icon {
+  color: #ffffff;
 }
 html[data-theme="dark"] .app-sidebar__active-notch { display: none; }
 
@@ -139,10 +140,10 @@ html[data-theme="dark"] :is(input, select, textarea, .global-search__input-wrapp
   border-radius: 0.5rem;
 }
 html[data-theme="dark"] :is(input,textarea)::placeholder { color: var(--color-text-muted); opacity: 1; }
-html[data-theme="dark"] :is(input,select,textarea):focus-visible { 
-  border-color: #2949c8; 
-  box-shadow: 0 0 0 1px #2949c8; 
-  outline: none; 
+html[data-theme="dark"] :is(input,select,textarea):focus-visible {
+  border-color: #378df2;
+  box-shadow: 0 0 0 2px rgba(55, 141, 242, 0.35);
+  outline: none;
 }
 
 /* Toolbars / Filter bars */
@@ -155,28 +156,28 @@ html[data-theme="dark"] :is(.data-toolbar, .table-filters, .filter-bar, .search)
 /* Buttons */
 html[data-theme="dark"] .btn.primary,
 html[data-theme="dark"] .btn:not(.secondary):not(.danger) {
-  background: #2949c8;
+  background: #378df2;
   border: 1px solid transparent;
   color: #ffffff;
   border-radius: 0.5rem;
-  box-shadow: 0 0 20px rgba(41,73,200,0.45);
+  box-shadow: 0 10px 24px -10px rgba(55, 141, 242, 0.65);
   transition: all 150ms ease;
 }
 html[data-theme="dark"] .btn.primary:hover,
 html[data-theme="dark"] .btn:not(.secondary):not(.danger):hover {
-  background: #3352d0;
+  background: #4f9df5;
   transform: translateY(-1px);
 }
 
 html[data-theme="dark"] .btn.secondary {
-  background: rgba(53, 52, 55, 0.4);
-  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--color-text-primary);
   border-radius: 0.5rem;
   transition: all 150ms ease;
 }
-html[data-theme="dark"] .btn.secondary:hover { 
-  background: rgba(53, 52, 55, 0.7); 
+html[data-theme="dark"] .btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 html[data-theme="dark"] .btn.danger {
@@ -188,85 +189,86 @@ html[data-theme="dark"] .btn.danger {
 /* Table Modules */
 html[data-theme="dark"] table { background: transparent; color: var(--color-text-primary); }
 html[data-theme="dark"] :is(thead, thead th) {
-  background: #3a3a3d !important;
+  background: #141414 !important;
   color: #ffffff !important;
   color: var(--color-text-secondary);
   border-bottom: 1px solid var(--color-border);
 }
 html[data-theme="dark"] :is(tbody td, tbody th) { border-bottom: 1px solid var(--color-border-subtle); }
-html[data-theme="dark"] tbody tr:hover td { background: rgba(53, 52, 55, 0.3) !important; }
-html[data-theme="dark"] tbody tr:is(.selected, [aria-selected="true"]) td { background: rgba(41, 73, 200, 0.15) !important; }
+html[data-theme="dark"] tbody tr:hover td { background: rgba(255, 255, 255, 0.03) !important; }
+html[data-theme="dark"] tbody tr:is(.selected, [aria-selected="true"]) td { background: rgba(55, 141, 242, 0.15) !important; }
 
 /* Dropdowns & Popovers */
 html[data-theme="dark"] :is(.dropdown-menu, .profile-menu-panel, .menu, .popover, .dropdown-popover, .global-search__results) {
-  background: #1c1b1e !important;
+  background: #141414 !important;
   border: 1px solid var(--color-border) !important;
   border-radius: 0.5rem;
   box-shadow: var(--shadow-lg);
 }
-html[data-theme="dark"] :is(.dropdown-menu, .profile-menu-panel, .menu, .popover) :is(a, button):hover { 
-  background: rgba(53, 52, 55, 0.5); 
+html[data-theme="dark"] :is(.dropdown-menu, .profile-menu-panel, .menu, .popover) :is(a, button):hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 /* Auth Pages */
 html[data-theme="dark"] :is(.auth-page, .auth-shell, .login-page, .signup-page) {
-  background-color: #020203;
-  background-image: 
-    radial-gradient(circle at 50% 0%, rgba(20,32,85,0.4) 0%, transparent 60%),
+  background-color: #0a0a0a;
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(55, 141, 242, 0.28) 0%, transparent 60%),
+    radial-gradient(circle at 50% 100%, rgba(11, 172, 201, 0.22) 0%, transparent 60%),
     linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-  background-size: 100% 100%, 32px 32px, 32px 32px;
+  background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
 }
 html[data-theme="dark"] :is(.auth-card, .auth-panel, .auth-form) {
-  background: rgba(19, 19, 22, 0.8);
+  background: rgba(20, 20, 20, 0.85);
   border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   backdrop-filter: blur(16px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 /* Profile and overrides */
 html[data-theme='dark'] .profile-card,
 html[data-theme='dark'] .dialog-body select {
-  background: #131316 !important;
+  background: #141414 !important;
   border: 1px solid var(--color-border) !important;
   color: var(--color-text-primary) !important;
 }
 
-
-
-
 /* Bottom Nav */
 html[data-theme="dark"] .bottom-nav a { color: var(--color-text-muted); }
-html[data-theme="dark"] .bottom-nav a:is(.active,[aria-current="page"]) { 
-  color: var(--color-text-primary); 
-  background: var(--color-surface); 
+html[data-theme="dark"] .bottom-nav a:is(.active,[aria-current="page"]) {
+  color: #ffffff;
+  background: #378df2;
   border-radius: 0.5rem;
 }
-html[data-theme="dark"] .bottom-nav a:is(.active,[aria-current="page"]) svg { color: #b9c3ff; }
-/* Topbar search: white outline around the whole search field */
+html[data-theme="dark"] .bottom-nav a:is(.active,[aria-current="page"]) svg { color: #ffffff; }
+
+/* Topbar search: subtle outline */
 html[data-theme="dark"] .global-search__input-wrapper {
   border: 1px solid rgba(255, 255, 255, 0.85) !important;
-  border-radius: 0.5rem;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.6);
 }
 html[data-theme="dark"] .global-search__input-wrapper > input {
   border: 0 !important;
   box-shadow: none !important;
+  background: transparent;
 }
 html[data-theme="dark"] .global-search__input-wrapper:focus-within {
-  border-color: #ffffff !important;
-  box-shadow: 0 0 0 2px rgba(185, 195, 255, 0.35);
+  border-color: #378df2 !important;
+  box-shadow: 0 0 0 2px rgba(55, 141, 242, 0.35);
 }
-/* Fix active table headers blue color */
+/* Active table headers highlighted blue */
 html[data-theme="dark"] th.active,
 html[data-theme="dark"] th[aria-sort="ascending"],
 html[data-theme="dark"] th[aria-sort="descending"] {
-  color: #8ea2ff !important;
+  color: #378df2 !important;
 }
 
-/* Brighter blue text (links, codes) */
+/* Blue text (links, codes) */
 html[data-theme="dark"] :is(.asset-code, .table-link, .count-link) {
-  color: #8ea2ff;
+  color: #378df2;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -275,23 +277,20 @@ html[data-theme="dark"] :is(.asset-code, .table-link, .count-link) {
 /* works for both desktop and mobile breakpoints.                         */
 /* ---------------------------------------------------------------------- */
 
-/* Topbar connectivity pill — remove the filled background, keep the
-   ring, label and icon green (brighter). Mirror the treatment for all
-   other state tones (sync/limited/offline) so any coloured status chip
-   is outline-only. */
+/* Topbar connectivity pill — outline-only variants. */
 html[data-theme="dark"] .connectivity-pill {
   background: transparent !important;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 html[data-theme="dark"] .connectivity-pill--online {
-  color: #4ade80 !important;
-  border-color: #4ade80 !important;
+  color: #0bacc9 !important;
+  border-color: #0bacc9 !important;
 }
-html[data-theme="dark"] .connectivity-pill--online svg { color: #4ade80; }
+html[data-theme="dark"] .connectivity-pill--online svg { color: #0bacc9; }
 html[data-theme="dark"] .connectivity-pill--syncing {
-  color: #93c5fd !important;
-  border-color: #93c5fd !important;
+  color: #378df2 !important;
+  border-color: #378df2 !important;
 }
 html[data-theme="dark"] .connectivity-pill--limited {
   color: #fcd34d !important;
@@ -302,33 +301,30 @@ html[data-theme="dark"] .connectivity-pill--offline {
   border-color: #fca5a5 !important;
 }
 
-/* Module count chips (total records / active assets / inactive assets).
-   Keep the outer chip card, drop the coloured pill around the number,
-   and brighten the digits themselves. */
+/* Module count chips (total records / active / inactive). */
 html[data-theme="dark"] .data-toolbar__count {
-  background: #000 !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: #0a0a0a !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
   color: var(--color-text-secondary);
 }
 html[data-theme="dark"] .data-toolbar__count b {
   background: transparent !important;
   padding: 0;
   min-width: 0;
-  color: #c7d2fe;
+  color: #378df2;
   font-weight: 800;
-  text-shadow: 0 0 10px rgba(141, 162, 255, 0.35);
+  text-shadow: 0 0 10px rgba(55, 141, 242, 0.4);
 }
 html[data-theme="dark"] .data-toolbar__count--success b {
-  color: #4ade80;
-  text-shadow: 0 0 10px rgba(74, 222, 128, 0.35);
+  color: #0bacc9;
+  text-shadow: 0 0 10px rgba(11, 172, 201, 0.4);
 }
 html[data-theme="dark"] .data-toolbar__count--danger b {
   color: #fca5a5;
   text-shadow: 0 0 10px rgba(252, 165, 165, 0.35);
 }
 
-/* Overview trigger inside list/mobile cards — restyle to match the
-   primary Export button: solid blue with white text. */
+/* Overview trigger — primary blue filled button */
 html[data-theme="dark"] .department-overview-trigger,
 html[data-theme="dark"] .mobile-records .department-overview-trigger {
   display: inline-flex;
@@ -338,45 +334,43 @@ html[data-theme="dark"] .mobile-records .department-overview-trigger {
   width: 100%;
   min-height: 44px;
   padding: 0 14px;
-  background: #2949c8 !important;
+  background: #378df2 !important;
   color: #ffffff !important;
   border: 1px solid transparent;
   border-radius: 0.5rem;
   font-weight: 700;
-  box-shadow: 0 0 18px rgba(41, 73, 200, 0.4);
+  box-shadow: 0 10px 24px -10px rgba(55, 141, 242, 0.65);
   text-decoration: none;
   transition: background 150ms ease, transform 150ms ease;
 }
 html[data-theme="dark"] .department-overview-trigger:hover {
-  background: #3352d0 !important;
+  background: #4f9df5 !important;
   transform: translateY(-1px);
 }
 html[data-theme="dark"] .department-overview-trigger svg { color: #ffffff; }
 
-/* Soft grey surface for module containers that hold search, counts and
-   record cards — matches the input/search bar tone so the panel reads
-   as one lifted surface against the app background. */
+/* Module container surfaces */
 html[data-theme="dark"] .data-page .data-card,
 html[data-theme="dark"] .data-card {
-  background: #171f2f !important;
+  background: #141414 !important;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0.9rem;
 }
 html[data-theme="dark"] .data-page .data-toolbar,
 html[data-theme="dark"] .data-card .data-toolbar {
-  background: #171f2f !important;
+  background: #141414 !important;
   border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 html[data-theme="dark"] .mobile-records {
-  background: #171f2f;
+  background: #141414;
 }
 html[data-theme="dark"] .mobile-records article {
-  background: #1d293b;
+  background: #1a1a1a;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
-/* Mobile-record field labels and values: brighter type on true black. */
+/* Mobile-record field labels and values */
 html[data-theme="dark"] .mobile-records small {
   color: var(--color-text-muted);
   letter-spacing: 0.02em;
@@ -386,21 +380,18 @@ html[data-theme="dark"] .mobile-records span {
   color: var(--color-text-primary);
 }
 
-/* Any inline green link (e.g. active-count link in reference lists):
-   drop the soft background, keep the colour, brighten it. */
+/* Inline status links */
 html[data-theme="dark"] .linklike[style*="--color-success"],
 html[data-theme="dark"] .count-link.is-success {
   background: transparent !important;
-  color: #4ade80 !important;
+  color: #0bacc9 !important;
 }
 html[data-theme="dark"] .linklike[style*="--color-danger"],
 html[data-theme="dark"] .count-link.is-danger {
   background: transparent !important;
   color: #fca5a5 !important;
 }
-/* Dashboard page: pure black panel background so the gaps between
-   bento tiles read as true black and the grid overlay doesn't bleed
-   through. The soft-navy grid stays for the rest of the app. */
+/* Dashboard page: pure black panel background. */
 html[data-theme="dark"] .dashboard-page,
 html[data-theme="dark"] .page.dashboard-page {
   background: #000000 !important;

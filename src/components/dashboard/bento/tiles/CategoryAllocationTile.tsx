@@ -8,11 +8,11 @@ interface Props {
 }
 
 const PALETTE = [
-  "#6b86f5",
-  "#d9c4a4",
+  "#378df2",
+  "#0bacc9",
   "#86efac",
   "#fca5a5",
-  "#c5c5d6",
+  "#ffffff",
   "#8e90a0",
 ];
 
