@@ -39,6 +39,7 @@ import {
 import { PrintAuditHeader } from "./PrintAuditHeader";
 import { OPEN_ACCOUNT_MENU_EVENT } from "../lib/accountMenu";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import {
   useEffect,
   useLayoutEffect,
@@ -577,7 +578,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               )}
             </span>
           </button>
-          {profileOpen && (
+          {profileOpen && createPortal(
             <>
               <button
                 className="account-sheet-scrim"
@@ -588,7 +589,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 }
                 onClick={() => setProfileOpen(false)}
               />
-              <div id="account-menu" className="profile-menu" role="menu">
+              <div id="account-menu" className="profile-menu profile-menu--sheet" role="menu">
                 <span className="account-sheet-handle" aria-hidden="true" />
                 <div className="account-menu-links">
                   <button
@@ -651,7 +652,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                   {app.language === "nl" ? "Afmelden" : "Sign out"}
                 </button>
               </div>
-            </>
+            </>,
+            document.body,
           )}
         </div>
       </aside>

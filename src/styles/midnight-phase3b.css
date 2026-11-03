@@ -808,49 +808,30 @@ html[data-theme="dark"] .upcoming button:hover {
 
 /* ---- Mobile Departments module: overview trigger grey + blue text, */
 /* zero-counts in the Active Assets column rendered red.             */
-@media (min-width: 781px) {
-  html[data-theme="dark"] .department-overview-trigger {
-    background: #378df2 !important;
-    color: #ffffff !important;
-    border: 0 !important;
-    outline: 0 !important;
-    box-shadow: none !important;
-    text-decoration: none !important;
-  }
-  html[data-theme="dark"] .department-overview-trigger:hover {
-    background: #4f9df5 !important;
-    color: #ffffff !important;
-  }
-  html[data-theme="dark"] .department-overview-trigger:focus-visible {
-    outline: 0 !important;
-    box-shadow: 0 0 0 2px rgba(55, 141, 242, 0.45) !important;
-  }
-  html[data-theme="dark"] .department-overview-trigger svg {
-    color: #ffffff;
-  }
+html[data-theme="dark"] .department-overview-trigger,
+html[data-theme="dark"] .mobile-records .department-overview-trigger,
+html[data-theme="dark"] .data-table-departments .department-overview-trigger {
+  background: transparent !important;
+  color: #378df2 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+  padding: 4px 2px !important;
+  min-height: 0 !important;
+  width: auto !important;
 }
-@media (max-width: 780px) {
-  html[data-theme="dark"] .department-overview-trigger,
-  html[data-theme="dark"] .mobile-records .department-overview-trigger,
-  html[data-theme="dark"] .data-table-departments .department-overview-trigger {
-    background: transparent !important;
-    color: #378df2 !important;
-    border: 0 !important;
-    outline: 0 !important;
-    box-shadow: none !important;
-    text-decoration: underline !important;
-    text-underline-offset: 3px;
-    padding: 4px 2px !important;
-    min-height: 0 !important;
-    width: auto !important;
-  }
-  html[data-theme="dark"] .department-overview-trigger:hover {
-    background: transparent !important;
-    color: #4f9df5 !important;
-  }
-  html[data-theme="dark"] .department-overview-trigger svg {
-    color: #378df2;
-  }
+html[data-theme="dark"] .department-overview-trigger:hover {
+  background: transparent !important;
+  color: #4f9df5 !important;
+}
+html[data-theme="dark"] .department-overview-trigger:focus-visible {
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(55, 141, 242, 0.45) !important;
+}
+html[data-theme="dark"] .department-overview-trigger svg {
+  color: #378df2;
 }
 /* Active-assets column: a bare "0" becomes red; non-zero stays ink. */
 html[data-theme="dark"] td[data-column-id="activeAssets"],

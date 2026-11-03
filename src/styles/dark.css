@@ -324,66 +324,38 @@ html[data-theme="dark"] .data-toolbar__count--danger b {
   text-shadow: 0 0 10px rgba(252, 165, 165, 0.35);
 }
 
-/* Overview trigger — DESKTOP: primary blue filled button, no outline. */
-@media (min-width: 781px) {
-  html[data-theme="dark"] .department-overview-trigger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    min-height: 44px;
-    padding: 0 14px;
-    background: #378df2 !important;
-    color: #ffffff !important;
-    border: 0 !important;
-    outline: 0 !important;
-    border-radius: 0.5rem;
-    font-weight: 700;
-    box-shadow: none;
-    text-decoration: none;
-    transition: background 150ms ease, transform 150ms ease;
-  }
-  html[data-theme="dark"] .department-overview-trigger:hover {
-    background: #4f9df5 !important;
-    transform: translateY(-1px);
-  }
-  html[data-theme="dark"] .department-overview-trigger:focus-visible {
-    outline: 0 !important;
-    box-shadow: 0 0 0 2px rgba(55, 141, 242, 0.45);
-  }
-  html[data-theme="dark"] .department-overview-trigger svg { color: #ffffff; }
+/* Overview trigger — all breakpoints: plain blue text with underline,
+   no infill, no outline. Matches the light-theme link treatment. */
+html[data-theme="dark"] .department-overview-trigger,
+html[data-theme="dark"] .mobile-records .department-overview-trigger,
+html[data-theme="dark"] .data-table-departments .department-overview-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: auto;
+  min-height: 0;
+  padding: 4px 2px;
+  background: transparent !important;
+  color: #378df2 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  border-radius: 0;
+  font-weight: 600;
+  box-shadow: none !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+  transform: none !important;
 }
-
-/* Overview trigger — MOBILE: plain text with underline, like light theme. */
-@media (max-width: 780px) {
-  html[data-theme="dark"] .department-overview-trigger,
-  html[data-theme="dark"] .mobile-records .department-overview-trigger,
-  html[data-theme="dark"] .data-table-departments .department-overview-trigger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: auto;
-    min-height: 0;
-    padding: 4px 2px;
-    background: transparent !important;
-    color: #378df2 !important;
-    border: 0 !important;
-    outline: 0 !important;
-    border-radius: 0;
-    font-weight: 600;
-    box-shadow: none !important;
-    text-decoration: underline !important;
-    text-underline-offset: 3px;
-    transform: none !important;
-  }
-  html[data-theme="dark"] .department-overview-trigger:hover {
-    color: #4f9df5 !important;
-    background: transparent !important;
-  }
-  html[data-theme="dark"] .department-overview-trigger svg { color: #378df2; }
+html[data-theme="dark"] .department-overview-trigger:hover {
+  color: #4f9df5 !important;
+  background: transparent !important;
 }
+html[data-theme="dark"] .department-overview-trigger:focus-visible {
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(55, 141, 242, 0.45) !important;
+}
+html[data-theme="dark"] .department-overview-trigger svg { color: #378df2; }
 
 /* Module container surfaces */
 html[data-theme="dark"] .data-page .data-card,
