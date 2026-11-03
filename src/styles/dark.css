@@ -523,3 +523,89 @@ html[data-theme="dark"] button[data-row-action="view"] {
   color: #ffffff !important;
   padding: 6px 14px !important;
 }
+
+/* ---------------------------------------------------------------------- */
+/* Page title + sticky toolbar: let the gradient page background bleed    */
+/* through instead of showing a solid black strip.                        */
+/* ---------------------------------------------------------------------- */
+html[data-theme="dark"] .authenticated-app main .page-title,
+html[data-theme="dark"] .page-title {
+  background: transparent !important;
+}
+html[data-theme="dark"] .authenticated-app main :is(.data-toolbar, .dm-toolbar, .list-toolbar) {
+  background: transparent !important;
+  border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+}
+html[data-theme="dark"] .data-page .data-card > .data-toolbar,
+html[data-theme="dark"] .data-card > .data-toolbar {
+  background: transparent !important;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Settings · Juridisch en privacy: unify every panel card to the same    */
+/* dark card color used across the module.                                */
+/* ---------------------------------------------------------------------- */
+html[data-theme="dark"] .legal-settings__documents > a,
+html[data-theme="dark"] .legal-contact-card,
+html[data-theme="dark"] .policy-information,
+html[data-theme="dark"] .legal-admin-summary,
+html[data-theme="dark"] .system-information {
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(55, 141, 242, 0.14) 0%, transparent 55%),
+    #141414 !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  color: var(--color-text-primary) !important;
+  border-radius: 1.25rem !important;
+}
+html[data-theme="dark"] .legal-contact-card a,
+html[data-theme="dark"] .legal-contact-card button {
+  background: #1f1f1f !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #378df2 !important;
+  border-radius: 10px !important;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Notifications stats row — equal spacing in a 2-column grid, so the     */
+/* four stat cards line up with equal gaps.                               */
+/* ---------------------------------------------------------------------- */
+.notifications-page .stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.notifications-page .stats-row > .card,
+.notifications-page .stats-row > .stat-card {
+  margin: 0 !important;
+}
+.notifications-page .stat-card {
+  padding: 16px;
+  display: grid;
+  gap: 8px;
+}
+.notifications-page .stat-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.notifications-page .stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+@media (max-width: 900px) {
+  .notifications-page .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .notifications-page .stats-row { grid-template-columns: 1fr; }
+}
+
+/* And the Notifications filter/panel cards use consistent spacing. */
+.notifications-page > .card,
+.notifications-page .page > .card {
+  margin-bottom: 16px;
+}
