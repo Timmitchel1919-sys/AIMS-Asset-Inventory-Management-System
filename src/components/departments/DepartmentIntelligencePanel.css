@@ -1,8 +1,39 @@
 /* Department Intelligence Panel uses the standard <dialog>-based `.dialog` component
-   as a centered modal, but overrides width to accommodate the extra data. */
+   as a right-side slide-in sheet. Dim background, no blur. */
 .dialog.department-panel {
   width: min(940px, calc(100vw - 28px));
   max-width: 940px;
+  height: 100vh;
+  max-height: 100vh;
+  top: 0;
+  right: 0;
+  left: auto;
+  bottom: 0;
+  margin: 0;
+  transform: none;
+  border-radius: 0;
+  border-right: 0;
+  animation: department-panel-slide-in 220ms ease-out;
+}
+.dialog.department-panel::backdrop {
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+@keyframes department-panel-slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@media (max-width: 640px) {
+  .dialog.department-panel {
+    width: 100vw;
+    max-width: 100vw;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialog.department-panel {
+    animation: none;
+  }
 }
 
 .dept-panel {

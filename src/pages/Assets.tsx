@@ -407,19 +407,19 @@ export default function Assets() {
         value: (asset) => asset.code,
       },
       {
-        id: "brand",
-        label: t("assets.brand"),
-        sortable: true,
-        render: (asset) => formatIctData(asset.brand, "brand"),
-        value: (asset) => formatIctData(asset.brand, "brand"),
-      },
-      {
         id: "name",
         label: t("assets.asset"),
         required: true,
         sortable: true,
         render: (asset) => <strong>{formatIctData(asset.name, "name")}</strong>,
         value: (asset) => formatIctData(asset.name, "name"),
+      },
+      {
+        id: "brand",
+        label: t("assets.brand"),
+        sortable: true,
+        render: (asset) => formatIctData(asset.brand, "brand"),
+        value: (asset) => formatIctData(asset.brand, "brand"),
       },
       {
         id: "codeGroup",

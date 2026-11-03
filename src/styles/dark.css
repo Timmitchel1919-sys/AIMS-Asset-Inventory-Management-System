@@ -336,16 +336,21 @@ html[data-theme="dark"] .mobile-records .department-overview-trigger {
   padding: 0 14px;
   background: #378df2 !important;
   color: #ffffff !important;
-  border: 1px solid transparent;
+  border: 0 !important;
+  outline: 0 !important;
   border-radius: 0.5rem;
   font-weight: 700;
-  box-shadow: 0 10px 24px -10px rgba(55, 141, 242, 0.65);
+  box-shadow: none;
   text-decoration: none;
   transition: background 150ms ease, transform 150ms ease;
 }
 html[data-theme="dark"] .department-overview-trigger:hover {
   background: #4f9df5 !important;
   transform: translateY(-1px);
+}
+html[data-theme="dark"] .department-overview-trigger:focus-visible {
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(55, 141, 242, 0.45);
 }
 html[data-theme="dark"] .department-overview-trigger svg { color: #ffffff; }
 
