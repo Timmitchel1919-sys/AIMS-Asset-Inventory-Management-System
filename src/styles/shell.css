@@ -518,29 +518,48 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
   display: none !important;
 }
 
-/* Account menu floats above the frozen footer, not inside it. */
-.app-sidebar .sidebar-foot .profile-menu {
-  position: absolute;
-  top: auto;
-  left: 12px;
-  right: 12px;
-  bottom: calc(100% + 8px);
-  z-index: 60;
+/* Account menu — full-height sheet from the left edge, dim scrim only
+   (no blur). The sheet owns its own layer; the sidebar sits behind the
+   dim. */
+.app-sidebar .sidebar-foot .profile-menu,
+.profile-menu-wrap .profile-menu {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: auto;
+  width: min(360px, 100vw);
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+  border-radius: 0;
+  border-width: 0 1px 0 0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  z-index: 101;
+  animation: profile-menu-slide-in 220ms ease-out;
 }
-.app-sidebar .sidebar-foot > .account-sheet-scrim {
-  display: none;
+.app-sidebar .sidebar-foot > .account-sheet-scrim,
+.profile-menu-wrap .account-sheet-scrim {
+  display: block !important;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  z-index: 100 !important;
 }
-@media (min-width: 781px) {
-  .app-sidebar--collapsed:has(.profile-menu) {
-    overflow: visible;
-  }
-  .app-sidebar--collapsed .sidebar-foot .profile-menu {
-    top: auto;
-    right: auto;
-    bottom: 0;
-    left: calc(100% + 8px);
-    width: min(320px, calc(100vw - 100px));
-  }
+@keyframes profile-menu-slide-in {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-sidebar .sidebar-foot .profile-menu,
+  .profile-menu-wrap .profile-menu { animation: none; }
 }
 
 
@@ -795,3 +814,25 @@ html[data-theme="aims-light"] .aims-sheet-scrim {
   }
 }
 
+
+/* Fixed, viewport-anchored sidebar with its own internal scroll — keeps
+   the module list reachable at any scroll position of the main page. */
+.app-sidebar.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.app-sidebar.sidebar > nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.app-sidebar.sidebar > .sidebar-foot {
+  flex: 0 0 auto;
+}

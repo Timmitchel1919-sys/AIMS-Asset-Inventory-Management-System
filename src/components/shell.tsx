@@ -2,7 +2,6 @@ import {
   Activity,
   Archive,
   BarChart3,
-  BadgeCheck,
   Bell,
   Bot,
   Boxes,
@@ -568,20 +567,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                     ? "Demosessie"
                     : "Demo session"
                   : app.user.email}
-              </small>
-              <small
-                className={`sidebar-profile__verified${
-                  app.emailVerified ? " verified" : " unverified"
-                }`}
-              >
-                <BadgeCheck aria-hidden="true" />
-                {app.emailVerified
-                  ? app.language === "nl"
-                    ? "Geverifieerd"
-                    : "Verified"
-                  : app.language === "nl"
-                    ? "Niet geverifieerd"
-                    : "Not verified"}
               </small>
               {(app.user.jobTitle || app.user.department) && (
                 <small className="sidebar-profile__position">
