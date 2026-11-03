@@ -513,32 +513,21 @@ html[data-theme="dark"] .data-page table tbody td {
   padding-block: 14px !important;
 }
 
-/* "See more" style for row-end buttons where present. */
-html[data-theme="dark"] .row-see-more,
-html[data-theme="dark"] .see-more,
-html[data-theme="dark"] button[data-row-action="view"] {
-  border-radius: 999px !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  background: transparent !important;
-  color: #ffffff !important;
-  padding: 6px 14px !important;
-}
-
 /* ---------------------------------------------------------------------- */
-/* Page title + sticky toolbar: let the gradient page background bleed    */
-/* through instead of showing a solid black strip.                        */
+/* Page title + sticky toolbar: carry the standard dark card color across */
+/* the top strip so it reads as part of the panel, not a transparent gap. */
 /* ---------------------------------------------------------------------- */
 html[data-theme="dark"] .authenticated-app main .page-title,
 html[data-theme="dark"] .page-title {
-  background: transparent !important;
+  background: #0a0a0a !important;
 }
 html[data-theme="dark"] .authenticated-app main :is(.data-toolbar, .dm-toolbar, .list-toolbar) {
-  background: transparent !important;
+  background: #141414 !important;
   border-bottom-color: rgba(255, 255, 255, 0.05) !important;
 }
 html[data-theme="dark"] .data-page .data-card > .data-toolbar,
 html[data-theme="dark"] .data-card > .data-toolbar {
-  background: transparent !important;
+  background: #141414 !important;
 }
 
 /* ---------------------------------------------------------------------- */

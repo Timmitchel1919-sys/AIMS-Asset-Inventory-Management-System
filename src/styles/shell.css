@@ -518,51 +518,30 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
   display: none !important;
 }
 
-/* Account menu — rendered via a Portal into document.body as a
-   full-height sheet from the left edge, with a dim scrim only (no
-   blur). All ancestor containing blocks are bypassed. */
-.profile-menu.profile-menu--sheet {
-  position: fixed !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: auto !important;
-  width: min(360px, 100vw) !important;
-  max-width: min(360px, 100vw) !important;
-  max-height: 100vh !important;
-  margin: 0 !important;
-  overflow-y: auto !important;
-  padding: 20px 16px calc(20px + env(safe-area-inset-bottom)) !important;
-  border: 0 !important;
-  border-right: 1px solid var(--color-border) !important;
-  border-radius: 0 !important;
-  background: var(--color-surface-elevated) !important;
-  color: var(--color-text-primary) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55) !important;
-  z-index: 1001 !important;
-  animation: profile-menu-slide-in 220ms ease-out;
+/* Account menu — compact dropdown that pops out of the sidebar foot,
+   same shape as the light theme uses. */
+.app-sidebar .sidebar-foot .profile-menu {
+  position: absolute;
+  top: auto;
+  left: 12px;
+  right: 12px;
+  bottom: calc(100% + 8px);
+  z-index: 60;
 }
-.profile-menu.profile-menu--sheet ~ .account-sheet-scrim,
-body > .account-sheet-scrim {
-  display: block !important;
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  margin: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: rgba(0, 0, 0, 0.5) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  z-index: 1000 !important;
+.app-sidebar .sidebar-foot > .account-sheet-scrim {
+  display: none;
 }
-@keyframes profile-menu-slide-in {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .profile-menu.profile-menu--sheet { animation: none; }
+@media (min-width: 781px) {
+  .app-sidebar--collapsed:has(.profile-menu) {
+    overflow: visible;
+  }
+  .app-sidebar--collapsed .sidebar-foot .profile-menu {
+    top: auto;
+    right: auto;
+    bottom: 0;
+    left: calc(100% + 8px);
+    width: min(320px, calc(100vw - 100px));
+  }
 }
 
 
