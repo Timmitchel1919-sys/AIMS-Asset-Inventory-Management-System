@@ -561,20 +561,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
             <span className="sidebar-action-label">
               <strong>{app.user.name}</strong>
-              <small>
-                {app.user.isDemoUser
-                  ? app.language === "nl"
-                    ? "Demosessie"
-                    : "Demo session"
-                  : app.user.email}
-              </small>
-              {(app.user.jobTitle || app.user.department) && (
-                <small className="sidebar-profile__position">
-                  {[app.user.jobTitle, app.user.department]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </small>
-              )}
             </span>
           </button>
           {profileOpen && (

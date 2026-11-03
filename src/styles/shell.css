@@ -518,29 +518,29 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
   display: none !important;
 }
 
-/* Account menu — compact dropdown that pops out of the sidebar foot,
-   same shape as the light theme uses. */
+/* Account menu — floats OVER the sidebar edge, anchored next to the
+   profile button. Uses position: fixed so it escapes the sidebar's
+   clip/overflow, both when the sidebar is expanded and collapsed. */
 .app-sidebar .sidebar-foot .profile-menu {
-  position: absolute;
-  top: auto;
+  position: fixed;
   left: 12px;
-  right: 12px;
-  bottom: calc(100% + 8px);
-  z-index: 60;
+  bottom: 96px;
+  width: min(300px, calc(100vw - 24px));
+  z-index: 1000;
 }
 .app-sidebar .sidebar-foot > .account-sheet-scrim {
   display: none;
 }
 @media (min-width: 781px) {
-  .app-sidebar--collapsed:has(.profile-menu) {
-    overflow: visible;
+  .app-sidebar .sidebar-foot .profile-menu {
+    left: 16px;
+    bottom: 96px;
+    width: min(300px, calc(100vw - 32px));
   }
   .app-sidebar--collapsed .sidebar-foot .profile-menu {
-    top: auto;
-    right: auto;
-    bottom: 0;
-    left: calc(100% + 8px);
-    width: min(320px, calc(100vw - 100px));
+    left: calc(var(--sidebar-collapsed-width, 76px) + 8px);
+    bottom: 24px;
+    width: min(300px, calc(100vw - var(--sidebar-collapsed-width, 76px) - 24px));
   }
 }
 
@@ -648,7 +648,7 @@ html[data-theme="dark"] .profile-menu header .account-menu-verified.unverified {
    module header. The scrim still covers the sidebar itself, so only the
    profile trigger and open panel remain sharp. */
 @media (min-width: 781px) {
-  .app-sidebar:has(.profile-menu) { position:relative; z-index:60; }
+  .app-sidebar:has(.profile-menu) { position:relative; z-index:999; }
 }
 .app-sidebar .sidebar-foot .account-sheet-scrim {
   display: block !important;
@@ -660,30 +660,27 @@ html[data-theme="dark"] .profile-menu header .account-menu-verified.unverified {
   padding: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
-  background: rgba(5, 10, 20, 0.45) !important;
-  backdrop-filter: blur(6px) saturate(0.95);
-  -webkit-backdrop-filter: blur(6px) saturate(0.95);
-  z-index: 59;
+  background: rgba(5, 10, 20, 0.35) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  z-index: 998;
   cursor: pointer;
 }
 
-/* Only the profile icon + the open profile panel escape the scrim —
-   the sidebar modules and the rest of the workspace stay behind the
-   dim+blur so the focus is unmistakably on the account menu. */
+/* The sidebar profile button and the open profile menu both stay above
+   the scrim so the focus is clearly on the account panel. */
 .app-sidebar .sidebar-foot .sidebar-profile {
   position: relative;
-  z-index: 63;
+  z-index: 1001;
 }
 .app-sidebar .sidebar-foot .profile-menu {
-  z-index: 63;
+  z-index: 1000;
 }
 
 /* Reduced-transparency users still get a solid dim without the blur. */
 @media (prefers-reduced-transparency: reduce) {
   .app-sidebar .sidebar-foot .account-sheet-scrim {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background: rgba(5, 10, 20, 0.6) !important;
+    background: rgba(5, 10, 20, 0.5) !important;
   }
 }
 

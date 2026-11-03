@@ -91,9 +91,9 @@ describe('app download and admin access integration',()=>{
     const shell = readFileSync('src/components/shell.tsx', 'utf8');
     const styles = readFileSync('src/styles/shell.css', 'utf8');
     expect(shell).not.toContain('sidebar-profile__role');
-    expect(styles).toContain('.app-sidebar:has(.profile-menu) { position:relative; z-index:60; }');
-    expect(styles).toMatch(/\.account-sheet-scrim[\s\S]*?z-index:\s*59/);
-    expect(styles).toMatch(/\.sidebar-profile[\s\S]*?z-index:\s*63/);
+    expect(styles).toContain('.app-sidebar:has(.profile-menu) { position:relative; z-index:999; }');
+    expect(styles).toMatch(/\.account-sheet-scrim[\s\S]*?z-index:\s*998/);
+    expect(styles).toMatch(/\.sidebar-profile[\s\S]*?z-index:\s*1001/);
   });
 
   it('grants every role full add/edit/delete rights across every module — everyone is super admin', () => {
