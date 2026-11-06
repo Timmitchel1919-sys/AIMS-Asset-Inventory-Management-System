@@ -420,6 +420,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       ref={appRootRef}
       className={`app authenticated-app ${app.sidebarCollapsed ? "collapsed" : ""}`}
       data-scroll-navigation={navigationVisible ? "visible" : "hidden"}
+      data-profile-menu-open={profileOpen ? "true" : "false"}
       style={typographyStyle}
     >
       <a className="skip-link" href="#main-content">

@@ -438,8 +438,16 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
 }
 .app-sidebar .sidebar-profile:hover,
 .app-sidebar .sidebar-profile:focus-visible {
-  background: var(--color-surface-hover, rgba(255, 255, 255, 0.05));
+  background: var(--color-sidebar-active-background, var(--color-sidebar-active));
+  color: var(--color-sidebar-active-text);
   outline: none;
+}
+.app-sidebar .sidebar-profile:focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-sidebar-active-background, var(--color-sidebar-active)) 58%, white);
+}
+.app-sidebar .sidebar-profile:hover .sidebar-action-label small,
+.app-sidebar .sidebar-profile:focus-visible .sidebar-action-label small {
+  color: var(--color-sidebar-active-text);
 }
 .app-sidebar .sidebar-profile .avatar {
   width: 34px;
@@ -467,20 +475,6 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 170px;
-}
-.app-sidebar .sidebar-profile .sidebar-profile__role {
-  display: inline-flex;
-  width: fit-content;
-  margin-top: 4px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
-  color: var(--color-sidebar-text, var(--color-text-primary));
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  line-height: 1.35;
-  text-transform: uppercase;
 }
 .app-sidebar .sidebar-profile .sidebar-action-label small {
   color: var(--color-text-muted);
@@ -523,6 +517,8 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
    clip/overflow, both when the sidebar is expanded and collapsed. */
 .app-sidebar .sidebar-foot .profile-menu {
   position: fixed;
+  top: auto;
+  right: auto;
   left: 12px;
   bottom: 96px;
   width: min(300px, calc(100vw - 24px));
@@ -538,10 +534,25 @@ html[data-theme] .app-sidebar--collapsed .app-sidebar__logo-button img{transform
     width: min(300px, calc(100vw - 32px));
   }
   .app-sidebar--collapsed .sidebar-foot .profile-menu {
-    left: calc(var(--sidebar-collapsed-width, 76px) + 8px);
-    bottom: 24px;
-    width: min(300px, calc(100vw - var(--sidebar-collapsed-width, 76px) - 24px));
+    left: 8px;
+    bottom: 96px;
+    width: min(300px, calc(100vw - 24px));
   }
+}
+
+/* Keep one predictable account-menu interaction at every sidebar width:
+   the panel grows upward from the profile control, including when the
+   desktop rail is collapsed and when the mobile drawer is open. */
+.app-sidebar .sidebar-foot .profile-menu {
+  transform-origin: left bottom;
+  animation: account-menu-open 160ms ease-out both;
+}
+@keyframes account-menu-open {
+  from { opacity: 0; transform: translateY(8px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-sidebar .sidebar-foot .profile-menu { animation: none; }
 }
 
 

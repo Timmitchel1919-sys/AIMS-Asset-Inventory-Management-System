@@ -13,6 +13,26 @@ import type { ImportWriteAdapter, ImportWrite } from "./finalImportPlan";
 // Keep production imports at one validated document per resumable checkpoint.
 export const FIRESTORE_RULES_SAFE_BATCH_SIZE = 1;
 
+export function prepareImportWriteData(
+  item: ImportWrite,
+  exists: boolean,
+  actorUid: string,
+  timestamp: unknown,
+) {
+  const data = Object.fromEntries(
+    Object.entries(item.data).filter(
+      ([key]) =>
+        !["createdAt", "createdBy", "updatedAt", "updatedBy"].includes(key),
+    ),
+  );
+  return {
+    ...data,
+    ...(exists ? {} : { createdAt: timestamp, createdBy: actorUid }),
+    updatedAt: timestamp,
+    updatedBy: actorUid,
+  };
+}
+
 /** Production-capable adapter. It performs no work until executeFinalImportPlan is explicitly called. */
 export function createFirestoreImportAdapter(
   db: Firestore,
@@ -53,14 +73,15 @@ export function createFirestoreImportAdapter(
         const exists = existingDocuments.has(
           `${item.collection}/${item.documentId}`,
         );
-        const data = {
-          ...item.data,
-          ...(exists
-            ? {}
-            : { createdAt: serverTimestamp(), createdBy: actorUid }),
-          updatedAt: serverTimestamp(),
-          updatedBy: actorUid,
-        };
+        // The review plan contains display-friendly audit values. Never merge
+        // those values into Firestore: existing creation metadata is immutable
+        // and all persisted timestamps must be server timestamps.
+        const data = prepareImportWriteData(
+          item,
+          exists,
+          actorUid,
+          serverTimestamp(),
+        );
         batch.set(doc(db, item.collection, item.documentId), data, {
           merge: true,
         });

@@ -41,7 +41,11 @@ import {
 import type { AssetStatus, Condition } from "../domain/types";
 import { useT } from "../i18n";
 import { uploadAimsFiles } from "../services/firebaseStorageUploads";
-import { clearLocalDraft, readLocalDraft, useAutosaveDraft } from "../hooks/useAutosaveDraft";
+import {
+  clearLocalDraft,
+  readLocalDraft,
+  useAutosaveDraft,
+} from "../hooks/useAutosaveDraft";
 
 const statuses: AssetStatus[] = [
   "Available",
