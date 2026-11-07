@@ -46,6 +46,7 @@ import {
   useState,
   type FormEvent,
   type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from "react";
 import { useApp } from "../context/AppContext";
@@ -153,7 +154,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const sidebarRef = useRef<HTMLElement>(null),
     appRootRef = useRef<HTMLDivElement>(null),
     accountMenuRef = useRef<HTMLDivElement>(null),
-    accountButtonRef = useRef<HTMLButtonElement>(null),
+    accountPanelRef = useRef<HTMLDivElement>(null),
+    lastAccountTriggerRef = useRef<HTMLButtonElement>(null),
     [activeNotchTop, setActiveNotchTop] = useState<number | null>(null);
   const presentationMode = import.meta.env.VITE_APP_MODE === "presentation";
   const appFontFamily = resolveFontFamily(app.preferences.fontFamily);
@@ -236,13 +238,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!profileOpen) return;
     const close = (event: MouseEvent) => {
-      if (!accountMenuRef.current?.contains(event.target as Node))
+      if (
+        !accountMenuRef.current?.contains(event.target as Node) &&
+        !accountPanelRef.current?.contains(event.target as Node)
+      )
         setProfileOpen(false);
     };
     const key = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setProfileOpen(false);
-        accountButtonRef.current?.focus();
+        lastAccountTriggerRef.current?.focus();
       }
     };
     document.addEventListener("mousedown", close);
@@ -252,6 +257,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       document.removeEventListener("keydown", key);
     };
   }, [profileOpen]);
+  const toggleProfileMenu = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    lastAccountTriggerRef.current = event.currentTarget;
+    setProfileOpen((value) => !value);
+  };
   // When the profile menu is open, dim the standalone PWA titlebar
   // (Chrome tints that bar with `<meta name="theme-color">`). CSS can't
   // blur browser chrome, but swapping the color visibly matches the
@@ -540,7 +549,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
         <div className="sidebar-foot" ref={accountMenuRef}>
           <button
-            ref={accountButtonRef}
             className="sidebar-profile"
             aria-label={
               app.language === "nl" ? "Accountmenu openen" : "Open account menu"
@@ -549,7 +557,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             aria-haspopup="menu"
             aria-controls="account-menu"
             title={app.sidebarCollapsed ? app.user.name : undefined}
-            onClick={() => setProfileOpen((value) => !value)}
+            onClick={toggleProfileMenu}
           >
             {app.user.profilePhoto ? (
               <img
@@ -564,84 +572,61 @@ export function AppShell({ children }: { children: ReactNode }) {
               <strong>{app.user.name}</strong>
             </span>
           </button>
-          {profileOpen && (
-            <>
-              <button
-                className="account-sheet-scrim"
-                aria-label={
-                  app.language === "nl"
-                    ? "Accountmenu sluiten"
-                    : "Close account menu"
-                }
-                onClick={() => setProfileOpen(false)}
-              />
-              <div id="account-menu" className="profile-menu" role="menu">
-                <span className="account-sheet-handle" aria-hidden="true" />
-                <div className="account-menu-links">
-                  <button
-                    role="menuitem"
-                    onClick={() => {
-                      navigate("/profile");
-                      setProfileOpen(false);
-                    }}
-                  >
-                    <User />
-                    {app.language === "nl" ? "Mijn profiel" : "My Profile"}
-                    <ChevronRight />
-                  </button>
-                  <button
-                    role="menuitem"
-                    onClick={() => {
-                      navigate("/preferences");
-                      setProfileOpen(false);
-                    }}
-                  >
-                    <Settings />
-                    {app.language === "nl" ? "Voorkeuren" : "Preferences"}
-                    <ChevronRight />
-                  </button>
-                  <button
-                    role="menuitem"
-                    onClick={() => {
-                      navigate("/security");
-                      setProfileOpen(false);
-                    }}
-                  >
-                    <Shield />
-                    {app.language === "nl" ? "Beveiliging" : "Security"}
-                    <ChevronRight />
-                  </button>
-                  <button
-                    role="menuitem"
-                    onClick={() => {
-                      navigate("/help");
-                      setProfileOpen(false);
-                    }}
-                  >
-                    <LifeBuoy />
-                    {app.language === "nl"
-                      ? "Help en ondersteuning"
-                      : "Help & Support"}
-                    <ChevronRight />
-                  </button>
-                </div>
-                <button
-                  className="account-signout"
-                  role="menuitem"
-                  onClick={async () => {
-                    setProfileOpen(false);
-                    await app.logout();
-                    navigate("/", { replace: true });
-                  }}
-                >
-                  <LogOut />
-                  {app.language === "nl" ? "Afmelden" : "Sign out"}
-                </button>
-              </div>
-            </>
-          )}
         </div>
       </aside>
+      {profileOpen && (
+        <>
+          <button
+            className="account-sheet-scrim"
+            aria-label={
+              app.language === "nl" ? "Accountmenu sluiten" : "Close account menu"
+            }
+            onClick={() => setProfileOpen(false)}
+          />
+          <div
+            ref={accountPanelRef}
+            id="account-menu"
+            className="profile-menu app-profile-menu"
+            role="menu"
+          >
+            <span className="account-sheet-handle" aria-hidden="true" />
+            <div className="account-menu-links">
+              <button role="menuitem" onClick={() => { navigate("/profile"); setProfileOpen(false); }}>
+                <User />
+                {app.language === "nl" ? "Mijn profiel" : "My Profile"}
+                <ChevronRight />
+              </button>
+              <button role="menuitem" onClick={() => { navigate("/preferences"); setProfileOpen(false); }}>
+                <Settings />
+                {app.language === "nl" ? "Voorkeuren" : "Preferences"}
+                <ChevronRight />
+              </button>
+              <button role="menuitem" onClick={() => { navigate("/security"); setProfileOpen(false); }}>
+                <Shield />
+                {app.language === "nl" ? "Beveiliging" : "Security"}
+                <ChevronRight />
+              </button>
+              <button role="menuitem" onClick={() => { navigate("/help"); setProfileOpen(false); }}>
+                <LifeBuoy />
+                {app.language === "nl" ? "Help en ondersteuning" : "Help & Support"}
+                <ChevronRight />
+              </button>
+            </div>
+            <button
+              className="account-signout"
+              role="menuitem"
+              onClick={async () => {
+                setProfileOpen(false);
+                await app.logout();
+                navigate("/", { replace: true });
+              }}
+            >
+              <LogOut />
+              {app.language === "nl" ? "Afmelden" : "Sign out"}
+            </button>
+          </div>
+        </>
+      )}
       <main
         className="main"
         id="main-content"
@@ -743,6 +728,23 @@ export function AppShell({ children }: { children: ReactNode }) {
               </NavLink>
             );
           })}
+        <button
+          type="button"
+          className="bottom-nav__profile"
+          aria-label={app.language === "nl" ? "Profielmenu openen" : "Open profile menu"}
+          aria-expanded={profileOpen}
+          aria-haspopup="menu"
+          aria-controls="account-menu"
+          onClick={(event) => {
+            app.setMobileOpen(false);
+            toggleProfileMenu(event);
+          }}
+        >
+          <span className="bottom-nav__avatar" aria-hidden="true">
+            {app.user.initials}
+          </span>
+          <span>{app.language === "nl" ? "Profiel" : "Profile"}</span>
+        </button>
         <button
           type="button"
           className="bottom-nav__menu"

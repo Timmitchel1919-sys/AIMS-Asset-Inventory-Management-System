@@ -826,3 +826,152 @@ html[data-theme="aims-light"] .aims-sheet-scrim {
 .app-sidebar.sidebar > .sidebar-foot {
   flex: 0 0 auto;
 }
+
+/* Mobile navigation is always a full-width touch list, independent of the
+   desktop collapsed preference saved in localStorage. */
+@media (max-width: 780px) {
+  .app-sidebar.sidebar,
+  .app-sidebar.sidebar.app-sidebar--collapsed {
+    width: min(22rem, calc(100vw - 3rem));
+    max-width: calc(100vw - 3rem);
+  }
+  .app-sidebar.sidebar > nav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    padding: 8px 12px 12px;
+    box-sizing: border-box;
+  }
+  .app-sidebar.sidebar > nav > .sidebar-route {
+    display: contents;
+  }
+  .app-sidebar.sidebar nav .navigation-item,
+  .app-sidebar.sidebar.app-sidebar--collapsed nav .navigation-item {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: center;
+    justify-content: stretch;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    min-height: 52px;
+    height: auto;
+    margin: 2px 0;
+    padding: 4px 12px 4px 8px;
+    box-sizing: border-box;
+    text-align: left;
+  }
+  .app-sidebar.sidebar nav .navigation-item__icon {
+    width: 44px;
+    height: 44px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+  .app-sidebar.sidebar nav .navigation-item__label {
+    display: block !important;
+    width: auto;
+    max-width: none;
+    opacity: 1;
+    visibility: visible;
+    overflow: hidden;
+    transform: none;
+    pointer-events: auto;
+  }
+  .app-sidebar.sidebar > .sidebar-foot,
+  .app-sidebar.sidebar.app-sidebar--collapsed > .sidebar-foot {
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+  }
+  .app-sidebar.sidebar .sidebar-foot > .sidebar-profile,
+  .app-sidebar.sidebar.app-sidebar--collapsed .sidebar-foot > .sidebar-profile {
+    width: 100%;
+    min-height: 52px;
+    margin: 0;
+    padding: 6px 8px;
+    justify-content: flex-start;
+  }
+}
+
+/* The account panel is a root-level fixed layer so a transformed or closed
+   mobile drawer can never translate or clip it. */
+.authenticated-app > .account-sheet-scrim {
+  display: block !important;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: rgba(5, 10, 20, 0.35) !important;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 59;
+}
+.authenticated-app > .app-profile-menu {
+  position: fixed;
+  z-index: 61;
+  top: auto;
+  right: auto;
+  bottom: 96px;
+  left: 16px;
+  width: min(300px, calc(100vw - 32px));
+  transform-origin: left bottom;
+  animation: account-menu-open 160ms ease-out both;
+}
+.collapsed > .app-profile-menu { left: 8px; }
+.authenticated-app[data-profile-menu-open="true"] .app-sidebar {
+  z-index: 60;
+}
+
+@media (max-width: 780px) {
+  .authenticated-app > .app-profile-menu {
+    top: auto;
+    right: 10px;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    left: 10px;
+    width: auto;
+    max-height: min(70dvh, 620px);
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+  }
+  .authenticated-app > .app-profile-menu header {
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .bottom-nav__profile {
+    min-width: 0;
+    min-height: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 4px 2px;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-secondary);
+    font: inherit;
+    font-size: var(--text-xs);
+  }
+  .bottom-nav__avatar {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: var(--color-on-primary, #fff);
+    font-size: 9px;
+    font-weight: 800;
+  }
+}

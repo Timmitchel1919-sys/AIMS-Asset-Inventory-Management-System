@@ -23,12 +23,18 @@ describe("profile menu focus treatment", () => {
     );
   });
 
-  it("anchors the account panel above the profile control at every sidebar width", () => {
+  it("renders the account panel outside the transformed sidebar", () => {
+    expect(shell).toMatch(/<\/aside>\s*\{profileOpen && \(/s);
+    expect(shell).toContain('className="profile-menu app-profile-menu"');
     expect(styles).toMatch(
-      /\.app-sidebar--collapsed \.sidebar-foot \.profile-menu[^}]+left:\s*8px[^}]+bottom:\s*96px/s,
+      /\.authenticated-app > \.app-profile-menu[^}]+position:\s*fixed[^}]+z-index:\s*61/s,
     );
-    expect(styles).toMatch(/\.sidebar-foot \.profile-menu[^}]+position:\s*fixed/s);
     expect(styles).toContain("animation: account-menu-open 160ms ease-out both");
+  });
+
+  it("provides an account trigger in the mobile bottom navigation", () => {
+    expect(shell).toContain('className="bottom-nav__profile"');
+    expect(shell).toContain('app.setMobileOpen(false);');
   });
 
   it("uses the active module highlight for profile hover and keyboard focus", () => {

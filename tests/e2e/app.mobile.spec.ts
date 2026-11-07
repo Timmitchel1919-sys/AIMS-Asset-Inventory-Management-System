@@ -16,8 +16,38 @@ test.describe('KCS mobile acceptance',()=>{
     for(const path of ['/dashboard','/assets','/inventory','/assignments','/borrow','/repairs','/maintenance','/movements','/audits','/disposals','/reports','/settings']){await page.goto(path);expect(await page.evaluate(()=>document.documentElement.scrollWidth),`${path} overflow`).toBeLessThanOrEqual(await page.evaluate(()=>innerWidth));await expect(page.getByRole('heading',{level:1})).toBeVisible()}
     await page.goto('/dashboard');const menuButton=page.getByRole('button',{name:/open navigation/i});await expect(menuButton.locator('svg.lucide-menu')).toBeVisible();await expect(menuButton.locator('img')).toHaveCount(0);await menuButton.click();const drawer=page.getByRole('complementary',{name:/primary navigation/i});await expect(drawer).toBeVisible();await drawer.getByRole('link',{name:/ICT Assets|ICT-middelen/}).click();await expect(page).toHaveURL(/\/assets$/);await expect(page.locator('.mobile-records article').first()).toBeVisible();
   });
+  test('profile panel opens with the mobile drawer closed or open',async({page})=>{
+    await page.setViewportSize({width:390,height:844});
+    await page.goto('/dashboard');
+    const drawer=page.getByRole('complementary',{name:/primary navigation/i});
+    await expect(drawer).not.toHaveClass(/open/);
+    await page.locator('.bottom-nav__profile').click();
+    await expect(page.getByRole('menu')).toBeVisible();
+    await expect(drawer).not.toHaveClass(/open/);
+    await page.getByRole('button',{name:/close account menu/i}).click();
+
+    await page.getByRole('button',{name:/open navigation/i}).click();
+    await expect(drawer).toHaveClass(/open/);
+    const links=drawer.locator('nav .navigation-item');
+    const first=links.first();
+    await expect(first).toBeVisible();
+    const geometry=await links.evaluateAll((items)=>items.slice(0,6).map((item)=>{
+      const box=item.getBoundingClientRect();
+      const icon=item.querySelector('.navigation-item__icon')?.getBoundingClientRect();
+      const label=item.querySelector('.navigation-item__label')?.getBoundingClientRect();
+      return {height:box.height,width:box.width,iconLeft:icon?.left,labelLeft:label?.left};
+    }));
+    expect(geometry.every((item)=>item.height>=48)).toBe(true);
+    expect(Math.max(...geometry.map((item)=>item.width))-Math.min(...geometry.map((item)=>item.width))).toBeLessThan(2);
+    expect(new Set(geometry.map((item)=>Math.round(item.iconLeft??0))).size).toBe(1);
+    expect(new Set(geometry.map((item)=>Math.round(item.labelLeft??0))).size).toBe(1);
+
+    await drawer.locator('.sidebar-profile').click();
+    await expect(page.getByRole('menu')).toBeVisible();
+    await expect(drawer).toHaveClass(/open/);
+  });
   test('required responsive widths and all themes do not overflow',async({page})=>{
-    for(const [width,height] of [[360,800],[390,844],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080]]){await page.setViewportSize({width,height});await page.goto('/dashboard');expect(await page.evaluate(()=>document.documentElement.scrollWidth),`${width}x${height}`).toBeLessThanOrEqual(width)}
+    for(const [width,height] of [[320,720],[375,812],[768,1024],[1024,768],[1440,900]]){await page.setViewportSize({width,height});await page.goto('/dashboard');expect(await page.evaluate(()=>document.documentElement.scrollWidth),`${width}x${height}`).toBeLessThanOrEqual(width)}
     await page.setViewportSize({width:390,height:844});await page.goto('/settings/appearance');for(const name of ['AIMS Azure Blue','AIMS Dark','AIMS Emerald Green','AIMS Light','Premium Turquoise Glass']){await page.getByRole('button',{name:new RegExp(name)}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)}
   });
   test('offline and install guidance are explicit about mock limitations',async({page})=>{

@@ -606,6 +606,8 @@ html[data-theme="kcs-azure-intelligence"] {
 
   stroke: currentColor;
 
+}
+
 .navigation-item__label {
   min-width: 0;
 
