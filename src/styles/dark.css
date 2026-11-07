@@ -598,3 +598,82 @@ html[data-theme="dark"] .legal-contact-card button {
 .notifications-page .page > .card {
   margin-bottom: 16px;
 }
+
+/* ---------------------------------------------------------------------- */
+/* Obsidian card system — reference-matched dark cards across every AIMS   */
+/* module. The navigation rail is intentionally outside this selector.     */
+/* ---------------------------------------------------------------------- */
+html[data-theme="dark"] {
+  --aims-dark-card: #0d1015;
+  --aims-dark-card-hover: #11161d;
+  --aims-dark-card-border: #272c35;
+  --aims-dark-card-border-hover: #343b47;
+  --aims-dark-card-radius: 1.35rem;
+  --aims-dark-card-shadow: 0 16px 36px -28px rgba(0, 0, 0, 0.92);
+}
+
+html[data-theme="dark"] :is(
+  .authenticated-app main,
+  .dialog,
+  .modal-content
+) :is(
+  .card,
+  .glass-card,
+  .glass-card--elevated,
+  .data-card,
+  .panel,
+  .bento-tile,
+  .stat-card,
+  .metric-card,
+  .kpi-card,
+  .profile-card,
+  .dept-panel__meta,
+  .dept-panel__kpis article,
+  .mobile-records article,
+  .legal-settings__documents > a,
+  .legal-contact-card,
+  .policy-information,
+  .legal-admin-summary,
+  .system-information
+) {
+  background: var(--aims-dark-card) !important;
+  background-image: none !important;
+  border: 1px solid var(--aims-dark-card-border) !important;
+  border-radius: var(--aims-dark-card-radius) !important;
+  box-shadow: var(--aims-dark-card-shadow) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-theme="dark"] :is(
+  .authenticated-app main,
+  .dialog,
+  .modal-content
+) :is(
+  .card,
+  .glass-card,
+  .glass-card--elevated,
+  .panel,
+  .bento-tile,
+  .stat-card,
+  .metric-card,
+  .kpi-card,
+  .mobile-records article,
+  .legal-settings__documents > a
+):is(:hover, :focus-within) {
+  background: var(--aims-dark-card-hover) !important;
+  border-color: var(--aims-dark-card-border-hover) !important;
+}
+
+/* A data module is one large card; keep its toolbar/table on the same solid
+   plane instead of reintroducing lighter strips inside the card. */
+html[data-theme="dark"] .authenticated-app main .data-card > :is(
+  .data-toolbar,
+  .table-wrap,
+  .mobile-records
+) {
+  background: transparent !important;
+}
+
+/* The sidebar deliberately keeps its existing color, active state and glow;
+   it is not included in the card-system selectors above. */

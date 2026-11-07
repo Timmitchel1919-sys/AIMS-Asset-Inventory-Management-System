@@ -24,4 +24,11 @@ describe('AIMS Dark Bento theme contract',()=>{
   it('outlines the topbar global search field in white',()=>{
     expect(css).toMatch(/\.global-search__input-wrapper \{\s*border: 1px solid rgba\(255, 255, 255, 0\.85\) !important;/);
   });
+  it('uses one solid reference-matched surface for cards without changing the sidebar',()=>{
+    expect(css).toContain('--aims-dark-card: #0d1015');
+    expect(css).toContain('--aims-dark-card-border: #272c35');
+    expect(css).toMatch(/\.authenticated-app main,[\s\S]*\.bento-tile,[\s\S]*background: var\(--aims-dark-card\) !important;[\s\S]*background-image: none !important;/);
+    expect(css).toContain('the sidebar deliberately keeps its existing color');
+    expect(css).not.toMatch(/\.app-sidebar :is\(\.card, \.panel, \.profile-card\)/);
+  });
 });
