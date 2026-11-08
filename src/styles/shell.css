@@ -826,3 +826,68 @@ html[data-theme="aims-light"] .aims-sheet-scrim {
 .app-sidebar.sidebar > .sidebar-foot {
   flex: 0 0 auto;
 }
+
+/* Mobile drawer items belong to one flat navigation rail. Keep the active
+   module and profile feedback, but never lift either control off that rail. */
+@media (max-width: 780px) {
+  html body .authenticated-app .app-sidebar nav .navigation-item:is(:hover, :focus-visible, .active, [aria-current="page"]),
+  html body .authenticated-app .app-sidebar .sidebar-foot .sidebar-profile:is(:hover, :focus-visible, :active) {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+}
+
+/* Let the account panel escape the collapsed rail instead of clipping to its
+   width. The module list keeps its own scroll container, so opening the menu
+   does not move the frozen header, routes, or footer. */
+.app-sidebar.sidebar:has(.profile-menu) {
+  overflow: visible;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.app-sidebar .sidebar-foot:has(.profile-menu) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Treat the profile control as the final navigation row: fixed geometry,
+   vertically centred avatar and label, and no lifted/floating interaction. */
+html body .authenticated-app .app-sidebar .sidebar-foot .sidebar-profile {
+  align-items: center;
+  min-height: 42px;
+  transform: none;
+}
+html body .authenticated-app .app-sidebar .sidebar-foot .sidebar-profile .avatar {
+  margin-top: 0;
+}
+html body .authenticated-app .app-sidebar .sidebar-foot .sidebar-profile .sidebar-action-label {
+  justify-content: center;
+  align-self: stretch;
+}
+html body .authenticated-app .app-sidebar .sidebar-foot .sidebar-profile:is(:hover, :focus-visible, :active) {
+  transform: none !important;
+}
+
+/* Account navigation opens as a full-height left rail at every sidebar state.
+   Its width matches the expanded sidebar, including the mobile drawer. */
+html body .authenticated-app .app-sidebar .sidebar-foot .profile-menu {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--sidebar-expanded-width, 248px);
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  border-radius: 0;
+  overflow-y: auto;
+  transform-origin: left center;
+  animation: account-rail-open 160ms ease-out both;
+}
+@keyframes account-rail-open {
+  from { opacity: 0; transform: translateX(-100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@media (max-width: 780px) {
+  html body .authenticated-app .app-sidebar .sidebar-foot .profile-menu {
+    width: min(300px, 86vw);
+  }
+}

@@ -31,13 +31,38 @@ for (const item of cases) {
       await expect(page.locator(".app-sidebar")).toHaveClass(/open/);
     }
 
-    const profileButton = page.getByRole("button", { name: /open account menu/i });
+    const profileButton = page.getByRole("button", {
+      name: /open account menu|accountmenu openen/i,
+    });
+    const [profileBox, avatarBox, labelBox] = await Promise.all([
+      profileButton.boundingBox(),
+      profileButton.locator(".avatar").boundingBox(),
+      profileButton.locator(".sidebar-action-label").boundingBox(),
+    ]);
+    expect(profileBox).not.toBeNull();
+    expect(avatarBox).not.toBeNull();
+    if (!item.collapsed || item.mobile) {
+      expect(labelBox).not.toBeNull();
+      expect(Math.abs(
+        (avatarBox!.y + avatarBox!.height / 2)
+          - (labelBox!.y + labelBox!.height / 2),
+      )).toBeLessThanOrEqual(1);
+    }
     await profileButton.hover();
     await page.waitForTimeout(220);
     const profileHoverBackground = await profileButton.evaluate(
       (element) => getComputedStyle(element).backgroundColor,
     );
     expect(profileHoverBackground).not.toBe("rgba(0, 0, 0, 0)");
+    if (item.mobile) {
+      expect(await profileButton.evaluate(
+        (element) => getComputedStyle(element).boxShadow,
+      )).toBe("none");
+      expect(await page.locator(".app-sidebar nav .navigation-item.active")
+        .first()
+        .evaluate((element) => getComputedStyle(element).boxShadow))
+        .toBe("none");
+    }
     if (!item.mobile && item.theme === "aimsLight") {
       const activeModuleBackground = await page
         .locator(".app-sidebar nav .navigation-item.active")
@@ -62,14 +87,17 @@ for (const item of cases) {
     expect(await accountScrim.evaluate(
       (element) => getComputedStyle(element).backgroundColor,
     )).not.toBe("rgba(0, 0, 0, 0)");
+    await page.waitForTimeout(220);
     const [menuBox, buttonBox] = await Promise.all([
       accountMenu.boundingBox(),
       profileButton.boundingBox(),
     ]);
     expect(menuBox).not.toBeNull();
     expect(buttonBox).not.toBeNull();
-    expect(menuBox!.y + menuBox!.height).toBeLessThanOrEqual(buttonBox!.y);
-    expect(menuBox!.x).toBeGreaterThanOrEqual(0);
+    expect(menuBox!.x).toBe(0);
+    expect(menuBox!.y).toBe(0);
+    expect(menuBox!.width).toBe(item.mobile ? 300 : 248);
+    expect(menuBox!.height).toBe(item.mobile ? 844 : 900);
     expect(menuBox!.x + menuBox!.width).toBeLessThanOrEqual(
       item.mobile ? 390 : 1440,
     );
