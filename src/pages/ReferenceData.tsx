@@ -1020,14 +1020,6 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         <PageHeader
           title={labels[0]}
           description={labels[1]}
-          actions={
-            <>
-              <Button onClick={() => edit(null)}>
-                <Plus />
-                {labels[2]}
-              </Button>
-            </>
-          }
         />
         <section className="card data-card">
           <DataTable
@@ -1041,6 +1033,12 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
               nl ? "Voeg het eerste record toe." : "Add the first record."
             }
             onRowClick={edit}
+            trailingAction={
+              <Button onClick={() => edit(null)}>
+                <Plus />
+                {labels[2]}
+              </Button>
+            }
             mobileExtraColumnIds={kind === "department" ? ["overview"] : undefined}
             filters={
               kind === "location" ? (

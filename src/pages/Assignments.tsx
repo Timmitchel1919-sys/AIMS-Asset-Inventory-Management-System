@@ -186,12 +186,6 @@ export default function AssignmentsPage() {
               ? "Beheer huidige verantwoordelijkheid en een onveranderlijke toewijzingshistorie."
               : "Manage current responsibility and immutable assignment history."
           }
-          actions={
-            <Button onClick={() => setCreate(true)}>
-              <Plus />
-              {nl ? "Middel toewijzen" : "Assign asset"}
-            </Button>
-          }
         />
         <MutationFeedback {...feedback} />
         <section className="card data-card">
@@ -210,6 +204,12 @@ export default function AssignmentsPage() {
                 : "Create an assignment to record responsibility."
             }
             onRowClick={setSelected}
+            trailingAction={
+              <Button onClick={() => setCreate(true)}>
+                <Plus />
+                {nl ? "Middel toewijzen" : "Assign asset"}
+              </Button>
+            }
           />
         </section>
         <Dialog

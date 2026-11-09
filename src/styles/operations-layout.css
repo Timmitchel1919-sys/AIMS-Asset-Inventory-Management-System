@@ -1,10 +1,18 @@
 /* Compact, page-scoped workspaces for movement history and reporting. */
 .movement-workspace-card .data-toolbar {
   display: grid;
-  grid-template-columns: minmax(280px, 1.8fr) auto minmax(600px, 3fr) auto;
+  grid-template-columns: auto minmax(520px, 1fr) auto auto;
   align-items: end;
   gap: 10px;
   padding: 12px;
+}
+
+.movement-workspace-card .data-toolbar__count {
+  min-width: 165px;
+}
+
+.movement-workspace-card .table-actions--trailing {
+  margin-left: 0 !important;
 }
 
 .movement-workspace-card .search {

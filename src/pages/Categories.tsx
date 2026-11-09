@@ -147,7 +147,6 @@ export const CategoriesPage = () => {
         <PageHeader
           title={t("routes.categories")}
           description={nl ? "Beheer hi\u00ebrarchische asset types en classificaties." : "Manage hierarchical asset types and classifications."}
-          actions={user ? <Button onClick={() => navigate("/categories/new?new=true")}><Plus size={16} /> {t("categories.addAssetType")}</Button> : undefined}
         />
       }
     >
@@ -160,6 +159,7 @@ export const CategoriesPage = () => {
           onToggleFilters={() => setFiltersOpen(open => !open)}
           columnSelector={null}
           exportMenu={null}
+          actions={user ? <Button onClick={() => navigate("/categories/new?new=true")}><Plus size={16} /> {t("categories.addAssetType")}</Button> : undefined}
         />
         <FilterPanel
           open={filtersOpen}

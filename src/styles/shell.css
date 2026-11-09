@@ -827,6 +827,36 @@ body .topbar-notifications:is(:hover, :focus-visible, :active) {
   transform: none;
 }
 
+/* Unified operational hierarchy: counting and filtering stay left-to-right,
+   while the primary create action closes the toolbar at the far right. */
+@media (min-width: 781px) {
+  .authenticated-app main .page:not(.reports-page):has(> .data-card) {
+    position: relative;
+  }
+
+  .authenticated-app main .data-toolbar > .table-actions--trailing,
+  .authenticated-app main .list-toolbar > .table-actions {
+    margin-left: auto !important;
+  }
+
+  .authenticated-app main .page:not(.reports-page):has(> .data-card) > .page-title:has(.actions) {
+    position: absolute;
+    z-index: 36;
+    top: 12px;
+    right: 24px;
+    width: auto;
+    min-height: 40px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .authenticated-app main .page:not(.reports-page):has(> .data-card) > .page-title:has(.actions) + .data-card > .data-table > .data-toolbar {
+    min-height: 64px;
+    padding-right: min(34vw, 420px);
+  }
+}
+
 /* Release polish: large module context, topbar notifications, stronger search
    affordance and a restrained soft-gloss control finish. */
 .topbar-end {

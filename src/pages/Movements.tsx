@@ -25,6 +25,7 @@ import {
 import { useApp } from "../context/AppContext";
 import type { Movement } from "../domain/types";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
+import { displayMovementPerformer } from "../utils/movementDisplay";
 
 export default function MovementsPage() {
   const { language } = useApp(),
@@ -42,11 +43,45 @@ export default function MovementsPage() {
   }>({ status: "idle", message: "" });
   const columns: DataColumn<Movement>[] = [
     {
+      id: "code",
+      label: "Inv.code",
+      render: (item) => item.assetCode,
+      text: (item) => item.assetCode,
+    },
+    {
+      id: "item",
+      label: nl ? "Middel / artikel" : "Asset / item",
+      render: (item) => item.asset,
+      text: (item) => item.asset,
+    },
+    {
+      id: "quantity",
+      label: nl ? "Aantal" : "Quantity",
+      render: (item) => item.quantity,
+      text: (item) => item.quantity,
+    },
+    {
+      id: "type",
+      label: "Type",
+      render: (item) => (
+        <Badge tone={item.type.toLowerCase().includes("loss") ? "danger" : "info"}>
+          {item.type}
+        </Badge>
+      ),
+      text: (item) => item.type,
+    },
+    {
       id: "reference",
       label: nl ? "Referentie" : "Reference",
       render: (item) => <strong>{item.reference}</strong>,
       text: (item) => item.reference,
       sortable: true,
+    },
+    {
+      id: "route",
+      label: nl ? "Bron → bestemming" : "Source → destination",
+      render: (item) => `${item.from} → ${item.to}`,
+      text: (item) => `${item.from} ${item.to}`,
     },
     {
       id: "date",
@@ -56,46 +91,10 @@ export default function MovementsPage() {
       sortable: true,
     },
     {
-      id: "type",
-      label: "Type",
-      render: (item) => (
-        <Badge
-          tone={item.type.toLowerCase().includes("loss") ? "danger" : "info"}
-        >
-          {item.type}
-        </Badge>
-      ),
-      text: (item) => item.type,
-    },
-    {
-      id: "item",
-      label: nl ? "Middel / artikel" : "Asset / item",
-      render: (item) => item.asset,
-      text: (item) => item.asset,
-    },
-    {
-      id: "code",
-      label: "Inv.code",
-      render: (item) => item.assetCode,
-      text: (item) => item.assetCode,
-    },
-    {
-      id: "quantity",
-      label: nl ? "Aantal" : "Quantity",
-      render: (item) => item.quantity,
-      text: (item) => item.quantity,
-    },
-    {
-      id: "route",
-      label: nl ? "Bron → bestemming" : "Source → destination",
-      render: (item) => `${item.from} → ${item.to}`,
-      text: (item) => `${item.from} ${item.to}`,
-    },
-    {
       id: "by",
       label: nl ? "Uitgevoerd door" : "Performed by",
-      render: (item) => item.by,
-      text: (item) => item.by,
+      render: (item) => displayMovementPerformer(item.by),
+      text: (item) => displayMovementPerformer(item.by),
     },
   ];
   const movementTypes = [
@@ -165,18 +164,18 @@ export default function MovementsPage() {
               ? "Onveranderlijke historie van iedere middel- en voorraadbeweging."
               : "Immutable history of every asset and stock movement."
           }
-          actions={
-            <Button onClick={() => setOpen(true)}>
-              <Plus />
-              {nl ? "Mutatie registreren" : "Record movement"}
-            </Button>
-          }
         />
         <section className="card data-card movement-workspace-card">
           <DataTable
             id="movements"
             rows={visibleMovements}
             columns={columns}
+            trailingAction={
+              <Button onClick={() => setOpen(true)}>
+                <Plus />
+                {nl ? "Mutatie registreren" : "Record movement"}
+              </Button>
+            }
             filters={
               <div
                 className="movement-filters"
