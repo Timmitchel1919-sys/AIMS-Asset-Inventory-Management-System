@@ -60,6 +60,7 @@ import { useT } from "../i18n";
 import { PwaStatus } from "./PwaStatus";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { AimsLogo } from "./branding/AimsLogo";
+import { GlobalSearch } from "./search/GlobalSearch";
 import { isAimsOwnerEmail } from "../auth/accessBootstrap";
 import { DEMO_AUTH_MODE } from "../auth/aimsEmailPolicy";
 
@@ -538,110 +539,125 @@ export function AppShell({ children }: { children: ReactNode }) {
             aria-hidden="true"
           />
         )}
-        <div className="sidebar-foot" ref={accountMenuRef}>
-          <button
-            ref={accountButtonRef}
-            className="sidebar-profile"
-            aria-label={
-              app.language === "nl" ? "Accountmenu openen" : "Open account menu"
-            }
-            aria-expanded={profileOpen}
-            aria-haspopup="menu"
-            aria-controls="account-menu"
-            title={app.sidebarCollapsed ? app.user.name : undefined}
-            onClick={() => setProfileOpen((value) => !value)}
-          >
-            {app.user.profilePhoto ? (
-              <img
-                className="avatar avatar-photo"
-                src={app.user.profilePhoto}
-                alt=""
-              />
-            ) : (
-              <span className="avatar">{app.user.initials}</span>
-            )}
-            <span className="sidebar-action-label">
-              <strong>{app.user.name}</strong>
-            </span>
-          </button>
-          {profileOpen && (
-            <>
-              <button
-                className="account-sheet-scrim"
-                aria-label={
-                  app.language === "nl"
-                    ? "Accountmenu sluiten"
-                    : "Close account menu"
-                }
-                onClick={() => setProfileOpen(false)}
-              />
-              <div id="account-menu" className="profile-menu" role="menu">
-                <span className="account-sheet-handle" aria-hidden="true" />
-                <div className="account-menu-links">
+      </aside>
+      <header className="topbar app-topbar">
+        <strong className="topbar-module-title">
+          {current
+            ? t(current.titleKey)
+            : "AIMS Asset & Inventory Management System"}
+        </strong>
+        <div className="topbar-search">
+          <GlobalSearch />
+        </div>
+        <div className="top-actions">
+          <div className="profile-menu-wrap" ref={accountMenuRef}>
+            <button
+              ref={accountButtonRef}
+              className="top-user"
+              aria-label={
+                app.language === "nl"
+                  ? "Accountmenu openen"
+                  : "Open account menu"
+              }
+              aria-expanded={profileOpen}
+              aria-haspopup="menu"
+              aria-controls="account-menu"
+              title={app.user.name}
+              onClick={() => setProfileOpen((value) => !value)}
+            >
+              {app.user.profilePhoto ? (
+                <img
+                  className="avatar avatar-photo"
+                  src={app.user.profilePhoto}
+                  alt=""
+                />
+              ) : (
+                <span className="avatar">{app.user.initials}</span>
+              )}
+              <ChevronRight className="top-user-chevron" aria-hidden="true" />
+            </button>
+            {profileOpen && (
+              <>
+                <button
+                  className="account-sheet-scrim"
+                  aria-label={
+                    app.language === "nl"
+                      ? "Accountmenu sluiten"
+                      : "Close account menu"
+                  }
+                  onClick={() => setProfileOpen(false)}
+                />
+                <div
+                  id="account-menu"
+                  className="profile-menu topbar-profile-menu"
+                  role="menu"
+                >
+                  <div className="account-menu-links">
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        navigate("/profile");
+                        setProfileOpen(false);
+                      }}
+                    >
+                      <User />
+                      {app.language === "nl" ? "Mijn profiel" : "My Profile"}
+                      <ChevronRight />
+                    </button>
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        navigate("/preferences");
+                        setProfileOpen(false);
+                      }}
+                    >
+                      <Settings />
+                      {app.language === "nl" ? "Voorkeuren" : "Preferences"}
+                      <ChevronRight />
+                    </button>
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        navigate("/security");
+                        setProfileOpen(false);
+                      }}
+                    >
+                      <Shield />
+                      {app.language === "nl" ? "Beveiliging" : "Security"}
+                      <ChevronRight />
+                    </button>
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        navigate("/help");
+                        setProfileOpen(false);
+                      }}
+                    >
+                      <LifeBuoy />
+                      {app.language === "nl"
+                        ? "Help en ondersteuning"
+                        : "Help & Support"}
+                      <ChevronRight />
+                    </button>
+                  </div>
                   <button
+                    className="account-signout"
                     role="menuitem"
-                    onClick={() => {
-                      navigate("/profile");
+                    onClick={async () => {
                       setProfileOpen(false);
+                      await app.logout();
+                      navigate("/", { replace: true });
                     }}
                   >
-                    <User />
-                    {app.language === "nl" ? "Mijn profiel" : "My Profile"}
-                    <ChevronRight />
-                  </button>
-                  <button
-                    role="menuitem"
-                    onClick={() => {
-                      navigate("/preferences");
-                      setProfileOpen(false);
-                    }}
-                  >
-                    <Settings />
-                    {app.language === "nl" ? "Voorkeuren" : "Preferences"}
-                    <ChevronRight />
-                  </button>
-                  <button
-                    role="menuitem"
-                    onClick={() => {
-                      navigate("/security");
-                      setProfileOpen(false);
-                    }}
-                  >
-                    <Shield />
-                    {app.language === "nl" ? "Beveiliging" : "Security"}
-                    <ChevronRight />
-                  </button>
-                  <button
-                    role="menuitem"
-                    onClick={() => {
-                      navigate("/help");
-                      setProfileOpen(false);
-                    }}
-                  >
-                    <LifeBuoy />
-                    {app.language === "nl"
-                      ? "Help en ondersteuning"
-                      : "Help & Support"}
-                    <ChevronRight />
+                    <LogOut />
+                    {app.language === "nl" ? "Afmelden" : "Sign out"}
                   </button>
                 </div>
-                <button
-                  className="account-signout"
-                  role="menuitem"
-                  onClick={async () => {
-                    setProfileOpen(false);
-                    await app.logout();
-                    navigate("/", { replace: true });
-                  }}
-                >
-                  <LogOut />
-                  {app.language === "nl" ? "Afmelden" : "Sign out"}
-                </button>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
-      </aside>
+      </header>
       <main
         className="main"
         id="main-content"
@@ -753,11 +769,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           <Menu aria-hidden="true" />
           <span>{app.language === "nl" ? "Menu" : "Menu"}</span>
-          {unreadNotificationCount > 0 && (
-            <b className="nav-count" aria-hidden="true">
-              {unreadNotificationCount}
-            </b>
-          )}
         </button>
       </nav>
       {assistantEnabled && assistantOpen && (

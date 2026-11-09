@@ -26,50 +26,44 @@ for (const item of cases) {
     await expect(page).toHaveURL(new RegExp(`${item.route}$`));
     await expect(page.getByRole("heading").first()).toBeVisible();
 
+    await expect(page.locator(".topbar-module-title")).toBeVisible();
+    await expect(page.getByRole("combobox", { name: /global search|globaal zoeken/i })).toBeVisible();
+    await expect(page.locator(".app-sidebar .sidebar-profile")).toHaveCount(0);
     if (item.mobile) {
+      await expect(page.locator('.bottom-nav a[href="/audits"]')).toBeVisible();
+      await expect(page.locator('.bottom-nav a[href="/notifications"]')).toHaveCount(0);
+      await expect(page.locator(".bottom-nav__menu .nav-count")).toHaveCount(0);
       await page.locator(".bottom-nav__menu").click();
       await expect(page.locator(".app-sidebar")).toHaveClass(/open/);
+      await page.screenshot({
+        path: `/tmp/aims-sidebar-${item.theme}-mobile.png`,
+        fullPage: false,
+      });
+      await page.locator(".mobile-close").click();
+      await expect(page.locator(".app-sidebar")).not.toHaveClass(/open/);
     }
 
     const profileButton = page.getByRole("button", {
       name: /open account menu|accountmenu openen/i,
     });
-    const [profileBox, avatarBox, labelBox] = await Promise.all([
+    const [profileBox, avatarBox] = await Promise.all([
       profileButton.boundingBox(),
       profileButton.locator(".avatar").boundingBox(),
-      profileButton.locator(".sidebar-action-label").boundingBox(),
     ]);
     expect(profileBox).not.toBeNull();
     expect(avatarBox).not.toBeNull();
-    if (!item.collapsed || item.mobile) {
-      expect(labelBox).not.toBeNull();
-      expect(Math.abs(
-        (avatarBox!.y + avatarBox!.height / 2)
-          - (labelBox!.y + labelBox!.height / 2),
-      )).toBeLessThanOrEqual(1);
-    }
+    expect(profileBox!.x + profileBox!.width).toBeGreaterThan(
+      (item.mobile ? 390 : 1440) - 24,
+    );
     await profileButton.hover();
     await page.waitForTimeout(220);
     const profileHoverBackground = await profileButton.evaluate(
       (element) => getComputedStyle(element).backgroundColor,
     );
     expect(profileHoverBackground).not.toBe("rgba(0, 0, 0, 0)");
-    if (item.mobile) {
-      expect(await profileButton.evaluate(
-        (element) => getComputedStyle(element).boxShadow,
-      )).toBe("none");
-      expect(await page.locator(".app-sidebar nav .navigation-item.active")
-        .first()
-        .evaluate((element) => getComputedStyle(element).boxShadow))
-        .toBe("none");
-    }
-    if (!item.mobile && item.theme === "aimsLight") {
-      const activeModuleBackground = await page
-        .locator(".app-sidebar nav .navigation-item.active")
-        .first()
-        .evaluate((element) => getComputedStyle(element).backgroundColor);
-      expect(profileHoverBackground).toBe(activeModuleBackground);
-    }
+    expect(await profileButton.evaluate(
+      (element) => getComputedStyle(element).boxShadow,
+    )).toBe("none");
     await page.screenshot({
       path: item.screenshot.replace(".png", "-hover.png"),
       fullPage: false,
@@ -94,10 +88,10 @@ for (const item of cases) {
     ]);
     expect(menuBox).not.toBeNull();
     expect(buttonBox).not.toBeNull();
-    expect(menuBox!.x).toBe(0);
-    expect(menuBox!.y).toBe(0);
-    expect(menuBox!.width).toBe(item.mobile ? 300 : 248);
-    expect(menuBox!.height).toBe(item.mobile ? 844 : 900);
+    expect(menuBox!.x).toBeGreaterThanOrEqual(0);
+    expect(menuBox!.y).toBeGreaterThanOrEqual(60);
+    expect(menuBox!.width).toBe(300);
+    expect(menuBox!.height).toBeLessThan(item.mobile ? 844 : 900);
     expect(menuBox!.x + menuBox!.width).toBeLessThanOrEqual(
       item.mobile ? 390 : 1440,
     );

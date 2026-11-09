@@ -827,67 +827,172 @@ html[data-theme="aims-light"] .aims-sheet-scrim {
   flex: 0 0 auto;
 }
 
-/* Mobile drawer items belong to one flat navigation rail. Keep the active
-   module and profile feedback, but never lift either control off that rail. */
+/* Mobile drawer items belong to one flat navigation rail. */
 @media (max-width: 780px) {
-  html body .authenticated-app .app-sidebar nav .navigation-item:is(:hover, :focus-visible, .active, [aria-current="page"]),
-  html body .authenticated-app .app-sidebar .sidebar-foot .sidebar-profile:is(:hover, :focus-visible, :active) {
+  html body .authenticated-app .app-sidebar nav .navigation-item:is(:hover, :focus-visible, .active, [aria-current="page"]) {
     box-shadow: none !important;
     transform: none !important;
   }
 }
 
-/* Let the account panel escape the collapsed rail instead of clipping to its
-   width. The module list keeps its own scroll container, so opening the menu
-   does not move the frozen header, routes, or footer. */
-.app-sidebar.sidebar:has(.profile-menu) {
-  overflow: visible;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+/* Reference shell: one global top bar with module context, centered search,
+   and the account control pinned to the far right. */
+.authenticated-app > .app-topbar {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(320px, 640px) minmax(150px, 1fr);
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+  height: 64px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
 }
-.app-sidebar .sidebar-foot:has(.profile-menu) {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+.topbar-module-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text-primary);
+  font-size: var(--text-lg);
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-topbar .topbar-search {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.app-topbar .topbar-search .global-search {
+  width: 100%;
+  max-width: none;
+}
+.app-topbar .top-actions {
+  justify-self: end;
+}
+.app-topbar .top-user {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+}
+.app-topbar .top-user > .avatar {
+  width: 38px;
+  height: 38px;
+  margin: 0;
+}
+.app-topbar .top-user-chevron {
+  display: none;
+}
+.app-topbar .profile-menu-wrap {
+  position: relative;
+  z-index: 1001;
+}
+.app-topbar .account-sheet-scrim {
+  position: fixed !important;
+  z-index: 998 !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: rgba(5, 10, 20, 0.35) !important;
+}
+.app-topbar .topbar-profile-menu {
+  position: absolute;
+  z-index: 1002;
+  top: calc(100% + 10px);
+  right: 0;
+  bottom: auto;
+  left: auto;
+  width: min(300px, calc(100vw - 24px));
+  height: auto;
+  max-height: calc(100dvh - 84px);
+  overflow-y: auto;
+  border-radius: 14px;
+  transform-origin: right top;
+  animation: topbar-profile-open 160ms ease-out both;
+}
+@keyframes topbar-profile-open {
+  from { opacity: 0; transform: translateY(-6px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Treat the profile control as the final navigation row: fixed geometry,
-   vertically centred avatar and label, and no lifted/floating interaction. */
-html body .authenticated-app .app-sidebar .sidebar-foot .sidebar-profile {
-  align-items: center;
-  min-height: 42px;
-  transform: none;
+/* Sidebar fidelity: roomy flat rows, solid navy rail, and one bright selected
+   module. Theme-specific colors continue to come from semantic tokens. */
+.app-sidebar.sidebar > nav {
+  padding: 10px 8px 18px;
 }
-html body .authenticated-app .app-sidebar .sidebar-foot .sidebar-profile .avatar {
-  margin-top: 0;
+.app-sidebar nav .navigation-item {
+  min-height: 48px;
+  margin: 2px 0;
+  border-radius: 12px;
+  box-shadow: none;
 }
-html body .authenticated-app .app-sidebar .sidebar-foot .sidebar-profile .sidebar-action-label {
-  justify-content: center;
-  align-self: stretch;
+.app-sidebar nav .navigation-item:is(.active, [aria-current="page"]) {
+  background: var(--color-sidebar-active-background);
+  box-shadow: none !important;
 }
-html body .authenticated-app .app-sidebar .sidebar-foot .sidebar-profile:is(:hover, :focus-visible, :active) {
+html body .authenticated-app .app-sidebar nav .navigation-item:is(:hover, :focus-visible, .active, [aria-current="page"]) {
+  box-shadow: none !important;
   transform: none !important;
 }
 
-/* Account navigation opens as a full-height left rail at every sidebar state.
-   Its width matches the expanded sidebar, including the mobile drawer. */
-html body .authenticated-app .app-sidebar .sidebar-foot .profile-menu {
-  position: fixed;
-  inset: 0 auto 0 0;
-  width: var(--sidebar-expanded-width, 248px);
-  height: 100vh;
-  height: 100dvh;
-  max-height: none;
-  border-radius: 0;
-  overflow-y: auto;
-  transform-origin: left center;
-  animation: account-rail-open 160ms ease-out both;
-}
-@keyframes account-rail-open {
-  from { opacity: 0; transform: translateX(-100%); }
-  to { opacity: 1; transform: translateX(0); }
-}
 @media (max-width: 780px) {
-  html body .authenticated-app .app-sidebar .sidebar-foot .profile-menu {
+  .authenticated-app > .app-topbar {
+    position: sticky;
+    top: 0;
+    grid-template-columns: minmax(72px, auto) minmax(0, 1fr) 42px;
+    gap: 8px;
+    height: 62px;
+    padding: 0 10px;
+  }
+  .topbar-module-title {
+    font-size: var(--text-sm);
+  }
+  .app-topbar .global-search__input-wrapper > input {
+    height: 42px;
+    padding-left: 34px;
+    font-size: var(--text-sm);
+  }
+  .app-topbar .top-user {
+    width: 38px;
+    height: 38px;
+  }
+  .app-topbar .top-user > .avatar {
+    width: 34px;
+    height: 34px;
+  }
+  .app-topbar .topbar-profile-menu {
+    position: fixed;
+    top: 70px;
+    right: 8px;
+    left: auto;
+    width: min(300px, calc(100vw - 16px));
+    max-height: calc(100dvh - 82px);
+    padding: 8px;
+    border-width: 1px;
+    border-radius: 14px;
+  }
+  .app-sidebar.sidebar {
     width: min(300px, 86vw);
+  }
+  .app-sidebar.sidebar > nav {
+    padding: 10px 8px 18px;
+  }
+  .app-sidebar nav .navigation-item,
+  .app-sidebar--collapsed nav .navigation-item {
+    min-height: 52px;
+    padding: 0 16px;
+    gap: 16px;
+    border-radius: 14px;
   }
 }
