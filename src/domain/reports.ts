@@ -1,3 +1,4 @@
+import { matchesSearch } from "../utils/searchNormalization";
 import * as XLSX from "xlsx";
 import type { MockSnapshot } from "../data/contracts";
 
@@ -152,7 +153,7 @@ export function buildReportData(
   const config =
     REPORT_DEFINITIONS.find((r) => r.id === reportId) || REPORT_DEFINITIONS[0];
   const now = new Date().toISOString();
-  const searchLower = (filters.search || "").toLowerCase().trim();
+  const searchLower = (filters.search || "").trim();
 
   let columns: { key: string; label: string; labelNl: string }[] = [];
   let rows: Record<string, any>[] = [];
@@ -181,10 +182,7 @@ export function buildReportData(
           if (filters.department && a.department !== filters.department) return false;
           if (searchLower) {
             const hit =
-              (a.code || "").toLowerCase().includes(searchLower) ||
-              (a.name || "").toLowerCase().includes(searchLower) ||
-              (a.serialNumber || "").toLowerCase().includes(searchLower) ||
-              (a.assignedTo || "").toLowerCase().includes(searchLower);
+              matchesSearch(searchLower, [a.code, a.name, a.serialNumber, a.assignedTo]);
             if (!hit) return false;
           }
           return true;
@@ -264,9 +262,7 @@ export function buildReportData(
           if (filters.department && a.department !== filters.department) return false;
           if (searchLower) {
             return (
-              (a.location || "").toLowerCase().includes(searchLower) ||
-              (a.department || "").toLowerCase().includes(searchLower) ||
-              (a.code || "").toLowerCase().includes(searchLower)
+              matchesSearch(searchLower, [a.location, a.department, a.code])
             );
           }
           return true;
@@ -307,9 +303,7 @@ export function buildReportData(
           if (filters.department && asgn.department !== filters.department) return false;
           if (searchLower) {
             return (
-              (asgn.assignee || "").toLowerCase().includes(searchLower) ||
-              (asgn.assetCode || "").toLowerCase().includes(searchLower) ||
-              (asgn.assetName || "").toLowerCase().includes(searchLower)
+              matchesSearch(searchLower, [asgn.assignee, asgn.assetCode, asgn.assetName])
             );
           }
           return true;
@@ -349,9 +343,7 @@ export function buildReportData(
         .filter((b) => {
           if (searchLower) {
             return (
-              (b.borrower || "").toLowerCase().includes(searchLower) ||
-              (b.assetCode || "").toLowerCase().includes(searchLower) ||
-              (b.asset || "").toLowerCase().includes(searchLower)
+              matchesSearch(searchLower, [b.borrower, b.assetCode, b.asset])
             );
           }
           return true;
@@ -390,9 +382,7 @@ export function buildReportData(
         .filter((r) => {
           if (searchLower) {
             return (
-              (r.reference || "").toLowerCase().includes(searchLower) ||
-              (r.assetCode || "").toLowerCase().includes(searchLower) ||
-              (r.issue || "").toLowerCase().includes(searchLower)
+              matchesSearch(searchLower, [r.reference, r.assetCode, r.issue])
             );
           }
           return true;
@@ -437,8 +427,7 @@ export function buildReportData(
         .filter((m) => {
           if (searchLower) {
             return (
-              (m.assetCode || "").toLowerCase().includes(searchLower) ||
-              (m.type || "").toLowerCase().includes(searchLower)
+              matchesSearch(searchLower, [m.assetCode, m.type])
             );
           }
           return true;
@@ -479,9 +468,7 @@ export function buildReportData(
         .filter((mv) => {
           if (searchLower) {
             return (
-              (mv.assetCode || "").toLowerCase().includes(searchLower) ||
-              (mv.type || "").toLowerCase().includes(searchLower) ||
-              (mv.by || "").toLowerCase().includes(searchLower)
+              matchesSearch(searchLower, [mv.assetCode, mv.type, mv.by])
             );
           }
           return true;
@@ -517,9 +504,7 @@ export function buildReportData(
         .filter((ad) => {
           if (searchLower) {
             return (
-              (ad.name || "").toLowerCase().includes(searchLower) ||
-              (ad.scope || "").toLowerCase().includes(searchLower) ||
-              (ad.assignee || "").toLowerCase().includes(searchLower)
+              matchesSearch(searchLower, [ad.name, ad.scope, ad.assignee])
             );
           }
           return true;
@@ -556,9 +541,7 @@ export function buildReportData(
         .filter((act) => {
           if (searchLower) {
             return (
-              (act.user || "").toLowerCase().includes(searchLower) ||
-              (act.action || "").toLowerCase().includes(searchLower) ||
-              (act.entityId || "").toLowerCase().includes(searchLower)
+              matchesSearch(searchLower, [act.user, act.action, act.entityId])
             );
           }
           return true;
@@ -595,8 +578,7 @@ export function buildReportData(
         .filter((inv) => {
           if (searchLower) {
             return (
-              (inv.code || "").toLowerCase().includes(searchLower) ||
-              (inv.name || "").toLowerCase().includes(searchLower)
+              matchesSearch(searchLower, [inv.code, inv.name])
             );
           }
           return true;

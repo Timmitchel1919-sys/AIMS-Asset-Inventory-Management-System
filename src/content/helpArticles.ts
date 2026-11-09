@@ -1,3 +1,4 @@
+import { buildSearchIndex, matchesSearchIndex, prepareSearchQuery } from "../utils/searchNormalization";
 export type HelpArticle = {
   id: string;
   category: HelpCategoryId;
@@ -260,26 +261,22 @@ export const helpArticles: HelpArticle[] = [
 ];
 
 export function searchHelp(query: string, language: "en" | "nl"): HelpArticle[] {
-  const needle = query.trim().toLowerCase();
-  if (!needle) return [];
-  const tokens = needle.split(/\s+/).filter(Boolean);
+  const prepared = prepareSearchQuery(query);
+  if (!prepared.compact) return [];
   const scored = helpArticles
     .map((article) => {
-      const haystack = [
+      const index = buildSearchIndex([
         article.title.en,
         article.title.nl,
         article.body.en,
         article.body.nl,
         ...(article.keywords ?? []),
-      ]
-        .join(" ")
-        .toLowerCase();
-      let score = 0;
-      for (const token of tokens) {
-        if (!haystack.includes(token)) return null;
-        score += 1;
-        if (article.title[language].toLowerCase().includes(token)) score += 2;
-      }
+      ]);
+      if (!matchesSearchIndex(prepared, index)) return null;
+      const title = buildSearchIndex([article.title[language]]);
+      let score = 1;
+      for (const token of prepared.tokens)
+        if (title.tokens.some((word) => word.includes(token))) score += 2;
       return { article, score };
     })
     .filter((entry): entry is { article: HelpArticle; score: number } =>

@@ -1,3 +1,4 @@
+import { matchesSearch } from "../utils/searchNormalization";
 import type {Asset,AssetStatus,Audit,AuditItem,BorrowRecord,CorrectiveAction,Maintenance,Repair,ThemeId} from './types';
 import type {DisposalStatus,InventoryItem} from '../data/contracts';
 import type {ReportDefinition} from '../data/contracts';
@@ -5,7 +6,7 @@ import type {AssignmentStatus,AssignmentAccessory} from '../data/contracts';
 
 export const compareAssetCodes=(a:Pick<Asset,'codePrefix'|'codeNumber'>,b:Pick<Asset,'codePrefix'|'codeNumber'>)=>a.codePrefix.localeCompare(b.codePrefix)||a.codeNumber-b.codeNumber;
 export function composeAssetFilters(filters:{status?:string;category?:string;query?:string}){
-  return(asset:Asset)=>{const query=filters.query?.trim().toLowerCase();return(!filters.status||asset.status===filters.status)&&(!filters.category||asset.category===filters.category)&&(!query||[asset.code,asset.name,asset.serialNumber,asset.brand,asset.model,asset.location].some(value=>value.toLowerCase().includes(query)))};
+  return(asset:Asset)=>{const query=filters.query;return(!filters.status||asset.status===filters.status)&&(!filters.category||asset.category===filters.category)&&(!query||matchesSearch(query,[asset.code,asset.name,asset.serialNumber,asset.brand,asset.model,asset.location]))};
 }
 const assetTransitions:Record<AssetStatus,AssetStatus[]>={
   Available:['Assigned','Borrowed','Under Repair','Under Maintenance','Reserved','Lost','Missing','Damaged','Archived'],

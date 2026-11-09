@@ -1,3 +1,4 @@
+import { matchesSearch } from "../utils/searchNormalization";
 import { useAssetTypes } from "../data/assetTypesStore";
 import { readAllowedAssetTypeIds } from "../domain/categoryRelations";
 import { assetInCategory } from "../domain/assetLookups";
@@ -123,11 +124,7 @@ export const CategoriesPage = () => {
     if (filters.category) result = result.filter(item => categoryName(item) === filters.category);
     if (filters.tracking) result = result.filter(item => item.type === filters.tracking);
     if (query) {
-      const q = query.toLowerCase();
-      result = result.filter(item => 
-        item.name.toLowerCase().includes(q) ||
-        categoryName(item).toLowerCase().includes(q)
-      );
+      result = result.filter(item => matchesSearch(query, [item.name, categoryName(item), item.type, item.details]));
     }
     result.sort((a, b) => {
       const col = columns.find(c => c.id === sort.field);

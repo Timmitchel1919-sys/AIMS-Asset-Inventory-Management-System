@@ -1,3 +1,4 @@
+import { matchesSearch } from "../utils/searchNormalization";
 import React, { useState, useMemo } from "react";
 import { useFormContext } from "react-hook-form";
 import { Plus } from "lucide-react";
@@ -76,9 +77,7 @@ export function ClassificationFields() {
   }, [snapshot.references, currentCategory]);
 
   const filteredCategories = useMemo(() => {
-    return categories.filter((c) =>
-      c.name.toLowerCase().includes(categorySearch.toLowerCase())
-    );
+    return categories.filter((c) => matchesSearch(categorySearch, [c.name]));
   }, [categories, categorySearch]);
 
   const handleCategorySelect = (name: string) => {

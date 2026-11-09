@@ -1,3 +1,4 @@
+import { matchesSearch } from "../../utils/searchNormalization";
 import { Pencil, Plus, Power, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge, Button } from "../ui";
@@ -37,11 +38,7 @@ function MainLocationsSettings() {
         if (statusFilter === "active" && x.status !== "Active") return false;
         if (statusFilter === "inactive" && x.status === "Active") return false;
         if (search) {
-          const q = search.toLowerCase();
-          return (
-            x.name.toLowerCase().includes(q) ||
-            String(x.details.prefix || "").toLowerCase().includes(q)
-          );
+          return matchesSearch(search, [x.name, x.details.prefix]);
         }
         return true;
       })
@@ -271,11 +268,7 @@ function CodeGroupsSettings() {
     if (statusFilter === "active") groups = groups.filter((g) => g.isActive);
     if (statusFilter === "inactive") groups = groups.filter((g) => !g.isActive);
     if (search) {
-      const q = search.toLowerCase();
-      groups = groups.filter(
-        (g) =>
-          g.name.toLowerCase().includes(q) || g.prefix.toLowerCase().includes(q)
-      );
+      groups = groups.filter((g) => matchesSearch(search, [g.name, g.prefix]));
     }
     if (sortBy === "alphabetical")
       return groups.sort((a, b) =>

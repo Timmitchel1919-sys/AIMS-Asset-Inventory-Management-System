@@ -1,3 +1,4 @@
+import { matchesSearch } from "../utils/searchNormalization";
 import { ArrowLeft, FileSpreadsheet, Upload } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -143,13 +144,7 @@ export default function CombinedAssetImport() {
         ),
       ]
     : [];
-  const matches = (...values: unknown[]) =>
-    !query ||
-    values.some((value) =>
-      String(value ?? "")
-        .toLowerCase()
-        .includes(query.toLowerCase()),
-    );
+  const matches = (...values: unknown[]) => matchesSearch(query, values);
   useEffect(() => {
     if (dryRun && manifest.fileFingerprint !== "pending")
       saveReviewManifest(localStorage, manifest);

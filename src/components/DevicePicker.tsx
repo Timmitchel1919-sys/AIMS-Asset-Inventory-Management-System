@@ -1,3 +1,4 @@
+import { matchesSearch } from "../utils/searchNormalization";
 import { useMemo, useState } from "react";
 
 export interface PickerItem {
@@ -22,11 +23,8 @@ export function DevicePicker({
 }) {
   const [search, setSearch] = useState("");
   const visible = useMemo(() => {
-    const needle = search.trim().toLowerCase();
-    return needle
-      ? items.filter((item) =>
-          `${item.label} ${item.sublabel ?? ""}`.toLowerCase().includes(needle),
-        )
+    return search.trim()
+      ? items.filter((item) => matchesSearch(search, [item.label, item.sublabel]))
       : items;
   }, [items, search]);
   const toggle = (id: string) => {

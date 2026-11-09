@@ -1,3 +1,4 @@
+import { matchesSearch } from "../utils/searchNormalization";
 import { CheckCheck, Info, Play, Plus, Send, ShieldAlert, Trash2 } from "lucide-react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -270,14 +271,12 @@ export default function DeviceManagement() {
     [data.devices, assetsById, policiesById, now],
   );
 
-  const needle = search.trim().toLowerCase();
+  const needle = search.trim();
   const filtered = rows.filter((row) => {
     if (onlyNonCompliant && row.compliance?.compliant !== false) return false;
     if (onlyAttention && (!row.health || row.health.level === "healthy")) return false;
     if (!needle) return true;
-    return `${row.assetCode} ${row.asset?.name ?? ""} ${row.asset?.assignedTo ?? ""} ${row.asset?.serialNumber ?? ""}`
-      .toLowerCase()
-      .includes(needle);
+    return matchesSearch(needle, [row.assetCode, row.asset?.name, row.asset?.assignedTo, row.asset?.serialNumber]);
   });
   const healthyCount = rows.filter((r) => r.health?.level === "healthy").length;
   const nonCompliantCount = rows.filter((r) => r.compliance?.compliant === false).length;

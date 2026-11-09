@@ -1,3 +1,4 @@
+import { matchesSearch } from "../utils/searchNormalization";
 import {
   ArrowLeft,
   Check,
@@ -531,10 +532,7 @@ export function AssetHistory() {
             (!to || item.date <= `${to}T23:59`) &&
             (!user || item.user === user) &&
             (!source || item.source === source) &&
-            (!query ||
-              `${item.type} ${item.detail} ${item.user} ${item.before} ${item.after}`
-                .toLowerCase()
-                .includes(query.toLowerCase())),
+            matchesSearch(query, [item.type, item.detail, item.user, item.before, item.after]),
         );
         return (
           <AssetPage

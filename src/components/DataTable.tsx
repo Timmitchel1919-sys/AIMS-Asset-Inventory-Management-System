@@ -1,3 +1,4 @@
+import { matchesSearch } from "../utils/searchNormalization";
 import { PageActionsSlot } from "./pageActions";
 import {
   Archive,
@@ -146,10 +147,9 @@ export function DataTable<T>({
   const searchable = useMemo(
     () =>
       rows.filter((row) =>
-        columns.some((column) =>
-          cellSearchText(column, row)
-            .toLowerCase()
-            .includes(query.toLowerCase()),
+        matchesSearch(
+          query,
+          columns.map((column) => cellSearchText(column, row)),
         ),
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps

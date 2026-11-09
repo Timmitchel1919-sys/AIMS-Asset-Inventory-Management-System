@@ -13,6 +13,7 @@ import {
 } from "../../hooks/useGlobalSearch";
 import type { GlobalSearchResult } from "../../types/search";
 import { GlobalSearchResults } from "./GlobalSearchResults";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 export function GlobalSearch({
   autoFocus = false,
 }: { autoFocus?: boolean } = {}) {
@@ -24,8 +25,10 @@ export function GlobalSearch({
     [focused, setFocused] = useState(false),
     [activeIndex, setActiveIndex] = useState(0),
     [retry, setRetry] = useState(0);
-  const { results, isLoading, error } = useGlobalSearch(query),
-    eligible = normalizeSearchValue(query).replace(/\s/g, "").length >= 2,
+  // Debounced so the index is not scanned on every keystroke.
+  const debouncedQuery = useDebouncedValue(query, 250);
+  const { results, isLoading, error } = useGlobalSearch(debouncedQuery),
+    eligible = normalizeSearchValue(query).length >= 2,
     isOpen = focused && eligible;
   useEffect(() => {
     const click = (event: MouseEvent) => {
@@ -140,11 +143,11 @@ export function GlobalSearch({
         <GlobalSearchResults
           key={retry}
           results={results}
-          query={query}
+          query={debouncedQuery}
           activeIndex={Math.min(activeIndex, Math.max(0, results.length - 1))}
           onSelect={select}
           language={language}
-          isLoading={isLoading}
+          isLoading={isLoading || (query !== debouncedQuery && !results.length)}
           error={error}
           onRetry={() => {
             setActiveIndex(0);

@@ -1,3 +1,4 @@
+import { matchesSearch } from "../utils/searchNormalization";
 import {
   AlertOctagon,
   AlertTriangle,
@@ -132,10 +133,7 @@ export default function NotificationsPage() {
 
       // Search term
       if (search.trim()) {
-        const term = search.toLowerCase();
-        const matchTitle = (n.title || "").toLowerCase().includes(term);
-        const matchMsg = (n.message || "").toLowerCase().includes(term);
-        if (!matchTitle && !matchMsg) return false;
+        if (!matchesSearch(search, [n.title, n.message])) return false;
       }
 
       return true;

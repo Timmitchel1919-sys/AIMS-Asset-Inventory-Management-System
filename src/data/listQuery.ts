@@ -1,3 +1,4 @@
+import{buildSearchIndex,matchesSearchIndex,prepareSearchQuery}from'../utils/searchNormalization';
 export type SortDirection='asc'|'desc';
 export type FilterOperator='eq'|'contains'|'startsWith'|'in'|'gte'|'lte'|'missing'|'truthy';
 export interface ListFilter{field:string;operator:FilterOperator;value?:string|number|boolean|string[]}
@@ -44,9 +45,10 @@ const filterMatches=(value:unknown,filter:ListFilter)=>{
 
 export function executeListQuery<T>(rows:readonly T[],query:ListQuery,adapter:ListQueryAdapter<T>):ListResult<T>{
   const pageSize=Math.max(1,Math.min(10000,Math.trunc(query.pageSize||25)));
-  const search=normalize(query.search);
+  // Shared AIMS search engine: case/accent/punctuation-insensitive, partial.
+  const search=prepareSearchQuery(query.search);
   const filtered=rows.filter(row=>{
-    if(search&&!adapter.searchable.some(field=>normalize(adapter.value(row,String(field))).includes(search)))return false;
+    if(search.compact&&!matchesSearchIndex(search,buildSearchIndex(adapter.searchable.map(field=>adapter.value(row,String(field))))))return false;
     return(query.filters||[]).every(filter=>filterMatches(adapter.value(row,filter.field),filter));
   });
   const indexed=filtered.map((row,index)=>({row,index}));

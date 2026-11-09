@@ -1,3 +1,4 @@
+import { assetSearchValues, matchesSearch } from "../utils/searchNormalization";
 import {
   ArrowLeft,
   ArrowLeftRight,
@@ -205,26 +206,17 @@ export function InventoryList() {
     [snapshot.inventory, low],
   );
   const bulkAssetRows = useMemo(() => {
-    const term = bulkSearch.trim().toLocaleLowerCase();
     return snapshot.assets
       .filter((asset) => asset.status !== "Archived" && asset.status !== "Disposed")
-      .filter((asset) => {
-        if (!term) return true;
-        return [
-          asset.code,
-          asset.name,
-          asset.brand,
-          asset.model,
-          asset.category,
-          asset.serialNumber,
-          asset.department,
-          asset.location,
-          assetDepartmentName(asset, snapshot.references),
-          assetAssigneeName(asset, snapshot.users),
-        ]
-          .filter(Boolean)
-          .some((value) => String(value).toLocaleLowerCase().includes(term));
-      });
+      .filter((asset) =>
+        matchesSearch(
+          bulkSearch,
+          assetSearchValues(asset, [
+            assetDepartmentName(asset, snapshot.references),
+            assetAssigneeName(asset, snapshot.users),
+          ]),
+        ),
+      );
   }, [snapshot.assets, snapshot.references, snapshot.users, bulkSearch]);
   function openBulkDialog() {
     setBulkSelected([]);

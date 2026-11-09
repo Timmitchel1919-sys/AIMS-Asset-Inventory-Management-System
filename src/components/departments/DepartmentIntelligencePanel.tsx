@@ -1,3 +1,4 @@
+import { assetSearchValues, matchesSearch } from "../../utils/searchNormalization";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -200,14 +201,7 @@ function AddAssetToDeptDialog({
         if (!matchesLoc) return false;
       }
       if (search.trim()) {
-        const q = search.toLowerCase();
-        const matchesSearch =
-          a.name.toLowerCase().includes(q) ||
-          a.code.toLowerCase().includes(q) ||
-          (a.serialNumber && a.serialNumber.toLowerCase().includes(q)) ||
-          (a.brand && a.brand.toLowerCase().includes(q)) ||
-          (a.model && a.model.toLowerCase().includes(q));
-        if (!matchesSearch) return false;
+        if (!matchesSearch(search, assetSearchValues(a))) return false;
       }
       return true;
     });

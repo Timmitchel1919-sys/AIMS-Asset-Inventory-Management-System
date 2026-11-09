@@ -1,3 +1,4 @@
+import { matchesSearch } from "../utils/searchNormalization";
 import { useMemo, useState } from "react";
 import { PageHeader } from "../components/WorkflowUi";
 import { Loader, State } from "../components/ui";
@@ -23,21 +24,20 @@ export default function NetworkDirectory() {
     [devices],
   );
   const rows = useMemo(() => {
-    const query = search.trim().toLowerCase();
+    const query = search.trim();
     return devices
       .filter(
         (item) =>
           (type === "all" || item.deviceType === type) &&
-          (!query ||
-            [
-              item.hostname,
-              item.ipAddress,
-              item.macAddress,
-              item.vendor,
-              item.deviceType,
-              item.assetCode,
-              item.location,
-            ].some((value) => value?.toLowerCase().includes(query))),
+          matchesSearch(query, [
+            item.hostname,
+            item.ipAddress,
+            item.macAddress,
+            item.vendor,
+            item.deviceType,
+            item.assetCode,
+            item.location,
+          ]),
       )
       .sort((a, b) =>
         sort === "lastSeen"
