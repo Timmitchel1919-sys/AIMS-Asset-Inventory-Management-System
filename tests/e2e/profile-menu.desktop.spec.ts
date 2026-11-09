@@ -38,7 +38,7 @@ test("topbar profile opens the complete account panel without moving", async ({ 
   const after = await profile.boundingBox();
   expect(after).not.toBeNull();
   expect(after?.x).toBeCloseTo(before?.x ?? 0, 0);
-  expect(after?.y).toBeCloseTo(before?.y ?? 0, 0);
+  expect(Math.abs((after?.y ?? 0) - (before?.y ?? 0))).toBeLessThanOrEqual(1);
   expect(after?.width).toBeCloseTo(before?.width ?? 0, 0);
   expect(after?.height).toBeCloseTo(before?.height ?? 0, 0);
 

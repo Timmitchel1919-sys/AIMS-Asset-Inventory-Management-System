@@ -61,6 +61,9 @@ test.describe('KCS mobile acceptance',()=>{
       await expect(page.locator('main .data-toolbar .search')).toHaveCount(0);
       expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
     }
+    await expect(page.locator('.topbar-notifications')).toBeHidden();
+    await page.locator('.topbar-menu-trigger').click();
+    await expect(page.locator('.app-sidebar [data-module-id="notifications"]')).toBeVisible();
   });
   test('offline and install guidance are explicit about mock limitations',async({page})=>{
     await page.goto('/offline');await expect(page.getByText(/not durably synchronized/i)).toBeVisible();

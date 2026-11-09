@@ -659,6 +659,7 @@ html[data-theme="kcs-azure-intelligence"] {
   border-color: transparent;
   box-shadow: none;
 }
+html[data-theme="kcs-azure-intelligence"] {
   /* =========================
      INPUTS
      ========================= */

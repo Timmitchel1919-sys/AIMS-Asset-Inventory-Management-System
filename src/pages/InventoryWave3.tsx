@@ -40,6 +40,7 @@ import type {
 } from "../data/contracts";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { runBulkCommands } from "../data/bulkActions";
+import { displayInventoryCode } from "../utils/inventoryCode";
 import { StatusBadge } from "../components/AssetStatusBadge";
 import {
   analyzeLaptopInventory,
@@ -102,10 +103,10 @@ const itemColumns = (nl: boolean): DataColumn<InventoryItem>[] => [
     label: "Inv.code",
     render: (x) => (
       <Link to={`/inventory/${x.id}`}>
-        <strong>{x.code}</strong>
+        <strong>{displayInventoryCode(x.code)}</strong>
       </Link>
     ),
-    text: (x) => x.code,
+    text: (x) => displayInventoryCode(x.code),
     sortable: true,
   },
   {
@@ -247,14 +248,13 @@ export function InventoryList() {
       status: "loading",
       message: nl ? "Artikelen toevoegen…" : "Adding items…",
     });
-    const stamp = Date.now().toString(36);
     const commands: WorkflowCommand[] = bulkSelected.map((id, idx) => {
       const asset = snapshot.assets.find((item) => item.id === id);
       const baseCode = (asset?.code || `ASSET-${idx + 1}`).toUpperCase();
       return {
         action: "inventory.create",
         values: {
-          code: `INV-${baseCode}-${stamp}${idx}`,
+          code: baseCode,
           name: asset?.name || (nl ? "Nieuw voorraadartikel" : "New item"),
           itemType: "Equipment",
           category: asset?.category || "Equipment",

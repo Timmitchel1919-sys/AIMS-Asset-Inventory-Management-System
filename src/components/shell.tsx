@@ -298,7 +298,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       const active = nav.querySelector<HTMLElement>(
         '.navigation-item[aria-current="page"]',
       );
-      if (!active) {
+      if (!active || active.offsetParent === null) {
         setActiveNotchTop(null);
         return;
       }
@@ -568,33 +568,49 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="topbar-search">
           <GlobalSearch />
         </div>
-        <div className="topbar-profile-wrap" ref={accountMenuRef}>
+        <div className="topbar-end">
           <button
             type="button"
-            className="topbar-profile"
-            aria-label={
-              app.language === "nl" ? "Accountmenu openen" : "Open account menu"
-            }
-            aria-expanded={profileOpen}
-            aria-haspopup="menu"
-            aria-controls="account-menu"
-            onClick={(event) => {
-              app.setMobileOpen(false);
-              toggleProfileMenu(event);
-            }}
+            className="topbar-notifications"
+            aria-label={t("nav.notifications")}
+            aria-current={location.pathname.startsWith("/notifications") ? "page" : undefined}
+            onClick={() => navigate("/notifications")}
           >
-            {app.user.profilePhoto ? (
-              <img
-                className="topbar-profile__avatar avatar-photo"
-                src={app.user.profilePhoto}
-                alt=""
-              />
-            ) : (
-              <span className="topbar-profile__avatar" aria-hidden="true">
-                {app.user.initials}
-              </span>
+            <Bell aria-hidden="true" />
+            {unreadNotificationCount > 0 && (
+              <b aria-label={`${unreadNotificationCount} ${t("nav.notifications")}`}>
+                {unreadNotificationCount}
+              </b>
             )}
           </button>
+          <div className="topbar-profile-wrap" ref={accountMenuRef}>
+            <button
+              type="button"
+              className="topbar-profile"
+              aria-label={
+                app.language === "nl" ? "Accountmenu openen" : "Open account menu"
+              }
+              aria-expanded={profileOpen}
+              aria-haspopup="menu"
+              aria-controls="account-menu"
+              onClick={(event) => {
+                app.setMobileOpen(false);
+                toggleProfileMenu(event);
+              }}
+            >
+              {app.user.profilePhoto ? (
+                <img
+                  className="topbar-profile__avatar avatar-photo"
+                  src={app.user.profilePhoto}
+                  alt=""
+                />
+              ) : (
+                <span className="topbar-profile__avatar" aria-hidden="true">
+                  {app.user.initials}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </header>
       {profileOpen && (

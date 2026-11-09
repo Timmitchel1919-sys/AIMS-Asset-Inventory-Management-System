@@ -773,12 +773,11 @@ export default function Assets() {
       const currentAsset = snapshot.assets.find((a) => a.id === entityId);
 
       if (bulkAction === "toInventory") {
-        const stamp = Date.now().toString(36);
         const baseCode = (currentAsset?.code || `ASSET-${idx + 1}`).toUpperCase();
         return {
           action: "inventory.create" as const,
           values: {
-            code: `INV-${baseCode}-${stamp}${idx}`,
+            code: baseCode,
             name: currentAsset?.name || "Nieuw voorraadartikel",
             itemType: "Equipment",
             category: currentAsset?.category || "Equipment",

@@ -804,6 +804,152 @@ html[data-theme="aims-light"] .aims-sheet-scrim {
   }
 }
 
+/* Final release cascade: these rules deliberately follow every legacy shell
+   block so the topbar identity and controls cannot be silently downgraded. */
+@media (min-width: 781px) {
+  .topbar-module__name {
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+}
+
+.topbar-search .global-search__input-wrapper > input {
+  border: 2px solid color-mix(in srgb, var(--color-primary) 52%, var(--color-border));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 10%, transparent),
+    0 5px 14px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+body .topbar-profile:is(:hover, :focus-visible, :active),
+body .topbar-notifications:is(:hover, :focus-visible, :active) {
+  transform: none;
+}
+
+/* Release polish: large module context, topbar notifications, stronger search
+   affordance and a restrained soft-gloss control finish. */
+.topbar-end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.topbar-notifications {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background-color: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+}
+.topbar-notifications svg { width: 21px; height: 21px; }
+.topbar-notifications b {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  padding-inline: 4px;
+  border: 2px solid var(--color-surface-elevated);
+  border-radius: 999px;
+  background: var(--color-danger);
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+}
+@media (min-width: 781px) {
+  .authenticated-app {
+    grid-template-rows: 96px 1fr;
+  }
+  .authenticated-app > .app-topbar {
+    height: 96px;
+    min-height: 96px;
+  }
+  .topbar-module__name {
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+  }
+  .app-sidebar nav .navigation-item[data-module-id="notifications"] {
+    display: none !important;
+  }
+}
+@media (max-width: 780px) {
+  .topbar-notifications { display: none; }
+  .topbar-module__name { font-size: 1.05rem; }
+}
+
+.topbar-search .global-search__input-wrapper > input {
+  border: 2px solid color-mix(in srgb, var(--color-primary) 52%, var(--color-border));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 10%, transparent),
+    0 5px 14px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+.topbar-search .global-search__input-wrapper > input:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 72%, var(--color-border));
+}
+.topbar-search .global-search__input-wrapper > input:focus-visible {
+  border-color: var(--color-primary);
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 32%, transparent);
+  outline-offset: 2px;
+}
+
+.inventory-status-summary .card {
+  min-height: 116px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.inventory-status-summary .card b {
+  font-size: 3rem;
+  line-height: 1;
+}
+.inventory-status-summary .card small {
+  margin-top: 10px;
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+
+body :where(button, .btn):not(.scrim):not(.account-sheet-scrim):not([class*="backdrop"]) {
+  border-color: color-mix(in srgb, currentColor 16%, var(--color-border));
+  background-image: linear-gradient(180deg, rgba(255,255,255,.24) 0%, rgba(255,255,255,.07) 42%, rgba(0,0,0,.05) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.32),
+    inset 0 -1px 0 rgba(0,0,0,.08),
+    0 4px 10px rgba(9,30,66,.12),
+    0 1px 2px rgba(9,30,66,.10);
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease, filter 150ms ease;
+}
+body :where(button, .btn):not(.scrim):not(.account-sheet-scrim):not([class*="backdrop"]):is(:hover,:focus-visible) {
+  filter: brightness(1.035) saturate(1.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.42),
+    inset 0 -1px 0 rgba(0,0,0,.08),
+    0 7px 16px rgba(9,30,66,.16),
+    0 2px 4px rgba(9,30,66,.12);
+  transform: translateY(-1px);
+}
+body :where(button, .btn):not(.scrim):not(.account-sheet-scrim):not([class*="backdrop"]):active {
+  box-shadow: inset 0 2px 5px rgba(0,0,0,.14), 0 1px 2px rgba(9,30,66,.10);
+  transform: translateY(0);
+}
+body :where(button, .btn):disabled {
+  box-shadow: none;
+  filter: saturate(.65);
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  body :where(button, .btn) { transition: none; }
+}
+
 /* One global module title and one global search: module pages no longer repeat
    either control inside their local header or table toolbar. */
 .topbar-module__name {
@@ -995,6 +1141,26 @@ img.topbar-profile__avatar { object-fit: cover; }
   .topbar-search .global-search__input-wrapper > input {
     font-size: 12px;
   }
+}
+
+/* Release-level cascade overrides: keep the desktop module identity prominent
+   after the legacy responsive shell declarations above. */
+@media (min-width: 781px) {
+  .authenticated-app > .app-topbar {
+    height: 96px;
+    min-height: 96px;
+  }
+
+  .topbar-module__name {
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+}
+
+.topbar-profile:active,
+.topbar-notifications:active {
+  transform: none;
 }
 
 
@@ -1202,4 +1368,25 @@ img.topbar-profile__avatar { object-fit: cover; }
     opacity: 1;
     pointer-events: auto;
   }
+}
+
+/* Highest-priority release overrides; keep after all legacy shell rules. */
+@media (min-width: 781px) {
+  .topbar-module__name {
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+}
+.topbar-search .global-search__input-wrapper > input {
+  border: 0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 0 0 1px color-mix(in srgb, var(--color-primary) 10%, transparent), 0 5px 14px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+.topbar-search .global-search__input-wrapper {
+  border: 2px solid color-mix(in srgb, var(--color-primary) 58%, var(--color-border)) !important;
+  border-radius: 999px;
+}
+body .topbar-profile:is(:hover, :focus-visible, :active),
+body .topbar-notifications:is(:hover, :focus-visible, :active) {
+  transform: none;
 }
