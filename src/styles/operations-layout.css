@@ -365,3 +365,51 @@
     justify-content: space-between;
   }
 }
+
+/* Warehouse KPI summary: one tidy row of compact, equal-height tiles
+   (number + label side by side) instead of tall cards with oversized
+   numerals. */
+.authenticated-app .inventory-status-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.authenticated-app .inventory-status-summary > .card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 12px 16px;
+  border-radius: 12px;
+}
+.authenticated-app .inventory-status-summary > .card b {
+  flex: none;
+  min-width: 2ch;
+  font-size: 24px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.authenticated-app .inventory-status-summary > .card small {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 780px) {
+  .authenticated-app .inventory-status-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+  }
+  .authenticated-app .inventory-status-summary > .card {
+    min-width: 0;
+    min-height: 56px;
+  }
+}
+@media (min-width: 781px) {
+  .authenticated-app .inventory-action-card {
+    grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  }
+}

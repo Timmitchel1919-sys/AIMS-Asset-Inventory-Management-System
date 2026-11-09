@@ -169,39 +169,15 @@ export function AppShell({ children }: { children: ReactNode }) {
     [voiceStatus, setVoiceStatus] = useState(""),
     [profileOpen, setProfileOpen] = useState(false),
     [navigationVisible, setNavigationVisible] = useState(true);
-  const lastScrollY = useRef(0);
-  const scrollFrame = useRef<number | null>(null);
+  // The topbar, page header and data toolbar stay pinned while scrolling.
+  // Hiding them on scroll-down collapsed the toolbar's layout space, which
+  // shifted scrollY and immediately re-triggered the reveal — the header
+  // flickered on every scroll. Only an explicit reveal request remains.
   useEffect(() => {
-    lastScrollY.current = window.scrollY;
-    const update = () => {
-      scrollFrame.current = null;
-      const next = Math.max(0, window.scrollY);
-      const delta = next - lastScrollY.current;
-      if (next < 64) setNavigationVisible(true);
-      else if (delta >= 16) setNavigationVisible(false);
-      else if (delta <= -16) setNavigationVisible(true);
-      if (Math.abs(delta) >= 16 || next < 64) lastScrollY.current = next;
-    };
-    const onScroll = () => {
-      if (scrollFrame.current == null)
-        scrollFrame.current = window.requestAnimationFrame(update);
-    };
     const reveal = () => setNavigationVisible(true);
-    window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("aims:reveal-navigation", reveal);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("aims:reveal-navigation", reveal);
-      if (scrollFrame.current != null) window.cancelAnimationFrame(scrollFrame.current);
-    };
+    return () => window.removeEventListener("aims:reveal-navigation", reveal);
   }, []);
-  useEffect(() => {
-    const task = window.requestAnimationFrame(() => {
-      setNavigationVisible(true);
-      lastScrollY.current = window.scrollY;
-    });
-    return () => window.cancelAnimationFrame(task);
-  }, [location.pathname]);
   useLayoutEffect(() => {
     const root = appRootRef.current;
     if (!root) return;

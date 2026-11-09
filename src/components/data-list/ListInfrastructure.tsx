@@ -1,3 +1,4 @@
+import { PageActionsSlot } from "../pageActions";
 import {
   Archive,
   ChevronLeft,
@@ -95,6 +96,7 @@ export function DataToolbar({
         {savedViews}
         {columnSelector}
         {exportMenu}
+        <PageActionsSlot />
       </div>
     </div>
   );

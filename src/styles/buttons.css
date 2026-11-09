@@ -1,0 +1,520 @@
+/* ==========================================================================
+   AIMS button system
+   --------------------------------------------------------------------------
+   One centralized visual system for every `.btn` (the <Button/> component
+   renders `btn btn-{variant}`; legacy markup uses `btn primary|secondary|
+   ghost|danger`, and a bare `.btn` is a primary action).
+
+   Variants : primary · secondary · ghost · danger
+   Sizes    : .btn-sm (36px) · default md (44px) · .btn-lg (52px)
+
+   Themes only redefine the --btn-* tokens below; shape, spacing, depth and
+   interaction states are shared. This file loads last and the rules use a
+   raised specificity + !important so the older per-theme button overrides
+   (dark pills, turquoise glow, emerald gloss …) no longer fight it.
+   ========================================================================== */
+
+:root {
+  --btn-radius: 12px;
+  --btn-height: 44px;
+  --btn-height-sm: 36px;
+  --btn-height-lg: 52px;
+  --btn-padding-x: 16px;
+  --btn-padding-x-primary: 18px;
+  --btn-gap: 8px;
+  --btn-icon-size: 18px;
+  --btn-font-size: 14px;
+  --btn-font-weight: 600;
+  --btn-transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+
+  /* Primary — AIMS Blue Azure */
+  --btn-primary-top: #4f8cff;
+  --btn-primary-bottom: #2563eb;
+  --btn-primary-hover-top: #5b96ff;
+  --btn-primary-hover-bottom: #1d4ed8;
+  --btn-primary-active-top: #2f6fe6;
+  --btn-primary-active-bottom: #1e40af;
+  --btn-primary-border: rgba(29, 78, 216, 0.55);
+  --btn-primary-text: #ffffff;
+  --btn-primary-rgb: 37, 99, 235;
+  --btn-shadow-primary: 0 8px 18px rgba(var(--btn-primary-rgb), 0.28), 0 2px 6px rgba(var(--btn-primary-rgb), 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --btn-shadow-primary-hover: 0 10px 22px rgba(var(--btn-primary-rgb), 0.34), 0 4px 8px rgba(var(--btn-primary-rgb), 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  --btn-shadow-primary-active: 0 4px 10px rgba(var(--btn-primary-rgb), 0.24), inset 0 1px 2px rgba(0, 0, 0, 0.12);
+
+  /* Secondary — raised white */
+  --btn-secondary-bg-top: #ffffff;
+  --btn-secondary-bg-bottom: #f7faff;
+  --btn-secondary-hover-top: #ffffff;
+  --btn-secondary-hover-bottom: #eef5ff;
+  --btn-secondary-active-top: #f3f7fd;
+  --btn-secondary-active-bottom: #e9f1fc;
+  --btn-secondary-border: #d7e2f0;
+  --btn-secondary-border-hover: #c5d6eb;
+  --btn-secondary-text: #183153;
+  --btn-secondary-icon: #2a4c73;
+  --btn-shadow-secondary: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 10px rgba(16, 24, 40, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --btn-shadow-secondary-hover: 0 4px 8px rgba(16, 24, 40, 0.08), 0 8px 18px rgba(16, 24, 40, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --btn-shadow-secondary-active: 0 1px 3px rgba(16, 24, 40, 0.08), inset 0 1px 2px rgba(16, 24, 40, 0.06);
+
+  /* Ghost */
+  --btn-ghost-text: #1d4ed8;
+  --btn-ghost-hover-bg: rgba(37, 99, 235, 0.08);
+  --btn-ghost-active-bg: rgba(37, 99, 235, 0.14);
+
+  /* Danger — controlled red */
+  --btn-danger-top: #ef4444;
+  --btn-danger-bottom: #c81e1e;
+  --btn-danger-hover-top: #f25555;
+  --btn-danger-hover-bottom: #b91c1c;
+  --btn-danger-active-bottom: #991b1b;
+  --btn-danger-border: rgba(153, 27, 27, 0.55);
+  --btn-danger-text: #ffffff;
+  --btn-shadow-danger: 0 6px 14px rgba(200, 30, 30, 0.24), 0 2px 5px rgba(200, 30, 30, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  --btn-shadow-danger-hover: 0 9px 20px rgba(200, 30, 30, 0.3), 0 3px 7px rgba(200, 30, 30, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+
+  --btn-focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.18);
+  --btn-focus-outline: #2563eb;
+}
+
+/* AIMS Light — same white secondary system, softer blue accents. */
+html[data-theme="aims-light"] {
+  --btn-secondary-border: #d9e3ef;
+  --btn-secondary-border-hover: #c3d4ea;
+  --btn-secondary-hover-bottom: #f0f6ff;
+}
+
+/* AIMS Emerald Green — only the primary colour tokens change. */
+html[data-aims-theme="aimsEmeraldGloss"],
+html[data-theme="emerald-gloss"] {
+  --btn-primary-top: #34d399;
+  --btn-primary-bottom: #059669;
+  --btn-primary-hover-top: #10b981;
+  --btn-primary-hover-bottom: #047857;
+  --btn-primary-active-top: #0ea371;
+  --btn-primary-active-bottom: #065f46;
+  --btn-primary-border: rgba(4, 120, 87, 0.6);
+  --btn-primary-rgb: 5, 150, 105;
+  --btn-secondary-hover-bottom: #eefaf4;
+  --btn-secondary-border-hover: #bcdccb;
+  --btn-secondary-text: #123524;
+  --btn-secondary-icon: #1f5a3d;
+  --btn-ghost-text: #047857;
+  --btn-ghost-hover-bg: rgba(5, 150, 105, 0.08);
+  --btn-ghost-active-bg: rgba(5, 150, 105, 0.14);
+  --btn-focus-ring: 0 0 0 3px rgba(5, 150, 105, 0.22);
+  --btn-focus-outline: #059669;
+}
+
+/* AIMS DarkBento — no bright white secondaries in dark mode. */
+html[data-theme="dark"] {
+  --btn-primary-top: #5b96ff;
+  --btn-primary-bottom: #2563eb;
+  --btn-primary-hover-top: #6aa1ff;
+  --btn-primary-hover-bottom: #1d4ed8;
+  --btn-primary-border: rgba(120, 165, 255, 0.35);
+  --btn-shadow-primary: 0 8px 18px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(37, 99, 235, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  --btn-shadow-primary-hover: 0 10px 22px rgba(0, 0, 0, 0.38), 0 4px 10px rgba(37, 99, 235, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+  --btn-shadow-primary-active: 0 3px 8px rgba(0, 0, 0, 0.32), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  --btn-secondary-bg-top: #1a1f27;
+  --btn-secondary-bg-bottom: #12161c;
+  --btn-secondary-hover-top: #212834;
+  --btn-secondary-hover-bottom: #171c24;
+  --btn-secondary-active-top: #12161c;
+  --btn-secondary-active-bottom: #0e1116;
+  --btn-secondary-border: #2d3745;
+  --btn-secondary-border-hover: #3b4859;
+  --btn-secondary-text: #e8eef8;
+  --btn-secondary-icon: #afc8ee;
+  --btn-shadow-secondary: 0 4px 12px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --btn-shadow-secondary-hover: 0 6px 16px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --btn-shadow-secondary-active: 0 1px 4px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  --btn-ghost-text: #9cc2ff;
+  --btn-ghost-hover-bg: rgba(156, 194, 255, 0.1);
+  --btn-ghost-active-bg: rgba(156, 194, 255, 0.16);
+  --btn-focus-ring: 0 0 0 3px rgba(91, 150, 255, 0.4);
+  --btn-focus-outline: #8ab4ff;
+}
+
+/* Turquoise Glass — same system, turquoise primary on a dark canvas. */
+html[data-aims-theme="aimsTurquoiseGlass"] {
+  --btn-primary-top: #3ad6c6;
+  --btn-primary-bottom: #1ea597;
+  --btn-primary-hover-top: #4adfd0;
+  --btn-primary-hover-bottom: #189385;
+  --btn-primary-active-top: #22b3a5;
+  --btn-primary-active-bottom: #137a6f;
+  --btn-primary-border: rgba(121, 230, 221, 0.45);
+  --btn-primary-text: #041011;
+  --btn-primary-rgb: 30, 165, 151;
+  --btn-secondary-bg-top: #17323a;
+  --btn-secondary-bg-bottom: #10252b;
+  --btn-secondary-hover-top: #1c3c45;
+  --btn-secondary-hover-bottom: #142e35;
+  --btn-secondary-active-top: #10252b;
+  --btn-secondary-active-bottom: #0c1d22;
+  --btn-secondary-border: rgba(121, 230, 221, 0.22);
+  --btn-secondary-border-hover: rgba(121, 230, 221, 0.36);
+  --btn-secondary-text: #e6fbf8;
+  --btn-secondary-icon: #9fe9e1;
+  --btn-shadow-secondary: 0 4px 12px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --btn-shadow-secondary-hover: 0 6px 16px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --btn-shadow-secondary-active: 0 1px 4px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  --btn-ghost-text: #79e6dd;
+  --btn-ghost-hover-bg: rgba(121, 230, 221, 0.1);
+  --btn-ghost-active-bg: rgba(121, 230, 221, 0.16);
+  --btn-focus-ring: 0 0 0 3px rgba(121, 230, 221, 0.35);
+  --btn-focus-outline: #79e6dd;
+}
+
+/* ---------- Base ---------------------------------------------------------- */
+:root:root:root body .btn:not(.auth-page .btn) {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--btn-gap);
+  min-width: 0;
+  height: var(--btn-height) !important;
+  min-height: var(--btn-height) !important;
+  max-height: none !important;
+  padding: 0 var(--btn-padding-x) !important;
+  border: 1px solid transparent;
+  border-radius: var(--btn-radius) !important;
+  font-family: inherit;
+  font-size: var(--btn-font-size) !important;
+  font-weight: var(--btn-font-weight) !important;
+  line-height: 1.2;
+  letter-spacing: 0;
+  white-space: nowrap;
+  text-decoration: none !important;
+  cursor: pointer;
+  filter: none !important;
+  transform: translateY(0);
+  transition: var(--btn-transition) !important;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+:root:root:root body .btn:not(.auth-page .btn) > svg {
+  width: var(--btn-icon-size) !important;
+  height: var(--btn-icon-size) !important;
+  flex: none;
+  margin: 0;
+  stroke-width: 2;
+  color: currentColor;
+}
+
+/* Sizes */
+:root:root:root body .btn.btn-sm:not(.auth-page .btn) {
+  height: var(--btn-height-sm) !important;
+  min-height: var(--btn-height-sm) !important;
+  padding: 0 12px !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+}
+:root:root:root body .btn.btn-sm:not(.auth-page .btn) > svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+:root:root:root body .btn.btn-lg:not(.auth-page .btn) {
+  height: var(--btn-height-lg) !important;
+  min-height: var(--btn-height-lg) !important;
+  padding: 0 22px !important;
+  font-size: 15px !important;
+}
+
+/* ---------- Primary (default) --------------------------------------------- */
+:root:root:root body .btn:is(.btn-primary, .primary, :not(.btn-secondary, .secondary, .btn-ghost, .ghost, .btn-danger, .danger)):not(.auth-page .btn) {
+  padding-inline: var(--btn-padding-x-primary) !important;
+  border-color: var(--btn-primary-border) !important;
+  background: linear-gradient(180deg, var(--btn-primary-top) 0%, var(--btn-primary-bottom) 100%) !important;
+  color: var(--btn-primary-text) !important;
+  box-shadow: var(--btn-shadow-primary) !important;
+}
+:root:root:root body .btn:is(.btn-primary, .primary, :not(.btn-secondary, .secondary, .btn-ghost, .ghost, .btn-danger, .danger)):not(.auth-page .btn):hover:not(:disabled, [aria-disabled="true"]) {
+  background: linear-gradient(180deg, var(--btn-primary-hover-top) 0%, var(--btn-primary-hover-bottom) 100%) !important;
+  box-shadow: var(--btn-shadow-primary-hover) !important;
+  transform: translateY(-1px) !important;
+}
+:root:root:root body .btn:is(.btn-primary, .primary, :not(.btn-secondary, .secondary, .btn-ghost, .ghost, .btn-danger, .danger)):not(.auth-page .btn):active:not(:disabled, [aria-disabled="true"]) {
+  background: linear-gradient(180deg, var(--btn-primary-active-top) 0%, var(--btn-primary-active-bottom) 100%) !important;
+  box-shadow: var(--btn-shadow-primary-active) !important;
+  transform: translateY(0) !important;
+}
+
+/* ---------- Secondary ----------------------------------------------------- */
+:root:root:root body .btn:is(.btn-secondary, .secondary):not(.auth-page .btn) {
+  border-color: var(--btn-secondary-border) !important;
+  background: linear-gradient(180deg, var(--btn-secondary-bg-top) 0%, var(--btn-secondary-bg-bottom) 100%) !important;
+  color: var(--btn-secondary-text) !important;
+  box-shadow: var(--btn-shadow-secondary) !important;
+}
+:root:root:root body .btn:is(.btn-secondary, .secondary):not(.auth-page .btn) > svg {
+  color: var(--btn-secondary-icon) !important;
+}
+:root:root:root body .btn:is(.btn-secondary, .secondary):not(.auth-page .btn):is(:hover, [open]):not(:disabled, [aria-disabled="true"]) {
+  border-color: var(--btn-secondary-border-hover) !important;
+  background: linear-gradient(180deg, var(--btn-secondary-hover-top) 0%, var(--btn-secondary-hover-bottom) 100%) !important;
+  box-shadow: var(--btn-shadow-secondary-hover) !important;
+}
+:root:root:root body .btn:is(.btn-secondary, .secondary):not(.auth-page .btn):hover:not(:disabled, [aria-disabled="true"]) {
+  transform: translateY(-1px) !important;
+}
+:root:root:root body .btn:is(.btn-secondary, .secondary):not(.auth-page .btn):active:not(:disabled, [aria-disabled="true"]) {
+  background: linear-gradient(180deg, var(--btn-secondary-active-top) 0%, var(--btn-secondary-active-bottom) 100%) !important;
+  box-shadow: var(--btn-shadow-secondary-active) !important;
+  transform: translateY(0) !important;
+}
+
+/* ---------- Ghost --------------------------------------------------------- */
+:root:root:root body .btn:is(.btn-ghost, .ghost):not(.auth-page .btn) {
+  border-color: transparent !important;
+  background: transparent !important;
+  color: var(--btn-ghost-text) !important;
+  box-shadow: none !important;
+}
+:root:root:root body .btn:is(.btn-ghost, .ghost):not(.auth-page .btn):hover:not(:disabled, [aria-disabled="true"]) {
+  background: var(--btn-ghost-hover-bg) !important;
+}
+:root:root:root body .btn:is(.btn-ghost, .ghost):not(.auth-page .btn):active:not(:disabled, [aria-disabled="true"]) {
+  background: var(--btn-ghost-active-bg) !important;
+}
+
+/* ---------- Danger (destructive) ------------------------------------------ */
+:root:root:root body .btn:is(.btn-danger, .danger):not(.auth-page .btn) {
+  border-color: var(--btn-danger-border) !important;
+  background: linear-gradient(180deg, var(--btn-danger-top) 0%, var(--btn-danger-bottom) 100%) !important;
+  color: var(--btn-danger-text) !important;
+  box-shadow: var(--btn-shadow-danger) !important;
+}
+:root:root:root body .btn:is(.btn-danger, .danger):not(.auth-page .btn):hover:not(:disabled, [aria-disabled="true"]) {
+  background: linear-gradient(180deg, var(--btn-danger-hover-top) 0%, var(--btn-danger-hover-bottom) 100%) !important;
+  box-shadow: var(--btn-shadow-danger-hover) !important;
+  transform: translateY(-1px) !important;
+}
+:root:root:root body .btn:is(.btn-danger, .danger):not(.auth-page .btn):active:not(:disabled, [aria-disabled="true"]) {
+  background: linear-gradient(180deg, var(--btn-danger-bottom) 0%, var(--btn-danger-active-bottom) 100%) !important;
+  box-shadow: 0 3px 8px rgba(200, 30, 30, 0.22) !important;
+  transform: translateY(0) !important;
+}
+
+/* ---------- Focus (keyboard) ---------------------------------------------- */
+:root:root:root body .btn:not(.auth-page .btn):focus {
+  outline: none;
+}
+:root:root:root body .btn:not(.auth-page .btn):focus-visible {
+  outline: 2px solid var(--btn-focus-outline) !important;
+  outline-offset: 2px !important;
+  box-shadow: var(--btn-focus-ring) !important;
+}
+
+/* ---------- Disabled ------------------------------------------------------ */
+:root:root:root body .btn:not(.auth-page .btn):is(:disabled, [aria-disabled="true"]) {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: saturate(0.6) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:root:root body .btn:not(.auth-page .btn) {
+    transition: background 0.01s, border-color 0.01s, color 0.01s !important;
+  }
+  :root:root:root body .btn:not(.auth-page .btn):is(:hover, :active) {
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   Toolbar layout — search/counters on the left, every action button on the
+   right of the white bar, the page's primary action last and set apart.
+   ========================================================================== */
+.authenticated-app main :is(.data-toolbar, .list-toolbar) {
+  align-items: center;
+  gap: 10px;
+}
+.authenticated-app main :is(.data-toolbar, .list-toolbar) > .table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-left: auto !important;
+}
+.authenticated-app main :is(.data-toolbar, .list-toolbar) > .table-actions ~ .table-actions {
+  margin-left: 0 !important;
+}
+.toolbar-page-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+.toolbar-page-actions:empty {
+  display: none;
+}
+.table-actions--group:not(:has(> :not(.toolbar-page-actions:empty))) {
+  display: none !important;
+}
+.toolbar-page-actions > .page-actions-docked {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+/* The primary action is visually separated from the supporting actions. */
+.toolbar-page-actions > .page-actions-docked > .btn:is(.btn-primary, .primary, :not(.btn-secondary, .secondary, .btn-ghost, .ghost, .btn-danger, .danger)) {
+  margin-left: 6px;
+}
+.toolbar-page-actions > .page-actions-docked > .btn {
+  flex: none !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+/* A separator between table actions and the docked page actions. */
+.table-actions > :not(.toolbar-page-actions) ~ .toolbar-page-actions:not(:empty) {
+  padding-left: 12px;
+  border-left: 1px solid var(--color-border-subtle, var(--color-border));
+}
+
+/* Counters and search share the button height so the bar reads as one row. */
+.authenticated-app main :is(.data-toolbar, .list-toolbar) .data-toolbar__count {
+  height: var(--btn-height);
+  border-radius: var(--btn-radius);
+}
+.authenticated-app main :is(.data-toolbar, .list-toolbar) > .search {
+  min-height: var(--btn-height);
+}
+
+/* Search fields flex so the action group stays on the toolbar row. */
+@media (min-width: 781px) {
+  .authenticated-app main :is(.data-toolbar, .list-toolbar) > .search {
+    flex: 1 1 220px;
+    min-width: 180px;
+    max-width: 420px;
+  }
+}
+
+/* Departments panel: actions far right like every other module. */
+.authenticated-app .department-panel .data-toolbar .table-actions:first-of-type {
+  margin-left: auto !important;
+}
+
+/* Header row now only shows actions on pages without a toolbar; the module
+   name itself is shown in the global topbar. */
+@media (min-width: 781px) {
+  .authenticated-app main .page-title > div:first-child:has(> h1:only-child) {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+  }
+  .authenticated-app main .page-title {
+    justify-content: flex-end;
+  }
+  .authenticated-app main .page-title.page-title--no-actions {
+    padding: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+  }
+  .authenticated-app main .page-title > .actions {
+    margin-left: auto;
+  }
+  .authenticated-app main .page-title > .actions > .btn {
+    flex: none !important;
+    min-width: 0 !important;
+  }
+}
+
+/* ---------- Mobile -------------------------------------------------------- */
+@media (max-width: 780px) {
+  .authenticated-app main :is(.data-toolbar, .list-toolbar) {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .authenticated-app main :is(.data-toolbar, .list-toolbar) > .table-actions,
+  .toolbar-page-actions > .page-actions-docked {
+    gap: 8px;
+  }
+  .toolbar-page-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+  .toolbar-page-actions > .page-actions-docked {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .toolbar-page-actions > .page-actions-docked > .btn {
+    flex: 1 1 auto !important;
+  }
+  .toolbar-page-actions > .page-actions-docked > .btn:is(.btn-primary, .primary, :not(.btn-secondary, .secondary, .btn-ghost, .ghost, .btn-danger, .danger)) {
+    flex-basis: 100% !important;
+    margin-left: 0;
+  }
+  .table-actions > :not(.toolbar-page-actions) ~ .toolbar-page-actions:not(:empty) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .authenticated-app main :is(.data-toolbar, .list-toolbar) > .table-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .dialog footer .btn,
+  .workflow-form .form-actions .btn {
+    min-height: 44px;
+  }
+}
+
+/* ==========================================================================
+   Topbar — wider global search, smaller module name.
+   ========================================================================== */
+@media (min-width: 781px) {
+  .authenticated-app > .app-topbar {
+    grid-template-columns: minmax(120px, max-content) minmax(320px, 1fr) auto;
+    gap: 24px;
+  }
+  .authenticated-app > .app-topbar .topbar-search,
+  .authenticated-app > .app-topbar .topbar-search .global-search {
+    width: 100%;
+    max-width: none;
+  }
+  .authenticated-app > .app-topbar .topbar-module-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+}
+
+/* Movements: grid toolbar keeps its action group (Exporteren + Mutatie
+   registreren) on one line in the last column. */
+@media (min-width: 781px) {
+  .authenticated-app .movement-workspace-card .data-toolbar {
+    grid-template-columns: minmax(160px, 1.2fr) auto minmax(0, 3fr) auto;
+  }
+  .authenticated-app .movement-workspace-card .movement-filters {
+    grid-template-columns: repeat(4, minmax(96px, 1fr));
+  }
+  .authenticated-app .movement-workspace-card .data-toolbar > .table-actions {
+    flex-wrap: nowrap;
+    align-self: end;
+  }
+}
+
+/* Desktop: the right-hand action group never breaks apart; if the row is
+   too narrow the whole group moves to its own line, still right-aligned. */
+@media (min-width: 781px) {
+  .authenticated-app main :is(.data-toolbar, .list-toolbar) {
+    flex-wrap: wrap;
+  }
+  .authenticated-app main :is(.data-toolbar, .list-toolbar) > .table-actions,
+  .toolbar-page-actions > .page-actions-docked {
+    flex-wrap: nowrap;
+  }
+  .authenticated-app main :is(.data-toolbar, .list-toolbar) > .switch-row {
+    white-space: nowrap;
+  }
+}

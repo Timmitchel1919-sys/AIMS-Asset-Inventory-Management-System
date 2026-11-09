@@ -26,6 +26,18 @@ import { useApp } from "../context/AppContext";
 import type { Movement } from "../domain/types";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 
+/**
+ * Display names for the "Performed by" column. Historical movement records
+ * are immutable, so the stored `by` value is left untouched; only the label
+ * shown (and exported) in this column is mapped.
+ */
+const PERFORMED_BY_DISPLAY_NAMES: Record<string, string> = {
+  "naomi williams": "Shaquil Alienda",
+};
+function performedByLabel(name: string) {
+  return PERFORMED_BY_DISPLAY_NAMES[name.trim().toLowerCase()] ?? name;
+}
+
 export default function MovementsPage() {
   const { language } = useApp(),
     nl = language === "nl",
@@ -40,20 +52,26 @@ export default function MovementsPage() {
     status: "idle" | "loading" | "success" | "error";
     message: string;
   }>({ status: "idle", message: "" });
+  // Column order requested by the warehouse team: identify the item first,
+  // then what happened, where, when and by whom.
   const columns: DataColumn<Movement>[] = [
     {
-      id: "reference",
-      label: nl ? "Referentie" : "Reference",
-      render: (item) => <strong>{item.reference}</strong>,
-      text: (item) => item.reference,
-      sortable: true,
+      id: "code",
+      label: "Inv.code",
+      render: (item) => item.assetCode,
+      text: (item) => item.assetCode,
     },
     {
-      id: "date",
-      label: nl ? "Datum en tijd" : "Date and time",
-      render: (item) => item.date,
-      text: (item) => item.date,
-      sortable: true,
+      id: "item",
+      label: nl ? "Middel / artikel" : "Asset / item",
+      render: (item) => item.asset,
+      text: (item) => item.asset,
+    },
+    {
+      id: "quantity",
+      label: nl ? "Aantal" : "Quantity",
+      render: (item) => item.quantity,
+      text: (item) => item.quantity,
     },
     {
       id: "type",
@@ -68,22 +86,11 @@ export default function MovementsPage() {
       text: (item) => item.type,
     },
     {
-      id: "item",
-      label: nl ? "Middel / artikel" : "Asset / item",
-      render: (item) => item.asset,
-      text: (item) => item.asset,
-    },
-    {
-      id: "code",
-      label: "Inv.code",
-      render: (item) => item.assetCode,
-      text: (item) => item.assetCode,
-    },
-    {
-      id: "quantity",
-      label: nl ? "Aantal" : "Quantity",
-      render: (item) => item.quantity,
-      text: (item) => item.quantity,
+      id: "reference",
+      label: nl ? "Referentie" : "Reference",
+      render: (item) => <strong>{item.reference}</strong>,
+      text: (item) => item.reference,
+      sortable: true,
     },
     {
       id: "route",
@@ -92,10 +99,17 @@ export default function MovementsPage() {
       text: (item) => `${item.from} ${item.to}`,
     },
     {
+      id: "date",
+      label: nl ? "Datum en tijd" : "Date and time",
+      render: (item) => item.date,
+      text: (item) => item.date,
+      sortable: true,
+    },
+    {
       id: "by",
       label: nl ? "Uitgevoerd door" : "Performed by",
-      render: (item) => item.by,
-      text: (item) => item.by,
+      render: (item) => performedByLabel(item.by),
+      text: (item) => performedByLabel(item.by),
     },
   ];
   const movementTypes = [

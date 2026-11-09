@@ -1,12 +1,25 @@
 import {AlertTriangle,ArrowLeft,CheckCircle2,X} from 'lucide-react';
 import {useEffect,useId,useRef,type FormEvent,type ReactNode} from 'react';
 import {useNavigate} from 'react-router-dom';
+import {createPortal} from 'react-dom';
+import {usePageActionsSlot} from './pageActions';
 import {Button} from './ui';
 import {useApp} from '../context/AppContext';
 import {requestAccountMenuOpen} from '../lib/accountMenu';
 
-export function PageHeader({title,actions}:{title:string;description:string;actions?:ReactNode}){
-  return <header className="page-title"><div><h1>{title}</h1></div>{actions&&<div className="actions">{actions}</div>}</header>;
+/**
+ * Page heading. On desktop the module name lives in the global topbar, so the
+ * h1 is kept for assistive tech only and the header actions are docked at the
+ * far right of the page's white toolbar bar (see pageActions.tsx). Pass
+ * `dockActions={false}` to keep actions in the header (e.g. Reports).
+ */
+export function PageHeader({title,actions,dockActions=true}:{title:string;description:string;actions?:ReactNode;dockActions?:boolean}){
+  const slot=usePageActionsSlot(dockActions&&!!actions);
+  const docked=!!slot&&!!actions;
+  return <>
+    <header className={`page-title${docked||!actions?' page-title--no-actions':''}`}><div><h1>{title}</h1></div>{actions&&!docked&&<div className="actions">{actions}</div>}</header>
+    {docked&&createPortal(<div className="actions page-actions-docked">{actions}</div>,slot)}
+  </>;
 }
 
 export function AccountBackButton(){

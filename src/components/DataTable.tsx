@@ -1,3 +1,4 @@
+import { PageActionsSlot } from "./pageActions";
 import {
   Archive,
   Download,
@@ -280,19 +281,20 @@ export function DataTable<T>({
           {totalLabel ?? (nl ? "totaal records" : "total records")}
         </span>
         {filters}
-        {!hideExport && (
-          <div className="table-actions">
+        <div className="table-actions table-actions--group">
+          {!hideExport && (
             <Button variant="secondary" onClick={exportCsv}>
               <Download />
               {nl ? "Exporteren" : "Export"}
             </Button>
-          </div>
-        )}
-        {trailingAction && (
-          <div className="table-actions table-actions--trailing">
-            {trailingAction}
-          </div>
-        )}
+          )}
+          {trailingAction && (
+            <div className="table-actions table-actions--trailing">
+              {trailingAction}
+            </div>
+          )}
+          <PageActionsSlot />
+        </div>
       </div>
       {query && (
         <div className="filter-chips">
