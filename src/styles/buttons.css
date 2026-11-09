@@ -74,6 +74,15 @@
 
   --btn-focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.18);
   --btn-focus-outline: #2563eb;
+
+  /* Realistic soft gloss: a bright upper sheen that fades out just past the
+     middle, layered over the base gradient. */
+  --btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.12) 46%, rgba(255, 255, 255, 0) 54%, rgba(255, 255, 255, 0) 100%);
+  --btn-gloss-hover: linear-gradient(180deg, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0.15) 46%, rgba(255, 255, 255, 0) 54%, rgba(255, 255, 255, 0) 100%);
+  --btn-gloss-pressed: linear-gradient(180deg, rgba(0, 0, 0, 0.06) 0%, rgba(255, 255, 255, 0) 40%);
+  --btn-secondary-gloss: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 46%, rgba(255, 255, 255, 0) 54%, rgba(255, 255, 255, 0) 100%);
+  --btn-gloss-edge: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+  --btn-secondary-gloss-edge: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(16, 24, 40, 0.06);
 }
 
 /* AIMS Light — same white secondary system, softer blue accents. */
@@ -133,6 +142,8 @@ html[data-theme="dark"] {
   --btn-ghost-active-bg: rgba(156, 194, 255, 0.16);
   --btn-focus-ring: 0 0 0 3px rgba(91, 150, 255, 0.4);
   --btn-focus-outline: #8ab4ff;
+  --btn-secondary-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 46%, rgba(255, 255, 255, 0) 54%);
+  --btn-secondary-gloss-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
 }
 
 /* Turquoise Glass — same system, turquoise primary on a dark canvas. */
@@ -164,6 +175,8 @@ html[data-aims-theme="aimsTurquoiseGlass"] {
   --btn-ghost-active-bg: rgba(121, 230, 221, 0.16);
   --btn-focus-ring: 0 0 0 3px rgba(121, 230, 221, 0.35);
   --btn-focus-outline: #79e6dd;
+  --btn-secondary-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 46%, rgba(255, 255, 255, 0) 54%);
+  --btn-secondary-gloss-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
 }
 
 /* ---------- Base ---------------------------------------------------------- */
@@ -226,17 +239,17 @@ html[data-aims-theme="aimsTurquoiseGlass"] {
 :root:root:root body .btn:is(.btn-primary, .primary, :not(.btn-secondary, .secondary, .btn-ghost, .ghost, .btn-danger, .danger)):not(.auth-page .btn) {
   padding-inline: var(--btn-padding-x-primary) !important;
   border-color: var(--btn-primary-border) !important;
-  background: linear-gradient(180deg, var(--btn-primary-top) 0%, var(--btn-primary-bottom) 100%) !important;
+  background: var(--btn-gloss), linear-gradient(180deg, var(--btn-primary-top) 0%, var(--btn-primary-bottom) 100%) !important;
   color: var(--btn-primary-text) !important;
-  box-shadow: var(--btn-shadow-primary) !important;
+  box-shadow: var(--btn-shadow-primary), var(--btn-gloss-edge) !important;
 }
 :root:root:root body .btn:is(.btn-primary, .primary, :not(.btn-secondary, .secondary, .btn-ghost, .ghost, .btn-danger, .danger)):not(.auth-page .btn):hover:not(:disabled, [aria-disabled="true"]) {
-  background: linear-gradient(180deg, var(--btn-primary-hover-top) 0%, var(--btn-primary-hover-bottom) 100%) !important;
-  box-shadow: var(--btn-shadow-primary-hover) !important;
+  background: var(--btn-gloss-hover), linear-gradient(180deg, var(--btn-primary-hover-top) 0%, var(--btn-primary-hover-bottom) 100%) !important;
+  box-shadow: var(--btn-shadow-primary-hover), var(--btn-gloss-edge) !important;
   transform: translateY(-1px) !important;
 }
 :root:root:root body .btn:is(.btn-primary, .primary, :not(.btn-secondary, .secondary, .btn-ghost, .ghost, .btn-danger, .danger)):not(.auth-page .btn):active:not(:disabled, [aria-disabled="true"]) {
-  background: linear-gradient(180deg, var(--btn-primary-active-top) 0%, var(--btn-primary-active-bottom) 100%) !important;
+  background: var(--btn-gloss-pressed), linear-gradient(180deg, var(--btn-primary-active-top) 0%, var(--btn-primary-active-bottom) 100%) !important;
   box-shadow: var(--btn-shadow-primary-active) !important;
   transform: translateY(0) !important;
 }
@@ -244,17 +257,17 @@ html[data-aims-theme="aimsTurquoiseGlass"] {
 /* ---------- Secondary ----------------------------------------------------- */
 :root:root:root body .btn:is(.btn-secondary, .secondary):not(.auth-page .btn) {
   border-color: var(--btn-secondary-border) !important;
-  background: linear-gradient(180deg, var(--btn-secondary-bg-top) 0%, var(--btn-secondary-bg-bottom) 100%) !important;
+  background: var(--btn-secondary-gloss), linear-gradient(180deg, var(--btn-secondary-bg-top) 0%, var(--btn-secondary-bg-bottom) 100%) !important;
   color: var(--btn-secondary-text) !important;
-  box-shadow: var(--btn-shadow-secondary) !important;
+  box-shadow: var(--btn-shadow-secondary), var(--btn-secondary-gloss-edge) !important;
 }
 :root:root:root body .btn:is(.btn-secondary, .secondary):not(.auth-page .btn) > svg {
   color: var(--btn-secondary-icon) !important;
 }
 :root:root:root body .btn:is(.btn-secondary, .secondary):not(.auth-page .btn):is(:hover, [open]):not(:disabled, [aria-disabled="true"]) {
   border-color: var(--btn-secondary-border-hover) !important;
-  background: linear-gradient(180deg, var(--btn-secondary-hover-top) 0%, var(--btn-secondary-hover-bottom) 100%) !important;
-  box-shadow: var(--btn-shadow-secondary-hover) !important;
+  background: var(--btn-secondary-gloss), linear-gradient(180deg, var(--btn-secondary-hover-top) 0%, var(--btn-secondary-hover-bottom) 100%) !important;
+  box-shadow: var(--btn-shadow-secondary-hover), var(--btn-secondary-gloss-edge) !important;
 }
 :root:root:root body .btn:is(.btn-secondary, .secondary):not(.auth-page .btn):hover:not(:disabled, [aria-disabled="true"]) {
   transform: translateY(-1px) !important;
@@ -282,12 +295,12 @@ html[data-aims-theme="aimsTurquoiseGlass"] {
 /* ---------- Danger (destructive) ------------------------------------------ */
 :root:root:root body .btn:is(.btn-danger, .danger):not(.auth-page .btn) {
   border-color: var(--btn-danger-border) !important;
-  background: linear-gradient(180deg, var(--btn-danger-top) 0%, var(--btn-danger-bottom) 100%) !important;
+  background: var(--btn-gloss), linear-gradient(180deg, var(--btn-danger-top) 0%, var(--btn-danger-bottom) 100%) !important;
   color: var(--btn-danger-text) !important;
   box-shadow: var(--btn-shadow-danger) !important;
 }
 :root:root:root body .btn:is(.btn-danger, .danger):not(.auth-page .btn):hover:not(:disabled, [aria-disabled="true"]) {
-  background: linear-gradient(180deg, var(--btn-danger-hover-top) 0%, var(--btn-danger-hover-bottom) 100%) !important;
+  background: var(--btn-gloss-hover), linear-gradient(180deg, var(--btn-danger-hover-top) 0%, var(--btn-danger-hover-bottom) 100%) !important;
   box-shadow: var(--btn-shadow-danger-hover) !important;
   transform: translateY(-1px) !important;
 }
@@ -482,11 +495,34 @@ html[data-aims-theme="aimsTurquoiseGlass"] {
     width: 100%;
     max-width: none;
   }
-  .authenticated-app > .app-topbar .topbar-module-title {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
+  /* Module name: 3x the 15px base (45px), every theme. The topbar grows
+     to fit it; its height is measured into --aims-topbar-height, so the
+     sticky page header, toolbar and table header follow automatically. */
+  .authenticated-app > .app-topbar {
+    height: auto !important;
+    min-height: 76px;
   }
+  .authenticated-app > .app-topbar .topbar-module-title {
+    font-size: 45px !important;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    max-width: 46vw;
+  }
+}
+@media (max-width: 780px) {
+  .authenticated-app > .app-topbar .topbar-module-title {
+    font-size: 22px !important;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+}
+
+/* Dashboard: the location filter scrolls away with the page instead of
+   staying pinned under the topbar. */
+.authenticated-app main[data-route="dashboard"] .page-title {
+  position: static !important;
+  top: auto !important;
 }
 
 /* Movements: grid toolbar keeps its action group (Exporteren + Mutatie
@@ -610,4 +646,108 @@ html[data-theme="dark"] .authenticated-app > .app-topbar .global-search__input-w
   .app-topbar .top-notifications-link:hover {
     transform: none;
   }
+}
+
+
+/* ==========================================================================
+   Soft gloss outside the .btn system: landing page, sign-in / sign-up and
+   the remaining blue/white controls inside the platform. Public pages always
+   use the AIMS Blue Azure tokens, whatever the saved app theme is.
+   ========================================================================== */
+:root:root :is(.aims-public-page, .auth-page) {
+  --btn-primary-top: #4f8cff;
+  --btn-primary-bottom: #2563eb;
+  --btn-primary-hover-top: #5b96ff;
+  --btn-primary-hover-bottom: #1d4ed8;
+  --btn-primary-active-top: #2f6fe6;
+  --btn-primary-active-bottom: #1e40af;
+  --btn-primary-rgb: 37, 99, 235;
+  --btn-secondary-bg-top: #ffffff;
+  --btn-secondary-bg-bottom: #f4f8fe;
+  --btn-secondary-hover-bottom: #eaf2fd;
+  --btn-secondary-border: #d7e2f0;
+  --btn-secondary-border-hover: #c5d6eb;
+  --btn-secondary-text: #183153;
+  --btn-shadow-primary: 0 8px 18px rgba(37, 99, 235, 0.28), 0 2px 6px rgba(37, 99, 235, 0.18);
+  --btn-shadow-primary-hover: 0 12px 24px rgba(37, 99, 235, 0.34), 0 4px 8px rgba(37, 99, 235, 0.2);
+  --btn-shadow-secondary: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 10px rgba(16, 24, 40, 0.05);
+  --btn-shadow-secondary-hover: 0 4px 8px rgba(16, 24, 40, 0.08), 0 8px 18px rgba(16, 24, 40, 0.07);
+  --btn-secondary-gloss: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 46%, rgba(255, 255, 255, 0) 54%, rgba(255, 255, 255, 0) 100%);
+  --btn-secondary-gloss-edge: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(16, 24, 40, 0.06);
+}
+
+/* Blue: landing CTAs, sign-in / sign-up submit. */
+:root:root:root:root:root body :is(.aims-public-page .aims-glossy-button, .auth-page .auth-submit, .auth-page .btn-primary) {
+  border: 1px solid rgba(29, 78, 216, 0.55) !important;
+  background: var(--btn-gloss), linear-gradient(180deg, var(--btn-primary-top) 0%, var(--btn-primary-bottom) 100%) !important;
+  color: #ffffff !important;
+  box-shadow: var(--btn-shadow-primary), var(--btn-gloss-edge) !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease !important;
+}
+:root:root:root:root:root body :is(.aims-public-page .aims-glossy-button, .auth-page .auth-submit, .auth-page .btn-primary):hover:not(:disabled) {
+  background: var(--btn-gloss-hover), linear-gradient(180deg, var(--btn-primary-hover-top) 0%, var(--btn-primary-hover-bottom) 100%) !important;
+  box-shadow: var(--btn-shadow-primary-hover), var(--btn-gloss-edge) !important;
+  transform: translateY(-1px);
+  filter: none !important;
+}
+:root:root:root:root:root body :is(.aims-public-page .aims-glossy-button, .auth-page .auth-submit, .auth-page .btn-primary):active:not(:disabled) {
+  background: var(--btn-gloss-pressed), linear-gradient(180deg, var(--btn-primary-active-top) 0%, var(--btn-primary-active-bottom) 100%) !important;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.24), inset 0 1px 2px rgba(0, 0, 0, 0.14) !important;
+  transform: translateY(0);
+}
+/* The landing CTA on the blue final band keeps a light rim. */
+:root:root:root:root:root body .aims-final-cta .aims-glossy-button {
+  border-color: rgba(255, 255, 255, 0.55) !important;
+}
+
+/* White: landing secondary + white CTA, Google sign-in. */
+:root:root:root:root:root body :is(.aims-public-page .aims-secondary-button, .aims-public-page .aims-cta-white, .auth-page .google-login) {
+  border: 1px solid var(--btn-secondary-border) !important;
+  background: var(--btn-secondary-gloss), linear-gradient(180deg, var(--btn-secondary-bg-top) 0%, var(--btn-secondary-bg-bottom) 100%) !important;
+  color: var(--btn-secondary-text) !important;
+  box-shadow: var(--btn-shadow-secondary), var(--btn-secondary-gloss-edge) !important;
+  backdrop-filter: none !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease !important;
+}
+:root:root:root:root:root body :is(.aims-public-page .aims-secondary-button, .aims-public-page .aims-cta-white, .auth-page .google-login):hover:not(:disabled) {
+  border-color: var(--btn-secondary-border-hover) !important;
+  background: var(--btn-secondary-gloss), linear-gradient(180deg, var(--btn-secondary-hover-top) 0%, var(--btn-secondary-hover-bottom) 100%) !important;
+  box-shadow: var(--btn-shadow-secondary-hover), var(--btn-secondary-gloss-edge) !important;
+  transform: translateY(-1px);
+}
+:root:root:root:root:root body :is(.aims-public-page .aims-secondary-button, .aims-public-page .aims-cta-white, .auth-page .google-login):active:not(:disabled) {
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.08), inset 0 1px 2px rgba(16, 24, 40, 0.08) !important;
+  transform: translateY(0);
+}
+/* The final CTA band is blue: the white CTA keeps the brand-blue label. */
+:root:root:root:root:root body .aims-public-page .aims-cta-white {
+  color: var(--landing-action, #155eef) !important;
+}
+
+/* Platform: warehouse action tiles and the topbar bell get the same gloss. */
+:root:root body .authenticated-app .inventory-action-card a {
+  border-color: var(--btn-secondary-border) !important;
+  background: var(--btn-secondary-gloss), linear-gradient(180deg, var(--btn-secondary-bg-top) 0%, var(--btn-secondary-bg-bottom) 100%) !important;
+  color: var(--btn-secondary-text) !important;
+  box-shadow: var(--btn-shadow-secondary), var(--btn-secondary-gloss-edge) !important;
+  transition: var(--btn-transition);
+}
+:root:root body .authenticated-app .inventory-action-card a:hover {
+  border-color: var(--btn-secondary-border-hover) !important;
+  background: var(--btn-secondary-gloss), linear-gradient(180deg, var(--btn-secondary-hover-top) 0%, var(--btn-secondary-hover-bottom) 100%) !important;
+  box-shadow: var(--btn-shadow-secondary-hover), var(--btn-secondary-gloss-edge) !important;
+  transform: translateY(-1px);
+}
+.app-topbar .top-notifications-link {
+  background: var(--btn-secondary-gloss), linear-gradient(180deg, var(--btn-secondary-bg-top), var(--btn-secondary-bg-bottom));
+  box-shadow: var(--btn-shadow-secondary), var(--btn-secondary-gloss-edge);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:root:root body :is(.aims-public-page .aims-glossy-button, .aims-public-page .aims-secondary-button, .aims-public-page .aims-cta-white, .auth-page .auth-submit, .auth-page .google-login, .authenticated-app .inventory-action-card a):hover {
+    transform: none !important;
+  }
+}
+.authenticated-app:has(> main[data-route="dashboard"]) {
+  --aims-page-header-offset: 0px;
 }
