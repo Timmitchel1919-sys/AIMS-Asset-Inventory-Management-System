@@ -15,81 +15,81 @@
    ========================================================================== */
 
 :root {
-  --btn-radius: 12px;
+  /* Reference toolbar design: rounded 14px tiles, bold labels, vivid blue
+     icons on raised white keys, a deep blue gradient primary with a glow. */
+  --btn-radius: 14px;
   --btn-height: 44px;
   --btn-height-sm: 36px;
   --btn-height-lg: 52px;
   --btn-padding-x: 16px;
-  --btn-padding-x-primary: 18px;
-  --btn-gap: 8px;
-  --btn-icon-size: 18px;
+  --btn-padding-x-primary: 20px;
+  --btn-gap: 9px;
+  --btn-icon-size: 19px;
+  --btn-icon-stroke: 2.25;
   --btn-font-size: 14px;
-  --btn-font-weight: 600;
+  --btn-font-weight: 700;
   --btn-transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
 
-  /* Primary — AIMS Blue Azure */
-  --btn-primary-top: #4f8cff;
-  --btn-primary-bottom: #2563eb;
-  --btn-primary-hover-top: #5b96ff;
-  --btn-primary-hover-bottom: #1d4ed8;
-  --btn-primary-active-top: #2f6fe6;
-  --btn-primary-active-bottom: #1e40af;
-  --btn-primary-border: rgba(29, 78, 216, 0.55);
+  /* Primary — AIMS Blue Azure, bright top to deep bottom */
+  --btn-primary-top: #3a96ff;
+  --btn-primary-bottom: #0b4fd8;
+  --btn-primary-hover-top: #4ea2ff;
+  --btn-primary-hover-bottom: #0a47c6;
+  --btn-primary-active-top: #2a7ff0;
+  --btn-primary-active-bottom: #083da9;
+  --btn-primary-border: rgba(8, 64, 190, 0.7);
   --btn-primary-text: #ffffff;
-  --btn-primary-rgb: 37, 99, 235;
-  --btn-shadow-primary: 0 8px 18px rgba(var(--btn-primary-rgb), 0.28), 0 2px 6px rgba(var(--btn-primary-rgb), 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  --btn-shadow-primary-hover: 0 10px 22px rgba(var(--btn-primary-rgb), 0.34), 0 4px 8px rgba(var(--btn-primary-rgb), 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  --btn-shadow-primary-active: 0 4px 10px rgba(var(--btn-primary-rgb), 0.24), inset 0 1px 2px rgba(0, 0, 0, 0.12);
+  --btn-primary-rgb: 22, 99, 230;
+  --btn-shadow-primary: 0 8px 20px rgba(22, 99, 230, 0.38), 0 3px 6px rgba(8, 56, 170, 0.26);
+  --btn-shadow-primary-hover: 0 12px 26px rgba(22, 99, 230, 0.45), 0 4px 8px rgba(8, 56, 170, 0.28);
+  --btn-shadow-primary-active: 0 4px 10px rgba(22, 99, 230, 0.3), inset 0 2px 4px rgba(4, 30, 110, 0.3);
 
-  /* Secondary — raised white */
+  /* Secondary — raised white key */
   --btn-secondary-bg-top: #ffffff;
-  --btn-secondary-bg-bottom: #f7faff;
+  --btn-secondary-bg-bottom: #e8eef8;
   --btn-secondary-hover-top: #ffffff;
-  --btn-secondary-hover-bottom: #eef5ff;
-  --btn-secondary-active-top: #f3f7fd;
-  --btn-secondary-active-bottom: #e9f1fc;
-  --btn-secondary-border: #d7e2f0;
-  --btn-secondary-border-hover: #c5d6eb;
-  --btn-secondary-text: #183153;
-  --btn-secondary-icon: #2a4c73;
-  --btn-shadow-secondary: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 10px rgba(16, 24, 40, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  --btn-shadow-secondary-hover: 0 4px 8px rgba(16, 24, 40, 0.08), 0 8px 18px rgba(16, 24, 40, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  --btn-shadow-secondary-active: 0 1px 3px rgba(16, 24, 40, 0.08), inset 0 1px 2px rgba(16, 24, 40, 0.06);
+  --btn-secondary-hover-bottom: #e0e9f7;
+  --btn-secondary-active-top: #edf2fa;
+  --btn-secondary-active-bottom: #dbe4f2;
+  --btn-secondary-border: #c7d4e8;
+  --btn-secondary-border-hover: #afc3e0;
+  --btn-secondary-text: #0f2a5c;
+  --btn-secondary-icon: #1d5fd6;
+  --btn-shadow-secondary: 0 3px 6px rgba(28, 56, 110, 0.16), 0 1px 2px rgba(28, 56, 110, 0.14);
+  --btn-shadow-secondary-hover: 0 6px 14px rgba(28, 56, 110, 0.18), 0 2px 4px rgba(28, 56, 110, 0.14);
+  --btn-shadow-secondary-active: 0 1px 2px rgba(28, 56, 110, 0.14), inset 0 2px 4px rgba(28, 56, 110, 0.12);
 
   /* Ghost */
-  --btn-ghost-text: #1d4ed8;
-  --btn-ghost-hover-bg: rgba(37, 99, 235, 0.08);
-  --btn-ghost-active-bg: rgba(37, 99, 235, 0.14);
+  --btn-ghost-text: #1d5fd6;
+  --btn-ghost-hover-bg: rgba(29, 95, 214, 0.08);
+  --btn-ghost-active-bg: rgba(29, 95, 214, 0.14);
 
   /* Danger — controlled red */
-  --btn-danger-top: #ef4444;
-  --btn-danger-bottom: #c81e1e;
-  --btn-danger-hover-top: #f25555;
-  --btn-danger-hover-bottom: #b91c1c;
-  --btn-danger-active-bottom: #991b1b;
-  --btn-danger-border: rgba(153, 27, 27, 0.55);
+  --btn-danger-top: #f04a4a;
+  --btn-danger-bottom: #c01b1b;
+  --btn-danger-hover-top: #f45a5a;
+  --btn-danger-hover-bottom: #ac1818;
+  --btn-danger-active-bottom: #8f1515;
+  --btn-danger-border: rgba(143, 21, 21, 0.6);
   --btn-danger-text: #ffffff;
-  --btn-shadow-danger: 0 6px 14px rgba(200, 30, 30, 0.24), 0 2px 5px rgba(200, 30, 30, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  --btn-shadow-danger-hover: 0 9px 20px rgba(200, 30, 30, 0.3), 0 3px 7px rgba(200, 30, 30, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  --btn-shadow-danger: 0 8px 18px rgba(200, 30, 30, 0.3), 0 3px 6px rgba(150, 20, 20, 0.2);
+  --btn-shadow-danger-hover: 0 12px 24px rgba(200, 30, 30, 0.36), 0 4px 8px rgba(150, 20, 20, 0.22);
 
-  --btn-focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.18);
-  --btn-focus-outline: #2563eb;
+  --btn-focus-ring: 0 0 0 3px rgba(29, 95, 214, 0.22);
+  --btn-focus-outline: #1d5fd6;
 
-  /* Realistic soft gloss: a bright upper sheen that fades out just past the
-     middle, layered over the base gradient. */
-  --btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.12) 46%, rgba(255, 255, 255, 0) 54%, rgba(255, 255, 255, 0) 100%);
-  --btn-gloss-hover: linear-gradient(180deg, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0.15) 46%, rgba(255, 255, 255, 0) 54%, rgba(255, 255, 255, 0) 100%);
-  --btn-gloss-pressed: linear-gradient(180deg, rgba(0, 0, 0, 0.06) 0%, rgba(255, 255, 255, 0) 40%);
-  --btn-secondary-gloss: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 46%, rgba(255, 255, 255, 0) 54%, rgba(255, 255, 255, 0) 100%);
-  --btn-gloss-edge: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.14);
-  --btn-secondary-gloss-edge: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(16, 24, 40, 0.06);
+  /* Smooth soft gloss: a gentle sheen fading from the top edge. */
+  --btn-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.07) 42%, rgba(255, 255, 255, 0) 70%);
+  --btn-gloss-hover: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.09) 42%, rgba(255, 255, 255, 0) 70%);
+  --btn-gloss-pressed: linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(255, 255, 255, 0) 45%);
+  --btn-secondary-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.4) 45%, rgba(255, 255, 255, 0) 75%);
+  --btn-gloss-edge: inset 0 1px 0 rgba(255, 255, 255, 0.38), inset 0 -2px 4px rgba(4, 36, 130, 0.28);
+  --btn-secondary-gloss-edge: inset 0 1px 0 #ffffff, inset 0 -2px 4px rgba(120, 145, 190, 0.22);
 }
 
 /* AIMS Light — same white secondary system, softer blue accents. */
 html[data-theme="aims-light"] {
-  --btn-secondary-border: #d9e3ef;
-  --btn-secondary-border-hover: #c3d4ea;
-  --btn-secondary-hover-bottom: #f0f6ff;
+  --btn-secondary-border: #c9d6e9;
 }
 
 /* AIMS Emerald Green — only the primary colour tokens change. */
@@ -212,7 +212,7 @@ html[data-aims-theme="aimsTurquoiseGlass"] {
   height: var(--btn-icon-size) !important;
   flex: none;
   margin: 0;
-  stroke-width: 2;
+  stroke-width: var(--btn-icon-stroke, 2);
   color: currentColor;
 }
 
@@ -656,42 +656,45 @@ html[data-theme="dark"] .authenticated-app > .app-topbar .global-search__input-w
    use the AIMS Blue Azure tokens, whatever the saved app theme is.
    ========================================================================== */
 :root:root :is(.aims-public-page, .auth-page) {
-  --btn-primary-top: #4f8cff;
-  --btn-primary-bottom: #2563eb;
-  --btn-primary-hover-top: #5b96ff;
-  --btn-primary-hover-bottom: #1d4ed8;
-  --btn-primary-active-top: #2f6fe6;
-  --btn-primary-active-bottom: #1e40af;
-  --btn-primary-rgb: 37, 99, 235;
+  /* Landing + sign-in always use the Blue Azure reference keys. */
+  --btn-primary-top: #3a96ff;
+  --btn-primary-bottom: #0b4fd8;
+  --btn-primary-hover-top: #4ea2ff;
+  --btn-primary-hover-bottom: #0a47c6;
+  --btn-primary-active-top: #2a7ff0;
+  --btn-primary-active-bottom: #083da9;
+  --btn-primary-rgb: 22, 99, 230;
   --btn-secondary-bg-top: #ffffff;
-  --btn-secondary-bg-bottom: #f4f8fe;
-  --btn-secondary-hover-bottom: #eaf2fd;
-  --btn-secondary-border: #d7e2f0;
-  --btn-secondary-border-hover: #c5d6eb;
-  --btn-secondary-text: #183153;
-  --btn-shadow-primary: 0 8px 18px rgba(37, 99, 235, 0.28), 0 2px 6px rgba(37, 99, 235, 0.18);
-  --btn-shadow-primary-hover: 0 12px 24px rgba(37, 99, 235, 0.34), 0 4px 8px rgba(37, 99, 235, 0.2);
-  --btn-shadow-secondary: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 10px rgba(16, 24, 40, 0.05);
-  --btn-shadow-secondary-hover: 0 4px 8px rgba(16, 24, 40, 0.08), 0 8px 18px rgba(16, 24, 40, 0.07);
-  --btn-secondary-gloss: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 46%, rgba(255, 255, 255, 0) 54%, rgba(255, 255, 255, 0) 100%);
-  --btn-secondary-gloss-edge: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(16, 24, 40, 0.06);
+  --btn-secondary-bg-bottom: #e8eef8;
+  --btn-secondary-hover-top: #ffffff;
+  --btn-secondary-hover-bottom: #e0e9f7;
+  --btn-secondary-border: #c7d4e8;
+  --btn-secondary-border-hover: #afc3e0;
+  --btn-secondary-text: #0f2a5c;
+  --btn-secondary-icon: #1d5fd6;
+  --btn-shadow-primary: 0 8px 20px rgba(22, 99, 230, 0.38), 0 3px 6px rgba(8, 56, 170, 0.26);
+  --btn-shadow-primary-hover: 0 12px 26px rgba(22, 99, 230, 0.45), 0 4px 8px rgba(8, 56, 170, 0.28);
+  --btn-shadow-secondary: 0 3px 6px rgba(28, 56, 110, 0.16), 0 1px 2px rgba(28, 56, 110, 0.14);
+  --btn-shadow-secondary-hover: 0 6px 14px rgba(28, 56, 110, 0.18), 0 2px 4px rgba(28, 56, 110, 0.14);
+  --btn-secondary-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.4) 45%, rgba(255, 255, 255, 0) 75%);
+  --btn-secondary-gloss-edge: inset 0 1px 0 #ffffff, inset 0 -2px 4px rgba(120, 145, 190, 0.22);
 }
 
 /* Blue: landing CTAs, sign-in / sign-up submit. */
-:root:root:root:root:root body :is(.aims-public-page .aims-glossy-button, .auth-page .auth-submit, .auth-page .btn-primary) {
+:root:root:root:root:root body :is(.aims-public-page :is(.aims-glossy-button, .aims-header-download), .auth-page .auth-submit, .auth-page .btn-primary) {
   border: 1px solid rgba(29, 78, 216, 0.55) !important;
   background: var(--btn-gloss), linear-gradient(180deg, var(--btn-primary-top) 0%, var(--btn-primary-bottom) 100%) !important;
   color: #ffffff !important;
   box-shadow: var(--btn-shadow-primary), var(--btn-gloss-edge) !important;
   transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease !important;
 }
-:root:root:root:root:root body :is(.aims-public-page .aims-glossy-button, .auth-page .auth-submit, .auth-page .btn-primary):hover:not(:disabled) {
+:root:root:root:root:root body :is(.aims-public-page :is(.aims-glossy-button, .aims-header-download), .auth-page .auth-submit, .auth-page .btn-primary):hover:not(:disabled) {
   background: var(--btn-gloss-hover), linear-gradient(180deg, var(--btn-primary-hover-top) 0%, var(--btn-primary-hover-bottom) 100%) !important;
   box-shadow: var(--btn-shadow-primary-hover), var(--btn-gloss-edge) !important;
   transform: translateY(-1px);
   filter: none !important;
 }
-:root:root:root:root:root body :is(.aims-public-page .aims-glossy-button, .auth-page .auth-submit, .auth-page .btn-primary):active:not(:disabled) {
+:root:root:root:root:root body :is(.aims-public-page :is(.aims-glossy-button, .aims-header-download), .auth-page .auth-submit, .auth-page .btn-primary):active:not(:disabled) {
   background: var(--btn-gloss-pressed), linear-gradient(180deg, var(--btn-primary-active-top) 0%, var(--btn-primary-active-bottom) 100%) !important;
   box-shadow: 0 4px 10px rgba(37, 99, 235, 0.24), inset 0 1px 2px rgba(0, 0, 0, 0.14) !important;
   transform: translateY(0);
@@ -745,7 +748,7 @@ html[data-theme="dark"] .authenticated-app > .app-topbar .global-search__input-w
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root:root:root body :is(.aims-public-page .aims-glossy-button, .aims-public-page .aims-secondary-button, .aims-public-page .aims-cta-white, .auth-page .auth-submit, .auth-page .google-login, .authenticated-app .inventory-action-card a):hover {
+  :root:root:root body :is(.aims-public-page :is(.aims-glossy-button, .aims-header-download), .aims-public-page .aims-secondary-button, .aims-public-page .aims-cta-white, .auth-page .auth-submit, .auth-page .google-login, .authenticated-app .inventory-action-card a):hover {
     transform: none !important;
   }
 }
@@ -893,4 +896,19 @@ html[data-theme="dark"] .authenticated-app > .app-topbar .global-search__input-w
   .app-sidebar__subtitle-short {
     display: none !important;
   }
+}
+
+
+/* Landing + sign-in: same key shape, weight and icons as the platform. */
+:root:root:root:root:root body :is(.aims-public-page :is(.aims-glossy-button, .aims-header-download), .aims-public-page .aims-secondary-button, .aims-public-page .aims-cta-white, .auth-page .auth-submit, .auth-page .google-login) {
+  border-radius: var(--btn-radius) !important;
+  font-weight: var(--btn-font-weight) !important;
+  gap: var(--btn-gap) !important;
+}
+:root:root:root:root:root body :is(.aims-public-page .aims-secondary-button, .aims-public-page .aims-cta-white) svg {
+  color: var(--btn-secondary-icon) !important;
+  stroke-width: var(--btn-icon-stroke);
+}
+:root:root:root:root:root body :is(.aims-public-page :is(.aims-glossy-button, .aims-header-download), .auth-page .auth-submit) svg {
+  stroke-width: var(--btn-icon-stroke);
 }
