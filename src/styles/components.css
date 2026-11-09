@@ -2581,51 +2581,103 @@ html .system-information {
   transform: translate(-50%, -50%);
   margin: 0;
 }
+/* Bulk add to warehouse: same columns and look as the ICT Assets register.
+   Search row on top, one full-width table below with its own sticky header
+   (the page-level sticky offset must not apply inside the dialog). */
 .dialog.bulk-asset-picker {
-  width: min(1240px, calc(100vw - 28px));
+  width: min(1480px, calc(100vw - 28px));
   max-height: 92vh;
 }
 .dialog.bulk-asset-picker .dialog-body {
   overflow: hidden;
 }
+.bulk-asset-picker-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.bulk-asset-picker-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bulk-asset-picker-filters .search {
+  flex: 1 1 320px;
+  max-width: 520px;
+  min-height: 44px;
+}
 .bulk-asset-picker-table-wrap {
-  max-height: 60vh;
+  max-height: 62vh;
   overflow: auto;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 12px;
+  background: var(--color-surface);
 }
 .bulk-asset-picker-table {
   width: 100%;
-  border-collapse: collapse;
+  min-width: 1180px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: var(--text-sm);
 }
 .bulk-asset-picker-table th,
 .bulk-asset-picker-table td {
-  padding: 8px 10px;
+  padding: 0 16px;
+  height: 52px;
   text-align: left;
+  vertical-align: middle;
   border-bottom: 1px solid var(--color-border);
-  white-space: nowrap;
+  overflow-wrap: break-word;
 }
-.bulk-asset-picker-table thead th {
+.authenticated-app .page .bulk-asset-picker-table > thead > tr > th,
+.bulk-asset-picker-table > thead > tr > th {
   position: sticky;
   top: 0;
-  background: var(--color-surface-elevated);
-  z-index: 1;
-  font-weight: 600;
-}
-.bulk-asset-picker-table tbody tr:hover {
-  background: var(--color-surface-secondary);
-  cursor: pointer;
+  z-index: 2;
+  height: 56px;
+  color: var(--color-text-secondary);
+  background: var(--color-table-header);
+  border-bottom: 2px solid var(--color-border);
+  box-shadow: none;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold, 700);
+  text-transform: none;
 }
 .bulk-asset-picker-table .picker-check {
-  width: 1%;
+  padding-inline: 8px;
+  text-align: center;
 }
-.bulk-asset-picker-filters {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  align-items: end;
-  margin-bottom: 8px;
+.bulk-asset-picker-table .picker-check input {
+  display: block;
+  margin-inline: auto;
+}
+.bulk-asset-picker-table td:nth-child(2),
+.bulk-asset-picker-serial {
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+}
+.bulk-asset-picker-serial {
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bulk-asset-picker-table tbody tr {
+  cursor: pointer;
+}
+.bulk-asset-picker-table tbody tr:hover td {
+  background: var(--color-surface-hover, var(--color-surface-secondary));
+}
+.bulk-asset-picker-table tbody tr[aria-selected="true"] td {
+  background: var(--color-primary-soft, rgba(37, 99, 235, 0.08));
+}
+.bulk-asset-picker-empty {
+  padding: 20px !important;
+  text-align: center !important;
+  color: var(--color-text-secondary);
 }
 .dialog::backdrop {
   background: var(--color-overlay);

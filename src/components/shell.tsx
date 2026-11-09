@@ -294,7 +294,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                 "network-directory",
                 "network-discovery",
                 "device-management",
-                "notifications",
                 id,
               ]
             : id === "assistant"
@@ -303,7 +302,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         )
       : sidebarModuleOrder.flatMap((id) =>
           id === "settings"
-            ? ["network-directory", "device-management", "notifications", id]
+            ? ["network-directory", "device-management", id]
             : [id],
         );
   const primaryRoutes = moduleOrder.flatMap((id) => {
@@ -526,6 +525,25 @@ export function AppShell({ children }: { children: ReactNode }) {
           <GlobalSearch />
         </div>
         <div className="top-actions">
+          {/* Notifications live in the topbar next to the profile, not in
+              the sidebar. */}
+          <NavLink
+            to="/notifications"
+            className="top-notifications-link"
+            aria-label={
+              app.language === "nl"
+                ? `Meldingen${unreadNotificationCount ? ` (${unreadNotificationCount} ongelezen)` : ""}`
+                : `Notifications${unreadNotificationCount ? ` (${unreadNotificationCount} unread)` : ""}`
+            }
+            title={app.language === "nl" ? "Meldingen" : "Notifications"}
+          >
+            <Bell aria-hidden="true" />
+            {unreadNotificationCount > 0 && (
+              <b className="top-notifications-count" aria-hidden="true">
+                {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+              </b>
+            )}
+          </NavLink>
           <div className="profile-menu-wrap" ref={accountMenuRef}>
             <button
               ref={accountButtonRef}

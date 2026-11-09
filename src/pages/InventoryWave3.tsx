@@ -7,6 +7,7 @@ import {
   RotateCcw,
   ShieldCheck,
   TriangleAlert,
+  Search,
 } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -41,6 +42,8 @@ import type {
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { runBulkCommands } from "../data/bulkActions";
 import { StatusBadge } from "../components/AssetStatusBadge";
+import { ConditionBadge } from "../components/ConditionBadge";
+import { assetAssigneeName, assetDepartmentName } from "../domain/assetLookups";
 import {
   analyzeLaptopInventory,
   rowsForImport,
@@ -216,11 +219,13 @@ export function InventoryList() {
           asset.serialNumber,
           asset.department,
           asset.location,
+          assetDepartmentName(asset, snapshot.references),
+          assetAssigneeName(asset, snapshot.users),
         ]
           .filter(Boolean)
           .some((value) => String(value).toLocaleLowerCase().includes(term));
       });
-  }, [snapshot.assets, bulkSearch]);
+  }, [snapshot.assets, snapshot.references, snapshot.users, bulkSearch]);
   function openBulkDialog() {
     setBulkSelected([]);
     setBulkSearch("");
@@ -437,26 +442,43 @@ export function InventoryList() {
             </>
           }
         >
-          <div className="workflow-form">
+          <div className="bulk-asset-picker-body">
             <div className="bulk-asset-picker-filters">
-              <Field
-                label={nl ? "Zoeken" : "Search"}
-                placeholder={
-                  nl
-                    ? "Zoek op code, naam, merk, serienummer, afdeling…"
-                    : "Search by code, name, brand, serial, department…"
-                }
-                value={bulkSearch}
-                onChange={(event) => setBulkSearch(event.target.value)}
-              />
-              <small style={{ color: "var(--color-text-secondary)" }}>
+              <label className="search">
+                <Search size={17} aria-hidden="true" />
+                <span className="sr-only">{nl ? "Zoeken" : "Search"}</span>
+                <input
+                  value={bulkSearch}
+                  onChange={(event) => setBulkSearch(event.target.value)}
+                  placeholder={
+                    nl
+                      ? "Zoek op code, naam, merk, serienummer, locatie…"
+                      : "Search by code, name, brand, serial, location…"
+                  }
+                />
+              </label>
+              <span className="data-toolbar__count" aria-live="polite">
+                <b>{bulkSelected.length}</b>
                 {nl
-                  ? `${bulkSelected.length} van ${bulkAssetRows.length} geselecteerd`
-                  : `${bulkSelected.length} of ${bulkAssetRows.length} selected`}
-              </small>
+                  ? `van ${bulkAssetRows.length} geselecteerd`
+                  : `of ${bulkAssetRows.length} selected`}
+              </span>
             </div>
             <div className="bulk-asset-picker-table-wrap">
               <table className="bulk-asset-picker-table">
+                <colgroup>
+                  <col style={{ width: 48 }} />
+                  <col style={{ width: "9%" }} />
+                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "9%" }} />
+                  <col style={{ width: "11%" }} />
+                  <col style={{ width: "10%" }} />
+                  <col style={{ width: "10%" }} />
+                  <col style={{ width: "9%" }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "10%" }} />
+                </colgroup>
                 <thead>
                   <tr>
                     <th className="picker-check">
@@ -472,28 +494,22 @@ export function InventoryList() {
                         onChange={toggleBulkAll}
                       />
                     </th>
-                    <th>{nl ? "Code" : "Code"}</th>
-                    <th>{nl ? "Naam" : "Name"}</th>
-                    <th>{nl ? "Categorie" : "Category"}</th>
+                    <th>Inv.code</th>
+                    <th>{nl ? "Middel" : "Asset"}</th>
                     <th>{nl ? "Merk" : "Brand"}</th>
-                    <th>{nl ? "Model" : "Model"}</th>
-                    <th>{nl ? "Serienummer" : "Serial"}</th>
-                    <th>{nl ? "Afdeling" : "Department"}</th>
-                    <th>{nl ? "Locatie" : "Location"}</th>
-                    <th>{nl ? "Status" : "Status"}</th>
+                    <th>Model</th>
+                    <th>{nl ? "Serienummer" : "Serial number"}</th>
+                    <th>{nl ? "Hoofd locatie" : "Main location"}</th>
+                    <th>{nl ? "Sub-locatie" : "Sub-location"}</th>
+                    <th>{nl ? "Gebruiker" : "User"}</th>
+                    <th>{nl ? "Conditie" : "Condition"}</th>
+                    <th>{nl ? "Middelstatus" : "Asset status"}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {bulkAssetRows.length === 0 ? (
                     <tr>
-                      <td
-                        colSpan={10}
-                        style={{
-                          padding: 20,
-                          textAlign: "center",
-                          color: "var(--color-text-secondary)",
-                        }}
-                      >
+                      <td colSpan={11} className="bulk-asset-picker-empty">
                         {nl ? "Geen middelen gevonden." : "No assets found."}
                       </td>
                     </tr>
@@ -503,27 +519,53 @@ export function InventoryList() {
                       return (
                         <tr
                           key={asset.id}
+                          aria-selected={checked}
                           onClick={() => toggleBulkSelected(asset.id)}
                         >
                           <td className="picker-check">
                             <input
                               type="checkbox"
+                              aria-label={asset.code}
                               checked={checked}
                               onChange={() => toggleBulkSelected(asset.id)}
                               onClick={(event) => event.stopPropagation()}
                             />
                           </td>
                           <td>
-                            <strong>{asset.code}</strong>
+                            <b className="asset-code">{asset.code}</b>
                           </td>
-                          <td>{asset.name || "—"}</td>
-                          <td>{asset.category || "—"}</td>
+                          <td>
+                            <strong>{asset.name || "—"}</strong>
+                          </td>
                           <td>{asset.brand || "—"}</td>
                           <td>{asset.model || "—"}</td>
-                          <td>{asset.serialNumber || "—"}</td>
-                          <td>{asset.department || "—"}</td>
+                          <td className="bulk-asset-picker-serial">
+                            {asset.serialNumber || "—"}
+                          </td>
                           <td>{asset.location || "—"}</td>
-                          <td>{asset.status || "—"}</td>
+                          <td>
+                            {assetDepartmentName(asset, snapshot.references) ||
+                              "—"}
+                          </td>
+                          <td>
+                            {assetAssigneeName(asset, snapshot.users) ||
+                              asset.responsibleEmployee ||
+                              "—"}
+                          </td>
+                          <td>
+                            <ConditionBadge
+                              condition={asset.condition}
+                              size="compact"
+                              variant="table"
+                            />
+                          </td>
+                          <td>
+                            <StatusBadge
+                              status={asset.status}
+                              size="compact"
+                              variant="table"
+                            />
+                          </td>
                         </tr>
                       );
                     })

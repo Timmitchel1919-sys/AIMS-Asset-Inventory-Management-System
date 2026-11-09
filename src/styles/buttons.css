@@ -483,7 +483,7 @@ html[data-aims-theme="aimsTurquoiseGlass"] {
     max-width: none;
   }
   .authenticated-app > .app-topbar .topbar-module-title {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: 0.01em;
   }
@@ -516,5 +516,98 @@ html[data-aims-theme="aimsTurquoiseGlass"] {
   }
   .authenticated-app main :is(.data-toolbar, .list-toolbar) > .switch-row {
     white-space: nowrap;
+  }
+}
+
+/* Global search: a clearly visible outline in every theme. */
+.authenticated-app > .app-topbar .global-search__input-wrapper > input {
+  height: 42px;
+  border: 1.5px solid color-mix(in srgb, var(--color-primary) 38%, var(--color-border)) !important;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.authenticated-app > .app-topbar .global-search__input-wrapper > input:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 60%, var(--color-border)) !important;
+}
+.authenticated-app > .app-topbar .global-search__input-wrapper > input:focus,
+.authenticated-app > .app-topbar .global-search__input-wrapper > input:focus-visible {
+  border-color: var(--color-primary) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+html[data-theme="dark"] .authenticated-app > .app-topbar .global-search__input-wrapper > input {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Notifications bell, left of the profile avatar. */
+.app-topbar .top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.app-topbar .top-notifications-link {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--btn-secondary-bg-top), var(--btn-secondary-bg-bottom));
+  color: var(--btn-secondary-icon);
+  box-shadow: var(--btn-shadow-secondary);
+  transition: var(--btn-transition);
+}
+.app-topbar .top-notifications-link:hover {
+  border-color: var(--btn-secondary-border-hover);
+  box-shadow: var(--btn-shadow-secondary-hover);
+  transform: translateY(-1px);
+}
+.app-topbar .top-notifications-link:focus-visible {
+  outline: 2px solid var(--btn-focus-outline);
+  outline-offset: 2px;
+}
+.app-topbar .top-notifications-link.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.app-topbar .top-notifications-link svg {
+  width: 20px;
+  height: 20px;
+}
+.app-topbar .top-notifications-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--color-surface-elevated, #fff);
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+@media (max-width: 780px) {
+  .app-topbar .top-actions {
+    gap: 6px;
+  }
+  .app-topbar .top-notifications-link {
+    width: 38px;
+    height: 38px;
+  }
+  .authenticated-app > .app-topbar {
+    grid-template-columns: minmax(72px, auto) minmax(0, 1fr) auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-topbar .top-notifications-link:hover {
+    transform: none;
   }
 }
