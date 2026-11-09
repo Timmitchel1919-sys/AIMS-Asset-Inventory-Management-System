@@ -61,6 +61,7 @@ import { PwaStatus } from "./PwaStatus";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { AimsLogo } from "./branding/AimsLogo";
 import { GlobalSearch } from "./search/GlobalSearch";
+import { bindDrawerSwipe } from "../lib/drawerSwipe";
 import { isAimsOwnerEmail } from "../auth/accessBootstrap";
 import { DEMO_AUTH_MODE } from "../auth/aimsEmailPolicy";
 
@@ -178,6 +179,20 @@ export function AppShell({ children }: { children: ReactNode }) {
     window.addEventListener("aims:reveal-navigation", reveal);
     return () => window.removeEventListener("aims:reveal-navigation", reveal);
   }, []);
+  // Mobile: swipe right opens the navigation drawer, swipe left closes it.
+  const mobileOpenRef = useRef(app.mobileOpen);
+  mobileOpenRef.current = app.mobileOpen;
+  const setMobileOpenRef = useRef(app.setMobileOpen);
+  setMobileOpenRef.current = app.setMobileOpen;
+  useEffect(
+    () =>
+      bindDrawerSwipe({
+        isOpen: () => mobileOpenRef.current,
+        setOpen: (open) => setMobileOpenRef.current(open),
+        enabled: () => window.matchMedia("(max-width: 780px)").matches,
+      }),
+    [],
+  );
   useLayoutEffect(() => {
     const root = appRootRef.current;
     if (!root) return;
@@ -447,10 +462,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
           <div className="brand-copy app-sidebar__brand-text">
             <strong>AIMS</strong>
-            <span>
+            <span className="app-sidebar__subtitle-full">
               Asset &amp; Inventory
               <br />
               Management System
+            </span>
+            <span className="app-sidebar__subtitle-short">
+              Asset &amp; Inventory System
             </span>
           </div>
           {!app.sidebarCollapsed && (
