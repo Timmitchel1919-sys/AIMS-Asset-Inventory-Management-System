@@ -1,7 +1,6 @@
 import {
   Archive,
   Download,
-  Search,
   Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -52,7 +51,6 @@ export function DataTable<T>({
   rows,
   columns,
   rowKey,
-  searchPlaceholder,
   emptyTitle,
   emptyDescription,
   loading = false,
@@ -264,17 +262,6 @@ export function DataTable<T>({
   return (
     <div className={`data-table data-table-${id}`} data-testid={`table-${id}`}>
       <div className="data-toolbar">
-        <label className="search">
-          <Search size={17} />
-          <span className="sr-only">{searchPlaceholder}</span>
-          <input
-            value={query}
-            onChange={(event) => {
-              setQuery(event.target.value);
-            }}
-            placeholder={searchPlaceholder}
-          />
-        </label>
         <span className="data-toolbar__count" aria-live="polite">
           <b>{totalCount.toLocaleString(locale)}</b>
           {totalLabel ?? (nl ? "totaal records" : "total records")}

@@ -804,6 +804,59 @@ html[data-theme="aims-light"] .aims-sheet-scrim {
   }
 }
 
+/* One global module title and one global search: module pages no longer repeat
+   either control inside their local header or table toolbar. */
+.topbar-module__name {
+  margin: 0;
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+}
+.authenticated-app main .page > .page-title > div:first-child {
+  display: none;
+}
+.authenticated-app main .page > .page-title:not(:has(.actions)) {
+  display: none;
+}
+.authenticated-app main :is(.data-toolbar, .dm-toolbar, .list-toolbar) .search {
+  display: none !important;
+}
+.authenticated-app main .data-toolbar {
+  align-items: center;
+  flex-wrap: wrap;
+}
+.authenticated-app main .data-toolbar > .table-actions {
+  width: auto;
+  margin-left: 0;
+  overflow: visible;
+}
+.authenticated-app main .data-toolbar > .table-actions:first-of-type {
+  margin-left: 0;
+}
+.authenticated-app main .data-toolbar .btn,
+.authenticated-app main .data-toolbar .table-actions > .btn {
+  min-height: 40px;
+  white-space: nowrap;
+}
+@media (min-width: 781px) {
+  .authenticated-app main .data-toolbar > .table-actions--trailing {
+    margin-left: 0;
+  }
+}
+@media (max-width: 780px) {
+  .topbar-module__name {
+    font-size: var(--text-sm);
+  }
+  .authenticated-app main .data-toolbar {
+    gap: 8px;
+  }
+  .authenticated-app main .data-toolbar > .table-actions {
+    display: flex;
+    flex: 1 1 100%;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+}
+
 /* Global application bar: module context, global search and account access. */
 .authenticated-app > .app-topbar {
   display: grid;

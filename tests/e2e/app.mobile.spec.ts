@@ -51,6 +51,17 @@ test.describe('KCS mobile acceptance',()=>{
     for(const [width,height] of [[320,720],[375,812],[768,1024],[1024,768],[1440,900]]){await page.setViewportSize({width,height});await page.goto('/dashboard');expect(await page.evaluate(()=>document.documentElement.scrollWidth),`${width}x${height}`).toBeLessThanOrEqual(width)}
     await page.setViewportSize({width:390,height:844});await page.goto('/settings/appearance');for(const name of ['AIMS Azure Blue','AIMS Dark','AIMS Emerald Green','AIMS Light','Premium Turquoise Glass']){await page.getByRole('button',{name:new RegExp(name)}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)}
   });
+  test('global topbar replaces repeated module titles and local search on mobile',async({page})=>{
+    await page.setViewportSize({width:390,height:844});
+    for(const path of ['/assets','/inventory']){
+      await page.goto(path);
+      await expect(page.locator('.app-topbar').getByRole('heading')).toBeVisible();
+      await expect(page.getByRole('combobox',{name:/global search/i})).toBeVisible();
+      await expect(page.locator('main .page-title h1')).toBeHidden();
+      await expect(page.locator('main .data-toolbar .search')).toHaveCount(0);
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+    }
+  });
   test('offline and install guidance are explicit about mock limitations',async({page})=>{
     await page.goto('/offline');await expect(page.getByText(/not durably synchronized/i)).toBeVisible();
   });

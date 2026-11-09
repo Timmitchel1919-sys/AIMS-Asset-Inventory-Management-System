@@ -1000,6 +1000,27 @@ export default function Assets() {
         ? [...ASSET_CONDITIONS]
         : [];
 
+  const assetToolbarActions = (
+    <>
+      <Button variant="secondary" onClick={() => navigate("/assets?scan=1")}>
+        <ScanLine />
+        {t("assets.scan")}
+      </Button>
+      {can(user?.role, "assets.import") && (
+        <Button variant="secondary" onClick={() => navigate("/assets/import")}>
+          <FileUp />
+          {t("assets.import")}
+        </Button>
+      )}
+      {can(user?.role, "assets.create") && (
+        <Button onClick={() => navigate("/assets/new")}>
+          <Plus />
+          {t("assets.add")}
+        </Button>
+      )}
+    </>
+  );
+
   return (
     <OfflineGate>
       <DataPageLayout
@@ -1007,34 +1028,6 @@ export default function Assets() {
           <PageHeader
             title={t("assets.title")}
             description={t("assets.description")}
-            actions={
-              <>
-                <Button
-                  className="page-header-secondary-action page-header-scan-action"
-                  variant="secondary"
-                  onClick={() => navigate("/assets?scan=1")}
-                >
-                  <ScanLine />
-                  {t("assets.scan")}
-                </Button>
-                {can(user?.role, "assets.import") && (
-                  <Button
-                    className="page-header-secondary-action page-header-import-action"
-                    variant="secondary"
-                    onClick={() => navigate("/assets/import")}
-                  >
-                    <FileUp />
-                    {t("assets.import")}
-                  </Button>
-                )}
-                {can(user?.role, "assets.create") && (
-                  <Button onClick={() => navigate("/assets/new")}>
-                    <Plus />
-                    {t("assets.add")}
-                  </Button>
-                )}
-              </>
-            }
           />
         }
       >
@@ -1055,6 +1048,7 @@ export default function Assets() {
             }}
             searchLabel={t("assets.search")}
             count={result.totalCount}
+            actions={assetToolbarActions}
             filterCount={activeFilters.length}
             onToggleFilters={toggleFilters}
             savedViews={

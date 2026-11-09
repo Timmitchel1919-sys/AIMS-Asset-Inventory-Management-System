@@ -10,6 +10,7 @@ The supplied 1080 x 2408 phone screenshot shows an open navigation drawer with m
 - Every module is a full-width grid row with a 44 px icon column, a flexible label column, and at least a 52 px row height.
 - The desktop collapsed preference cannot hide or recenter labels inside the mobile drawer.
 - A global topbar shows the current module on the left, global search in the middle and the profile control at the far right.
+- Module pages do not repeat their title or a second local search field; table filters, views, export and create/import actions share one responsive toolbar.
 - The profile panel is a root-level fixed layer anchored below the topbar profile control, whether the drawer is open or closed.
 - The mobile drawer uses about 78% of the viewport, matching the supplied phone reference while leaving the dimmed page edge visible.
 

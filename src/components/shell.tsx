@@ -561,9 +561,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             <Menu aria-hidden="true" />
           </button>
-          <span className="topbar-module__name">
+          <h1 className="topbar-module__name">
             {current ? t(current.titleKey) : "AIMS"}
-          </span>
+          </h1>
         </div>
         <div className="topbar-search">
           <GlobalSearch />

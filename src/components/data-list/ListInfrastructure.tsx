@@ -6,7 +6,6 @@ import {
   Download,
   Filter,
   Save,
-  Search,
   Trash2,
 } from "lucide-react";
 import { useId, type ReactNode } from "react";
@@ -42,15 +41,13 @@ export function DataPageLayout({
 }
 
 export function DataToolbar({
-  search,
-  onSearch,
-  searchLabel,
   filterCount,
   onToggleFilters,
   savedViews,
   columnSelector,
   exportMenu,
   count,
+  actions,
 }: {
   search: string;
   onSearch: (value: string) => void;
@@ -61,21 +58,13 @@ export function DataToolbar({
   columnSelector?: ReactNode;
   exportMenu: ReactNode;
   count?: number;
+  actions?: ReactNode;
 }) {
   const t = useT();
   const { language } = useApp();
   const nl = language === "nl";
   return (
     <div className="data-toolbar list-toolbar">
-      <label className="search">
-        <Search size={17} />
-        <span className="sr-only">{searchLabel}</span>
-        <input
-          value={search}
-          onChange={(event) => onSearch(event.target.value)}
-          placeholder={searchLabel}
-        />
-      </label>
       {typeof count === "number" && (
         <span className="data-toolbar__count" aria-live="polite">
           <b>{count.toLocaleString(nl ? "nl-NL" : "en-US")}</b>
@@ -95,6 +84,7 @@ export function DataToolbar({
         {savedViews}
         {columnSelector}
         {exportMenu}
+        {actions}
       </div>
     </div>
   );

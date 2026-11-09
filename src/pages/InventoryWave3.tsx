@@ -295,6 +295,25 @@ export function InventoryList() {
       setBulkSelected([]);
     }
   }
+  const inventoryToolbarActions = (
+    <>
+      {can(user?.role, "inventory.import") ? (
+        <Link className="btn btn-secondary" to="/inventory/import">
+          {nl ? "Importeren" : "Import"}
+        </Link>
+      ) : null}
+      {can(user?.role, "inventory.create") && (
+        <Button variant="secondary" onClick={openBulkDialog}>
+          <Boxes />
+          {nl ? "Bulk artikel toevoegen" : "Add items in bulk"}
+        </Button>
+      )}
+      <Link className="btn btn-primary" to="/inventory/new">
+        <PackagePlus />
+        {nl ? "Artikel toevoegen" : "Add item"}
+      </Link>
+    </>
+  );
   return (
     <OfflineGate>
       <div className="page">
@@ -304,32 +323,6 @@ export function InventoryList() {
             nl
               ? "Hoeveelheidsvoorraad, opslag en herbevoorrading."
               : "Quantity stock, storage and replenishment."
-          }
-          actions={
-            <>
-              {can(user?.role, "inventory.import") ? (
-                <Link
-                  className="btn btn-secondary page-header-secondary-action page-header-import-action"
-                  to="/inventory/import"
-                >
-                  {nl ? "Importeren" : "Import"}
-                </Link>
-              ) : null}
-              {can(user?.role, "inventory.create") && (
-                <Button
-                  variant="secondary"
-                  className="page-header-secondary-action"
-                  onClick={openBulkDialog}
-                >
-                  <Boxes />
-                  {nl ? "Bulk artikel toevoegen" : "Add items in bulk"}
-                </Button>
-              )}
-              <Link className="btn btn-primary" to="/inventory/new">
-                <PackagePlus />
-                {nl ? "Artikel toevoegen" : "Add item"}
-              </Link>
-            </>
           }
         />
         <div className="status-summary inventory-status-summary">
@@ -407,6 +400,7 @@ export function InventoryList() {
                 </span>
               </label>
             }
+            trailingAction={inventoryToolbarActions}
           />
         </section>
         <Dialog
