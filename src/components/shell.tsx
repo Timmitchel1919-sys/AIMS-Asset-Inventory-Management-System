@@ -61,6 +61,7 @@ import { useT } from "../i18n";
 import { PwaStatus } from "./PwaStatus";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
 import { AimsLogo } from "./branding/AimsLogo";
+import { GlobalSearch } from "./search/GlobalSearch";
 import { isAimsOwnerEmail } from "../auth/accessBootstrap";
 import { DEMO_AUTH_MODE } from "../auth/aimsEmailPolicy";
 
@@ -547,33 +548,55 @@ export function AppShell({ children }: { children: ReactNode }) {
             aria-hidden="true"
           />
         )}
-        <div className="sidebar-foot" ref={accountMenuRef}>
+      </aside>
+      <header className="topbar app-topbar">
+        <div className="topbar-module">
           <button
-            className="sidebar-profile"
+            type="button"
+            className="topbar-menu-trigger"
+            aria-label={t("common.openNavigation")}
+            aria-expanded={app.mobileOpen}
+            aria-controls="app-primary-navigation"
+            onClick={() => app.setMobileOpen(!app.mobileOpen)}
+          >
+            <Menu aria-hidden="true" />
+          </button>
+          <span className="topbar-module__name">
+            {current ? t(current.titleKey) : "AIMS"}
+          </span>
+        </div>
+        <div className="topbar-search">
+          <GlobalSearch />
+        </div>
+        <div className="topbar-profile-wrap" ref={accountMenuRef}>
+          <button
+            type="button"
+            className="topbar-profile"
             aria-label={
               app.language === "nl" ? "Accountmenu openen" : "Open account menu"
             }
             aria-expanded={profileOpen}
             aria-haspopup="menu"
             aria-controls="account-menu"
-            title={app.sidebarCollapsed ? app.user.name : undefined}
-            onClick={toggleProfileMenu}
+            onClick={(event) => {
+              app.setMobileOpen(false);
+              toggleProfileMenu(event);
+            }}
           >
             {app.user.profilePhoto ? (
               <img
-                className="avatar avatar-photo"
+                className="topbar-profile__avatar avatar-photo"
                 src={app.user.profilePhoto}
                 alt=""
               />
             ) : (
-              <span className="avatar">{app.user.initials}</span>
+              <span className="topbar-profile__avatar" aria-hidden="true">
+                {app.user.initials}
+              </span>
             )}
-            <span className="sidebar-action-label">
-              <strong>{app.user.name}</strong>
-            </span>
           </button>
         </div>
-      </aside>
+      </header>
       {profileOpen && (
         <>
           <button
@@ -728,23 +751,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               </NavLink>
             );
           })}
-        <button
-          type="button"
-          className="bottom-nav__profile"
-          aria-label={app.language === "nl" ? "Profielmenu openen" : "Open profile menu"}
-          aria-expanded={profileOpen}
-          aria-haspopup="menu"
-          aria-controls="account-menu"
-          onClick={(event) => {
-            app.setMobileOpen(false);
-            toggleProfileMenu(event);
-          }}
-        >
-          <span className="bottom-nav__avatar" aria-hidden="true">
-            {app.user.initials}
-          </span>
-          <span>{app.language === "nl" ? "Profiel" : "Profile"}</span>
-        </button>
         <button
           type="button"
           className="bottom-nav__menu"

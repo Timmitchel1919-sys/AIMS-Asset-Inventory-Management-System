@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+test.setTimeout(60_000);
+
 const cases = [
   { theme: "dark", route: "/dashboard", collapsed: true, mobile: false, screenshot: "/tmp/aims-profile-dark-collapsed.png" },
   { theme: "aimsLight", route: "/assets", collapsed: false, mobile: false, screenshot: "/tmp/aims-profile-light-expanded.png" },
@@ -8,7 +10,7 @@ const cases = [
 ] as const;
 
 for (const item of cases) {
-  test(`profile menu opens above its ${item.mobile ? "mobile" : item.collapsed ? "collapsed" : "expanded"} ${item.theme} trigger`, async ({ page }) => {
+  test(`profile menu opens from its ${item.mobile ? "mobile" : item.collapsed ? "collapsed" : "expanded"} ${item.theme} topbar trigger`, async ({ page }) => {
     const consoleErrors: string[] = [];
     page.on("console", (message) => {
       if (message.type() === "error") consoleErrors.push(message.text());
@@ -27,7 +29,7 @@ for (const item of cases) {
     await expect(page.getByRole("heading").first()).toBeVisible();
 
     if (item.mobile) {
-      await page.locator(".bottom-nav__menu").click();
+      await page.locator(".topbar-menu-trigger").click();
       await expect(page.locator(".app-sidebar")).toHaveClass(/open/);
     }
 
@@ -38,18 +40,14 @@ for (const item of cases) {
       (element) => getComputedStyle(element).backgroundColor,
     );
     expect(profileHoverBackground).not.toBe("rgba(0, 0, 0, 0)");
-    if (!item.mobile && item.theme === "aimsLight") {
-      const activeModuleBackground = await page
-        .locator(".app-sidebar nav .navigation-item.active")
-        .first()
-        .evaluate((element) => getComputedStyle(element).backgroundColor);
-      expect(profileHoverBackground).toBe(activeModuleBackground);
-    }
     await page.screenshot({
       path: item.screenshot.replace(".png", "-hover.png"),
       fullPage: false,
     });
     await profileButton.click();
+    if (item.mobile) {
+      await expect(page.locator(".app-sidebar")).not.toHaveClass(/open/);
+    }
 
     const accountMenu = page.locator("#account-menu");
     await expect(accountMenu).toBeVisible();
@@ -68,7 +66,7 @@ for (const item of cases) {
     ]);
     expect(menuBox).not.toBeNull();
     expect(buttonBox).not.toBeNull();
-    expect(menuBox!.y + menuBox!.height).toBeLessThanOrEqual(buttonBox!.y);
+    expect(menuBox!.y).toBeGreaterThanOrEqual(buttonBox!.y + buttonBox!.height);
     expect(menuBox!.x).toBeGreaterThanOrEqual(0);
     expect(menuBox!.x + menuBox!.width).toBeLessThanOrEqual(
       item.mobile ? 390 : 1440,

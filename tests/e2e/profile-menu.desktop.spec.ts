@@ -8,13 +8,11 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test("sidebar profile opens the complete account panel without moving", async ({ page }) => {
+test("topbar profile opens the complete account panel without moving", async ({ page }) => {
   await page.goto("/dashboard");
 
   const profile = page.getByRole("button", { name: "Open account menu" });
   await expect(profile).not.toContainText("Administrator");
-  await expect(profile).toContainText(/Verified/i);
-  await expect(profile).not.toContainText(/Owner/i);
   const before = await profile.boundingBox();
   expect(before).not.toBeNull();
 
@@ -30,7 +28,8 @@ test("sidebar profile opens the complete account panel without moving", async ({
   await expect(menu.getByRole("menuitem", { name: /Help & Support/i })).toBeVisible();
   await expect(menu.getByRole("menuitem", { name: /Sign out/i })).toBeVisible();
   await expect(page.locator(".account-sheet-scrim")).toHaveCSS("z-index", "59");
-  await expect(page.locator(".app-sidebar")).toHaveCSS("z-index", "60");
+  await expect(page.locator(".app-sidebar")).toHaveCSS("z-index", "30");
+  await expect(page.locator(".app-topbar")).toHaveCSS("z-index", "60");
   await expect(page.locator(".authenticated-app main .page-title")).toHaveCSS("z-index", "35");
   expect(await page.locator(".account-sheet-scrim").evaluate((element) =>
     getComputedStyle(element).backdropFilter,
@@ -46,7 +45,7 @@ test("sidebar profile opens the complete account panel without moving", async ({
   const menuBox = await menu.boundingBox();
   expect(menuBox).not.toBeNull();
   expect(menuBox?.height ?? 0).toBeGreaterThan(200);
-  expect((menuBox?.y ?? 0) + (menuBox?.height ?? 0)).toBeLessThanOrEqual(before?.y ?? 0);
+  expect(menuBox?.y ?? 0).toBeGreaterThanOrEqual((before?.y ?? 0) + (before?.height ?? 0));
 });
 
 test("profile scrim dims sticky ICT headers in light and dark themes", async ({ page }) => {
@@ -59,7 +58,8 @@ test("profile scrim dims sticky ICT headers in light and dark themes", async ({ 
     await page.getByRole("button", { name: "Open account menu" }).click();
     await expect(page.getByRole("menu")).toBeVisible();
     await expect(page.locator(".account-sheet-scrim")).toHaveCSS("z-index", "59");
-    await expect(page.locator(".app-sidebar")).toHaveCSS("z-index", "60");
+    await expect(page.locator(".app-sidebar")).toHaveCSS("z-index", "30");
+    await expect(page.locator(".app-topbar")).toHaveCSS("z-index", "60");
     await expect(page.locator(".authenticated-app main .page-title")).toHaveCSS("z-index", "35");
     await page.keyboard.press("Escape");
   }

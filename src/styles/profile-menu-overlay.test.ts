@@ -24,7 +24,7 @@ describe("profile menu focus treatment", () => {
   });
 
   it("renders the account panel outside the transformed sidebar", () => {
-    expect(shell).toMatch(/<\/aside>\s*\{profileOpen && \(/s);
+    expect(shell).toMatch(/<\/aside>\s*<header className="topbar app-topbar">[\s\S]+\{profileOpen && \(/);
     expect(shell).toContain('className="profile-menu app-profile-menu"');
     expect(styles).toMatch(
       /\.authenticated-app > \.app-profile-menu[^}]+position:\s*fixed[^}]+z-index:\s*61/s,
@@ -32,14 +32,15 @@ describe("profile menu focus treatment", () => {
     expect(styles).toContain("animation: account-menu-open 160ms ease-out both");
   });
 
-  it("provides an account trigger in the mobile bottom navigation", () => {
-    expect(shell).toContain('className="bottom-nav__profile"');
-    expect(shell).toContain('app.setMobileOpen(false);');
+  it("provides the account trigger in the global topbar", () => {
+    expect(shell).toContain('className="topbar-profile"');
+    expect(shell).not.toContain('className="bottom-nav__profile"');
+    expect(shell).not.toContain('className="sidebar-profile"');
   });
 
-  it("uses the active module highlight for profile hover and keyboard focus", () => {
+  it("gives the topbar profile control visible hover and keyboard focus", () => {
     expect(styles).toMatch(
-      /\.app-sidebar \.sidebar-profile:hover,[^}]+\.app-sidebar \.sidebar-profile:focus-visible[^}]+background:\s*var\(--color-sidebar-active-background, var\(--color-sidebar-active\)\)[^}]+color:\s*var\(--color-sidebar-active-text\)/s,
+      /\.topbar-profile:hover,[^}]+\.topbar-profile:focus-visible[^}]+background:\s*var\(--color-surface-hover\)/s,
     );
   });
 });
