@@ -192,7 +192,6 @@ export function InventoryList() {
     nl = language === "nl",
     snapshot = useMockSnapshot(),
     repository = useRepository();
-  const [low, setLow] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkSearch, setBulkSearch] = useState("");
   const [bulkSelected, setBulkSelected] = useState<string[]>([]);
@@ -200,11 +199,7 @@ export function InventoryList() {
     status: "idle" | "loading" | "success" | "error";
     message: string;
   }>({ status: "idle", message: "" });
-  const rows = useMemo(
-    () =>
-      snapshot.inventory.filter((x) => !low || availableStock(x) <= x.minimum),
-    [snapshot.inventory, low],
-  );
+  const rows = snapshot.inventory;
   const bulkAssetRows = useMemo(() => {
     return snapshot.assets
       .filter((asset) => asset.status !== "Archived" && asset.status !== "Disposed")
@@ -352,29 +347,6 @@ export function InventoryList() {
             <small>{nl ? "Actie vereist" : "Need attention"}</small>
           </section>
         </div>
-        <nav
-          className="subnav card inventory-action-card"
-          aria-label={nl ? "Voorraadacties" : "Inventory actions"}
-        >
-          {Object.keys(operationMeta).map((key) => (
-            <Link key={key} to={`/inventory/${key}`}>
-              {
-                operationMeta[key as keyof typeof operationMeta].title[
-                  nl ? 1 : 0
-                ]
-              }
-            </Link>
-          ))}
-          <Link to="/inventory/bulk-move">
-            {nl ? "Bulk verplaatsen" : "Bulk move"}
-          </Link>
-          <Link to="/inventory/reservations">
-            {nl ? "Reserveringen" : "Reservations"}
-          </Link>
-          <Link to="/inventory/low-stock">
-            {nl ? "Lage voorraad" : "Low stock"}
-          </Link>
-        </nav>
         <section className="card data-card">
           <DataTable
             id="wave3-inventory"
@@ -391,18 +363,6 @@ export function InventoryList() {
               nl
                 ? "Pas filters aan of voeg een artikel toe."
                 : "Adjust filters or add an item."
-            }
-            filters={
-              <label className="switch-row compact">
-                <input
-                  type="checkbox"
-                  checked={low}
-                  onChange={(e) => setLow(e.target.checked)}
-                />
-                <span>
-                  {nl ? "Lage voorraad en uitverkocht" : "Low and out of stock"}
-                </span>
-              </label>
             }
           />
         </section>

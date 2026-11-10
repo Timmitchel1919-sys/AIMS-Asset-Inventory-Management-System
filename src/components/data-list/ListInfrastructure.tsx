@@ -232,7 +232,7 @@ export function ColumnSelector<T>({
   const t = useT();
   return (
     <details className="list-menu">
-      <summary className="btn btn-secondary" title={t("common.columns")}>
+      <summary className="btn btn-secondary">
         <Columns3 />
         {t("common.columns")}
       </summary>
@@ -275,7 +275,7 @@ export function SavedViewSelector({
   const t = useT();
   return (
     <details className="list-menu">
-      <summary className="btn btn-secondary" title={t("common.views")}>
+      <summary className="btn btn-secondary">
         <Save />
         {t("common.views")}
       </summary>
@@ -315,7 +315,7 @@ export function ExportMenu({
   const t = useT();
   return (
     <details className="list-menu">
-      <summary className="btn btn-secondary" title={t("common.export")}>
+      <summary className="btn btn-secondary">
         <Download />
         {t("common.export")}
       </summary>

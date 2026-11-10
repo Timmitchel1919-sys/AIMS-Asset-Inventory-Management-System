@@ -1022,8 +1022,7 @@ html[data-aims-theme="aimsTurquoiseGlass"] body .profile-menu .account-signout s
 }
 
 /* ==========================================================================
-   Module search fields: pill-shaped and fluid - they grow and shrink with
-   the screen so the toolbar buttons stay on the same row beside them.
+   Module search fields: pill-shaped.
    ========================================================================== */
 .authenticated-app main .search,
 .authenticated-app .dialog .search {
@@ -1042,27 +1041,6 @@ html[data-aims-theme="aimsTurquoiseGlass"] body .profile-menu .account-signout s
   border-radius: 999px !important;
   padding-inline: 16px !important;
 }
-@media (min-width: 781px) {
-  /* Small basis + grow: the search takes whatever room the buttons leave on
-     the row, and only drops to its own row when the buttons cannot fit. */
-  .authenticated-app main :is(.data-toolbar, .list-toolbar) > .search {
-    flex: 1 1 160px !important;
-    width: auto !important;
-    min-width: 160px !important;
-    max-width: none !important;
-  }
-  .authenticated-app main :is(.data-toolbar, .list-toolbar) > :not(.search) {
-    flex-shrink: 0;
-  }
-}
-@media (max-width: 780px) {
-  .authenticated-app main :is(.data-toolbar, .list-toolbar) > .search {
-    flex: 1 1 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;
-  }
-}
-
 /* ==========================================================================
    Mobile asset detail: Toewijzen / Verplaatsen / Labels on one row, then
    Middel bewerken and Verwijderen directly beneath.
@@ -1127,29 +1105,13 @@ html[data-aims-theme="aimsTurquoiseGlass"] body .profile-menu .account-signout s
     inset 0 1px 0 rgba(255, 255, 255, 0.32) !important;
 }
 
-/* When the card is too narrow for every label, the white toolbar keys turn
-   into compact icon keys (accessible name kept), so the fluid search still
-   fits on the same row as all actions. The blue primary keeps its label. */
-@media (min-width: 781px) {
-  .authenticated-app main .data-card {
-    container-type: inline-size;
-    container-name: aims-data-card;
-  }
+/* Space between the topbar and the module's first panel, every module.
+   The grid's first row was fixed at 64px while the topbar grew to fit the
+   larger module title, so it overlapped main's top padding and the data
+   panel touched the topbar. */
+.authenticated-app.app {
+  grid-template-rows: auto 1fr;
 }
-@container aims-data-card (max-width: 1420px) {
-  :root:root:root:root:root body .authenticated-app main :is(.data-toolbar, .list-toolbar) .table-actions .btn:is(.btn-secondary, .secondary),
-  :root:root:root:root:root body .authenticated-app main :is(.data-toolbar, .list-toolbar) .table-actions .list-menu > summary.btn {
-    width: var(--btn-height) !important;
-    min-width: var(--btn-height) !important;
-    padding: 0 !important;
-    gap: 0 !important;
-    font-size: 0 !important;
-    letter-spacing: 0;
-    overflow: hidden;
-    color: transparent !important;
-  }
-  :root:root:root:root:root body .authenticated-app main :is(.data-toolbar, .list-toolbar) .table-actions .btn:is(.btn-secondary, .secondary) > svg:not(:first-child),
-  :root:root:root:root:root body .authenticated-app main :is(.data-toolbar, .list-toolbar) .table-actions .list-menu > summary.btn > svg:not(:first-child) {
-    display: none !important;
-  }
+.authenticated-app > main {
+  padding-top: 16px !important;
 }
