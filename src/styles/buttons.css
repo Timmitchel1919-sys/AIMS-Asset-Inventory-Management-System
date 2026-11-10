@@ -912,3 +912,244 @@ html[data-theme="dark"] .authenticated-app > .app-topbar .global-search__input-w
 :root:root:root:root:root body :is(.aims-public-page :is(.aims-glossy-button, .aims-header-download), .auth-page .auth-submit) svg {
   stroke-width: var(--btn-icon-stroke);
 }
+
+/* ==========================================================================
+   Reference depth for the remaining controls: profile avatar, profile menu,
+   settings tabs (Hoofdlocaties / Codegroepen ...).
+   ========================================================================== */
+:root:root body .app-topbar .top-user > .avatar,
+:root:root body .authenticated-app .subnav button.active {
+  border: 1px solid var(--btn-primary-border) !important;
+  background: var(--btn-gloss), linear-gradient(180deg, var(--btn-primary-top) 0%, var(--btn-primary-bottom) 100%) !important;
+  color: var(--btn-primary-text) !important;
+  box-shadow: var(--btn-shadow-primary), var(--btn-gloss-edge) !important;
+}
+:root:root body .app-topbar .top-user {
+  transition: transform 0.18s ease;
+}
+:root:root body .app-topbar .top-user:hover > .avatar {
+  background: var(--btn-gloss-hover), linear-gradient(180deg, var(--btn-primary-hover-top) 0%, var(--btn-primary-hover-bottom) 100%) !important;
+  box-shadow: var(--btn-shadow-primary-hover), var(--btn-gloss-edge) !important;
+}
+:root:root body .app-topbar .top-user:hover {
+  transform: translateY(-1px);
+}
+:root:root body .app-topbar .top-user:focus-visible {
+  outline: 2px solid var(--btn-focus-outline);
+  outline-offset: 2px;
+}
+:root:root body .app-topbar .top-user > .avatar {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* Settings tabs: white keys, the active tab is the blue key. */
+:root:root body .authenticated-app .subnav {
+  gap: 10px;
+  padding: 2px 2px 8px;
+  overflow: visible;
+  flex-wrap: wrap;
+}
+:root:root body .authenticated-app .subnav button {
+  min-height: var(--btn-height);
+  padding: 0 18px;
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: var(--btn-radius);
+  background: var(--btn-secondary-gloss), linear-gradient(180deg, var(--btn-secondary-bg-top) 0%, var(--btn-secondary-bg-bottom) 100%);
+  color: var(--btn-secondary-text);
+  font-size: var(--btn-font-size);
+  font-weight: var(--btn-font-weight);
+  box-shadow: var(--btn-shadow-secondary), var(--btn-secondary-gloss-edge);
+  cursor: pointer;
+  transition: var(--btn-transition);
+}
+:root:root body .authenticated-app .subnav button:not(.active):hover {
+  border-color: var(--btn-secondary-border-hover);
+  background: var(--btn-secondary-gloss), linear-gradient(180deg, var(--btn-secondary-hover-top) 0%, var(--btn-secondary-hover-bottom) 100%);
+  box-shadow: var(--btn-shadow-secondary-hover), var(--btn-secondary-gloss-edge);
+  transform: translateY(-1px);
+}
+:root:root body .authenticated-app .subnav button:active {
+  transform: translateY(0);
+}
+:root:root body .authenticated-app .subnav button:focus-visible {
+  outline: 2px solid var(--btn-focus-outline);
+  outline-offset: 2px;
+}
+
+/* Profile menu: every entry is a raised white key; Afmelden keeps its red. */
+:root:root body .profile-menu .account-menu-links {
+  display: grid;
+  gap: 8px;
+}
+:root:root body .profile-menu :is(.account-menu-links button, .account-signout) {
+  min-height: 48px;
+  padding: 0 14px !important;
+  border: 1px solid var(--btn-secondary-border) !important;
+  border-radius: var(--btn-radius) !important;
+  background: var(--btn-secondary-gloss), linear-gradient(180deg, var(--btn-secondary-bg-top) 0%, var(--btn-secondary-bg-bottom) 100%) !important;
+  color: var(--btn-secondary-text);
+  font-weight: var(--btn-font-weight);
+  box-shadow: var(--btn-shadow-secondary), var(--btn-secondary-gloss-edge) !important;
+  transition: var(--btn-transition);
+}
+:root:root body .profile-menu .account-menu-links button svg {
+  color: var(--btn-secondary-icon);
+  stroke-width: var(--btn-icon-stroke);
+}
+:root:root body .profile-menu :is(.account-menu-links button, .account-signout):hover {
+  border-color: var(--btn-secondary-border-hover) !important;
+  background: var(--btn-secondary-gloss), linear-gradient(180deg, var(--btn-secondary-hover-top) 0%, var(--btn-secondary-hover-bottom) 100%) !important;
+  box-shadow: var(--btn-shadow-secondary-hover), var(--btn-secondary-gloss-edge) !important;
+  transform: translateY(-1px);
+}
+:root:root body .profile-menu :is(.account-menu-links button, .account-signout):active {
+  transform: translateY(0);
+  box-shadow: var(--btn-shadow-secondary-active) !important;
+}
+:root:root body .profile-menu .account-signout {
+  margin-top: 10px;
+  color: #dc2626 !important;
+}
+:root:root body .profile-menu .account-signout svg {
+  color: #dc2626 !important;
+}
+html[data-theme="dark"] body .profile-menu .account-signout,
+html[data-theme="dark"] body .profile-menu .account-signout svg,
+html[data-aims-theme="aimsTurquoiseGlass"] body .profile-menu .account-signout,
+html[data-aims-theme="aimsTurquoiseGlass"] body .profile-menu .account-signout svg {
+  color: #ff6b6b !important;
+}
+
+/* ==========================================================================
+   Module search fields: pill-shaped and fluid - they grow and shrink with
+   the screen so the toolbar buttons stay on the same row beside them.
+   ========================================================================== */
+.authenticated-app main .search,
+.authenticated-app .dialog .search {
+  border-radius: 999px !important;
+  padding-inline: 14px 16px !important;
+  min-height: var(--btn-height);
+  border: 1.5px solid color-mix(in srgb, var(--color-primary) 30%, var(--color-input-border, var(--color-border))) !important;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.authenticated-app main .search:focus-within,
+.authenticated-app .dialog .search:focus-within {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+.authenticated-app main .section-toolbar input:is([type="search"], [type="text"]) {
+  border-radius: 999px !important;
+  padding-inline: 16px !important;
+}
+@media (min-width: 781px) {
+  /* Small basis + grow: the search takes whatever room the buttons leave on
+     the row, and only drops to its own row when the buttons cannot fit. */
+  .authenticated-app main :is(.data-toolbar, .list-toolbar) > .search {
+    flex: 1 1 160px !important;
+    width: auto !important;
+    min-width: 160px !important;
+    max-width: none !important;
+  }
+  .authenticated-app main :is(.data-toolbar, .list-toolbar) > :not(.search) {
+    flex-shrink: 0;
+  }
+}
+@media (max-width: 780px) {
+  .authenticated-app main :is(.data-toolbar, .list-toolbar) > .search {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+}
+
+/* ==========================================================================
+   Mobile asset detail: Toewijzen / Verplaatsen / Labels on one row, then
+   Middel bewerken and Verwijderen directly beneath.
+   ========================================================================== */
+@media (max-width: 780px) {
+  .authenticated-app main .page-title.detail-title > .actions {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100%;
+  }
+  .authenticated-app main .page-title.detail-title > .actions > .btn {
+    grid-column: span 6;
+    width: 100% !important;
+    min-width: 0 !important;
+    font-size: 14px !important;
+  }
+  .authenticated-app main .page-title.detail-title > .actions > .btn:is(.btn-secondary, .secondary) {
+    grid-column: span 2;
+    padding-inline: 8px !important;
+    gap: 6px !important;
+    font-size: 13px !important;
+  }
+}
+@media (max-width: 400px) {
+  .authenticated-app main .page-title.detail-title > .actions > .btn:is(.btn-secondary, .secondary) > svg {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   Sidebar: the active module is wrapped in a light-blue halo (all themes),
+   and every label sits exactly on the vertical centre of its icon.
+   ========================================================================== */
+.app-sidebar nav .navigation-item {
+  display: flex !important;
+  align-items: center !important;
+}
+.app-sidebar nav .navigation-item__icon {
+  display: inline-grid !important;
+  place-items: center;
+  align-self: center;
+  line-height: 0;
+}
+.app-sidebar nav .navigation-item__icon svg {
+  display: block;
+}
+.app-sidebar nav .navigation-item__label {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  min-height: 24px;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+:root:root body .app-sidebar nav .navigation-item:is(.active, [aria-current="page"]) {
+  border: 1.5px solid rgba(147, 197, 253, 0.85) !important;
+  box-shadow:
+    0 0 0 3px rgba(96, 165, 250, 0.28),
+    0 8px 22px rgba(37, 99, 235, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32) !important;
+}
+
+/* When the card is too narrow for every label, the white toolbar keys turn
+   into compact icon keys (accessible name kept), so the fluid search still
+   fits on the same row as all actions. The blue primary keeps its label. */
+@media (min-width: 781px) {
+  .authenticated-app main .data-card {
+    container-type: inline-size;
+    container-name: aims-data-card;
+  }
+}
+@container aims-data-card (max-width: 1420px) {
+  :root:root:root:root:root body .authenticated-app main :is(.data-toolbar, .list-toolbar) .table-actions .btn:is(.btn-secondary, .secondary),
+  :root:root:root:root:root body .authenticated-app main :is(.data-toolbar, .list-toolbar) .table-actions .list-menu > summary.btn {
+    width: var(--btn-height) !important;
+    min-width: var(--btn-height) !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    font-size: 0 !important;
+    letter-spacing: 0;
+    overflow: hidden;
+    color: transparent !important;
+  }
+  :root:root:root:root:root body .authenticated-app main :is(.data-toolbar, .list-toolbar) .table-actions .btn:is(.btn-secondary, .secondary) > svg:not(:first-child),
+  :root:root:root:root:root body .authenticated-app main :is(.data-toolbar, .list-toolbar) .table-actions .list-menu > summary.btn > svg:not(:first-child) {
+    display: none !important;
+  }
+}

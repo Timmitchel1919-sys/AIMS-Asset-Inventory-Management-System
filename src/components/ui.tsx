@@ -1,6 +1,8 @@
 import {AlertTriangle,CheckCircle2,Info,Search,XCircle,type LucideIcon} from 'lucide-react';
-import {useId,type ButtonHTMLAttributes,type InputHTMLAttributes,type ReactNode,type SelectHTMLAttributes,type TextareaHTMLAttributes} from 'react';
-export function Button({variant='primary',className='',...p}:ButtonHTMLAttributes<HTMLButtonElement>&{variant?:'primary'|'secondary'|'ghost'|'danger'}){return <button className={`btn btn-${variant} ${className}`} {...p}/>}
+import {Children,useId,type ButtonHTMLAttributes,type InputHTMLAttributes,type ReactNode,type SelectHTMLAttributes,type TextareaHTMLAttributes} from 'react';
+/** Plain-text label of a button, used as tooltip when compact toolbars show only the icon. */
+function textOf(children:ReactNode):string{return Children.toArray(children).map(child=>typeof child==='string'||typeof child==='number'?String(child):'').join(' ').trim()}
+export function Button({variant='primary',className='',title,children,...p}:ButtonHTMLAttributes<HTMLButtonElement>&{variant?:'primary'|'secondary'|'ghost'|'danger'}){const label=title??(variant==='secondary'?textOf(children)||undefined:undefined);return <button className={`btn btn-${variant} ${className}`} title={label} {...p}>{children}</button>}
 export function Card({children,className='',title,action}:{children:ReactNode;className?:string;title?:string;action?:ReactNode}){return <section className={`card ${className}`}>{(title||action)&&<header className="card-head">{title&&<h2>{title}</h2>}{action}</header>}{children}</section>}
 export function Badge({children,tone='neutral'}:{children:ReactNode;tone?:'success'|'warning'|'danger'|'info'|'neutral'}){return <span className={`badge badge-${tone}`}>{children}</span>}
 export function Field({label,error,...p}:InputHTMLAttributes<HTMLInputElement>&{label:string;error?:string}){const id=useId(),errorId=`${id}-error`;return <label className="field" htmlFor={id}><span>{label}{p.required&&<b aria-hidden="true"> *</b>}</span><input id={id} aria-invalid={!!error} aria-describedby={error?errorId:undefined} {...p}/>{error&&<small id={errorId} className="field-error">{error}</small>}</label>}
