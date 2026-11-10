@@ -1,5 +1,6 @@
 import { matchesSearch } from "../utils/searchNormalization";
 import { PageActionsSlot } from "./pageActions";
+import { CollapsibleSearch } from "./CollapsibleSearch";
 import {
   Archive,
   Download,
@@ -38,6 +39,10 @@ export interface DataTableProps<T> {
   totalLabel?: string;
   hideExport?: boolean;
   trailingAction?: ReactNode;
+  /** Show the search as a search key that expands on click. */
+  collapsibleSearch?: boolean;
+  /** Place the total-records chip in the action group, left of Exporteren. */
+  countWithActions?: boolean;
   query?: string;
   onQueryChange?: (query: string) => void;
   mobileExtraColumnIds?: string[];
@@ -65,6 +70,8 @@ export function DataTable<T>({
   totalLabel,
   hideExport = false,
   trailingAction,
+  collapsibleSearch = false,
+  countWithActions = false,
   query: externalQuery,
   onQueryChange,
   mobileExtraColumnIds = [],
@@ -253,6 +260,12 @@ export function DataTable<T>({
     setNotice(nl ? "Bulkactie voltooid." : "Bulk action completed.");
   }
 
+  const countChip = (
+    <span className="data-toolbar__count" aria-live="polite">
+      <b>{totalCount.toLocaleString(locale)}</b>
+      {totalLabel ?? (nl ? "totaal records" : "total records")}
+    </span>
+  );
   if (loading) return <Loader />;
   if (error)
     return (
@@ -265,23 +278,29 @@ export function DataTable<T>({
   return (
     <div className={`data-table data-table-${id}`} data-testid={`table-${id}`}>
       <div className="data-toolbar">
-        <label className="search">
-          <Search size={17} />
-          <span className="sr-only">{searchPlaceholder}</span>
-          <input
+        {collapsibleSearch ? (
+          <CollapsibleSearch
             value={query}
-            onChange={(event) => {
-              setQuery(event.target.value);
-            }}
-            placeholder={searchPlaceholder}
+            onChange={setQuery}
+            label={searchPlaceholder}
           />
-        </label>
-        <span className="data-toolbar__count" aria-live="polite">
-          <b>{totalCount.toLocaleString(locale)}</b>
-          {totalLabel ?? (nl ? "totaal records" : "total records")}
-        </span>
+        ) : (
+          <label className="search">
+            <Search size={17} />
+            <span className="sr-only">{searchPlaceholder}</span>
+            <input
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+              }}
+              placeholder={searchPlaceholder}
+            />
+          </label>
+        )}
+        {!countWithActions && countChip}
         {filters}
         <div className="table-actions table-actions--group">
+          {countWithActions && countChip}
           {!hideExport && (
             <Button variant="secondary" onClick={exportCsv}>
               <Download />

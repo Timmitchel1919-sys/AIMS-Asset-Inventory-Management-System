@@ -1115,3 +1115,131 @@ html[data-aims-theme="aimsTurquoiseGlass"] body .profile-menu .account-signout s
 .authenticated-app > main {
   padding-top: 16px !important;
 }
+
+/* ==========================================================================
+   Collapsible module search (ICT-middelen, Voorraadmutaties): a single
+   search key that expands into the pill search field on click.
+   ========================================================================== */
+.search-collapsible {
+  display: flex;
+  align-items: center;
+  flex: none;
+  min-width: 0;
+}
+.search-collapsible.is-open {
+  flex: 0 1 340px;
+  width: 340px;
+  max-width: 100%;
+}
+:root:root:root:root body .search-collapsible__toggle.btn {
+  width: var(--btn-height) !important;
+  min-width: var(--btn-height) !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  border-radius: 999px !important;
+}
+.authenticated-app main .search-collapsible .search-collapsible__field {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0;
+  animation: search-collapsible-open 180ms ease-out both;
+}
+.search-collapsible__field input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.search-collapsible__close {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  margin-right: -6px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.search-collapsible__close:hover,
+.search-collapsible__close:focus-visible {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+.search-collapsible__close:focus-visible {
+  outline: 2px solid var(--btn-focus-outline);
+  outline-offset: 1px;
+}
+@keyframes search-collapsible-open {
+  from { opacity: 0; transform: scaleX(0.6); transform-origin: left center; }
+  to { opacity: 1; transform: scaleX(1); transform-origin: left center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .authenticated-app main .search-collapsible .search-collapsible__field {
+    animation: none;
+  }
+}
+
+/* Voorraadmutaties: search key | filters | count + Exporteren + Mutatie. */
+@media (min-width: 781px) {
+  .authenticated-app .movement-workspace-card .data-toolbar {
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    align-items: end;
+  }
+  .authenticated-app .movement-workspace-card .data-toolbar > .search-collapsible {
+    align-self: end;
+  }
+  .authenticated-app .movement-workspace-card .data-toolbar > .search-collapsible.is-open {
+    width: clamp(220px, 22vw, 320px);
+  }
+  .authenticated-app .movement-workspace-card .table-actions .data-toolbar__count {
+    flex: none;
+  }
+}
+@media (max-width: 780px) {
+  .search-collapsible.is-open {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1100px) {
+  .authenticated-app .movement-workspace-card .data-toolbar > .search-collapsible {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .authenticated-app .movement-workspace-card .data-toolbar > .movement-filters {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    grid-template-columns: repeat(4, minmax(96px, 1fr)) !important;
+  }
+  .authenticated-app .movement-workspace-card .data-toolbar > .table-actions {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    flex-wrap: nowrap;
+  }
+}
+@media (max-width: 1099px) and (min-width: 781px) {
+  .authenticated-app .movement-workspace-card .data-toolbar > .movement-filters {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+  }
+  .authenticated-app .movement-workspace-card .data-toolbar > .table-actions {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+  }
+}
+
+/* While the movements search is open the filters move to their own row. */
+@media (min-width: 781px) {
+  .authenticated-app .movement-workspace-card .data-toolbar:has(> .search-collapsible.is-open) {
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+  }
+  .authenticated-app .movement-workspace-card .data-toolbar:has(> .search-collapsible.is-open) > .movement-filters {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+  }
+}

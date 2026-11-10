@@ -191,6 +191,8 @@ export default function MovementsPage() {
             id="movements"
             rows={visibleMovements}
             columns={columns}
+            collapsibleSearch
+            countWithActions
             filters={
               <div
                 className="movement-filters"

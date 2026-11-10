@@ -1047,6 +1047,7 @@ export default function Assets() {
         )}
         <section className="card data-card">
           <DataToolbar
+            collapsibleSearch
             search={search}
             onSearch={(value) => {
               setSearch(value);

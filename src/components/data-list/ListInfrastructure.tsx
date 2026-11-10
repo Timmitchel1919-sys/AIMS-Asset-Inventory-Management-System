@@ -1,3 +1,4 @@
+import { CollapsibleSearch } from "../CollapsibleSearch";
 import { PageActionsSlot } from "../pageActions";
 import {
   Archive,
@@ -52,6 +53,7 @@ export function DataToolbar({
   columnSelector,
   exportMenu,
   count,
+  collapsibleSearch = false,
 }: {
   search: string;
   onSearch: (value: string) => void;
@@ -62,21 +64,27 @@ export function DataToolbar({
   columnSelector?: ReactNode;
   exportMenu: ReactNode;
   count?: number;
+  /** Show the search as a search key that expands on click. */
+  collapsibleSearch?: boolean;
 }) {
   const t = useT();
   const { language } = useApp();
   const nl = language === "nl";
   return (
     <div className="data-toolbar list-toolbar">
-      <label className="search">
-        <Search size={17} />
-        <span className="sr-only">{searchLabel}</span>
-        <input
-          value={search}
-          onChange={(event) => onSearch(event.target.value)}
-          placeholder={searchLabel}
-        />
-      </label>
+      {collapsibleSearch ? (
+        <CollapsibleSearch value={search} onChange={onSearch} label={searchLabel} />
+      ) : (
+        <label className="search">
+          <Search size={17} />
+          <span className="sr-only">{searchLabel}</span>
+          <input
+            value={search}
+            onChange={(event) => onSearch(event.target.value)}
+            placeholder={searchLabel}
+          />
+        </label>
+      )}
       {typeof count === "number" && (
         <span className="data-toolbar__count" aria-live="polite">
           <b>{count.toLocaleString(nl ? "nl-NL" : "en-US")}</b>
