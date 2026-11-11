@@ -32,22 +32,57 @@ export function ClassificationFields() {
     const OFFICIAL_CATEGORIES = [
       "Computers",
       "Display & Presentation",
-      "Network & Internet",
+      "Netwerk & Internet",
       "Peripherals",
       "Power & Electrical",
       "Print & Scan",
       "Mobile Devices",
       "Telephony",
-      "Cables",
-      "Adapters",
+      "Kabels",
       "Servers & Infrastructure",
       "Storage Media",
       "Audio Visual Equipment",
       "Security",
     ];
 
+    // Owner-approved blocklist: subcategory- or legacy-style labels that
+    // should never appear in the category dropdown. Normalised by
+    // lowercasing and collapsing whitespace so "ACCES POINT" and "acces
+    // point" match. The currently-selected category of the asset being
+    // edited is still allowed through so existing records stay editable.
+    const norm = (value: string) =>
+      value.trim().toLowerCase().replace(/\s+/g, " ");
+    const BLOCKED = new Set(
+      [
+        "acces point",
+        "adapters",
+        "beamer",
+        "camera",
+        "digibord",
+        "smart phone",
+        "switch",
+        "tablets",
+        "hdmi kabel",
+        "keyboard wired en wireless",
+        "laptop",
+        "muis wired en wireless",
+        "touch kabel",
+        "vga kabel",
+        "netwerk",
+        "internet",
+        "battery backup",
+        "netwerk kabel cat6",
+        "power kable",
+        "power kabel",
+        "power cable",
+        "router",
+        "server & infrastructuur",
+      ].map(norm),
+    );
+    const allowed = (name: string) => !BLOCKED.has(norm(name));
+
     const refMap = new Map<string, string>();
-    OFFICIAL_CATEGORIES.forEach((name) => {
+    OFFICIAL_CATEGORIES.filter(allowed).forEach((name) => {
       refMap.set(name.toLowerCase(), name);
     });
 
@@ -56,6 +91,7 @@ export function ClassificationFields() {
       .forEach((ref) => {
         if (ref.name && ref.name.trim()) {
           const trimmed = ref.name.trim();
+          if (!allowed(trimmed)) return;
           const lower = trimmed.toLowerCase();
           if (!refMap.has(lower)) {
             refMap.set(lower, trimmed);

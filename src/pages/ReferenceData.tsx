@@ -23,7 +23,7 @@ import { LocationTypeForm } from "../components/settings/LocationTypesSettings";
 import { DepartmentIntelligencePanel } from "../components/departments/DepartmentIntelligencePanel";
 import { MainLocationForm } from "../components/settings/MainLocationForm";
 import { CodeGroupForm } from "../components/settings/CodeGroupForm";
-import { assetInDepartment } from "../domain/assetLookups";
+import { assetInCategory, assetInDepartment } from "../domain/assetLookups";
 
 
 function ParentLocationForm({
@@ -275,19 +275,33 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
   const rows = useMemo(
     () => {
       const base = snapshot.references.filter((item) => item.kind === kind);
-      if (kind !== "department") return base;
-      // Live active-asset count per department: any asset currently assigned
-      // to this department whose status is not Disposed/Archived counts as
-      // active. Overrides whatever stale value may live on the stored
-      // department record.
-      return base.map((department) => {
-        const relatedCount = snapshot.assets.reduce((total, asset) => {
-          if (!assetInDepartment(asset, department)) return total;
-          if (["Disposed", "Archived"].includes(asset.status)) return total;
-          return total + 1;
-        }, 0);
-        return { ...department, relatedCount };
-      });
+      if (kind === "department") {
+        // Live active-asset count per department: any asset currently
+        // assigned to this department whose status is not Disposed/Archived
+        // counts as active. Overrides whatever stale value may live on the
+        // stored department record.
+        return base.map((department) => {
+          const relatedCount = snapshot.assets.reduce((total, asset) => {
+            if (!assetInDepartment(asset, department)) return total;
+            if (["Disposed", "Archived"].includes(asset.status)) return total;
+            return total + 1;
+          }, 0);
+          return { ...department, relatedCount };
+        });
+      }
+      if (kind === "category") {
+        // Live active-asset count per category: non-Disposed/Archived
+        // assets that match the category (by id, or legacy name fallback).
+        return base.map((category) => {
+          const relatedCount = snapshot.assets.reduce((total, asset) => {
+            if (!assetInCategory(asset, category)) return total;
+            if (["Disposed", "Archived"].includes(asset.status)) return total;
+            return total + 1;
+          }, 0);
+          return { ...category, relatedCount };
+        });
+      }
+      return base;
     },
     [kind, snapshot.references, snapshot.assets],
   );
@@ -730,6 +744,21 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
             >
               {item.relatedCount}
             </button>
+          );
+        }
+        if (kind === "category") {
+          return (
+            <span
+              style={{
+                color:
+                  item.relatedCount > 0
+                    ? "#22c55e"
+                    : "var(--color-text-secondary)",
+                fontWeight: item.relatedCount > 0 ? 700 : 500,
+              }}
+            >
+              {item.relatedCount}
+            </span>
           );
         }
         return item.relatedCount;
