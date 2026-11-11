@@ -124,8 +124,18 @@ export function firestoreErrorMessage(error: unknown) {
     "failed-precondition": "The record changed. Refresh and try again.",
     "resource-exhausted": "The service is busy. Please try again shortly.",
   };
+  // Mapped Firestore codes win. Otherwise prefer the original error message
+  // (validation throws from the repository carry the real reason, e.g.
+  // "Serial number already exists"); only fall back to the generic text when
+  // the error has no usable message at all.
+  const originalMessage = String(
+    (error as { message?: string })?.message || "",
+  ).trim();
+  const fallback = messages[code]
+    || originalMessage
+    || "AIMS could not save this change. Please try again.";
   return new FirebaseRepositoryError(
-    messages[code] || "AIMS could not save this change. Please try again.",
+    fallback,
     code || "unknown",
     { cause: error },
   );
