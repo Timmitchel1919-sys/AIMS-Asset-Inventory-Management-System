@@ -3366,19 +3366,9 @@ export class WorkflowRepositoryEngine implements InventoryRepository {
         case "audit.discrepancy": {
           const audit = this.audit(command.entityId);
           const code = String(v.scannedCode || "");
-          const item =
-            audit.sampleItems?.find((x) => x.code === code && !x.result) ||
-            audit.sampleItems?.find((x) => !x.result);
+          const item = audit.sampleItems?.find((x) => x.code === code && !x.result);
           if (!item) {
-            audit.progress = Math.min(100, audit.progress + 10);
-            if (command.action === "audit.verify") audit.verified++;
-            else audit.discrepancies++;
-            result = {
-              ok: true,
-              message: `Audit result recorded at ${audit.progress}% completion.`,
-              entityId: audit.id,
-            };
-            break;
+            throw new Error("The scanned code is not an unrecorded item in this audit.");
           }
           const outcome = String(v.outcome || "Verified");
           item.result = outcome;

@@ -79,6 +79,7 @@ export function DataToolbar({
           <Search size={17} />
           <span className="sr-only">{searchLabel}</span>
           <input
+            type="search"
             value={search}
             onChange={(event) => onSearch(event.target.value)}
             placeholder={searchLabel}

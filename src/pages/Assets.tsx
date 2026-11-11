@@ -14,7 +14,6 @@ import {
   FilterInput,
   FilterPanel,
   ResponsiveDataList,
-  SavedViewSelector,
   type ListColumn,
 } from "../components/data-list/ListInfrastructure";
 import {
@@ -1058,16 +1057,6 @@ export default function Assets() {
             count={result.totalCount}
             filterCount={activeFilters.length}
             onToggleFilters={toggleFilters}
-            savedViews={
-              <SavedViewSelector
-                views={preferences.savedViews}
-                onApply={applyView}
-                onSave={() => setViewDialog(true)}
-                onDelete={(id) =>
-                  setPreferences((current) => removeSavedView(current, id))
-                }
-              />
-            }
             columnSelector={
               <ColumnSelector
                 columns={columns}

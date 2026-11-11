@@ -1,0 +1,33 @@
+{
+  "project": "my-project",
+  "qualityTarget": "WCAG 2.2 AA",
+  "modes": [
+    "plan",
+    "audit",
+    "implement",
+    "fix"
+  ],
+  "designSource": "DESIGN.md",
+  "breakpoints": [
+    320,
+    375,
+    768,
+    1024,
+    1440
+  ],
+  "security": {
+    "productionChangesRequireApproval": true,
+    "destructiveActionsRequireApproval": true
+  },
+  "preferredSkills": [
+    "intent-discovery",
+    "information-hierarchy",
+    "state-completeness",
+    "form-ux",
+    "feedback-affordance",
+    "ux-auditor",
+    "design-system",
+    "visual-character",
+    "responsive"
+  ]
+}

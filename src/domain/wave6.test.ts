@@ -66,6 +66,19 @@ describe('Wave 6 audit execution rules',()=>{
 });
 
 describe('Wave 6 repository workflow',()=>{
+  it('rejects unknown and already recorded codes without changing the audit',async()=>{
+    const repository=new MockInventoryRepository();
+    const generated=await repository.execute({action:'audit.generate',values:{name:'Scan test',count:2,seed:'TEST',assignee:'Auditor',deadline:'2026-12-31'}});
+    const audit=repository.snapshot().audits.find(item=>item.id===generated.entityId)!;
+    const before=structuredClone(audit);
+    expect((await repository.execute({action:'audit.verify',entityId:audit.id,values:{scannedCode:'UNKNOWN',outcome:'Verified'}})).ok).toBe(false);
+    expect(repository.snapshot().audits.find(item=>item.id===audit.id)).toEqual(before);
+    const code=audit.sampleItems![0].code;
+    expect((await repository.execute({action:'audit.verify',entityId:audit.id,values:{scannedCode:code,outcome:'Verified'}})).ok).toBe(true);
+    const after=structuredClone(repository.snapshot().audits.find(item=>item.id===audit.id));
+    expect((await repository.execute({action:'audit.verify',entityId:audit.id,values:{scannedCode:code,outcome:'Verified'}})).ok).toBe(false);
+    expect(repository.snapshot().audits.find(item=>item.id===audit.id)).toEqual(after);
+  });
   it('generates, freezes and records a discrepancy without changing stock',async()=>{
     const repository=new MockInventoryRepository();
     const generated=await repository.execute({action:'audit.generate',values:{name:'Seeded audit',count:2,seed:'TEST',assignee:'Auditor',deadline:'2026-12-31'}});
