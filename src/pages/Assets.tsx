@@ -229,6 +229,7 @@ export default function Assets() {
     serialStartNumber?: string;
     location?: string;
     department?: string;
+    assignedTo?: string;
   }>({});
 
   const brandSuggestions = useMemo(() => {
@@ -740,6 +741,10 @@ export default function Assets() {
       label: t("assets.bulk.subLocation"),
     },
     can(user?.role, "assets.edit") && {
+      id: "assignUser",
+      label: t("assets.bulk.assignUser"),
+    },
+    can(user?.role, "assets.edit") && {
       id: "edit",
       label: t("assets.bulk.edit"),
     },
@@ -821,6 +826,13 @@ export default function Assets() {
       )
         ? selectedAssets[0].department
         : "";
+    const commonAssignee =
+      selectedAssets.length &&
+      selectedAssets.every(
+        (a) => (a.assignedTo || "") === (selectedAssets[0].assignedTo || ""),
+      )
+        ? selectedAssets[0].assignedTo || ""
+        : "";
     const commonCodePrefix =
       selectedAssets.length &&
       selectedAssets.every(
@@ -846,6 +858,7 @@ export default function Assets() {
       serialNumber: commonSerial,
       location: commonLocation,
       department: commonDepartment,
+      assignedTo: commonAssignee,
       codePrefix: commonCodePrefix,
       codeDirect: selected.length === 1 ? selectedAssets[0]?.code : "",
       codeStartNumber: "",
@@ -868,6 +881,7 @@ export default function Assets() {
       requestedAction === "department"
     )
       setBulkTarget(commonDepartment);
+    else if (requestedAction === "assignUser") setBulkTarget(commonAssignee);
     else if (requestedAction === "edit") setBulkTarget(commonCondition);
     else if (requestedAction === "status") setBulkTarget(commonStatus);
     else setBulkTarget("");
@@ -963,6 +977,12 @@ export default function Assets() {
           );
           if (deptRef) values.departmentId = deptRef.id;
         }
+        if (
+          bulkData.assignedTo !== undefined &&
+          bulkData.assignedTo !== ""
+        ) {
+          values.assignedTo = bulkData.assignedTo;
+        }
         if (bulkData.isSerialSequence && bulkData.serialPrefix) {
           const startNum =
             parseInt(bulkData.serialStartNumber || "1", 10) || 1;
@@ -1021,6 +1041,8 @@ export default function Assets() {
           (r) => r.kind === "department" && r.name === deptName,
         );
         if (deptRef) values.departmentId = deptRef.id;
+      } else if (bulkAction === "assignUser") {
+        values.assignedTo = bulkTarget || bulkData.assignedTo || "";
       } else if (bulkAction === "code") {
         if (selected.length === 1 && (bulkTarget || bulkData.codeDirect)) {
           values.codeCorrection = (
@@ -1354,9 +1376,11 @@ export default function Assets() {
                           ? t("assets.bulk.mainLocation")
                           : bulkAction === "subLocation" || bulkAction === "department"
                             ? t("assets.bulk.subLocation")
-                            : bulkAction === "toInventory"
-                              ? t("assets.bulk.toInventory")
-                              : t("assets.bulk.confirm")
+                            : bulkAction === "assignUser"
+                              ? t("assets.bulk.assignUser")
+                              : bulkAction === "toInventory"
+                                ? t("assets.bulk.toInventory")
+                                : t("assets.bulk.confirm")
           }
           description={
             bulkAction === "bulkEdit"
@@ -1549,7 +1573,34 @@ export default function Assets() {
                     </option>
                   ))}
                 </SelectField>
+
+                <Field
+                  label={t("assets.bulk.assignUser")}
+                  placeholder="(Geen wijziging / No change)"
+                  value={bulkData.assignedTo || ""}
+                  onChange={(e) =>
+                    setBulkData((prev) => ({
+                      ...prev,
+                      assignedTo: e.target.value,
+                    }))
+                  }
+                />
               </>
+            )}
+
+            {bulkAction === "assignUser" && (
+              <Field
+                label={t("assets.bulk.assignUser")}
+                value={bulkTarget}
+                onChange={(e) => {
+                  setBulkTarget(e.target.value);
+                  setBulkData((prev) => ({
+                    ...prev,
+                    assignedTo: e.target.value,
+                  }));
+                }}
+                required
+              />
             )}
 
             {bulkAction === "code" && (
