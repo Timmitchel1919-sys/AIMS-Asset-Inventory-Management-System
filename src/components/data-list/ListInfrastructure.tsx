@@ -11,7 +11,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useId, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button, Loader, State } from "../ui";
 import { useT } from "../../i18n";
 import { useApp } from "../../context/AppContext";
@@ -140,6 +140,12 @@ export function FilterPanel({
   );
 }
 
+/**
+ * FilterField — custom dropdown die ALTIJD naar beneden openklapt.
+ * Vervangt de native <select>, want browsers besluiten daar zelf of een
+ * popup naar boven of beneden moet (afhankelijk van beschikbare ruimte).
+ * Deze versie forceert "top: 100%" dus altijd onder het veld.
+ */
 export function FilterField({
   label,
   value,
@@ -151,29 +157,84 @@ export function FilterField({
   values: (string | { value: string; label: string })[];
   onChange: (value: string) => void;
 }) {
-  const id = useId(),
-    t = useT();
+  const id = useId();
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  const options: { value: string; label: string }[] = [
+    { value: "", label: t("common.all") },
+    ...values.map((item) =>
+      typeof item === "string"
+        ? { value: item, label: item }
+        : { value: item.value, label: item.label },
+    ),
+  ];
+  const current =
+    options.find((option) => option.value === value) ?? options[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (event: MouseEvent) => {
+      if (!rootRef.current) return;
+      if (!rootRef.current.contains(event.target as Node)) setOpen(false);
+    };
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [open]);
+
   return (
     <label htmlFor={id}>
       <span>{label}</span>
-      <select
-        id={id}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
+      <div
+        className={`filter-dropdown${open ? " is-open" : ""}`}
+        ref={rootRef}
       >
-        <option value="">{t("common.all")}</option>
-        {values.map((item) =>
-          typeof item === "string" ? (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ) : (
-            <option key={item.value} value={item.value}>
-              {item.label}
-            </option>
-          ),
+        <button
+          id={id}
+          type="button"
+          className="filter-dropdown__trigger"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onClick={() => setOpen((prev) => !prev)}
+        >
+          <span className="filter-dropdown__value">{current.label}</span>
+          <span className="filter-dropdown__caret" aria-hidden="true">
+            ▾
+          </span>
+        </button>
+        {open && (
+          <ul
+            role="listbox"
+            className="filter-dropdown__menu"
+            aria-labelledby={id}
+          >
+            {options.map((option) => (
+              <li
+                key={option.value || "__all__"}
+                role="option"
+                aria-selected={option.value === value}
+                className={`filter-dropdown__option${
+                  option.value === value ? " is-selected" : ""
+                }`}
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                }}
+              >
+                {option.label}
+              </li>
+            ))}
+          </ul>
         )}
-      </select>
+      </div>
     </label>
   );
 }
