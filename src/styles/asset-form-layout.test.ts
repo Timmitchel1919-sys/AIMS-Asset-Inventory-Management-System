@@ -18,9 +18,9 @@ describe("serialized asset edit form presentation", () => {
     );
 
     expect(source).toContain('"Main location"');
-    expect(source).toContain('"Sub-location"');
+    expect(source).toContain('"Department"');
     expect(source).toMatch(/label=\{app\.language === "nl" \? "Afdeling" : "Department"\}[\s\S]*register\("responsibleEmployee"\)/);
-    expect(source).toMatch(/label=\{app\.language === "nl" \? "Sublocatie" : "Sub-location"\}[\s\S]*register\("department"\)/);
+    expect(source).toMatch(/label=\{app\.language === "nl" \? "Afdeling" : "Department"\}[\s\S]*register\("department"\)/);
   });
 
   it("keeps inventory codes on one line in the ICT asset list", () => {

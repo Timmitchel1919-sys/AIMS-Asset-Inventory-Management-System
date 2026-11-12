@@ -452,7 +452,7 @@ export function InventoryList() {
                     <th>Model</th>
                     <th>{nl ? "Serienummer" : "Serial number"}</th>
                     <th>{nl ? "Hoofd locatie" : "Main location"}</th>
-                    <th>{nl ? "Sub-locatie" : "Sub-location"}</th>
+                    <th>{nl ? "Afdeling" : "Department"}</th>
                     <th>{nl ? "Gebruiker" : "User"}</th>
                     <th>{nl ? "Conditie" : "Condition"}</th>
                     <th>{nl ? "Middelstatus" : "Asset status"}</th>

@@ -551,7 +551,7 @@ export default function AssetForm() {
                     ))}
                 </SelectField>
                 <SelectField
-                  label={app.language === "nl" ? "Sublocatie" : "Sub-location"}
+                  label={app.language === "nl" ? "Afdeling" : "Department"}
                   required
                   error={errors.department?.message}
                   {...register("department")}

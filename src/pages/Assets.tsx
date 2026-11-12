@@ -50,7 +50,6 @@ import type { Asset } from "../domain/types";
 import { useT } from "../i18n";
 import { ASSET_CONDITIONS } from "../domain/assetCondition";
 import { assetAssigneeName, assetDepartmentName } from "../domain/assetLookups";
-import { parentLocationIdOf, rootLocations } from "../domain/locationTree";
 
 const columnIds = [
   "code",
@@ -253,14 +252,18 @@ export default function Assets() {
   }, [snapshot.assets]);
 
   const mainLocationOptions = useMemo(() => {
-    const fromRefs = rootLocations(snapshot.references).map((r) => r.name);
-    const fromFacets = facets.location || [];
-    return Array.from(new Set([...fromRefs, ...fromFacets])).filter(Boolean).sort();
-  }, [snapshot.references, facets.location]);
+    const ALLOWED = [
+      "Kangoeroe High",
+      "KCS Basis",
+      "KCS Bovenbouw",
+      "KH Nieuwbouw",
+    ];
+    return ALLOWED;
+  }, []);
 
   const subLocationOptions = useMemo(() => {
     const fromRefs = snapshot.references
-      .filter((r) => r.kind === "department" || (r.kind === "location" && parentLocationIdOf(r)))
+      .filter((r) => r.kind === "department" && r.status !== "Archived")
       .map((r) => r.name);
     const fromFacets = facets.department || [];
     return Array.from(new Set([...fromRefs, ...fromFacets])).filter(Boolean).sort();

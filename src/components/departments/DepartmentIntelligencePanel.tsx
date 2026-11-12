@@ -816,7 +816,7 @@ export function DepartmentIntelligencePanel({
                 <dd>{location || "—"}</dd>
               </div>
               <div>
-                <dt>{nl ? "Sublocatie" : "Sub-location"}</dt>
+                <dt>{nl ? "Afdeling" : "Department"}</dt>
                 <dd>{subLocation || "—"}</dd>
               </div>
               <div>
