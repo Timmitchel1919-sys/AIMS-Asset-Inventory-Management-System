@@ -2680,7 +2680,9 @@ html .system-information {
   color: var(--color-text-secondary);
 }
 .dialog::backdrop {
-  background: var(--color-overlay);
+  background: rgba(10, 18, 34, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 .dialog > header,
 .dialog > footer {
