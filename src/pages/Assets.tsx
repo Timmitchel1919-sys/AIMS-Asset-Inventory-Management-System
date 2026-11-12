@@ -1246,7 +1246,11 @@ export default function Assets() {
                                   value,
                                   label: t(`condition.${value}`),
                                 }))
-                              : facets[field] || []
+                              : field === "location"
+                                ? mainLocationOptions
+                                : field === "department"
+                                  ? subLocationOptions
+                                  : facets[field] || []
                   }
                   onChange={(value) => updateDraftFilter(field, value)}
                 />
