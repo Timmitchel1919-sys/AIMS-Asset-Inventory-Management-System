@@ -42,6 +42,7 @@ import {
   upsertSavedView,
   type SavedListView,
 } from "../data/listPreferences";
+import { rootLocations } from "../domain/locationTree";
 import type { ListFilter, ListResult, ListSort } from "../data/listQuery";
 import type { WorkflowCommand } from "../data/contracts";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
@@ -251,23 +252,45 @@ export default function Assets() {
     return Array.from(set).sort();
   }, [snapshot.assets]);
 
-  const mainLocationOptions = useMemo(() => {
-    const ALLOWED = [
-      "Kangoeroe High",
-      "KCS Basis",
-      "KCS Bovenbouw",
-      "KH Nieuwbouw",
-    ];
-    return ALLOWED;
-  }, []);
+  // Hoofdlocatie-filter leest alle actieve root-locaties uit master data
+  // (Locaties-module). Nieuwe hoofd locaties verschijnen automatisch; namen
+  // die case-insensitief dubbel voorkomen worden ontdubbeld.
+  const mainLocationNames = useMemo(() => {
+    const deduped = new Map<string, string>();
+    for (const ref of rootLocations(snapshot.references)) {
+      const key = ref.name.trim().toLocaleLowerCase("en-US");
+      if (!deduped.has(key)) deduped.set(key, ref.name.trim());
+    }
+    return [...deduped.values()];
+  }, [snapshot.references]);
 
+  const mainLocationOptions = useMemo(
+    () => [...mainLocationNames].sort((a, b) => a.localeCompare(b)),
+    [mainLocationNames],
+  );
+
+  // Afdeling-filter leest alle actieve afdelingen uit de Afdelingen-module.
+  // Namen die ook een hoofdlocatie zijn (case-insensitief) worden uitgefilterd
+  // zodat Kangoeroe High / KCS Basis / KCS Bovenbouw / KH Nieuwbouw e.d. hier
+  // niet nogmaals verschijnen. Dubbele afdelingen worden ontdubbeld.
   const subLocationOptions = useMemo(() => {
+    const mainSet = new Set(
+      mainLocationNames.map((name) => name.trim().toLocaleLowerCase("en-US")),
+    );
     const fromRefs = snapshot.references
       .filter((r) => r.kind === "department" && r.status !== "Archived")
       .map((r) => r.name);
-    const fromFacets = facets.department || [];
-    return Array.from(new Set([...fromRefs, ...fromFacets])).filter(Boolean).sort();
-  }, [snapshot.references, facets.department]);
+    const deduped = new Map<string, string>();
+    for (const raw of [...fromRefs, ...(facets.department || [])]) {
+      if (!raw) continue;
+      const trimmed = raw.trim();
+      if (!trimmed) continue;
+      const key = trimmed.toLocaleLowerCase("en-US");
+      if (mainSet.has(key)) continue;
+      if (!deduped.has(key)) deduped.set(key, trimmed);
+    }
+    return [...deduped.values()].sort((a, b) => a.localeCompare(b));
+  }, [snapshot.references, facets.department, mainLocationNames]);
   const [mutation, setMutation] = useState<{
     status: "idle" | "loading" | "success" | "error";
     message: string;
