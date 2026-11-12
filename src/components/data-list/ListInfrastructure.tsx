@@ -86,13 +86,13 @@ export function DataToolbar({
           />
         </label>
       )}
-      {typeof count === "number" && (
-        <span className="data-toolbar__count" aria-live="polite">
-          <b>{count.toLocaleString(nl ? "nl-NL" : "en-US")}</b>
-          {nl ? "totaal records" : "total records"}
-        </span>
-      )}
       <div className="table-actions">
+        {typeof count === "number" && (
+          <span className="data-toolbar__count" aria-live="polite">
+            <b>{count.toLocaleString(nl ? "nl-NL" : "en-US")}</b>
+            {nl ? "totaal records" : "total records"}
+          </span>
+        )}
         <Button
           variant="secondary"
           onClick={onToggleFilters}
