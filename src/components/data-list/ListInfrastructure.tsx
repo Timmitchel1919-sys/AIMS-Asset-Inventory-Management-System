@@ -404,6 +404,7 @@ export function BulkActionToolbar({
   value,
   onChange,
   onRun,
+  onRunMulti,
   onClear,
   busy,
 }: {
@@ -412,20 +413,92 @@ export function BulkActionToolbar({
   value: string;
   onChange: (value: string) => void;
   onRun: (action?: string) => void;
+  /** Called when the user picks 2+ edit-fields via the checkbox menu. */
+  onRunMulti?: (actionIds: string[]) => void;
   onClear: () => void;
   busy: boolean;
 }) {
   const t = useT();
+  const { language } = useApp();
+  const nl = language === "nl";
+  const [open, setOpen] = useState(false);
+  const [picked, setPicked] = useState<string[]>([]);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (event: MouseEvent) => {
+      if (!rootRef.current) return;
+      if (!rootRef.current.contains(event.target as Node)) setOpen(false);
+    };
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    // Reset selectie zodra er geen rijen meer geselecteerd zijn.
+    if (!count) {
+      setPicked([]);
+      setOpen(false);
+    }
+  }, [count]);
+
   if (!count) return null;
+
   const quickActions = actions.filter(
     (action) => action.id === "archive" || action.id === "delete",
   );
   const selectActions = actions.filter(
     (action) => action.id !== "archive" && action.id !== "delete",
   );
-  const selectValue = selectActions.some((action) => action.id === value)
-    ? value
-    : "";
+  // Acties die zich LENEN voor multi-select combineren (velden op het middel
+  // aanpassen). Overige acties (toInventory, qr, export, disposal, bulkEdit)
+  // zijn stand-alone en blijven radio-stijl.
+  const MULTI_IDS = new Set([
+    "code",
+    "brand",
+    "name",
+    "model",
+    "serial",
+    "mainLocation",
+    "subLocation",
+    "assignUser",
+    "edit",
+    "status",
+  ]);
+  const multiActions = selectActions.filter((action) => MULTI_IDS.has(action.id));
+  const singleActions = selectActions.filter(
+    (action) => !MULTI_IDS.has(action.id),
+  );
+
+  const togglePick = (id: string) =>
+    setPicked((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+
+  const apply = () => {
+    if (!picked.length) return;
+    if (picked.length === 1) {
+      onChange(picked[0]);
+      onRun(picked[0]);
+    } else if (onRunMulti) {
+      onRunMulti(picked);
+    }
+    setOpen(false);
+    setPicked([]);
+  };
+
+  const triggerLabel = picked.length
+    ? `${picked.length} ${nl ? "gekozen" : "picked"}`
+    : t("common.chooseAction");
+
   return (
     <div
       className="bulk-toolbar"
@@ -435,21 +508,74 @@ export function BulkActionToolbar({
       <strong>
         {count} {t("common.selected")}
       </strong>
-      <label>
-        <span className="sr-only">{t("common.bulkAction")}</span>
-        <select
-          value={selectValue}
-          onChange={(event) => onChange(event.target.value)}
+      <div
+        className={`bulk-action-picker${open ? " is-open" : ""}`}
+        ref={rootRef}
+      >
+        <button
+          type="button"
+          className="bulk-action-picker__trigger"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onClick={() => setOpen((prev) => !prev)}
+          disabled={busy}
         >
-          <option value="">{t("common.chooseAction")}</option>
-          {selectActions.map((action) => (
-            <option key={action.id} value={action.id}>
-              {action.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <Button onClick={() => onRun()} disabled={!selectValue || busy}>
+          <span>{triggerLabel}</span>
+          <span className="bulk-action-picker__caret" aria-hidden="true">▾</span>
+        </button>
+        {open && (
+          <div className="bulk-action-picker__menu" role="menu">
+            {!!multiActions.length && (
+              <>
+                <div className="bulk-action-picker__group-label">
+                  {nl ? "Velden aanpassen (meerdere mogelijk)" : "Edit fields (pick multiple)"}
+                </div>
+                {multiActions.map((action) => {
+                  const checked = picked.includes(action.id);
+                  return (
+                    <label
+                      key={action.id}
+                      className={`bulk-action-picker__option${
+                        checked ? " is-checked" : ""
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => togglePick(action.id)}
+                      />
+                      <span>{action.label}</span>
+                    </label>
+                  );
+                })}
+              </>
+            )}
+            {!!singleActions.length && (
+              <>
+                <div className="bulk-action-picker__group-label">
+                  {nl ? "Losse acties" : "Single actions"}
+                </div>
+                {singleActions.map((action) => (
+                  <button
+                    key={action.id}
+                    type="button"
+                    className="bulk-action-picker__single"
+                    onClick={() => {
+                      onChange(action.id);
+                      onRun(action.id);
+                      setOpen(false);
+                      setPicked([]);
+                    }}
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+      <Button onClick={apply} disabled={!picked.length || busy}>
         {busy ? t("common.working") : t("common.apply")}
       </Button>
       {quickActions.map((action) => (

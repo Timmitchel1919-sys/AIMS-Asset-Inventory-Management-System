@@ -212,6 +212,12 @@ export default function Assets() {
   const [viewDialog, setViewDialog] = useState(false);
   const [viewName, setViewName] = useState("");
 
+  // Als deze non-leeg is beperkt de bulkEdit-dialoog zich tot deze velden.
+  // Wordt gevuld wanneer de gebruiker in de checkbox-picker meer dan één
+  // actie aanvinkt. Leegmaken = alle velden tonen (klassieke bulkEdit).
+  const [visibleBulkFields, setVisibleBulkFields] = useState<Set<string>>(
+    new Set(),
+  );
   const [bulkAction, setBulkAction] = useState(""),
     [bulkDialog, setBulkDialog] = useState(false),
     [bulkReason, setBulkReason] = useState(""),
@@ -361,8 +367,10 @@ export default function Assets() {
       "Access point",
       "Battery backup/UPS",
       "Beamer",
+      "Computer",
       "Desktop",
       "Digibord 80/55 inch",
+      "Display & Presentation",
       "Keyboard combo",
       "Keyboard wired",
       "Keyboard wireless",
@@ -375,6 +383,7 @@ export default function Assets() {
       "Muis wireless",
       "Printer",
       "Scanner",
+      "Tablet",
     ],
     [],
   );
@@ -1319,7 +1328,14 @@ export default function Assets() {
             actions={actions}
             value={bulkAction}
             onChange={setBulkAction}
-            onRun={beginBulk}
+            onRun={(id) => {
+              setVisibleBulkFields(new Set());
+              beginBulk(id);
+            }}
+            onRunMulti={(ids) => {
+              setVisibleBulkFields(new Set(ids));
+              beginBulk("bulkEdit");
+            }}
             onClear={() => setSelected([])}
             busy={mutation.status === "loading"}
           />
@@ -1418,6 +1434,9 @@ export default function Assets() {
 
             {bulkAction === "bulkEdit" && (
               <>
+                {(() => null)()}
+                {/* visibleBulkFields leeg = alle velden; anders filter. */}
+                {(visibleBulkFields.size === 0 || visibleBulkFields.has("code")) && (
                 <div className="field-with-hint">
                   <SelectField
                     label={t("assets.bulk.codePrefix")}
@@ -1454,7 +1473,9 @@ export default function Assets() {
                     />
                   )}
                 </div>
+                )}
 
+                {(visibleBulkFields.size === 0 || visibleBulkFields.has("brand")) && (
                 <Field
                   label={t("assets.bulk.brand")}
                   list="bulk-brand-suggestions"
@@ -1464,7 +1485,9 @@ export default function Assets() {
                     setBulkData((prev) => ({ ...prev, brand: e.target.value }))
                   }
                 />
+                )}
 
+                {(visibleBulkFields.size === 0 || visibleBulkFields.has("name")) && (
                 <Field
                   label={t("assets.bulk.asset")}
                   list="bulk-name-suggestions"
@@ -1474,7 +1497,9 @@ export default function Assets() {
                     setBulkData((prev) => ({ ...prev, name: e.target.value }))
                   }
                 />
+                )}
 
+                {(visibleBulkFields.size === 0 || visibleBulkFields.has("model")) && (
                 <Field
                   label={t("assets.bulk.model")}
                   list="bulk-model-suggestions"
@@ -1484,7 +1509,9 @@ export default function Assets() {
                     setBulkData((prev) => ({ ...prev, model: e.target.value }))
                   }
                 />
+                )}
 
+                {(visibleBulkFields.size === 0 || visibleBulkFields.has("serial")) && (
                 <div className="field-with-hint">
                   <Field
                     label={t("assets.bulk.serial")}
@@ -1540,7 +1567,9 @@ export default function Assets() {
                     </div>
                   )}
                 </div>
+                )}
 
+                {(visibleBulkFields.size === 0 || visibleBulkFields.has("mainLocation")) && (
                 <SelectField
                   label={t("assets.bulk.mainLocation")}
                   value={bulkData.location || ""}
@@ -1555,7 +1584,9 @@ export default function Assets() {
                     </option>
                   ))}
                 </SelectField>
+                )}
 
+                {(visibleBulkFields.size === 0 || visibleBulkFields.has("subLocation")) && (
                 <SelectField
                   label={t("assets.bulk.subLocation")}
                   value={bulkData.department || ""}
@@ -1573,7 +1604,9 @@ export default function Assets() {
                     </option>
                   ))}
                 </SelectField>
+                )}
 
+                {(visibleBulkFields.size === 0 || visibleBulkFields.has("assignUser")) && (
                 <Field
                   label={t("assets.bulk.assignUser")}
                   placeholder="(Geen wijziging / No change)"
@@ -1585,6 +1618,7 @@ export default function Assets() {
                     }))
                   }
                 />
+                )}
               </>
             )}
 
