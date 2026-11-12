@@ -42,7 +42,6 @@ import {
   upsertSavedView,
   type SavedListView,
 } from "../data/listPreferences";
-import { rootLocations } from "../domain/locationTree";
 import type { ListFilter, ListResult, ListSort } from "../data/listQuery";
 import type { WorkflowCommand } from "../data/contracts";
 import { useMockSnapshot, useRepository } from "../data/repositoryContext";
@@ -252,45 +251,107 @@ export default function Assets() {
     return Array.from(set).sort();
   }, [snapshot.assets]);
 
-  // Hoofdlocatie-filter leest alle actieve root-locaties uit master data
-  // (Locaties-module). Nieuwe hoofd locaties verschijnen automatisch; namen
-  // die case-insensitief dubbel voorkomen worden ontdubbeld.
-  const mainLocationNames = useMemo(() => {
-    const deduped = new Map<string, string>();
-    for (const ref of rootLocations(snapshot.references)) {
-      const key = ref.name.trim().toLocaleLowerCase("en-US");
-      if (!deduped.has(key)) deduped.set(key, ref.name.trim());
-    }
-    return [...deduped.values()];
-  }, [snapshot.references]);
-
+  // Hoofdlocatie-filter: eigenaar-goedgekeurde vaste lijst van 4 locaties.
+  // Nieuwe hoofdlocaties verschijnen hier pas als je ze hieronder toevoegt.
   const mainLocationOptions = useMemo(
-    () => [...mainLocationNames].sort((a, b) => a.localeCompare(b)),
-    [mainLocationNames],
+    () => [
+      "Kangoeroe High",
+      "KCS Basis",
+      "KCS BovenBouw",
+      "KH Nieuwbouw",
+    ],
+    [],
   );
 
-  // Afdeling-filter leest alle actieve afdelingen uit de Afdelingen-module.
-  // Namen die ook een hoofdlocatie zijn (case-insensitief) worden uitgefilterd
-  // zodat Kangoeroe High / KCS Basis / KCS Bovenbouw / KH Nieuwbouw e.d. hier
-  // niet nogmaals verschijnen. Dubbele afdelingen worden ontdubbeld.
-  const subLocationOptions = useMemo(() => {
-    const mainSet = new Set(
-      mainLocationNames.map((name) => name.trim().toLocaleLowerCase("en-US")),
-    );
-    const fromRefs = snapshot.references
-      .filter((r) => r.kind === "department" && r.status !== "Archived")
-      .map((r) => r.name);
-    const deduped = new Map<string, string>();
-    for (const raw of [...fromRefs, ...(facets.department || [])]) {
-      if (!raw) continue;
-      const trimmed = raw.trim();
-      if (!trimmed) continue;
-      const key = trimmed.toLocaleLowerCase("en-US");
-      if (mainSet.has(key)) continue;
-      if (!deduped.has(key)) deduped.set(key, trimmed);
-    }
-    return [...deduped.values()].sort((a, b) => a.localeCompare(b));
-  }, [snapshot.references, facets.department, mainLocationNames]);
+  // Afdeling-filter: eigenaar-goedgekeurde vaste lijst van afdelingen.
+  // Vullen/aanpassen? Voeg een naam toe aan deze array.
+  const subLocationOptions = useMemo(
+    () => [
+      "Administratie Dependance",
+      "Administratie KCS Basis",
+      "Administratie KH",
+      "Administratie KO",
+      "Cabin-1",
+      "Cabin-2",
+      "Cabin-3",
+      "Computer Lokaal",
+      "Conference Room",
+      "Directeur Basisschool",
+      "Directeur Office KH",
+      "Facilitair",
+      "Finance",
+      "Finance Administratie",
+      "Finance Manager",
+      "Groep 1A",
+      "Groep 1B",
+      "Groep 1C",
+      "Groep 1D",
+      "Groep 2A",
+      "Groep 2B",
+      "Groep 2C",
+      "Groep 2D",
+      "Groep 3A",
+      "Groep 3B",
+      "Groep 3C",
+      "Groep 3D",
+      "Groep 4A",
+      "Groep 4B",
+      "Groep 4C",
+      "Groep 4D",
+      "Groep 5A",
+      "Groep 5B",
+      "Groep 5C",
+      "Groep 5D",
+      "Groep 6A",
+      "Groep 6B",
+      "Groep 6C",
+      "Groep 6D",
+      "Groep 7A",
+      "Groep 7B",
+      "Groep 7C",
+      "Groep 7D",
+      "Groep 8A",
+      "Groep 8B",
+      "Groep 8C",
+      "Groep 8D",
+      "HRM",
+      "ICT Camera",
+      "ICT Storage 1",
+      "ICT Storage 2",
+      "ICT-kantoor",
+      "KO-Kantoor",
+      "Lokaal 1",
+      "Lokaal 2",
+      "Lokaal 3",
+      "Lokaal 4",
+      "Lokaal 5",
+      "Lokaal 6",
+      "Lokaal 7",
+      "Lokaal 8",
+      "Lokaal 9",
+      "Lokaal 10",
+      "Lokaal 11",
+      "Lokaal 12",
+      "Lokaal 13",
+      "Lokaal 14",
+      "Lokaal 15",
+      "Lokaal 16",
+      "Lokaal B1",
+      "Lokaal B2",
+      "Lokaal B3",
+      "Lokaal E1",
+      "Lokaal E2",
+      "Lokaal E3",
+      "Lokaal E4",
+      "Lokaal E5",
+      "Lokaal E6",
+      "Lokaal E7",
+      "Onder Directeur KH",
+      "Practicum lokaal",
+      "Secretariaat",
+    ],
+    [],
+  );
   const [mutation, setMutation] = useState<{
     status: "idle" | "loading" | "success" | "error";
     message: string;
