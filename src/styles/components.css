@@ -5095,3 +5095,52 @@ html[data-theme="dark"] .data-table-assets .asset-status svg {
   margin-left: 0;
 }
 
+/* Afdelingen tabel: toon kolomkoppen in mixed case ("Beheerder") i.p.v.
+   de globale uppercase van .desktop-table th ("BEHEERDER"). */
+.authenticated-app .data-table-departments .desktop-table thead th {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--text-sm);
+}
+
+/* Afdelingen filter dialog: 2-koloms raster met witte kaarten, net als
+   het geavanceerde filterpaneel in ICT-middelen. */
+.department-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.department-filter-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border, #cbd5e1);
+  border-radius: 12px;
+  background: var(--color-surface-elevated, #ffffff);
+}
+.department-filter-card > span {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.department-filter-card > input,
+.department-filter-card > select {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border, #cbd5e1);
+  border-radius: 8px;
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+}
+.department-filter-card--wide {
+  grid-column: 1 / -1;
+}
+@media (max-width: 640px) {
+  .department-filter-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

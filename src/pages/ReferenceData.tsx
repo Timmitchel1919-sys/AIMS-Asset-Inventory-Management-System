@@ -247,6 +247,9 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
     [deptFilterDialog, setDeptFilterDialog] = useState(false),
     [deptSort, setDeptSort] = useState("name-asc"),
     [deptManagerFilter, setDeptManagerFilter] = useState("all"),
+    [deptNameFilter, setDeptNameFilter] = useState(""),
+    [deptLocationFilter, setDeptLocationFilter] = useState("all"),
+    [deptAssetsFilter, setDeptAssetsFilter] = useState<"all" | "with" | "without">("all"),
     [selectedParentId, setSelectedParentId] = useState(
       initialRecord?.parentLocationId || initialRecord?.parentId || "",
     ),
@@ -846,6 +849,22 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
         return itemManager === deptManagerFilter;
       }
       return true;
+    })
+    .filter((item) => {
+      if (kind !== "department") return true;
+      const q = deptNameFilter.trim().toLocaleLowerCase("en-US");
+      if (!q) return true;
+      return item.name.toLocaleLowerCase("en-US").includes(q);
+    })
+    .filter((item) => {
+      if (kind !== "department" || deptLocationFilter === "all") return true;
+      const locId = item.mainLocationId || item.parentLocationId || item.parentId || "";
+      return locId === deptLocationFilter;
+    })
+    .filter((item) => {
+      if (kind !== "department" || deptAssetsFilter === "all") return true;
+      if (deptAssetsFilter === "with") return item.relatedCount > 0;
+      return item.relatedCount === 0;
     });
 
   // Live active/inactive asset counts for the departments currently in
@@ -1729,31 +1748,92 @@ export default function ReferenceDataPage({ kind }: { kind: ReferenceKind }) {
             title={nl ? "Filteren & Sorteren" : "Filter & Sort"}
             onClose={() => setDeptFilterDialog(false)}
             footer={
-              <Button onClick={() => setDeptFilterDialog(false)}>
-                {nl ? "Toepassen" : "Apply"}
-              </Button>
+              <>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setDeptNameFilter("");
+                    setDeptLocationFilter("all");
+                    setDeptAssetsFilter("all");
+                    setDeptManagerFilter("all");
+                    setDeptSort("name-asc");
+                  }}
+                >
+                  {nl ? "Alle filters wissen" : "Clear all filters"}
+                </Button>
+                <Button onClick={() => setDeptFilterDialog(false)}>
+                  {nl ? "Opslaan" : "Save"}
+                </Button>
+              </>
             }
           >
-            <div className="workflow-form">
-              <label>
+            <div className="department-filter-grid">
+              <label className="department-filter-card">
+                <span>{nl ? "Naam" : "Name"}</span>
+                <input
+                  type="search"
+                  value={deptNameFilter}
+                  onChange={(e) => setDeptNameFilter(e.target.value)}
+                  placeholder={nl ? "Zoek op naam…" : "Search by name…"}
+                />
+              </label>
+              <label className="department-filter-card">
+                <span>{nl ? "Locatie" : "Location"}</span>
+                <select
+                  value={deptLocationFilter}
+                  onChange={(e) => setDeptLocationFilter(e.target.value)}
+                >
+                  <option value="all">{nl ? "Alle" : "All"}</option>
+                  {mainLocations.map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="department-filter-card">
+                <span>{nl ? "Actieve middelen" : "Active assets"}</span>
+                <select
+                  value={deptAssetsFilter}
+                  onChange={(e) =>
+                    setDeptAssetsFilter(e.target.value as "all" | "with" | "without")
+                  }
+                >
+                  <option value="all">{nl ? "Alle" : "All"}</option>
+                  <option value="with">{nl ? "Met actieve middelen" : "With active assets"}</option>
+                  <option value="without">{nl ? "Zonder actieve middelen" : "Without active assets"}</option>
+                </select>
+              </label>
+              <label className="department-filter-card">
+                <span>{nl ? "Beheerder" : "Manager"}</span>
+                <select
+                  value={deptManagerFilter}
+                  onChange={(e) => setDeptManagerFilter(e.target.value)}
+                >
+                  <option value="all">{nl ? "Alle beheerders" : "All managers"}</option>
+                  <option value="unassigned">{nl ? "Geen beheerder" : "Unassigned"}</option>
+                  {Array.from(
+                    new Set(
+                      rows
+                        .map((r) => String(r.details.manager || "").trim())
+                        .filter(Boolean),
+                    ),
+                  )
+                    .sort()
+                    .map((manager) => (
+                      <option key={manager} value={manager}>
+                        {manager}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <label className="department-filter-card department-filter-card--wide">
                 <span>{nl ? "Sorteren op" : "Sort by"}</span>
                 <select value={deptSort} onChange={(e) => setDeptSort(e.target.value)}>
                   <option value="name-asc">{nl ? "Alfabetisch (A-Z)" : "Alphabetical (A-Z)"}</option>
                   <option value="name-desc">{nl ? "Alfabetisch (Z-A)" : "Alphabetical (Z-A)"}</option>
                   <option value="assets-desc">{nl ? "Meeste actieve middelen" : "Most active assets"}</option>
                   <option value="assets-asc">{nl ? "Minste actieve middelen" : "Least active assets"}</option>
-                </select>
-              </label>
-              <label>
-                <span>{nl ? "Beheerder" : "Manager"}</span>
-                <select value={deptManagerFilter} onChange={(e) => setDeptManagerFilter(e.target.value)}>
-                  <option value="all">{nl ? "Alle beheerders" : "All managers"}</option>
-                  <option value="unassigned">{nl ? "Geen beheerder" : "Unassigned"}</option>
-                  {Array.from(new Set(rows.map((r) => String(r.details.manager || "").trim()).filter(Boolean))).sort().map((manager) => (
-                    <option key={manager} value={manager}>
-                      {manager}
-                    </option>
-                  ))}
                 </select>
               </label>
             </div>
