@@ -353,11 +353,28 @@ export default function Assets() {
     [],
   );
 
-  // Middeltype-filter: eigenaar-goedgekeurde vaste lijst. Afgeleid uit alle
-  // huidige assets (Battery Back up 5, Device 220, Digibord 58, Laptop 65).
+  // Middeltype-filter: eigenaar-goedgekeurde vaste lijst.
   // Voeg hieronder een regel toe als je een nieuw middeltype wilt tonen.
   const itemTypeOptions = useMemo(
-    () => ["Battery Back up", "Device", "Digibord", "Laptop"],
+    () => [
+      "Access point",
+      "Battery backup/UPS",
+      "Beamer",
+      "Desktop",
+      "Digibord 80/55 inch",
+      "Keyboard combo",
+      "Keyboard wired",
+      "Keyboard wireless",
+      "Laptop",
+      "Mini desktop",
+      "Mobiel",
+      "Module",
+      "Monitor",
+      "Muis wired",
+      "Muis wireless",
+      "Printer",
+      "Scanner",
+    ],
     [],
   );
   const [mutation, setMutation] = useState<{
