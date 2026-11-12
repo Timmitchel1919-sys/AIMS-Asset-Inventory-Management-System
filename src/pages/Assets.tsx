@@ -352,6 +352,14 @@ export default function Assets() {
     ],
     [],
   );
+
+  // Middeltype-filter: eigenaar-goedgekeurde vaste lijst. Afgeleid uit alle
+  // huidige assets (Battery Back up 5, Device 220, Digibord 58, Laptop 65).
+  // Voeg hieronder een regel toe als je een nieuw middeltype wilt tonen.
+  const itemTypeOptions = useMemo(
+    () => ["Battery Back up", "Device", "Digibord", "Laptop"],
+    [],
+  );
   const [mutation, setMutation] = useState<{
     status: "idle" | "loading" | "success" | "error";
     message: string;
@@ -1250,7 +1258,9 @@ export default function Assets() {
                                 ? mainLocationOptions
                                 : field === "department"
                                   ? subLocationOptions
-                                  : facets[field] || []
+                                  : field === "type"
+                                    ? itemTypeOptions
+                                    : facets[field] || []
                   }
                   onChange={(value) => updateDraftFilter(field, value)}
                 />
