@@ -111,9 +111,6 @@ export function AIMSBrandedLoader({
       <div className="aims-branded-loader__status" aria-live="polite">
         {messages[index]}
       </div>
-      <div className="aims-branded-loader__progress" aria-hidden="true">
-        <span />
-      </div>
     </div>
   );
 }

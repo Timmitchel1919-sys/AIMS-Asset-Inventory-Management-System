@@ -92,30 +92,6 @@
   transition: opacity 180ms ease;
 }
 
-.aims-branded-loader__progress {
-  position: relative;
-  width: min(360px, 80vw);
-  height: 4px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-primary, #2563eb) 12%, transparent);
-  overflow: hidden;
-  margin-top: 6px;
-}
-.aims-branded-loader__progress > span {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: -30%;
-  width: 30%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--color-primary, #2563eb),
-    transparent
-  );
-  animation: aims-progress-slide 1600ms ease-in-out infinite;
-}
-
 /* ================= Skeleton frame + bars ================== */
 
 .aims-skeleton {
@@ -152,15 +128,11 @@
 
 .aims-skeleton-bar {
   display: inline-block;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--color-text-primary, #0f172a) 8%, transparent) 0%,
-    color-mix(in srgb, var(--color-text-primary, #0f172a) 16%, transparent) 50%,
-    color-mix(in srgb, var(--color-text-primary, #0f172a) 8%, transparent) 100%
-  );
-  background-size: 200% 100%;
-  background-position: 100% 0;
-  animation: aims-shimmer 1400ms linear infinite;
+  background: color-mix(in srgb, var(--color-text-primary, #0f172a) 12%, transparent);
+  animation: aims-skeleton-pulse 1400ms ease-in-out infinite;
+}
+.aims-skeleton-card {
+  animation: aims-skeleton-pulse 1800ms ease-in-out infinite;
 }
 .aims-skeleton-bar--pill {
   border-radius: 999px !important;
@@ -179,27 +151,22 @@
   0%,   100% { transform: scale(1); }
   50%        { transform: scale(1.03); }
 }
-@keyframes aims-progress-slide {
-  0%   { left: -30%; }
-  100% { left: 100%; }
-}
-@keyframes aims-shimmer {
-  0%   { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
+@keyframes aims-skeleton-pulse {
+  0%,   100% { opacity: 1; }
+  50%        { opacity: 0.55; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .aims-branded-loader__ring,
   .aims-branded-loader__logo,
-  .aims-branded-loader__progress > span,
-  .aims-skeleton-bar {
+  .aims-skeleton-bar,
+  .aims-skeleton-card {
     animation-duration: 0s;
     animation-iteration-count: 1;
   }
 }
 
 .aims-branded-loader.is-frozen .aims-branded-loader__ring,
-.aims-branded-loader.is-frozen .aims-branded-loader__logo,
-.aims-branded-loader.is-frozen .aims-branded-loader__progress > span {
+.aims-branded-loader.is-frozen .aims-branded-loader__logo {
   animation: none;
 }
