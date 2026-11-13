@@ -899,8 +899,9 @@ export default function Assets() {
     else if (requestedAction === "status") setBulkTarget(commonStatus);
     else setBulkTarget("");
 
-    // Reset per-rij modus en pre-fill met bestaande waarden per asset.
-    setPerRowMode(false);
+    // Per-rij modus is de standaard voor acties die per asset een eigen waarde
+    // zinvol maken. De gebruiker kan terug naar "zelfde waarde voor allemaal"
+    // via de toggle in het dialoog.
     const fieldKey =
       requestedAction === "serial"
         ? "serialNumber"
@@ -921,6 +922,7 @@ export default function Assets() {
                       : requestedAction === "edit"
                         ? "condition"
                         : "";
+    setPerRowMode(!!fieldKey && selected.length > 1);
     if (fieldKey) {
       const initial: Record<string, string> = {};
       for (const asset of selectedAssets) {
@@ -1434,28 +1436,40 @@ export default function Assets() {
 
         <Dialog
           open={bulkDialog}
+          className={
+            (perRowMode && selected.length > 1) || bulkAction === "bulkEdit"
+              ? "bulk-editor"
+              : ""
+          }
           title={
-            bulkAction === "bulkEdit"
-              ? t("assets.bulk.editSelected")
-              : bulkAction === "code"
-                ? t("assets.bulk.editInvCode")
-                : bulkAction === "brand"
-                  ? t("assets.bulk.brand")
-                  : bulkAction === "name"
-                    ? t("assets.bulk.asset")
-                    : bulkAction === "model"
-                      ? t("assets.bulk.model")
-                      : bulkAction === "serial"
-                        ? t("assets.bulk.serial")
-                        : bulkAction === "mainLocation" || bulkAction === "location"
-                          ? t("assets.bulk.mainLocation")
-                          : bulkAction === "subLocation" || bulkAction === "department"
-                            ? t("assets.bulk.subLocation")
-                            : bulkAction === "assignUser"
-                              ? t("assets.bulk.assignUser")
-                              : bulkAction === "toInventory"
-                                ? t("assets.bulk.toInventory")
-                                : t("assets.bulk.confirm")
+            (() => {
+              const base =
+                bulkAction === "bulkEdit"
+                  ? t("assets.bulk.editSelected")
+                  : bulkAction === "code"
+                    ? t("assets.bulk.editInvCode")
+                    : bulkAction === "brand"
+                      ? t("assets.bulk.brand")
+                      : bulkAction === "name"
+                        ? t("assets.bulk.asset")
+                        : bulkAction === "model"
+                          ? t("assets.bulk.model")
+                          : bulkAction === "serial"
+                            ? t("assets.bulk.serial")
+                            : bulkAction === "mainLocation" || bulkAction === "location"
+                              ? t("assets.bulk.mainLocation")
+                              : bulkAction === "subLocation" || bulkAction === "department"
+                                ? t("assets.bulk.subLocation")
+                                : bulkAction === "assignUser"
+                                  ? t("assets.bulk.assignUser")
+                                  : bulkAction === "toInventory"
+                                    ? t("assets.bulk.toInventory")
+                                    : t("assets.bulk.confirm");
+              if (perRowMode && selected.length > 1) {
+                return `${appLanguage === "nl" ? "Bulk bewerken" : "Bulk editing"} — ${selected.length} ${t("common.selected")} · ${base}`;
+              }
+              return base;
+            })()
           }
           description={
             bulkAction === "bulkEdit"
@@ -1504,16 +1518,32 @@ export default function Assets() {
                   ? mainLocationOptions
                   : subLocationOptions;
               const nl = appLanguage === "nl";
+              const fieldKey =
+                bulkAction === "serial"
+                  ? "serialNumber"
+                  : bulkAction === "mainLocation" || bulkAction === "location"
+                    ? "location"
+                    : bulkAction === "subLocation" || bulkAction === "department"
+                      ? "department"
+                      : bulkAction === "assignUser"
+                        ? "assignedTo"
+                        : bulkAction === "brand"
+                          ? "brand"
+                          : bulkAction === "name"
+                            ? "name"
+                            : "model";
+              const rowsForDiff = selected.map((id) => {
+                const asset = snapshot.assets.find((a) => a.id === id);
+                const original = String((asset as any)?.[fieldKey] || "");
+                const value = perRowValues[id] ?? "";
+                return { id, asset, original, value };
+              });
+              const changedCount = rowsForDiff.filter(
+                (r) => r.value.trim() !== r.original.trim(),
+              ).length;
+              const unchangedCount = rowsForDiff.length - changedCount;
               return (
-                <div
-                  className="wide"
-                  style={{
-                    border: "1px solid var(--color-border)",
-                    borderRadius: 6,
-                    padding: 10,
-                    background: "var(--color-background-secondary)",
-                  }}
-                >
+                <div className="wide">
                   <label
                     style={{
                       display: "flex",
@@ -1522,110 +1552,102 @@ export default function Assets() {
                       cursor: "pointer",
                       fontSize: "0.95em",
                       fontWeight: 600,
+                      marginBottom: 10,
                     }}
                   >
                     <input
                       type="checkbox"
-                      checked={perRowMode}
-                      onChange={(e) => setPerRowMode(e.target.checked)}
+                      checked={!perRowMode}
+                      onChange={(e) => setPerRowMode(!e.target.checked)}
                     />
                     <span>
                       {nl
-                        ? "Per rij invoeren (eigen waarde per geselecteerd middel)"
-                        : "Enter per row (own value per selected asset)"}
+                        ? "Zelfde waarde voor alle geselecteerde middelen"
+                        : "Apply one common value to all selected assets"}
                     </span>
                   </label>
                   {perRowMode && (
-                    <div
-                      style={{
-                        marginTop: 8,
-                        maxHeight: 340,
-                        overflow: "auto",
-                        border: "1px solid var(--color-border)",
-                        borderRadius: 6,
-                        background: "var(--color-surface-elevated, #fff)",
-                      }}
-                    >
-                      <table
-                        style={{
-                          width: "100%",
-                          borderCollapse: "collapse",
-                          fontSize: "0.9em",
-                        }}
-                      >
-                        <thead
-                          style={{
-                            position: "sticky",
-                            top: 0,
-                            background: "var(--color-surface-elevated, #fff)",
-                            zIndex: 1,
-                          }}
-                        >
-                          <tr>
-                            <th style={{ textAlign: "left", padding: "6px 10px" }}>
-                              Inv.code
-                            </th>
-                            <th style={{ textAlign: "left", padding: "6px 10px" }}>
-                              {nl ? "Middel" : "Asset"}
-                            </th>
-                            <th style={{ textAlign: "left", padding: "6px 10px" }}>
-                              {nl ? "Nieuwe waarde" : "New value"}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selected.map((id) => {
-                            const asset = snapshot.assets.find(
-                              (a) => a.id === id,
-                            );
-                            const value = perRowValues[id] ?? "";
-                            return (
-                              <tr key={id} style={{ borderTop: "1px solid var(--color-border)" }}>
-                                <td style={{ padding: "6px 10px" }}>
-                                  <strong>{asset?.code || "—"}</strong>
-                                </td>
-                                <td style={{ padding: "6px 10px", color: "var(--color-text-secondary)" }}>
-                                  {asset?.name || "—"}
-                                </td>
-                                <td style={{ padding: "6px 10px" }}>
-                                  {useSelect ? (
-                                    <select
-                                      value={value}
-                                      onChange={(e) =>
-                                        setPerRowValues((prev) => ({
-                                          ...prev,
-                                          [id]: e.target.value,
-                                        }))
-                                      }
-                                      style={{ width: "100%" }}
-                                    >
-                                      <option value="">—</option>
-                                      {selectOptions.map((opt) => (
-                                        <option key={opt} value={opt}>
-                                          {opt}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  ) : (
-                                    <input
-                                      type="text"
-                                      value={value}
-                                      onChange={(e) =>
-                                        setPerRowValues((prev) => ({
-                                          ...prev,
-                                          [id]: e.target.value,
-                                        }))
-                                      }
-                                      style={{ width: "100%" }}
-                                    />
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
+                    <>
+                      <div className="bulk-per-row-table-wrap">
+                        <table className="bulk-per-row-table">
+                          <thead>
+                            <tr>
+                              <th style={{ width: 110 }}>Inv.code</th>
+                              <th>{nl ? "Middel" : "Asset"}</th>
+                              <th style={{ width: 170 }}>
+                                {nl ? "Huidige waarde" : "Current value"}
+                              </th>
+                              <th>{nl ? "Nieuwe waarde" : "New value"}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rowsForDiff.map((r) => {
+                              const changed = r.value.trim() !== r.original.trim();
+                              return (
+                                <tr key={r.id} className={changed ? "is-changed" : ""}>
+                                  <td>
+                                    <strong>{r.asset?.code || "—"}</strong>
+                                  </td>
+                                  <td style={{ color: "var(--color-text-secondary)" }}>
+                                    {r.asset?.name || "—"}
+                                  </td>
+                                  <td style={{ color: "var(--color-text-secondary)" }}>
+                                    {r.original || "—"}
+                                  </td>
+                                  <td>
+                                    {useSelect ? (
+                                      <select
+                                        value={r.value}
+                                        onChange={(e) =>
+                                          setPerRowValues((prev) => ({
+                                            ...prev,
+                                            [r.id]: e.target.value,
+                                          }))
+                                        }
+                                        style={{ width: "100%" }}
+                                      >
+                                        <option value="">—</option>
+                                        {selectOptions.map((opt) => (
+                                          <option key={opt} value={opt}>
+                                            {opt}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    ) : (
+                                      <input
+                                        type="text"
+                                        value={r.value}
+                                        onChange={(e) =>
+                                          setPerRowValues((prev) => ({
+                                            ...prev,
+                                            [r.id]: e.target.value,
+                                          }))
+                                        }
+                                        style={{ width: "100%" }}
+                                      />
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="bulk-per-row-summary" style={{ marginTop: 10 }}>
+                        <span>
+                          <strong>{rowsForDiff.length}</strong>{" "}
+                          {nl ? "geselecteerd" : "selected"}
+                        </span>
+                        <span>
+                          <strong>{changedCount}</strong>{" "}
+                          {nl ? "met wijziging" : "with changes"}
+                        </span>
+                        <span>
+                          <strong>{unchangedCount}</strong>{" "}
+                          {nl ? "ongewijzigd" : "unchanged"}
+                        </span>
+                      </div>
+                    </>
                   )}
                 </div>
               );
