@@ -1,7 +1,7 @@
 import {Suspense,useEffect} from 'react';
 import {Navigate,Route,Routes,useLocation} from 'react-router-dom';
 import {AppShell} from './components/shell';
-import {RouteErrorBoundary,RouteLoader} from './components/RouteBoundary';
+import {BootLoader,RouteErrorBoundary,RouteLoader} from './components/RouteBoundary';
 import {can} from './auth/permissions';
 import {routeManifest,type AppRoute} from './routes/manifest';
 import {useApp} from './context/AppContext';
@@ -12,7 +12,7 @@ function RenderRoute({route}:{route:AppRoute}){
   const {user,authLoading,emailVerified,accessDenied,sessionExpired}=useApp();
   const location=useLocation();
   const Page=route.component;
-  if(authLoading)return <RouteLoader/>;
+  if(authLoading)return <BootLoader/>;
   if(accessDenied&&route.id!=='access-denied')return <Navigate to="/access-denied" replace/>;
   if(route.public){
     if(route.id==='home'&&user&&emailVerified)return <Navigate to="/dashboard" replace/>;

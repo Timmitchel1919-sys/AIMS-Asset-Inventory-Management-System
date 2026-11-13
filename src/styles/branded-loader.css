@@ -1,0 +1,205 @@
+/* ===========================================================
+ * AIMS branded loader + skeleton screens.
+ * Theme-aware through existing CSS variables. Respects
+ * prefers-reduced-motion.
+ * =========================================================== */
+
+.aims-branded-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  background:
+    radial-gradient(
+      1200px 800px at 50% 30%,
+      color-mix(in srgb, var(--color-primary, #2563eb) 10%, transparent),
+      transparent 70%
+    ),
+    var(--color-background, #f6f9ff);
+  color: var(--color-text-primary, #0f172a);
+  animation: aims-loader-fade-in 220ms ease-out both;
+}
+
+.aims-branded-loader__stage {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: grid;
+  place-items: center;
+}
+
+.aims-branded-loader__logo {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.1));
+  animation: aims-logo-pulse 2400ms ease-in-out infinite;
+}
+
+.aims-branded-loader__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 10%,
+    color-mix(in srgb, var(--color-primary, #2563eb) 35%, transparent) 20%,
+    var(--color-primary, #2563eb) 50%,
+    color-mix(in srgb, var(--color-primary, #2563eb) 35%, transparent) 80%,
+    transparent 90% 100%
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 6px),
+    #000 calc(100% - 5px)
+  );
+          mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 6px),
+    #000 calc(100% - 5px)
+  );
+  animation: aims-ring-spin 1400ms linear infinite;
+}
+
+.aims-branded-loader__ring-arc {
+  display: none; /* reserved for future secondary arc */
+}
+
+.aims-branded-loader__brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-text-primary, #0f172a);
+  margin-top: 6px;
+}
+
+.aims-branded-loader__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #0f172a);
+  opacity: 0.85;
+}
+
+.aims-branded-loader__status {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary, #64748b);
+  min-height: 1.2em;
+  transition: opacity 180ms ease;
+}
+
+.aims-branded-loader__progress {
+  position: relative;
+  width: min(360px, 80vw);
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary, #2563eb) 12%, transparent);
+  overflow: hidden;
+  margin-top: 6px;
+}
+.aims-branded-loader__progress > span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -30%;
+  width: 30%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-primary, #2563eb),
+    transparent
+  );
+  animation: aims-progress-slide 1600ms ease-in-out infinite;
+}
+
+/* ================= Skeleton frame + bars ================== */
+
+.aims-skeleton {
+  width: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aims-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.aims-skeleton-row--spread {
+  justify-content: space-between;
+}
+
+.aims-skeleton-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.aims-skeleton-card {
+  background: var(--color-surface-elevated, #fff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.aims-skeleton-bar {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-text-primary, #0f172a) 8%, transparent) 0%,
+    color-mix(in srgb, var(--color-text-primary, #0f172a) 16%, transparent) 50%,
+    color-mix(in srgb, var(--color-text-primary, #0f172a) 8%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  animation: aims-shimmer 1400ms linear infinite;
+}
+.aims-skeleton-bar--pill {
+  border-radius: 999px !important;
+}
+
+/* ================= Animations ================== */
+
+@keyframes aims-loader-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes aims-ring-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes aims-logo-pulse {
+  0%,   100% { transform: scale(1); }
+  50%        { transform: scale(1.03); }
+}
+@keyframes aims-progress-slide {
+  0%   { left: -30%; }
+  100% { left: 100%; }
+}
+@keyframes aims-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aims-branded-loader__ring,
+  .aims-branded-loader__logo,
+  .aims-branded-loader__progress > span,
+  .aims-skeleton-bar {
+    animation-duration: 0s;
+    animation-iteration-count: 1;
+  }
+}
+
+.aims-branded-loader.is-frozen .aims-branded-loader__ring,
+.aims-branded-loader.is-frozen .aims-branded-loader__logo,
+.aims-branded-loader.is-frozen .aims-branded-loader__progress > span {
+  animation: none;
+}

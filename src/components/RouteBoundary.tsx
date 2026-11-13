@@ -1,8 +1,33 @@
 import {Component, type ErrorInfo, type ReactNode} from 'react';
+import {useLocation} from 'react-router-dom';
 import {AlertTriangle} from 'lucide-react';
-import {Button, Loader} from './ui';
+import {Button} from './ui';
+import {AIMSBrandedLoader} from './BrandedLoader';
+import {pickSkeleton} from './Skeletons';
 
-export const RouteLoader = () => <div aria-live="polite" aria-label="Loading page"><Loader/></div>;
+/**
+ * Route-level loading placeholder. Picks a module-aware skeleton based on the
+ * current pathname so the loading screen always resembles what is about to
+ * appear, rather than generic bars.
+ */
+export const RouteLoader = ({variant = 'skeleton'}: {variant?: 'skeleton' | 'branded'} = {}) => {
+  const {pathname} = useLocation();
+  if (variant === 'branded') {
+    return <AIMSBrandedLoader />;
+  }
+  return (
+    <div aria-live="polite" aria-busy="true" aria-label="Loading page">
+      {pickSkeleton(pathname)}
+    </div>
+  );
+};
+
+/**
+ * Full-screen branded loader for app bootstrap (initial auth check, refresh,
+ * login). Separate from RouteLoader so it can be rendered outside
+ * Suspense/route context when needed.
+ */
+export const BootLoader = () => <AIMSBrandedLoader />;
 
 export class RouteErrorBoundary extends Component<{children:ReactNode},{error:Error|null}> {
   state = {error:null as Error|null};

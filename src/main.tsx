@@ -46,6 +46,7 @@ import "./styles/mobile-scroll.css";
 import "./styles/dashboard-bento.css";
 import "./styles/midnight-phase3b.css";
 import "./styles/buttons.css";
+import "./styles/branded-loader.css";
 
 /*
  * Apply the saved KCS theme before React renders.
