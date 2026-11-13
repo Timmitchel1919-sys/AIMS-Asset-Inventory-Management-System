@@ -5,7 +5,7 @@
  * per exemplaar kan de gebruiker serienummer, locatie, afdeling, gebruiker
  * en opmerking apart invullen.
  */
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus } from "lucide-react";
 import { Button, Field, SelectField } from "../components/ui";
@@ -281,8 +281,35 @@ export default function AssetBulkCreate() {
     }
   };
 
+  const sectionStyle: React.CSSProperties = {
+    padding: "14px 16px",
+    background: "var(--color-surface-elevated, #fff)",
+    border: "1px solid var(--color-border)",
+    borderRadius: 8,
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+  };
+  const sectionHeading: React.CSSProperties = {
+    margin: 0,
+    paddingBottom: 6,
+    borderBottom: "1px solid var(--color-border)",
+    fontSize: "1.05em",
+  };
+  const gridStyle = (min: number): React.CSSProperties => ({
+    display: "grid",
+    gridTemplateColumns: `repeat(auto-fit, minmax(${min}px, 1fr))`,
+    gap: 12,
+  });
+
   return (
     <div className="data-page">
+      <div style={{ padding: "8px 0" }}>
+        <Button variant="ghost" onClick={() => navigate("/assets")}>
+          <ArrowLeft />
+          {nl ? "Terug" : "Back"}
+        </Button>
+      </div>
       <PageHeader
         title={nl ? "Bulk middelen toevoegen" : "Bulk add assets"}
         description={
@@ -290,18 +317,15 @@ export default function AssetBulkCreate() {
             ? "Registreer meerdere exemplaren van hetzelfde middel met automatisch gegenereerde inventarisnummers."
             : "Register multiple copies of the same asset with auto-generated inventory numbers."
         }
-        actions={
-          <Button variant="ghost" onClick={() => navigate("/assets")}>
-            <ArrowLeft />
-            {nl ? "Terug" : "Back"}
-          </Button>
-        }
       />
 
-      <div className="data-card" style={{ padding: 16, gap: 16, display: "flex", flexDirection: "column" }}>
-        <section className="workflow-form" aria-label={nl ? "Gedeelde productinfo" : "Shared product info"}>
-          <h3 style={{ margin: 0 }}>{nl ? "1. Productgegevens" : "1. Product info"}</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+      <div
+        className="data-card"
+        style={{ padding: 16, gap: 16, display: "flex", flexDirection: "column", background: "transparent", border: 0 }}
+      >
+        <section style={sectionStyle} aria-label={nl ? "Productgegevens" : "Product info"}>
+          <h3 style={sectionHeading}>{nl ? "1. Productgegevens" : "1. Product info"}</h3>
+          <div style={gridStyle(220)}>
             <Field label={nl ? "Middelnaam *" : "Asset name *"} value={name} onChange={(e) => setName(e.target.value)} required />
             <SelectField label={nl ? "Categorie *" : "Category *"} value={category} onChange={(e) => setCategory(e.target.value)} required>
               <option value="">{nl ? "Kies categorie…" : "Choose category…"}</option>
@@ -320,9 +344,9 @@ export default function AssetBulkCreate() {
           <Field label={nl ? "Technische specificaties" : "Specifications"} value={specifications} onChange={(e) => setSpecifications(e.target.value)} />
         </section>
 
-        <section className="workflow-form" aria-label={nl ? "Nummerreeks" : "Number range"}>
-          <h3 style={{ margin: 0 }}>{nl ? "2. Nummerreeks" : "2. Number range"}</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
+        <section style={sectionStyle} aria-label={nl ? "Nummerreeks" : "Number range"}>
+          <h3 style={sectionHeading}>{nl ? "2. Nummerreeks" : "2. Number range"}</h3>
+          <div style={gridStyle(180)}>
             <SelectField label={nl ? "Codegroep *" : "Code group *"} value={codePrefix} onChange={(e) => setCodePrefix(e.target.value)} required>
               <option value="">{nl ? "Kies codegroep…" : "Choose code group…"}</option>
               {codeGroups.map((g: any) => (
@@ -350,8 +374,8 @@ export default function AssetBulkCreate() {
         </section>
 
         {generatedCodes.length > 0 && generatedCodes.length <= MAX_BATCH_SIZE && (
-          <section className="workflow-form" aria-label={nl ? "Per-exemplaar" : "Per-item"}>
-            <h3 style={{ margin: 0 }}>{nl ? "3. Individuele gegevens (optioneel per rij)" : "3. Individual data (optional per row)"}</h3>
+          <section style={sectionStyle} aria-label={nl ? "Per-exemplaar" : "Per-item"}>
+            <h3 style={sectionHeading}>{nl ? "3. Individuele gegevens (optioneel per rij)" : "3. Individual data (optional per row)"}</h3>
             <div style={{ maxHeight: 420, overflow: "auto", border: "1px solid var(--color-border)", borderRadius: 6 }}>
               <table className="data-table" style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead style={{ position: "sticky", top: 0, background: "var(--color-surface-elevated)" }}>
@@ -396,8 +420,8 @@ export default function AssetBulkCreate() {
           </section>
         )}
 
-        <section className="workflow-form" aria-label={nl ? "Bevestiging" : "Confirmation"}>
-          <h3 style={{ margin: 0 }}>{nl ? "4. Bevestiging" : "4. Confirmation"}</h3>
+        <section style={sectionStyle} aria-label={nl ? "Bevestiging" : "Confirmation"}>
+          <h3 style={sectionHeading}>{nl ? "4. Bevestiging" : "4. Confirmation"}</h3>
           <Field label={nl ? "Reden / aankooporder *" : "Reason / purchase order *"} value={reason} onChange={(e) => setReason(e.target.value)} required />
           {validationErrors.length > 0 && (
             <ul className="field-error" role="alert" style={{ margin: 0, paddingLeft: 18 }}>
