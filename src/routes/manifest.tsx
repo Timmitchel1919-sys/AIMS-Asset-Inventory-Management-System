@@ -328,6 +328,18 @@ export const routeManifest: AppRoute[] = [
     status: "implemented",
   },
   {
+    id: "asset-bulk-new",
+    path: "/assets/bulk-new",
+    component: page(() => import("../pages/AssetBulkCreate")),
+    titleKey: "routes.assetBulkNew",
+    permission: "assets.create",
+    navigation: false,
+    breadcrumb: ["routes.assets", "routes.assetBulkNew"],
+    mobile: true,
+    lazy: true,
+    status: "implemented",
+  },
+  {
     id: "asset-import",
     path: "/assets/import",
     component: page(() => import("../pages/CombinedAssetImport")),

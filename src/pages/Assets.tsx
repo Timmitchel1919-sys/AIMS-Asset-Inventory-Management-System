@@ -1170,10 +1170,19 @@ export default function Assets() {
                   </Button>
                 )}
                 {can(user?.role, "assets.create") && (
-                  <Button onClick={() => navigate("/assets/new")}>
-                    <Plus />
-                    {t("assets.add")}
-                  </Button>
+                  <>
+                    <Button
+                      variant="secondary"
+                      onClick={() => navigate("/assets/bulk-new")}
+                    >
+                      <Plus />
+                      {t("assets.bulkAdd")}
+                    </Button>
+                    <Button onClick={() => navigate("/assets/new")}>
+                      <Plus />
+                      {t("assets.add")}
+                    </Button>
+                  </>
                 )}
               </>
             }
