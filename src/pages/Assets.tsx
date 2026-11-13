@@ -183,7 +183,7 @@ const filterDefinitions = [
 ] as const;
 
 export default function Assets() {
-  const { user } = useApp(),
+  const { user, language: appLanguage } = useApp(),
     t = useT(),
     navigate = useNavigate(),
     [params] = useSearchParams(),
@@ -222,6 +222,10 @@ export default function Assets() {
     [bulkDialog, setBulkDialog] = useState(false),
     [bulkReason, setBulkReason] = useState(""),
     [bulkTarget, setBulkTarget] = useState("");
+  // Per-rij modus bij bulk-acties: elke geselecteerde asset krijgt zijn
+  // eigen waarde, in plaats van één gedeelde waarde voor alle rijen.
+  const [perRowMode, setPerRowMode] = useState(false);
+  const [perRowValues, setPerRowValues] = useState<Record<string, string>>({});
   const [bulkData, setBulkData] = useState<{
     codePrefix?: string;
     codeStartNumber?: string;
@@ -895,6 +899,38 @@ export default function Assets() {
     else if (requestedAction === "status") setBulkTarget(commonStatus);
     else setBulkTarget("");
 
+    // Reset per-rij modus en pre-fill met bestaande waarden per asset.
+    setPerRowMode(false);
+    const fieldKey =
+      requestedAction === "serial"
+        ? "serialNumber"
+        : requestedAction === "mainLocation" || requestedAction === "location"
+          ? "location"
+          : requestedAction === "subLocation" || requestedAction === "department"
+            ? "department"
+            : requestedAction === "assignUser"
+              ? "assignedTo"
+              : requestedAction === "brand"
+                ? "brand"
+                : requestedAction === "name"
+                  ? "name"
+                  : requestedAction === "model"
+                    ? "model"
+                    : requestedAction === "status"
+                      ? "status"
+                      : requestedAction === "edit"
+                        ? "condition"
+                        : "";
+    if (fieldKey) {
+      const initial: Record<string, string> = {};
+      for (const asset of selectedAssets) {
+        initial[asset.id] = String((asset as any)[fieldKey] || "");
+      }
+      setPerRowValues(initial);
+    } else {
+      setPerRowValues({});
+    }
+
     setBulkReason("");
     setBulkDialog(true);
   };
@@ -1018,13 +1054,21 @@ export default function Assets() {
           values.codeNumber = num;
         }
       } else if (bulkAction === "brand") {
-        values.brand = bulkTarget || bulkData.brand;
+        values.brand = perRowMode
+          ? perRowValues[entityId] ?? ""
+          : (bulkTarget || bulkData.brand);
       } else if (bulkAction === "name") {
-        values.name = bulkTarget || bulkData.name;
+        values.name = perRowMode
+          ? perRowValues[entityId] ?? ""
+          : (bulkTarget || bulkData.name);
       } else if (bulkAction === "model") {
-        values.model = bulkTarget || bulkData.model;
+        values.model = perRowMode
+          ? perRowValues[entityId] ?? ""
+          : (bulkTarget || bulkData.model);
       } else if (bulkAction === "serial") {
-        if (bulkData.isSerialSequence && bulkData.serialPrefix) {
+        if (perRowMode) {
+          values.serialNumber = perRowValues[entityId] ?? "";
+        } else if (bulkData.isSerialSequence && bulkData.serialPrefix) {
           const startNum =
             parseInt(bulkData.serialStartNumber || "1", 10) || 1;
           const num = startNum + idx;
@@ -1033,7 +1077,9 @@ export default function Assets() {
           values.serialNumber = bulkTarget || bulkData.serialNumber;
         }
       } else if (bulkAction === "mainLocation" || bulkAction === "location") {
-        const locName = bulkTarget || bulkData.location;
+        const locName = perRowMode
+          ? perRowValues[entityId] ?? ""
+          : (bulkTarget || bulkData.location);
         values.location = locName;
         const locRef = snapshot.references.find(
           (r) => r.kind === "location" && r.name === locName,
@@ -1044,14 +1090,18 @@ export default function Assets() {
           values.mainLocationId = locRef.mainLocationId || locRef.id;
         }
       } else if (bulkAction === "subLocation" || bulkAction === "department") {
-        const deptName = bulkTarget || bulkData.department;
+        const deptName = perRowMode
+          ? perRowValues[entityId] ?? ""
+          : (bulkTarget || bulkData.department);
         values.department = deptName;
         const deptRef = snapshot.references.find(
           (r) => r.kind === "department" && r.name === deptName,
         );
         if (deptRef) values.departmentId = deptRef.id;
       } else if (bulkAction === "assignUser") {
-        values.assignedTo = bulkTarget || bulkData.assignedTo || "";
+        values.assignedTo = perRowMode
+          ? perRowValues[entityId] ?? ""
+          : (bulkTarget || bulkData.assignedTo || "");
       } else if (bulkAction === "code") {
         if (selected.length === 1 && (bulkTarget || bulkData.codeDirect)) {
           values.codeCorrection = (
@@ -1117,17 +1167,20 @@ export default function Assets() {
       !bulkData.codePrefix &&
       !bulkData.codeDirect) ||
     (["edit", "status"].includes(bulkAction) && !bulkTarget) ||
-    (bulkAction === "brand" && !bulkTarget && !bulkData.brand) ||
-    (bulkAction === "name" && !bulkTarget && !bulkData.name) ||
-    (bulkAction === "model" && !bulkTarget && !bulkData.model) ||
+    (bulkAction === "brand" && !perRowMode && !bulkTarget && !bulkData.brand) ||
+    (bulkAction === "name" && !perRowMode && !bulkTarget && !bulkData.name) ||
+    (bulkAction === "model" && !perRowMode && !bulkTarget && !bulkData.model) ||
     (bulkAction === "serial" &&
+      !perRowMode &&
       !bulkTarget &&
       !bulkData.serialNumber &&
       !(bulkData.isSerialSequence && bulkData.serialPrefix)) ||
     ((bulkAction === "mainLocation" || bulkAction === "location") &&
+      !perRowMode &&
       !bulkTarget &&
       !bulkData.location) ||
     ((bulkAction === "subLocation" || bulkAction === "department") &&
+      !perRowMode &&
       !bulkTarget &&
       !bulkData.department) ||
     (bulkAction === "code" &&
@@ -1427,6 +1480,156 @@ export default function Assets() {
                 <option key={b} value={b} />
               ))}
             </datalist>
+            {(() => {
+              const PER_ROW_ACTIONS = new Set([
+                "serial",
+                "mainLocation",
+                "location",
+                "subLocation",
+                "department",
+                "assignUser",
+                "brand",
+                "name",
+                "model",
+              ]);
+              if (!PER_ROW_ACTIONS.has(bulkAction) || selected.length < 2)
+                return null;
+              const useSelect =
+                bulkAction === "mainLocation" ||
+                bulkAction === "location" ||
+                bulkAction === "subLocation" ||
+                bulkAction === "department";
+              const selectOptions =
+                bulkAction === "mainLocation" || bulkAction === "location"
+                  ? mainLocationOptions
+                  : subLocationOptions;
+              const nl = appLanguage === "nl";
+              return (
+                <div
+                  className="wide"
+                  style={{
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 6,
+                    padding: 10,
+                    background: "var(--color-background-secondary)",
+                  }}
+                >
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      cursor: "pointer",
+                      fontSize: "0.95em",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={perRowMode}
+                      onChange={(e) => setPerRowMode(e.target.checked)}
+                    />
+                    <span>
+                      {nl
+                        ? "Per rij invoeren (eigen waarde per geselecteerd middel)"
+                        : "Enter per row (own value per selected asset)"}
+                    </span>
+                  </label>
+                  {perRowMode && (
+                    <div
+                      style={{
+                        marginTop: 8,
+                        maxHeight: 340,
+                        overflow: "auto",
+                        border: "1px solid var(--color-border)",
+                        borderRadius: 6,
+                        background: "var(--color-surface-elevated, #fff)",
+                      }}
+                    >
+                      <table
+                        style={{
+                          width: "100%",
+                          borderCollapse: "collapse",
+                          fontSize: "0.9em",
+                        }}
+                      >
+                        <thead
+                          style={{
+                            position: "sticky",
+                            top: 0,
+                            background: "var(--color-surface-elevated, #fff)",
+                            zIndex: 1,
+                          }}
+                        >
+                          <tr>
+                            <th style={{ textAlign: "left", padding: "6px 10px" }}>
+                              Inv.code
+                            </th>
+                            <th style={{ textAlign: "left", padding: "6px 10px" }}>
+                              {nl ? "Middel" : "Asset"}
+                            </th>
+                            <th style={{ textAlign: "left", padding: "6px 10px" }}>
+                              {nl ? "Nieuwe waarde" : "New value"}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selected.map((id) => {
+                            const asset = snapshot.assets.find(
+                              (a) => a.id === id,
+                            );
+                            const value = perRowValues[id] ?? "";
+                            return (
+                              <tr key={id} style={{ borderTop: "1px solid var(--color-border)" }}>
+                                <td style={{ padding: "6px 10px" }}>
+                                  <strong>{asset?.code || "—"}</strong>
+                                </td>
+                                <td style={{ padding: "6px 10px", color: "var(--color-text-secondary)" }}>
+                                  {asset?.name || "—"}
+                                </td>
+                                <td style={{ padding: "6px 10px" }}>
+                                  {useSelect ? (
+                                    <select
+                                      value={value}
+                                      onChange={(e) =>
+                                        setPerRowValues((prev) => ({
+                                          ...prev,
+                                          [id]: e.target.value,
+                                        }))
+                                      }
+                                      style={{ width: "100%" }}
+                                    >
+                                      <option value="">—</option>
+                                      {selectOptions.map((opt) => (
+                                        <option key={opt} value={opt}>
+                                          {opt}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <input
+                                      type="text"
+                                      value={value}
+                                      onChange={(e) =>
+                                        setPerRowValues((prev) => ({
+                                          ...prev,
+                                          [id]: e.target.value,
+                                        }))
+                                      }
+                                      style={{ width: "100%" }}
+                                    />
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             <datalist id="bulk-name-suggestions">
               {nameSuggestions.map((n) => (
                 <option key={n} value={n} />
@@ -1628,7 +1831,7 @@ export default function Assets() {
               </>
             )}
 
-            {bulkAction === "assignUser" && (
+            {bulkAction === "assignUser" && !perRowMode && (
               <Field
                 label={t("assets.bulk.assignUser")}
                 value={bulkTarget}
@@ -1695,7 +1898,7 @@ export default function Assets() {
               </div>
             )}
 
-            {bulkAction === "brand" && (
+            {bulkAction === "brand" && !perRowMode && (
               <Field
                 label={t("assets.bulk.brand")}
                 list="bulk-brand-suggestions"
@@ -1708,7 +1911,7 @@ export default function Assets() {
               />
             )}
 
-            {bulkAction === "name" && (
+            {bulkAction === "name" && !perRowMode && (
               <Field
                 label={t("assets.bulk.asset")}
                 list="bulk-name-suggestions"
@@ -1721,7 +1924,7 @@ export default function Assets() {
               />
             )}
 
-            {bulkAction === "model" && (
+            {bulkAction === "model" && !perRowMode && (
               <Field
                 label={t("assets.bulk.model")}
                 list="bulk-model-suggestions"
@@ -1734,7 +1937,7 @@ export default function Assets() {
               />
             )}
 
-            {bulkAction === "serial" && (
+            {bulkAction === "serial" && !perRowMode && (
               <div className="field-with-hint">
                 <Field
                   label={t("assets.bulk.serial")}
@@ -1795,7 +1998,7 @@ export default function Assets() {
               </div>
             )}
 
-            {(bulkAction === "mainLocation" || bulkAction === "location") && (
+            {(bulkAction === "mainLocation" || bulkAction === "location") && !perRowMode && (
               <SelectField
                 label={t("assets.bulk.mainLocation")}
                 value={bulkTarget}
@@ -1814,7 +2017,7 @@ export default function Assets() {
               </SelectField>
             )}
 
-            {(bulkAction === "subLocation" || bulkAction === "department") && (
+            {(bulkAction === "subLocation" || bulkAction === "department") && !perRowMode && (
               <SelectField
                 label={t("assets.bulk.subLocation")}
                 value={bulkTarget}
